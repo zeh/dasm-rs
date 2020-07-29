@@ -1,0 +1,123 @@
+[
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "mne6811.o",
+            "mne6811.c"
+        ],
+        "directory": "/mnt/d/trampos-wsl/dasm-rs/src",
+        "file": "mne6811.c"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "mne68705.o",
+            "mne68705.c"
+        ],
+        "directory": "/mnt/d/trampos-wsl/dasm-rs/src",
+        "file": "mne68705.c"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "mnef8.o",
+            "mnef8.c"
+        ],
+        "directory": "/mnt/d/trampos-wsl/dasm-rs/src",
+        "file": "mnef8.c"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "globals.o",
+            "globals.c"
+        ],
+        "directory": "/mnt/d/trampos-wsl/dasm-rs/src",
+        "file": "globals.c"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "exp.o",
+            "exp.c"
+        ],
+        "directory": "/mnt/d/trampos-wsl/dasm-rs/src",
+        "file": "exp.c"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "mne6502.o",
+            "mne6502.c"
+        ],
+        "directory": "/mnt/d/trampos-wsl/dasm-rs/src",
+        "file": "mne6502.c"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "ops.o",
+            "ops.c"
+        ],
+        "directory": "/mnt/d/trampos-wsl/dasm-rs/src",
+        "file": "ops.c"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "ftohex.o",
+            "ftohex.c"
+        ],
+        "directory": "/mnt/d/trampos-wsl/dasm-rs/src",
+        "file": "ftohex.c"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "symbols.o",
+            "symbols.c"
+        ],
+        "directory": "/mnt/d/trampos-wsl/dasm-rs/src",
+        "file": "symbols.c"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "main.o",
+            "main.c"
+        ],
+        "directory": "/mnt/d/trampos-wsl/dasm-rs/src",
+        "file": "main.c"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "mne6303.o",
+            "mne6303.c"
+        ],
+        "directory": "/mnt/d/trampos-wsl/dasm-rs/src",
+        "file": "mne6303.c"
+    }
+]
