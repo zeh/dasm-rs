@@ -49,17 +49,20 @@ GWARN= -ansi -std=c99 -pedantic -Wall \
 
 #CC= gcc
 
-OBJS= main.o ops.o globals.o exp.o symbols.o \
-      mne6303.o mne6502.o mne68705.o mne6811.o mnef8.o
-SRCS= main.c ops.c globals.c exp.c symbols.c \
-      mne6303.c mne6502.c mne68705.c mne6811.c mnef8.c
+OBJS= main.o ops.o  exp.o
+      # globals.o symbols.o
+      # mne6303.o mne6502.o mne68705.o mne6811.o mnef8.o
+SRCS= main.c ops.c  exp.c
+      # globals.csymbols.c
+      # mne6303.c mne6502.c mne68705.c mne6811.c mnef8.c
+RUST_OBJS= ../target/release/libdasmrs.a
 
-ALL= dasm ftohex
+ALL= libdasmrs dasm ftohex
 
 all: $(ALL)
 
 dasm: $(OBJS)
-	$(CC) $(OBJS) -o dasm $(LDFLAGS)
+	$(CC) $(OBJS) $(RUST_OBJS) -o dasm $(LDFLAGS)
 
 ftohex: ftohex.o
 
@@ -68,7 +71,7 @@ obj: $(OBJS)
 $(OBJS): asm.h
 
 clean:
-	rm -rf *.o $(ALL) \
+	rm -rf *.o *.a $(ALL) \
 	dasm-alpha-*.tar.gz \
 	*.gcda *.gcno *.gcov gmon.out
 
@@ -83,3 +86,9 @@ alpha:
 	echo "Please do *not* distribute binaries derived from it either!" >>README.ALPHA
 	tar zcvf dasm-alpha-`date +%F`.tar.gz README.ALPHA Makefile *.h *.c
 	rm -rf README.ALPHA
+
+%.rs: %.c
+	$(COMPILE) -c $< >/dev/null
+
+libdasmrs:
+	cargo build --release
