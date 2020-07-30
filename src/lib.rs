@@ -15,7 +15,7 @@
 extern crate libc;
 
 // pub mod src {
-    // pub mod exp;
+    pub mod exp;
     // pub mod ftohex;
     pub mod globals;
     // pub mod main;
@@ -24,7 +24,7 @@ extern crate libc;
     pub mod mne6811;
     pub mod mne68705;
     pub mod mnef8;
-    // pub mod ops;
+    pub mod ops;
     pub mod symbols;
 // }
 

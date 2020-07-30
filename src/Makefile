@@ -50,12 +50,12 @@ LDFLAGS= -Wl,--no-as-needed -pthread -ldl
 
 #CC= gcc
 
-OBJS= main.o ops.o  exp.o
-      # globals.o symbols.o
+OBJS= main.o
+      # ops.o globals.o exp.o symbols.o
       # mne6303.o mne6502.o mne68705.o mne6811.o mnef8.o
-SRCS= main.c ops.c  exp.c
-      # globals.csymbols.c
-      # mne6303.c mne6502.c mne68705.c mne6811.c mnef8.c
+SRCS= main.c
+      # ops.c globals.c exp.c symbols.c
+      # mne6303.c mne6502.o mne68705.c mne6811.c mnef8.c
 RUST_OBJS= ../target/release/libdasmrs.a
 
 ALL= libdasmrs dasm ftohex
@@ -65,7 +65,7 @@ all: $(ALL)
 dasm: $(OBJS)
 	$(CC) $(OBJS) $(RUST_OBJS) -o dasm $(LDFLAGS)
 
-ftohex: ftohex.o
+ftohex: ftohex.o $(LDFLAGS)
 
 obj: $(OBJS)
 
