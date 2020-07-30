@@ -46,6 +46,7 @@ GWARN= -ansi -std=c99 -pedantic -Wall \
 
 #CFLAGS= $(GOPTI) $(GWARN) $(GDEBG)
 #LDFLAGS= -m32 -L/usr/lib32
+LDFLAGS= -pthread
 
 #CC= gcc
 
