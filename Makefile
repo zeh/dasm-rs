@@ -46,8 +46,8 @@ test: build
 build:
 	(cd src; $(MAKE); cd ..)
 	mkdir -p bin
-	cp src/dasm bin/dasm
-	cp src/ftohex bin/ftohex
+	cp target/release/dasm bin/dasm
+	cp target/release/ftohex bin/ftohex
 
 # release version to use for archive name
 # supply this to make when you run it as
@@ -90,7 +90,7 @@ DIRNAME=dasm-$(RELEASE)
 ZIPNAME=dasm-$(RELEASE)-$(BINARY)
 endif
 
-# create a distribution archive for publication 
+# create a distribution archive for publication
 dist: build
 	mkdir $(DIRNAME)
 	cp -p -r --parents $(CONTENTS) $(DIRNAME)

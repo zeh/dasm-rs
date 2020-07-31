@@ -1,14 +1,12 @@
 [package]
-name = "dasmrs"
+name = "dasm"
 version = "0.1.0"
 publish = false
 edition = "2018"
-autobins = false
 
-[lib]
-name = "dasmrs"
-path = "src/lib.rs"
-crate-type = ["staticlib", "rlib"]
+[[bin]]
+name = "ftohex"
+path = "src/ftohex.rs"
 
 [dependencies]
 libc = "0.2"
