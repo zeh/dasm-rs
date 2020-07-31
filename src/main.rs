@@ -16,6 +16,7 @@
 extern crate smart_default;
 
 use libc;
+use std::convert::TryFrom;
 
 pub mod exp;
 pub mod globals;
@@ -26,6 +27,19 @@ pub mod mne68705;
 pub mod mnef8;
 pub mod ops;
 pub mod symbols;
+
+pub mod types;
+
+use types::enums::{
+    AsmErrorEquates,
+    ErrorFormat,
+    Format,
+    SortMode
+};
+
+use types::structs::{
+    ErrorDefinition,
+};
 
 extern "C" {
     pub type _IO_wide_data;
@@ -142,11 +156,11 @@ extern "C" {
     #[no_mangle]
     static mut Lastlocaldollarindex: libc::c_ulong;
     #[no_mangle]
-    static mut F_format: libc::c_int;
+    static mut F_format: Format;
     #[no_mangle]
-    static mut F_sortmode: sortmode_t;
+    static mut F_sortmode: SortMode;
     #[no_mangle]
-    static mut F_errorformat: errorformat_t;
+    static mut F_errorformat: ErrorFormat;
     #[no_mangle]
     static mut F_verbose: libc::c_uchar;
     #[no_mangle]
@@ -235,69 +249,6 @@ pub type __compar_fn_t
     =
     Option<unsafe extern "C" fn(_: *const libc::c_void,
                                 _: *const libc::c_void) -> libc::c_int>;
-pub type sortmode_t = libc::c_uint;
-pub const SORTMODE_MAX: sortmode_t = 2;
-pub const SORTMODE_ADDRESS: sortmode_t = 1;
-pub const SORTMODE_ALPHA: sortmode_t = 0;
-pub const SORTMODE_DEFAULT: sortmode_t = 0;
-pub type errorformat_t = libc::c_uint;
-pub const ERRORFORMAT_MAX: errorformat_t = 3;
-pub const ERRORFORMAT_GNU: errorformat_t = 2;
-pub const ERRORFORMAT_DILLON: errorformat_t = 1;
-pub const ERRORFORMAT_WOE: errorformat_t = 0;
-pub const ERRORFORMAT_DEFAULT: errorformat_t = 0;
-pub type FORMAT = libc::c_uint;
-pub const FORMAT_MAX: FORMAT = 4;
-pub const FORMAT_RAW: FORMAT = 3;
-pub const FORMAT_RAS: FORMAT = 2;
-pub const FORMAT_DEFAULT: FORMAT = 1;
-pub type ASM_ERROR_EQUATES = libc::c_uint;
-pub const ERROR_ILLEGAL_OPERAND_COMBINATION: ASM_ERROR_EQUATES = 37;
-pub const ERROR_VALUE_MUST_BE_LT_10000: ASM_ERROR_EQUATES = 36;
-pub const ERROR_VALUE_MUST_BE_LT_F: ASM_ERROR_EQUATES = 35;
-pub const ERROR_VALUE_MUST_BE_LT_8: ASM_ERROR_EQUATES = 34;
-pub const ERROR_VALUE_MUST_BE_LT_10: ASM_ERROR_EQUATES = 33;
-pub const ERROR_VALUE_MUST_BE_1_OR_4: ASM_ERROR_EQUATES = 32;
-pub const ERROR_BAD_FORMAT: ASM_ERROR_EQUATES = 31;
-pub const ERROR_ONLY_ONE_PROCESSOR_SUPPORTED: ASM_ERROR_EQUATES = 30;
-pub const ERROR_BADERROR: ASM_ERROR_EQUATES = 29;
-pub const ERROR_REPEAT_NEGATIVE: ASM_ERROR_EQUATES = 28;
-pub const ERROR_PROCESSOR_NOT_SUPPORTED: ASM_ERROR_EQUATES = 27;
-pub const ERROR_VALUE_UNDEFINED: ASM_ERROR_EQUATES = 26;
-pub const ERROR_MACRO_REPEATED: ASM_ERROR_EQUATES = 25;
-pub const ERROR_LABEL_MISMATCH: ASM_ERROR_EQUATES = 24;
-pub const ERROR_NOT_ENOUGH_ARGS: ASM_ERROR_EQUATES = 23;
-pub const ERROR_ILLEGAL_BIT_SPECIFICATION: ASM_ERROR_EQUATES = 22;
-pub const ERROR_ADDRESS_MUST_BE_LT_10000: ASM_ERROR_EQUATES = 21;
-pub const ERROR_ADDRESS_MUST_BE_LT_100: ASM_ERROR_EQUATES = 20;
-pub const ERROR_EQU_VALUE_MISMATCH: ASM_ERROR_EQUATES = 19;
-pub const ERROR_ORIGIN_REVERSE_INDEXED: ASM_ERROR_EQUATES = 18;
-pub const ERROR_ERR_PSEUDO_OP_ENCOUNTERED: ASM_ERROR_EQUATES = 17;
-pub const ERROR_BRANCH_OUT_OF_RANGE: ASM_ERROR_EQUATES = 16;
-pub const ERROR_ILLEGAL_CHARACTER: ASM_ERROR_EQUATES = 15;
-pub const ERROR_PREMATURE_EOF: ASM_ERROR_EQUATES = 14;
-pub const ERROR_NOT_ENOUGH_ARGUMENTS_PASSED_TO_MACRO: ASM_ERROR_EQUATES = 13;
-pub const ERROR_ILLEGAL_FORCED_ADDRESSING_MODE: ASM_ERROR_EQUATES = 12;
-pub const ERROR_ILLEGAL_ADDRESSING_MODE: ASM_ERROR_EQUATES = 11;
-pub const ERROR_UNKNOWN_MNEMONIC: ASM_ERROR_EQUATES = 10;
-pub const ERROR_DIVISION_BY_0: ASM_ERROR_EQUATES = 9;
-pub const ERROR_UNBALANCED_BRACES: ASM_ERROR_EQUATES = 8;
-pub const ERROR_EXPRESSION_TABLE_OVERFLOW: ASM_ERROR_EQUATES = 7;
-pub const ERROR_SYNTAX_ERROR: ASM_ERROR_EQUATES = 6;
-pub const ERROR_NON_ABORT: ASM_ERROR_EQUATES = 5;
-pub const ERROR_TOO_MANY_PASSES: ASM_ERROR_EQUATES = 4;
-pub const ERROR_NOT_RESOLVABLE: ASM_ERROR_EQUATES = 3;
-pub const ERROR_FILE_ERROR: ASM_ERROR_EQUATES = 2;
-pub const ERROR_COMMAND_LINE: ASM_ERROR_EQUATES = 1;
-pub const ERROR_NONE: ASM_ERROR_EQUATES = 0;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct ERRORSTRUCT {
-    pub nErrorType: libc::c_int,
-    pub bFatal: bool,
-    pub sDescription: *const libc::c_char,
-}
-pub type ERROR_DEFINITION = ERRORSTRUCT;
 pub type REASON_CODES = libc::c_uint;
 pub const REASON_BRANCH_OUT_OF_RANGE: REASON_CODES = 32768;
 pub const REASON_PHASE_ERROR: REASON_CODES = 16384;
@@ -470,375 +421,205 @@ static mut erroradd1: [libc::c_char; 500] = [0; 500];
 static mut erroradd2: [libc::c_char; 500] = [0; 500];
 static mut erroradd3: [libc::c_char; 500] = [0; 500];
 /* Table encapsulates errors, descriptions, and fatality flags. */
+// FIXME: make sure %s interpolation still works (use {} ?)
 #[no_mangle]
-pub static mut sErrorDef: [ERROR_DEFINITION; 39] =
-    [{
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_NONE as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"OK\x00" as *const u8 as *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_COMMAND_LINE as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Check command-line format.\x00" as *const u8 as
-                                 *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_FILE_ERROR as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Unable to open file.\x00" as *const u8 as
-                                 *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_NOT_RESOLVABLE as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Source is not resolvable.\x00" as *const u8 as
-                                 *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_TOO_MANY_PASSES as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Too many passes (%s).\x00" as *const u8 as
-                                 *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_NON_ABORT as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"See previous output\x00" as *const u8 as
-                                 *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_SYNTAX_ERROR as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Syntax Error \'%s\'.\x00" as *const u8 as
-                                 *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType:
-                             ERROR_EXPRESSION_TABLE_OVERFLOW as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Expression table overflow.\x00" as *const u8 as
-                                 *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_UNBALANCED_BRACES as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Unbalanced Braces [].\x00" as *const u8 as
-                                 *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_DIVISION_BY_0 as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Division by zero.\x00" as *const u8 as
-                                 *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_UNKNOWN_MNEMONIC as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Unknown Mnemonic \'%s\'.\x00" as *const u8 as
-                                 *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType:
-                             ERROR_ILLEGAL_ADDRESSING_MODE as libc::c_int,
-                         bFatal: 0 as libc::c_int != 0,
-                         sDescription:
-                             b"Illegal Addressing mode \'%s\'.\x00" as
-                                 *const u8 as *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType:
-                             ERROR_ILLEGAL_FORCED_ADDRESSING_MODE as
-                                 libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Illegal forced Addressing mode on \'%s\'.\x00"
-                                 as *const u8 as *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType:
-                             ERROR_NOT_ENOUGH_ARGUMENTS_PASSED_TO_MACRO as
-                                 libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Not enough args passed to Macro.\x00" as
-                                 *const u8 as *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_PREMATURE_EOF as libc::c_int,
-                         bFatal: 0 as libc::c_int != 0,
-                         sDescription:
-                             b"Premature EOF.\x00" as *const u8 as
-                                 *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_ILLEGAL_CHARACTER as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Illegal character \'%s\'.\x00" as *const u8 as
-                                 *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_BRANCH_OUT_OF_RANGE as libc::c_int,
-                         bFatal: 0 as libc::c_int != 0,
-                         sDescription:
-                             b"Branch out of range (%s bytes).\x00" as
-                                 *const u8 as *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType:
-                             ERROR_ERR_PSEUDO_OP_ENCOUNTERED as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"ERR pseudo-op encountered.\x00" as *const u8 as
-                                 *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType:
-                             ERROR_ORIGIN_REVERSE_INDEXED as libc::c_int,
-                         bFatal: 0 as libc::c_int != 0,
-                         sDescription:
-                             b"Origin Reverse-indexed.\x00" as *const u8 as
-                                 *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_EQU_VALUE_MISMATCH as libc::c_int,
-                         bFatal: 0 as libc::c_int != 0,
-                         sDescription:
-                             b"EQU: Value mismatch.\x00" as *const u8 as
-                                 *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType:
-                             ERROR_ADDRESS_MUST_BE_LT_100 as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Value in \'%s\' must be <$100.\x00" as
-                                 *const u8 as *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType:
-                             ERROR_ADDRESS_MUST_BE_LT_10000 as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Value in \'%s\' must be <$10000.\x00" as
-                                 *const u8 as *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType:
-                             ERROR_ILLEGAL_BIT_SPECIFICATION as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Illegal bit specification.\x00" as *const u8 as
-                                 *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_NOT_ENOUGH_ARGS as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Not enough arguments.\x00" as *const u8 as
-                                 *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_LABEL_MISMATCH as libc::c_int,
-                         bFatal: 0 as libc::c_int != 0,
-                         sDescription:
-                             b"Label mismatch...\n --> %s\x00" as *const u8 as
-                                 *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_MACRO_REPEATED as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Macro \"%s\" defintion is repeated.\x00" as
-                                 *const u8 as *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_VALUE_UNDEFINED as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Value Undefined.\x00" as *const u8 as
-                                 *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType:
-                             ERROR_PROCESSOR_NOT_SUPPORTED as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Processor \'%s\' not supported.\x00" as
-                                 *const u8 as *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_REPEAT_NEGATIVE as libc::c_int,
-                         bFatal: 0 as libc::c_int != 0,
-                         sDescription:
-                             b"REPEAT parameter < 0 (ignored).\x00" as
-                                 *const u8 as *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_BADERROR as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Bad error value (internal error).\x00" as
-                                 *const u8 as *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType:
-                             ERROR_ONLY_ONE_PROCESSOR_SUPPORTED as
-                                 libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Only one processor type may be selected.\x00"
-                                 as *const u8 as *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_BAD_FORMAT as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Bad output format specified.\x00" as *const u8
-                                 as *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType:
-                             ERROR_VALUE_MUST_BE_1_OR_4 as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Value in \'%s\' must be 1 or 4.\x00" as
-                                 *const u8 as *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_VALUE_MUST_BE_LT_10 as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Value in \'%s\' must be <$10.\x00" as *const u8
-                                 as *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_VALUE_MUST_BE_LT_8 as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Value in \'%s\' must be <$8.\x00" as *const u8
-                                 as *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: ERROR_VALUE_MUST_BE_LT_F as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Value in \'%s\' must be <$f.\x00" as *const u8
-                                 as *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType:
-                             ERROR_VALUE_MUST_BE_LT_10000 as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Value in \'%s\' must be <$10000.\x00" as
-                                 *const u8 as *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType:
-                             ERROR_ILLEGAL_OPERAND_COMBINATION as libc::c_int,
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Illegal combination of operands \'%s\'\x00" as
-                                 *const u8 as *const libc::c_char,};
-         init
-     },
-     {
-         let mut init =
-             ERRORSTRUCT{nErrorType: -(1 as libc::c_int),
-                         bFatal: 1 as libc::c_int != 0,
-                         sDescription:
-                             b"Doh! Internal end-of-table marker, report the bug!\x00"
-                                 as *const u8 as *const libc::c_char,};
-         init
-     }];
+pub static mut sErrorDef: [ErrorDefinition; 39] = [
+	ErrorDefinition {
+		errorType: AsmErrorEquates::None,
+		fatal: true,
+		description: "OK",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::CommandLine,
+		fatal: true,
+		description: "Check command-line format.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::FileError,
+		fatal: true,
+		description: "Unable to open file.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::NotResolvable,
+		fatal: true,
+		description: "Source is not resolvable.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::TooManyPasses,
+		fatal: true,
+		description: "Too many passes (%s).",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::NonAbort,
+		fatal: true,
+		description: "See previous output",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::SyntaxError,
+		fatal: true,
+		description: "Syntax Error \'%s\'.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::ExpressionTableOverflow,
+		fatal: true,
+		description: "Expression table overflow.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::UnbalancedBraces,
+		fatal: true,
+		description: "Unbalanced Braces [].",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::DivisionByZero,
+		fatal: true,
+		description: "Division by zero.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::UnknownMnemonic,
+		fatal: true,
+		description: "Unknown Mnemonic \'%s\'.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::IllegalAddressingMode,
+		fatal: false,
+		description: "Illegal Addressing mode \'%s\'.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::IllegalForcedAddressingMode,
+		fatal: true,
+		description: "Illegal forced Addressing mode on \'%s\'.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::NotEnoughArgumentsPassedToMacro,
+		fatal: true,
+		description: "Not enough args passed to Macro.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::PrematureEOF,
+		fatal: false,
+		description: "Premature EOF.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::IllegalCharacter,
+		fatal: true,
+		description: "Illegal character \'%s\'.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::BranchOutOfRange,
+		fatal: false,
+		description: "Branch out of range (%s bytes).",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::ErrPseudoOpEncountered,
+		fatal: true,
+		description: "ERR pseudo-op encountered.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::OriginReverseIndexed,
+		fatal: false,
+		description: "Origin Reverse-indexed.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::EquValueMismatch,
+		fatal: false,
+		description: "EQU: Value mismatch.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::AddressMustBeLowerThan100,
+		fatal: true,
+		description: "Value in \'%s\' must be <$100.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::AddressMustBeLowerThan10000,
+		fatal: true,
+		description: "Value in \'%s\' must be <$10000.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::IllegalBitSpecification,
+		fatal: true,
+		description: "Illegal bit specification.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::NotEnoughArgs,
+		fatal: true,
+		description: "Not enough arguments.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::LabelMismatch,
+		fatal: false,
+		description: "Label mismatch...\n --> %s",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::MacroRepeated,
+		fatal: true,
+		description: "Macro \"%s\" definition is repeated.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::ValueUndefined,
+		fatal: true,
+		description: "Value Undefined.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::ProcessorNotSupported,
+		fatal: true,
+		description: "Processor \'%s\' not supported.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::RepeatNegative,
+		fatal: false,
+		description: "REPEAT parameter < 0 (ignored).",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::BadError,
+		fatal: true,
+		description: "Bad error value (internal error).",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::OnlyOneProcessorSupported,
+		fatal: true,
+		description: "Only one processor type may be selected.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::BadFormat,
+		fatal: true,
+		description: "Bad output format specified.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::ValueMustBeOneOrFour,
+		fatal: true,
+		description: "Value in \'%s\' must be 1 or 4.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::ValueMustBeLowerThan10,
+		fatal: true,
+		description: "Value in \'%s\' must be <$10.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::ValueMustBeLowerThan8,
+		fatal: true,
+		description: "Value in \'%s\' must be <$8.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::ValueMustBeLowerThanF,
+		fatal: true,
+		description: "Value in \'%s\' must be <$f.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::ValueMustBeLowerThan10000,
+		fatal: true,
+		description: "Value in \'%s\' must be <$10000.",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::IllegalOperandCombination,
+		fatal: true,
+		description: "Illegal combination of operands \'%s\'",
+	},
+	ErrorDefinition {
+		errorType: AsmErrorEquates::EndOfTable, // FIXME: remove? This was added but might not be needed
+		fatal: true,
+		description: "Doh! Internal end-of-table marker, report the bug!",
+	},
+];
 #[no_mangle]
 pub static mut bStopAtEnd: bool = 0 as libc::c_int != 0;
 #[no_mangle]
@@ -1167,9 +948,9 @@ unsafe extern "C" fn DumpSymbolTable(mut bTableSort: bool) {
 }
 unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                                 mut av: *mut *mut libc::c_char,
-                                mut pbTableSort: *mut bool) -> libc::c_int {
+                                mut pbTableSort: *mut bool) -> AsmErrorEquates {
     let mut current_block: u64;
-    let mut nError: libc::c_int = ERROR_NONE as libc::c_int;
+    let mut nError: AsmErrorEquates = AsmErrorEquates::None;
     let mut bDoAllPasses: bool = 0 as libc::c_int != 0;
     let mut buf: [libc::c_char; 1024] = [0; 1024];
     let mut i: libc::c_int = 0;
@@ -1194,44 +975,38 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
             }
             let mut str: *mut libc::c_char =
                 (*av.offset(i as isize)).offset(2 as libc::c_int as isize);
+            // FIXME: use better strings for parsing chars. These are temporary.
+            let str_rs_1 = &[*str as u8];
+            let str_rs = std::str::from_utf8(str_rs_1).unwrap();
             match *(*av.offset(i as isize)).offset(1 as libc::c_int as isize)
                       as libc::c_int {
-                69 => {
+                69 => { // 'E' - FIXME: convert back to original char
                     /* TODO: need to improve option parsing and errors for it */
-                    F_errorformat =
-                        strtol(str,
-                               0 as *mut libc::c_void as
-                                   *mut *mut libc::c_char, 10 as libc::c_int)
-                            as libc::c_int as errorformat_t;
-                    if (F_errorformat as libc::c_uint) <
-                           ERRORFORMAT_DEFAULT as libc::c_int as libc::c_uint
-                           ||
-                           F_errorformat as libc::c_uint >=
-                               ERRORFORMAT_MAX as libc::c_int as libc::c_uint
-                       {
-                        panic(b"Invalid error format for -E, must be 0, 1, 2\x00"
-                                  as *const u8 as *const libc::c_char);
+                    // FIXME: simplify this double match
+                    match str_rs.parse::<u8>() {
+                        Ok(digit) => {
+                            match ErrorFormat::try_from(digit) {
+                                Ok(result) => { F_errorformat = result; }
+                                Err(_) => { panic_rs("Invalid error format for -E, must be 0, 1, 2"); }
+                            }
+                        }
+                        Err(_) => { panic_rs("Invalid error format for -E, must be 0, 1, 2"); }
                     }
-                    current_block = 17788412896529399552;
+                    current_block = 17788412896529399552; // FIXME: remove this
                 }
-                84 => {
-                    F_sortmode =
-                        strtol(str,
-                               0 as *mut libc::c_void as
-                                   *mut *mut libc::c_char, 10 as libc::c_int)
-                            as libc::c_int as sortmode_t;
-                    if (F_sortmode as libc::c_uint) <
-                           SORTMODE_DEFAULT as libc::c_int as libc::c_uint ||
-                           F_sortmode as libc::c_uint >=
-                               SORTMODE_MAX as libc::c_int as libc::c_uint {
-                        panic(b"Invalid sorting mode for -T option, must be 0 or 1\x00"
-                                  as *const u8 as *const libc::c_char);
+                84 => { // 'T' - FIXME: convert back to original char
+                    // FIXME: simplify this double match
+                    match str_rs.parse::<u8>() {
+                        Ok(digit) => {
+                            match SortMode::try_from(digit) {
+                                Ok(result) => { F_sortmode = result; }
+                                Err(_) => { panic_rs("Invalid sorting mode for -T option, must be 0 or 1"); }
+                            }
+                        }
+                        Err(_) => { panic_rs("Invalid sorting mode for -T option, must be 0 or 1"); }
                     }
-                    /* TODO: refactor into regular configuration [phf] */
-                    *pbTableSort =
-                        F_sortmode as libc::c_uint !=
-                            SORTMODE_DEFAULT as libc::c_int as libc::c_uint;
-                    current_block = 17788412896529399552;
+                    *pbTableSort = F_sortmode != SortMode::default();
+                    current_block = 17788412896529399552; // FIXME: remove this
                 }
                 100 => {
                     Xdebug =
@@ -1275,19 +1050,18 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     } else { v_set(str, 0 as *mut _MNE); }
                     current_block = 17788412896529399552;
                 }
-                102 => {
-                    /*  F_format    */
-                    F_format =
-                        strtol(str,
-                               0 as *mut libc::c_void as
-                                   *mut *mut libc::c_char, 10 as libc::c_int)
-                            as libc::c_int;
-                    if F_format < FORMAT_DEFAULT as libc::c_int ||
-                           F_format >= FORMAT_MAX as libc::c_int {
-                        panic(b"Illegal format specification\x00" as *const u8
-                                  as *const libc::c_char);
+                102 => { // 'f' - FIXME: convert back to original char
+                    // FIXME: simplify this double match
+                    match str_rs.parse::<u8>() {
+                        Ok(digit) => {
+                            match Format::try_from(digit) {
+                                Ok(result) => { F_format = result; }
+                                Err(_) => { panic_rs("Illegal format specification"); }
+                            }
+                        }
+                        Err(_) => { panic_rs("Illegal format specification"); }
                     }
-                    current_block = 17788412896529399552;
+                    current_block = 17788412896529399552; // FIXME: remove this
                 }
                 111 => {
                     /*  F_outfile   */
@@ -1413,7 +1187,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                         printf(b"Warning: Unable to [re]open \'%s\'\n\x00" as
                                    *const u8 as *const libc::c_char,
                                F_outfile);
-                        return ERROR_FILE_ERROR as libc::c_int
+                        return AsmErrorEquates::FileError
                     }
                     if !F_listfile.is_null() {
                         FI_listfile =
@@ -1430,7 +1204,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                             printf(b"Warning: Unable to [re]open \'%s\'\n\x00"
                                        as *const u8 as *const libc::c_char,
                                    F_listfile);
-                            return ERROR_FILE_ERROR as libc::c_int
+                            return AsmErrorEquates::FileError
                         }
                     }
                     pushinclude(*av.offset(1 as libc::c_int as isize));
@@ -1500,8 +1274,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                                               &&
                                               (*Ifstack).acctrue as
                                                   libc::c_int != 0 {
-                                    asmerr(ERROR_UNKNOWN_MNEMONIC as
-                                               libc::c_int,
+                                    asmerr(AsmErrorEquates::UnknownMnemonic,
                                            0 as libc::c_int != 0,
                                            *Av.as_mut_ptr().offset(1 as
                                                                        libc::c_int
@@ -1569,7 +1342,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                             if Redo == oldredo && Redo_why == oldwhy &&
                                    Redo_eval == oldeval {
                                 ShowUnresolvedSymbols();
-                                return ERROR_NOT_RESOLVABLE as libc::c_int
+                                return AsmErrorEquates::NotResolvable
                             }
                         }
                         oldredo = Redo;
@@ -1585,8 +1358,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                             sprintf(sBuffer.as_mut_ptr(),
                                     b"%d\x00" as *const u8 as
                                         *const libc::c_char, pass);
-                            return asmerr(ERROR_TOO_MANY_PASSES as
-                                              libc::c_int,
+                            return asmerr(AsmErrorEquates::TooManyPasses,
                                           0 as libc::c_int != 0,
                                           sBuffer.as_mut_ptr())
                         } else {
@@ -1606,7 +1378,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                             passbuffer_output(0 as libc::c_int);
                             printf(b"Unrecoverable error(s) in pass, aborting assembly!\n\x00"
                                        as *const u8 as *const libc::c_char);
-                            nError = ERROR_NON_ABORT as libc::c_int
+                            nError = AsmErrorEquates::NonAbort;
                         }
                         printf(b"Complete.\n\x00" as *const u8 as
                                    *const libc::c_char);
@@ -1664,7 +1436,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
     puts(b"\x00" as *const u8 as *const libc::c_char);
     puts(b"Report bugs on https://github.com/dasm-assembler/dasm please!\x00"
              as *const u8 as *const libc::c_char);
-    return ERROR_COMMAND_LINE as libc::c_int;
+    return AsmErrorEquates::CommandLine;
 }
 #[no_mangle]
 pub unsafe extern "C" fn addmsg(mut message: *mut libc::c_char)
@@ -1923,7 +1695,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
                     str = str.offset(1)
                 }
                 if *str as libc::c_int != '\"' as i32 {
-                    asmerr(ERROR_SYNTAX_ERROR as libc::c_int,
+                    asmerr(AsmErrorEquates::SyntaxError,
                            0 as libc::c_int != 0, buf);
                     str = str.offset(-1)
                 }
@@ -2023,8 +1795,8 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
                             str = str.offset(-1)
                             /*  for loop increments string    */
                         } else {
-                            asmerr(ERROR_NOT_ENOUGH_ARGUMENTS_PASSED_TO_MACRO
-                                       as libc::c_int, 0 as libc::c_int != 0,
+                            asmerr(AsmErrorEquates::NotEnoughArgumentsPassedToMacro,
+                                   0 as libc::c_int != 0,
                                    0 as *const libc::c_char);
                             break ;
                         }
@@ -2049,6 +1821,14 @@ pub unsafe extern "C" fn panic(mut str: *const libc::c_char) {
     puts(str);
     exit(1 as libc::c_int);
 }
+
+// FIXME: this should probably be a panic!() instead, but for now we use this to follow original DASM C behavior.
+// The output for errors should also use eprintln!(), but once again, the original used puts() instead.
+pub fn panic_rs(message: &str) {
+    println!("{}", message);
+    std::process::exit(1);
+}
+
 /*
 *  .dir    direct              x
 *  .ext    extended              x
@@ -2194,7 +1974,7 @@ pub unsafe extern "C" fn parse(mut buf: *mut libc::c_char) -> *mut _MNE {
                     i += 1
                 } else {
                     labelundefined += 1;
-                    asmerr(ERROR_SYNTAX_ERROR as libc::c_int,
+                    asmerr(AsmErrorEquates::SyntaxError,
                            0 as libc::c_int != 0, buf);
                 }
             } else {
@@ -2417,7 +2197,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
         mac = mne as *mut _MACRO;
         if bStrictMode as libc::c_int != 0 && !mac.is_null() &&
                (*mac).defpass == pass {
-            asmerr(ERROR_MACRO_REPEATED as libc::c_int, 1 as libc::c_int != 0,
+            asmerr(AsmErrorEquates::MacroRepeated, 1 as libc::c_int != 0,
                    str);
         }
     }
@@ -2455,7 +2235,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
             slp = &mut (*sl).next
         }
     }
-    asmerr(ERROR_PREMATURE_EOF as libc::c_int, 1 as libc::c_int != 0,
+    asmerr(AsmErrorEquates::PrematureEOF, 1 as libc::c_int != 0,
            0 as *const libc::c_char);
 }
 #[no_mangle]
@@ -2532,129 +2312,117 @@ pub unsafe extern "C" fn pushinclude(mut str: *mut libc::c_char) {
                *const libc::c_char, str);
 }
 #[no_mangle]
-pub unsafe extern "C" fn asmerr(mut err: libc::c_int, mut bAbort: bool,
+pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool,
                                 mut sText: *const libc::c_char)
- -> libc::c_int {
+ -> AsmErrorEquates {
     let mut str: *const libc::c_char = 0 as *const libc::c_char;
     let mut pincfile: *mut _INCFILE = 0 as *mut _INCFILE;
     /* file pointer we print error messages to */
     let mut error_file: *mut FILE = 0 as *mut FILE;
-    if err as libc::c_ulong >=
-           (::std::mem::size_of::<[ERROR_DEFINITION; 39]>() as
-                libc::c_ulong).wrapping_div(::std::mem::size_of::<ERROR_DEFINITION>()
-                                                as libc::c_ulong) ||
-           err < 0 as libc::c_int {
-        return asmerr(ERROR_BADERROR as libc::c_int, 1 as libc::c_int != 0,
-                      b"Bad error ERROR!\x00" as *const u8 as
-                          *const libc::c_char)
-    } else {
-        if sErrorDef[err as usize].bFatal {
-            bStopAtEnd = 1 as libc::c_int != 0
-        }
-        pincfile = pIncfile;
-        while (*pincfile).flags as libc::c_int & 0x1 as libc::c_int != 0 {
-            pincfile = (*pincfile).next
-        }
-        str = sErrorDef[err as usize].sDescription;
-        /*
-            New error format selection for 2.20.11 since some
-            people *don't* use MS products. For historical
-            reasons we currently send errors to stdout when
-            they should really go to stderr, but we'll switch
-            eventually I hope... [phf]
-        */
-        /* determine the file pointer to use */
-        error_file = if !F_listfile.is_null() { FI_listfile } else { stdout };
-        /* print first part of message, different formats offered */
-        match F_errorformat as libc::c_uint {
-            0 => {
-                /*
-                    Error format for MS VisualStudio and relatives:
-                    "file (line): error: string"
-                */
-                if error_file != stdout {
-                    fprintf(error_file,
-                            b"%s (%lu): error: \x00" as *const u8 as
-                                *const libc::c_char, (*pincfile).name,
-                            (*pincfile).lineno); // -FXQ
-                }
-                sprintf(erroradd1.as_mut_ptr(),
+    if sErrorDef[err as usize].fatal {
+        bStopAtEnd = 1 as libc::c_int != 0
+    }
+    pincfile = pIncfile;
+    while (*pincfile).flags as libc::c_int & 0x1 as libc::c_int != 0 {
+        pincfile = (*pincfile).next
+    }
+    // FIXME: use real strings; this is a bit messy
+    let mut desc = sErrorDef[err as usize].description.clone().to_owned();
+    desc.push_str("\n\x00");
+    str = desc.as_ptr() as *const i8;
+    /*
+        New error format selection for 2.20.11 since some
+        people *don't* use MS products. For historical
+        reasons we currently send errors to stdout when
+        they should really go to stderr, but we'll switch
+        eventually I hope... [phf]
+    */
+    /* determine the file pointer to use */
+    error_file = if !F_listfile.is_null() { FI_listfile } else { stdout };
+    /* print first part of message, different formats offered */
+    match F_errorformat {
+        ErrorFormat::Woe => {
+            /*
+                Error format for MS VisualStudio and relatives:
+                "file (line): error: string"
+            */
+            if error_file != stdout {
+                fprintf(error_file,
                         b"%s (%lu): error: \x00" as *const u8 as
                             *const libc::c_char, (*pincfile).name,
-                        (*pincfile).lineno);
+                        (*pincfile).lineno); // -FXQ
             }
-            1 => {
-                /*
-                    Matthew Dillon's original format, except that
-                    we don't distinguish writing to the terminal
-                    from writing to the list file for now. Matt's
-                    2.16 uses these:
+            sprintf(erroradd1.as_mut_ptr(),
+                    b"%s (%lu): error: \x00" as *const u8 as
+                        *const libc::c_char, (*pincfile).name,
+                    (*pincfile).lineno);
+        }
+        ErrorFormat::Dillon => {
+            /*
+                Matthew Dillon's original format, except that
+                we don't distinguish writing to the terminal
+                from writing to the list file for now. Matt's
+                2.16 uses these:
 
-                      "*line %4ld %-10s %s\n" (list file)
-                      "line %4ld %-10s %s\n" (terminal)
-                */
-                if error_file != stdout {
-                    fprintf(error_file,
-                            b"line %7ld %-10s \x00" as *const u8 as
-                                *const libc::c_char, (*pincfile).lineno,
-                            (*pincfile).name); // -FXQ
-                }
-                sprintf(erroradd1.as_mut_ptr(),
+                    "*line %4ld %-10s %s\n" (list file)
+                    "line %4ld %-10s %s\n" (terminal)
+            */
+            if error_file != stdout {
+                fprintf(error_file,
                         b"line %7ld %-10s \x00" as *const u8 as
                             *const libc::c_char, (*pincfile).lineno,
-                        (*pincfile).name);
+                        (*pincfile).name); // -FXQ
             }
-            2 => {
-                /*
-                    GNU format error messages, from their coding
-                    standards.
-                */
-                if error_file != stdout {
-                    fprintf(error_file,
-                            b"%s:%lu: error: \x00" as *const u8 as
-                                *const libc::c_char, (*pincfile).name,
-                            (*pincfile).lineno); // -FXQ
-                }
-                sprintf(erroradd1.as_mut_ptr(),
+            sprintf(erroradd1.as_mut_ptr(),
+                    b"line %7ld %-10s \x00" as *const u8 as
+                        *const libc::c_char, (*pincfile).lineno,
+                    (*pincfile).name);
+        }
+        ErrorFormat::GNU => {
+            /*
+                GNU format error messages, from their coding
+                standards.
+            */
+            if error_file != stdout {
+                fprintf(error_file,
                         b"%s:%lu: error: \x00" as *const u8 as
                             *const libc::c_char, (*pincfile).name,
-                        (*pincfile).lineno);
+                        (*pincfile).lineno); // -FXQ
             }
-            _ => {
-                /* TODO: really panic here? [phf] */
-                panic(b"Invalid error format, internal error!\x00" as
-                          *const u8 as *const libc::c_char);
-            }
+            sprintf(erroradd1.as_mut_ptr(),
+                    b"%s:%lu: error: \x00" as *const u8 as
+                        *const libc::c_char, (*pincfile).name,
+                    (*pincfile).lineno);
         }
-        if error_file != stdout {
-            /* print second part of message, always the same for now */
-            fprintf(error_file, str,
-                    if !sText.is_null() {
-                        sText
-                    } else {
-                        b"\x00" as *const u8 as *const libc::c_char
-                    }); // dump messages from this pass
-            fprintf(error_file,
-                    b"\n\x00" as *const u8 as
-                        *const libc::c_char); // time to dump the errors from this pass!
-        }
-        sprintf(erroradd2.as_mut_ptr(), str,
+    }
+    if error_file != stdout {
+        /* print second part of message, always the same for now */
+        fprintf(error_file, str,
                 if !sText.is_null() {
                     sText
-                } else { b"\x00" as *const u8 as *const libc::c_char });
-        sprintf(erroradd3.as_mut_ptr(),
-                b"\n\x00" as *const u8 as *const libc::c_char);
-        passbuffer_update(0 as libc::c_int, erroradd1.as_mut_ptr());
-        passbuffer_update(0 as libc::c_int, erroradd2.as_mut_ptr());
-        passbuffer_update(0 as libc::c_int, erroradd3.as_mut_ptr());
-        if bAbort {
-            passbuffer_output(1 as libc::c_int);
-            fprintf(error_file,
-                    b"Aborting assembly\n\x00" as *const u8 as
-                        *const libc::c_char);
-            passbuffer_output(0 as libc::c_int);
-            exit(1 as libc::c_int);
-        }
+                } else {
+                    b"\x00" as *const u8 as *const libc::c_char
+                }); // dump messages from this pass
+        fprintf(error_file,
+                b"\n\x00" as *const u8 as
+                    *const libc::c_char); // time to dump the errors from this pass!
+    }
+    sprintf(erroradd2.as_mut_ptr(), str,
+            if !sText.is_null() {
+                sText
+            } else { b"\x00" as *const u8 as *const libc::c_char });
+    sprintf(erroradd3.as_mut_ptr(),
+            b"\n\x00" as *const u8 as *const libc::c_char);
+    passbuffer_update(0 as libc::c_int, erroradd1.as_mut_ptr());
+    passbuffer_update(0 as libc::c_int, erroradd2.as_mut_ptr());
+    passbuffer_update(0 as libc::c_int, erroradd3.as_mut_ptr());
+    if bAbort {
+        passbuffer_output(1 as libc::c_int);
+        fprintf(error_file,
+                b"Aborting assembly\n\x00" as *const u8 as
+                    *const libc::c_char);
+        passbuffer_output(0 as libc::c_int);
+        exit(1 as libc::c_int);
     }
     return err;
 }
@@ -2734,21 +2502,21 @@ pub unsafe extern "C" fn strlower(mut str: *mut libc::c_char)
     return str;
 }
 unsafe fn main_0(mut ac: libc::c_int, mut av: *mut *mut libc::c_char)
- -> libc::c_int {
+ -> u8 {
     let mut bTableSort: bool = 0 as libc::c_int != 0;
-    let mut nError: libc::c_int = MainShadow(ac, av, &mut bTableSort);
-    if nError != 0 && nError != ERROR_NON_ABORT as libc::c_int {
+    let mut nError: AsmErrorEquates = MainShadow(ac, av, &mut bTableSort);
+    if nError != AsmErrorEquates::None && nError != AsmErrorEquates::NonAbort {
         // dump messages when aborting due to errors
         passbuffer_output(1 as libc::c_int);
         // Only print errors if assembly is unsuccessful
         passbuffer_output(0 as libc::c_int);
         printf(b"Fatal assembly error: %s\n\x00" as *const u8 as
                    *const libc::c_char,
-               sErrorDef[nError as usize].sDescription);
+               sErrorDef[nError as usize].description);
     }
     DumpSymbolTable(bTableSort);
     passbuffer_cleanup();
-    return nError;
+    return nError.into();
 }
 #[no_mangle]
 pub unsafe extern "C" fn passbuffer_clear(mut mbindex: libc::c_int) {

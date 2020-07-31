@@ -1,5 +1,9 @@
 use libc;
 
+use crate::types::enums::{
+    AsmErrorEquates,
+};
+
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
@@ -36,7 +40,7 @@ extern "C" {
     #[no_mangle]
     static mut FI_listfile: *mut FILE;
     #[no_mangle]
-    fn asmerr(err: libc::c_int, bAbort: bool, sText: *const libc::c_char)
+    fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const libc::c_char)
      -> libc::c_int;
     #[no_mangle]
     fn ckmalloc(bytes: libc::c_int) -> *mut libc::c_char;
@@ -88,45 +92,6 @@ pub struct _IO_FILE {
 }
 pub type _IO_lock_t = ();
 pub type FILE = _IO_FILE;
-pub type ASM_ERROR_EQUATES = libc::c_uint;
-pub const ERROR_ILLEGAL_OPERAND_COMBINATION: ASM_ERROR_EQUATES = 37;
-pub const ERROR_VALUE_MUST_BE_LT_10000: ASM_ERROR_EQUATES = 36;
-pub const ERROR_VALUE_MUST_BE_LT_F: ASM_ERROR_EQUATES = 35;
-pub const ERROR_VALUE_MUST_BE_LT_8: ASM_ERROR_EQUATES = 34;
-pub const ERROR_VALUE_MUST_BE_LT_10: ASM_ERROR_EQUATES = 33;
-pub const ERROR_VALUE_MUST_BE_1_OR_4: ASM_ERROR_EQUATES = 32;
-pub const ERROR_BAD_FORMAT: ASM_ERROR_EQUATES = 31;
-pub const ERROR_ONLY_ONE_PROCESSOR_SUPPORTED: ASM_ERROR_EQUATES = 30;
-pub const ERROR_BADERROR: ASM_ERROR_EQUATES = 29;
-pub const ERROR_REPEAT_NEGATIVE: ASM_ERROR_EQUATES = 28;
-pub const ERROR_PROCESSOR_NOT_SUPPORTED: ASM_ERROR_EQUATES = 27;
-pub const ERROR_VALUE_UNDEFINED: ASM_ERROR_EQUATES = 26;
-pub const ERROR_MACRO_REPEATED: ASM_ERROR_EQUATES = 25;
-pub const ERROR_LABEL_MISMATCH: ASM_ERROR_EQUATES = 24;
-pub const ERROR_NOT_ENOUGH_ARGS: ASM_ERROR_EQUATES = 23;
-pub const ERROR_ILLEGAL_BIT_SPECIFICATION: ASM_ERROR_EQUATES = 22;
-pub const ERROR_ADDRESS_MUST_BE_LT_10000: ASM_ERROR_EQUATES = 21;
-pub const ERROR_ADDRESS_MUST_BE_LT_100: ASM_ERROR_EQUATES = 20;
-pub const ERROR_EQU_VALUE_MISMATCH: ASM_ERROR_EQUATES = 19;
-pub const ERROR_ORIGIN_REVERSE_INDEXED: ASM_ERROR_EQUATES = 18;
-pub const ERROR_ERR_PSEUDO_OP_ENCOUNTERED: ASM_ERROR_EQUATES = 17;
-pub const ERROR_BRANCH_OUT_OF_RANGE: ASM_ERROR_EQUATES = 16;
-pub const ERROR_ILLEGAL_CHARACTER: ASM_ERROR_EQUATES = 15;
-pub const ERROR_PREMATURE_EOF: ASM_ERROR_EQUATES = 14;
-pub const ERROR_NOT_ENOUGH_ARGUMENTS_PASSED_TO_MACRO: ASM_ERROR_EQUATES = 13;
-pub const ERROR_ILLEGAL_FORCED_ADDRESSING_MODE: ASM_ERROR_EQUATES = 12;
-pub const ERROR_ILLEGAL_ADDRESSING_MODE: ASM_ERROR_EQUATES = 11;
-pub const ERROR_UNKNOWN_MNEMONIC: ASM_ERROR_EQUATES = 10;
-pub const ERROR_DIVISION_BY_0: ASM_ERROR_EQUATES = 9;
-pub const ERROR_UNBALANCED_BRACES: ASM_ERROR_EQUATES = 8;
-pub const ERROR_EXPRESSION_TABLE_OVERFLOW: ASM_ERROR_EQUATES = 7;
-pub const ERROR_SYNTAX_ERROR: ASM_ERROR_EQUATES = 6;
-pub const ERROR_NON_ABORT: ASM_ERROR_EQUATES = 5;
-pub const ERROR_TOO_MANY_PASSES: ASM_ERROR_EQUATES = 4;
-pub const ERROR_NOT_RESOLVABLE: ASM_ERROR_EQUATES = 3;
-pub const ERROR_FILE_ERROR: ASM_ERROR_EQUATES = 2;
-pub const ERROR_COMMAND_LINE: ASM_ERROR_EQUATES = 1;
-pub const ERROR_NONE: ASM_ERROR_EQUATES = 0;
 pub type REASON_CODES = libc::c_uint;
 pub const REASON_BRANCH_OUT_OF_RANGE: REASON_CODES = 32768;
 pub const REASON_PHASE_ERROR: REASON_CODES = 16384;
@@ -252,7 +217,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                                                                             ())),
                          128 as libc::c_int);
                 } else {
-                    asmerr(ERROR_SYNTAX_ERROR as libc::c_int,
+                    asmerr(AsmErrorEquates::SyntaxError,
                            0 as libc::c_int != 0, pLine);
                 }
                 str = str.offset(1);
@@ -858,7 +823,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                         sprintf(sBuffer.as_mut_ptr(),
                                 b"%s\x00" as *const u8 as *const libc::c_char,
                                 str);
-                        asmerr(ERROR_ILLEGAL_ADDRESSING_MODE as libc::c_int,
+                        asmerr(AsmErrorEquates::IllegalAddressingMode,
                                0 as libc::c_int != 0, pLine);
                         Redo += 1;
                         Redo_why |=
@@ -905,7 +870,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                     sprintf(sBuffer_0.as_mut_ptr(),
                             b"%s\x00" as *const u8 as *const libc::c_char,
                             str);
-                    asmerr(ERROR_ILLEGAL_ADDRESSING_MODE as libc::c_int,
+                    asmerr(AsmErrorEquates::IllegalAddressingMode,
                            0 as libc::c_int != 0, pLine);
                     Redo += 1;
                     Redo_why |=
@@ -954,11 +919,11 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                     (*cur).next = pNewSymbol;
                     Argi -= 1;
                     if Argi < Argibase {
-                        asmerr(ERROR_SYNTAX_ERROR as libc::c_int,
+                        asmerr(AsmErrorEquates::SyntaxError,
                                0 as libc::c_int != 0, pLine);
                     }
                     if Argi > Argibase {
-                        asmerr(ERROR_SYNTAX_ERROR as libc::c_int,
+                        asmerr(AsmErrorEquates::SyntaxError,
                                0 as libc::c_int != 0, pLine);
                     }
                     (*cur).value = Argstack[Argi as usize];
@@ -1086,7 +1051,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
         }
     }
     if Argi != Argibase || Opi != Opibase {
-        asmerr(ERROR_SYNTAX_ERROR as libc::c_int, 0 as libc::c_int != 0,
+        asmerr(AsmErrorEquates::SyntaxError, 0 as libc::c_int != 0,
                pLine);
     }
     Argi = Argibase;
@@ -1108,7 +1073,7 @@ pub unsafe extern "C" fn evaltop() {
                    *const libc::c_char, Argi, Opi);
     }
     if Opi <= Opibase {
-        asmerr(ERROR_SYNTAX_ERROR as libc::c_int, 0 as libc::c_int != 0,
+        asmerr(AsmErrorEquates::SyntaxError, 0 as libc::c_int != 0,
                0 as *const libc::c_char);
         Opi = Opibase;
         return
@@ -1116,7 +1081,7 @@ pub unsafe extern "C" fn evaltop() {
     Opi -= 1;
     if Oppri[Opi as usize] == 128 as libc::c_int {
         if Argi < Argibase + 1 as libc::c_int {
-            asmerr(ERROR_SYNTAX_ERROR as libc::c_int, 0 as libc::c_int != 0,
+            asmerr(AsmErrorEquates::SyntaxError, 0 as libc::c_int != 0,
                    0 as *const libc::c_char);
             Argi = Argibase;
             return
@@ -1137,7 +1102,7 @@ pub unsafe extern "C" fn evaltop() {
                                                                                                                                                                       libc::c_int);
     } else {
         if Argi < Argibase + 2 as libc::c_int {
-            asmerr(ERROR_SYNTAX_ERROR as libc::c_int, 0 as libc::c_int != 0,
+            asmerr(AsmErrorEquates::SyntaxError, 0 as libc::c_int != 0,
                    0 as *const libc::c_char);
             Argi = Argibase;
             return
@@ -1289,7 +1254,7 @@ pub unsafe extern "C" fn op_div(mut v1: libc::c_long, mut v2: libc::c_long,
         return
     }
     if v2 == 0 as libc::c_int as libc::c_long {
-        asmerr(ERROR_DIVISION_BY_0 as libc::c_int, 1 as libc::c_int != 0,
+        asmerr(AsmErrorEquates::DivisionByZero, 1 as libc::c_int != 0,
                0 as *const libc::c_char);
         stackarg(0 as libc::c_long, 0 as libc::c_int,
                  0 as *const libc::c_char);
@@ -1541,7 +1506,7 @@ pub unsafe extern "C" fn pushsymbol(mut str: *const libc::c_char)
         ptr = ptr.offset(1)
     }
     if ptr == str {
-        asmerr(ERROR_ILLEGAL_CHARACTER as libc::c_int, 0 as libc::c_int != 0,
+        asmerr(AsmErrorEquates::IllegalCharacter, 0 as libc::c_int != 0,
                str);
         printf(b"char = \'%c\' %d (-1: %d)\n\x00" as *const u8 as
                    *const libc::c_char, *str as libc::c_int,

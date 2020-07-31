@@ -1,5 +1,10 @@
 use libc;
 
+use crate::types::enums::{
+    AsmErrorEquates,
+    Format,
+};
+
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
@@ -92,7 +97,7 @@ extern "C" {
     #[no_mangle]
     fn findext(str: *mut libc::c_char);
     #[no_mangle]
-    fn asmerr(err: libc::c_int, bAbort: bool, sText: *const libc::c_char)
+    fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const libc::c_char)
      -> libc::c_int;
     #[no_mangle]
     fn sftos(val: libc::c_long, flags: libc::c_int) -> *mut libc::c_char;
@@ -134,7 +139,7 @@ extern "C" {
     #[no_mangle]
     static mut Redo_why: libc::c_ulong;
     #[no_mangle]
-    static mut F_format: libc::c_int;
+    static mut F_format: Format;
     #[no_mangle]
     static mut Lastlocaldollarindex: libc::c_ulong;
     #[no_mangle]
@@ -203,50 +208,6 @@ pub struct _IO_FILE {
 }
 pub type _IO_lock_t = ();
 pub type FILE = _IO_FILE;
-pub type FORMAT = libc::c_uint;
-pub const FORMAT_MAX: FORMAT = 4;
-pub const FORMAT_RAW: FORMAT = 3;
-pub const FORMAT_RAS: FORMAT = 2;
-pub const FORMAT_DEFAULT: FORMAT = 1;
-pub type ASM_ERROR_EQUATES = libc::c_uint;
-pub const ERROR_ILLEGAL_OPERAND_COMBINATION: ASM_ERROR_EQUATES = 37;
-pub const ERROR_VALUE_MUST_BE_LT_10000: ASM_ERROR_EQUATES = 36;
-pub const ERROR_VALUE_MUST_BE_LT_F: ASM_ERROR_EQUATES = 35;
-pub const ERROR_VALUE_MUST_BE_LT_8: ASM_ERROR_EQUATES = 34;
-pub const ERROR_VALUE_MUST_BE_LT_10: ASM_ERROR_EQUATES = 33;
-pub const ERROR_VALUE_MUST_BE_1_OR_4: ASM_ERROR_EQUATES = 32;
-pub const ERROR_BAD_FORMAT: ASM_ERROR_EQUATES = 31;
-pub const ERROR_ONLY_ONE_PROCESSOR_SUPPORTED: ASM_ERROR_EQUATES = 30;
-pub const ERROR_BADERROR: ASM_ERROR_EQUATES = 29;
-pub const ERROR_REPEAT_NEGATIVE: ASM_ERROR_EQUATES = 28;
-pub const ERROR_PROCESSOR_NOT_SUPPORTED: ASM_ERROR_EQUATES = 27;
-pub const ERROR_VALUE_UNDEFINED: ASM_ERROR_EQUATES = 26;
-pub const ERROR_MACRO_REPEATED: ASM_ERROR_EQUATES = 25;
-pub const ERROR_LABEL_MISMATCH: ASM_ERROR_EQUATES = 24;
-pub const ERROR_NOT_ENOUGH_ARGS: ASM_ERROR_EQUATES = 23;
-pub const ERROR_ILLEGAL_BIT_SPECIFICATION: ASM_ERROR_EQUATES = 22;
-pub const ERROR_ADDRESS_MUST_BE_LT_10000: ASM_ERROR_EQUATES = 21;
-pub const ERROR_ADDRESS_MUST_BE_LT_100: ASM_ERROR_EQUATES = 20;
-pub const ERROR_EQU_VALUE_MISMATCH: ASM_ERROR_EQUATES = 19;
-pub const ERROR_ORIGIN_REVERSE_INDEXED: ASM_ERROR_EQUATES = 18;
-pub const ERROR_ERR_PSEUDO_OP_ENCOUNTERED: ASM_ERROR_EQUATES = 17;
-pub const ERROR_BRANCH_OUT_OF_RANGE: ASM_ERROR_EQUATES = 16;
-pub const ERROR_ILLEGAL_CHARACTER: ASM_ERROR_EQUATES = 15;
-pub const ERROR_PREMATURE_EOF: ASM_ERROR_EQUATES = 14;
-pub const ERROR_NOT_ENOUGH_ARGUMENTS_PASSED_TO_MACRO: ASM_ERROR_EQUATES = 13;
-pub const ERROR_ILLEGAL_FORCED_ADDRESSING_MODE: ASM_ERROR_EQUATES = 12;
-pub const ERROR_ILLEGAL_ADDRESSING_MODE: ASM_ERROR_EQUATES = 11;
-pub const ERROR_UNKNOWN_MNEMONIC: ASM_ERROR_EQUATES = 10;
-pub const ERROR_DIVISION_BY_0: ASM_ERROR_EQUATES = 9;
-pub const ERROR_UNBALANCED_BRACES: ASM_ERROR_EQUATES = 8;
-pub const ERROR_EXPRESSION_TABLE_OVERFLOW: ASM_ERROR_EQUATES = 7;
-pub const ERROR_SYNTAX_ERROR: ASM_ERROR_EQUATES = 6;
-pub const ERROR_NON_ABORT: ASM_ERROR_EQUATES = 5;
-pub const ERROR_TOO_MANY_PASSES: ASM_ERROR_EQUATES = 4;
-pub const ERROR_NOT_RESOLVABLE: ASM_ERROR_EQUATES = 3;
-pub const ERROR_FILE_ERROR: ASM_ERROR_EQUATES = 2;
-pub const ERROR_COMMAND_LINE: ASM_ERROR_EQUATES = 1;
-pub const ERROR_NONE: ASM_ERROR_EQUATES = 0;
 pub type REASON_CODES = libc::c_uint;
 pub const REASON_BRANCH_OUT_OF_RANGE: REASON_CODES = 32768;
 pub const REASON_PHASE_ERROR: REASON_CODES = 16384;
@@ -442,11 +403,11 @@ pub unsafe extern "C" fn v_processor(mut str: *mut libc::c_char,
     }
     bCalled = 1 as libc::c_int != 0;
     if Processor == 0 {
-        asmerr(ERROR_PROCESSOR_NOT_SUPPORTED as libc::c_int,
+        asmerr(AsmErrorEquates::ProcessorNotSupported,
                1 as libc::c_int != 0, str);
     }
     if PreviousProcessor != 0 && Processor != PreviousProcessor {
-        asmerr(ERROR_ONLY_ONE_PROCESSOR_SUPPORTED as libc::c_int,
+        asmerr(AsmErrorEquates::OnlyOneProcessorSupported,
                1 as libc::c_int != 0, str);
     };
 }
@@ -513,7 +474,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
         sprintf(sBuffer.as_mut_ptr(),
                 b"%s %s\x00" as *const u8 as *const libc::c_char, (*mne).name,
                 str);
-        asmerr(ERROR_ILLEGAL_ADDRESSING_MODE as libc::c_int,
+        asmerr(AsmErrorEquates::IllegalAddressingMode,
                0 as libc::c_int != 0, sBuffer.as_mut_ptr());
         FreeSymbolList(symbase);
         //FIX
@@ -527,7 +488,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
         addrmode = Mnext;
         if (*mne).okmask & ((1 as libc::c_long) << addrmode) as libc::c_ulong
                == 0 {
-            asmerr(ERROR_ILLEGAL_FORCED_ADDRESSING_MODE as libc::c_int,
+            asmerr(AsmErrorEquates::IllegalForcedAddressingMode,
                    0 as libc::c_int != 0, (*mne).name);
             FreeSymbolList(symbase);
             //FIX: Cause assembly to fail when an invalid mode is used for an opcode...
@@ -565,7 +526,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
                 sprintf(sBuffer_0.as_mut_ptr(),
                         b"%s %s\x00" as *const u8 as *const libc::c_char,
                         (*mne).name, str);
-                asmerr(ERROR_ADDRESS_MUST_BE_LT_100 as libc::c_int,
+                asmerr(AsmErrorEquates::AddressMustBeLowerThan100,
                        0 as libc::c_int != 0, sBuffer_0.as_mut_ptr());
                 break ;
             }
@@ -589,7 +550,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             sym = (*symbase).next;
             if (*sym).flags as libc::c_int & 0x1 as libc::c_int == 0 &&
                    (*sym).value >= 0x100 as libc::c_int as libc::c_long {
-                asmerr(ERROR_ADDRESS_MUST_BE_LT_100 as libc::c_int,
+                asmerr(AsmErrorEquates::AddressMustBeLowerThan100,
                        0 as libc::c_int != 0, 0 as *const libc::c_char);
             }
             let fresh0 = opidx;
@@ -597,7 +558,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             Gen[fresh0 as usize] = (*sym).value as libc::c_uchar;
             if (*symbase).flags as libc::c_int & 0x1 as libc::c_int == 0 {
                 if (*symbase).value > 7 as libc::c_int as libc::c_long {
-                    asmerr(ERROR_ILLEGAL_BIT_SPECIFICATION as libc::c_int,
+                    asmerr(AsmErrorEquates::IllegalBitSpecification,
                            0 as libc::c_int != 0, str);
                 } else {
                     Gen[0 as libc::c_int as usize] =
@@ -610,7 +571,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
         16 => {
             if (*symbase).flags as libc::c_int & 0x1 as libc::c_int == 0 {
                 if (*symbase).value > 7 as libc::c_int as libc::c_long {
-                    asmerr(ERROR_ILLEGAL_BIT_SPECIFICATION as libc::c_int,
+                    asmerr(AsmErrorEquates::IllegalBitSpecification,
                            0 as libc::c_int != 0, str);
                 } else {
                     Gen[0 as libc::c_int as usize] =
@@ -622,7 +583,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             sym = (*symbase).next;
             if (*sym).flags as libc::c_int & 0x1 as libc::c_int == 0 &&
                    (*sym).value >= 0x100 as libc::c_int as libc::c_long {
-                asmerr(ERROR_ADDRESS_MUST_BE_LT_100 as libc::c_int,
+                asmerr(AsmErrorEquates::AddressMustBeLowerThan100,
                        0 as libc::c_int != 0, 0 as *const libc::c_char);
             }
             let fresh1 = opidx;
@@ -660,13 +621,13 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
         if !sym.is_null() {
             if (*sym).flags as libc::c_int & 0x1 as libc::c_int == 0 &&
                    (*sym).value >= 0x100 as libc::c_int as libc::c_long {
-                asmerr(ERROR_ADDRESS_MUST_BE_LT_100 as libc::c_int,
+                asmerr(AsmErrorEquates::AddressMustBeLowerThan100,
                        0 as libc::c_int != 0, 0 as *const libc::c_char);
             }
             Gen[opidx as usize] = (*sym).value as libc::c_uchar;
             sym = (*sym).next
         } else {
-            asmerr(ERROR_NOT_ENOUGH_ARGS as libc::c_int,
+            asmerr(AsmErrorEquates::NotEnoughArgs,
                    1 as libc::c_int != 0, 0 as *const libc::c_char);
         }
         opidx += 1
@@ -675,7 +636,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
            addrmode == AM_REL as libc::c_int {
         opidx += 1;
         if sym.is_null() {
-            asmerr(ERROR_NOT_ENOUGH_ARGS as libc::c_int,
+            asmerr(AsmErrorEquates::NotEnoughArgs,
                    1 as libc::c_int != 0, 0 as *const libc::c_char);
         } else if (*sym).flags as libc::c_int & 0x1 as libc::c_int == 0 {
             let mut pc: libc::c_long = 0;
@@ -705,7 +666,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
                     sprintf(sBuffer_1.as_mut_ptr(),
                             b"%ld\x00" as *const u8 as *const libc::c_char,
                             dest);
-                    asmerr(ERROR_BRANCH_OUT_OF_RANGE as libc::c_int,
+                    asmerr(AsmErrorEquates::BranchOutOfRange,
                            0 as libc::c_int != 0, sBuffer_1.as_mut_ptr());
                     Redo += 1;
                     Redo_why |=
@@ -923,7 +884,7 @@ pub unsafe extern "C" fn gethexdig(mut c: libc::c_int) -> libc::c_int {
     }
     sprintf(sBuffer.as_mut_ptr(),
             b"Bad Hex Digit %c\x00" as *const u8 as *const libc::c_char, c);
-    asmerr(ERROR_SYNTAX_ERROR as libc::c_int, 0 as libc::c_int != 0,
+    asmerr(AsmErrorEquates::SyntaxError, 0 as libc::c_int != 0,
            sBuffer.as_mut_ptr());
     puts(b"(Must be a valid hex digit)\x00" as *const u8 as
              *const libc::c_char);
@@ -937,7 +898,7 @@ pub unsafe extern "C" fn gethexdig(mut c: libc::c_int) -> libc::c_int {
 pub unsafe extern "C" fn v_err(mut str: *mut libc::c_char,
                                mut dummy: *mut _MNE) {
     programlabel();
-    asmerr(ERROR_ERR_PSEUDO_OP_ENCOUNTERED as libc::c_int,
+    asmerr(AsmErrorEquates::ErrPseudoOpEncountered,
            1 as libc::c_int != 0, 0 as *const libc::c_char);
     exit(1 as libc::c_int);
 }
@@ -1145,7 +1106,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
                         sprintf(sBuffer_0.as_mut_ptr(),
                                 b"%s %ld\x00" as *const u8 as
                                     *const libc::c_char, (*mne).name, value);
-                        asmerr(ERROR_ADDRESS_MUST_BE_LT_10000 as libc::c_int,
+                        asmerr(AsmErrorEquates::AddressMustBeLowerThan10000,
                                0 as libc::c_int != 0, sBuffer_0.as_mut_ptr());
                     }
                     if MsbOrder != 0 {
@@ -1233,7 +1194,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
                         sprintf(sBuffer.as_mut_ptr(),
                                 b"%s %ld\x00" as *const u8 as
                                     *const libc::c_char, (*mne).name, value);
-                        asmerr(ERROR_ADDRESS_MUST_BE_LT_100 as libc::c_int,
+                        asmerr(AsmErrorEquates::AddressMustBeLowerThan100,
                                0 as libc::c_int != 0, sBuffer.as_mut_ptr());
                     }
                     let fresh19 = Glen;
@@ -1299,7 +1260,7 @@ pub unsafe extern "C" fn v_org(mut str: *mut libc::c_char,
     if !(*sym).next.is_null() {
         OrgFill = (*(*sym).next).value as libc::c_uchar;
         if (*(*sym).next).flags as libc::c_int & 0x1 as libc::c_int != 0 {
-            asmerr(ERROR_VALUE_UNDEFINED as libc::c_int,
+            asmerr(AsmErrorEquates::ValueUndefined,
                    1 as libc::c_int != 0, 0 as *const libc::c_char);
         }
     }
@@ -1465,7 +1426,7 @@ pub unsafe extern "C" fn v_equ(mut str: *mut libc::c_char,
             Redo_why |=
                 REASON_EQU_NOT_RESOLVED as libc::c_int as libc::c_ulong
         } else if (*lab).value != (*sym).value {
-            asmerr(ERROR_EQU_VALUE_MISMATCH as libc::c_int,
+            asmerr(AsmErrorEquates::EquValueMismatch,
                    0 as libc::c_int != 0, 0 as *const libc::c_char);
             printf(b"INFO: Label \'%s\' changed from $%04lx to $%04lx\n\x00"
                        as *const u8 as *const libc::c_char,
@@ -1624,7 +1585,7 @@ pub unsafe extern "C" fn v_set(mut str: *mut libc::c_char,
                         0 as libc::c_int as libc::c_char;
                     i += 1
                 } else {
-                    asmerr(ERROR_SYNTAX_ERROR as libc::c_int,
+                    asmerr(AsmErrorEquates::SyntaxError,
                            0 as libc::c_int != 0, str);
                 }
             } else {
@@ -1908,7 +1869,7 @@ pub unsafe extern "C" fn v_repeat(mut str: *mut libc::c_char,
     if (*sym).value < 0 as libc::c_int as libc::c_long {
         pushif(0 as libc::c_int != 0);
         FreeSymbolList(sym);
-        asmerr(ERROR_REPEAT_NEGATIVE as libc::c_int, 0 as libc::c_int != 0,
+        asmerr(AsmErrorEquates::RepeatNegative, 0 as libc::c_int != 0,
                0 as *const libc::c_char);
         return
     }
@@ -2056,13 +2017,13 @@ pub unsafe extern "C" fn generate() {
                     return
                 }
                 org = (*Csegment).org;
-                if F_format < FORMAT_RAW as libc::c_int {
+                if F_format == Format::Default || F_format == Format::Ras {
                     putc((org & 0xff as libc::c_int as libc::c_ulong) as
                              libc::c_int, FI_temp);
                     putc((org >> 8 as libc::c_int &
                               0xff as libc::c_int as libc::c_ulong) as
                              libc::c_int, FI_temp);
-                    if F_format == FORMAT_RAS as libc::c_int {
+                    if F_format == Format::Ras {
                         Seekback = ftell(FI_temp);
                         Seglen = 0 as libc::c_int as libc::c_long;
                         putc(0 as libc::c_int, FI_temp);
@@ -2071,14 +2032,14 @@ pub unsafe extern "C" fn generate() {
                 }
             }
             match F_format {
-                3 | 1 => {
+                Format::Raw | Format::Default => {
                     if (*Csegment).org < org {
                         printf(b"segment: %s %s  vs current org: %04lx\n\x00"
                                    as *const u8 as *const libc::c_char,
                                (*Csegment).name,
                                sftos((*Csegment).org as libc::c_long,
                                      (*Csegment).flags as libc::c_int), org);
-                        asmerr(ERROR_ORIGIN_REVERSE_INDEXED as libc::c_int,
+                        asmerr(AsmErrorEquates::OriginReverseIndexed,
                                1 as libc::c_int != 0,
                                0 as *const libc::c_char);
                         exit(1 as libc::c_int);
@@ -2091,7 +2052,7 @@ pub unsafe extern "C" fn generate() {
                            Glen as size_t, 1 as libc::c_int as size_t,
                            FI_temp);
                 }
-                2 => {
+                Format::Ras => {
                     if org != (*Csegment).org {
                         org = (*Csegment).org;
                         seekpos = ftell(FI_temp);
@@ -2118,7 +2079,7 @@ pub unsafe extern "C" fn generate() {
                     Seglen += Glen as libc::c_long
                 }
                 _ => {
-                    asmerr(ERROR_BAD_FORMAT as libc::c_int,
+                    asmerr(AsmErrorEquates::BadFormat,
                            1 as libc::c_int != 0,
                            b"Unhandled internal format specifier\x00" as
                                *const u8 as *const libc::c_char);
@@ -2136,7 +2097,7 @@ pub unsafe extern "C" fn generate() {
 #[no_mangle]
 pub unsafe extern "C" fn closegenerate() {
     if Redo == 0 {
-        if F_format == FORMAT_RAS as libc::c_int {
+        if F_format == Format::Ras {
             fseek(FI_temp, Seekback, 0 as libc::c_int);
             putc((Seglen & 0xff as libc::c_int as libc::c_long) as
                      libc::c_int, FI_temp);

@@ -1,5 +1,11 @@
 use libc;
 
+use crate::types::enums::{
+    ErrorFormat,
+    Format,
+    SortMode
+};
+
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
@@ -107,22 +113,7 @@ pub struct _IO_FILE {
 }
 pub type _IO_lock_t = ();
 pub type FILE = _IO_FILE;
-pub type sortmode_t = libc::c_uint;
-pub const SORTMODE_MAX: sortmode_t = 2;
-pub const SORTMODE_ADDRESS: sortmode_t = 1;
-pub const SORTMODE_ALPHA: sortmode_t = 0;
-pub const SORTMODE_DEFAULT: sortmode_t = 0;
-pub type errorformat_t = libc::c_uint;
-pub const ERRORFORMAT_MAX: errorformat_t = 3;
-pub const ERRORFORMAT_GNU: errorformat_t = 2;
-pub const ERRORFORMAT_DILLON: errorformat_t = 1;
-pub const ERRORFORMAT_WOE: errorformat_t = 0;
-pub const ERRORFORMAT_DEFAULT: errorformat_t = 0;
-pub type FORMAT = libc::c_uint;
-pub const FORMAT_MAX: FORMAT = 4;
-pub const FORMAT_RAW: FORMAT = 3;
-pub const FORMAT_RAS: FORMAT = 2;
-pub const FORMAT_DEFAULT: FORMAT = 1;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _STRLIST {
@@ -273,13 +264,11 @@ pub static mut ListMode: libc::c_char = 1 as libc::c_int as libc::c_char;
 pub static mut CheckSum: libc::c_ulong = 0;
 /*	output data checksum		*/
 #[no_mangle]
-pub static mut F_format: libc::c_int = FORMAT_DEFAULT as libc::c_int;
-/* -T option [phf] */
+pub static mut F_format: Format = Format::Default; // Special static case, since we can't use ::default();
 #[no_mangle]
-pub static mut F_sortmode: sortmode_t = SORTMODE_DEFAULT;
-/* -E option [phf] */
+pub static mut F_sortmode: SortMode = SortMode::Alpha; // Special static case, since we can't use ::default();
 #[no_mangle]
-pub static mut F_errorformat: errorformat_t = ERRORFORMAT_DEFAULT;
+pub static mut F_errorformat: ErrorFormat = ErrorFormat::Woe; // Special static case, since we can't use ::default();
 #[no_mangle]
 pub static mut F_verbose: libc::c_uchar = 0;
 #[no_mangle]
