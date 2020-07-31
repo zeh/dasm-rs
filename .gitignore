@@ -1,3 +1,5 @@
+# C/DASM-specific
+
 *.o
 test/**/*.bin
 test/**/*.hex
@@ -5,3 +7,8 @@ test/**/*.list.txt
 bin
 dasm
 ftohex
+
+# Rust-specific
+/target
+/src/target
+**/*.rs.bk
