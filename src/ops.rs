@@ -435,7 +435,8 @@ pub const AM_IMP: ADDRESS_MODES = 0;
 #[repr(C)]
 pub struct _STRLIST {
     pub next: *mut _STRLIST,
-    pub buf: [libc::c_char; 4],
+    // Conversion note: this buffer size was 4 originally, but increased to fix a buffer overrun
+    pub buf: [libc::c_char; 16],
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -1919,18 +1920,21 @@ pub unsafe extern "C" fn v_execmac(mut str: *mut libc::c_char,
         sl =
             ckmalloc((::std::mem::size_of::<*mut _STRLIST>() as
                           libc::c_ulong).wrapping_add(1 as libc::c_int as
-                                                          libc::c_ulong).wrapping_add(str.wrapping_offset_from(s1)
-                                                                                          as
-                                                                                          libc::c_long
-                                                                                          as
-                                                                                          libc::c_ulong)
+                                                          libc::c_ulong)
                          as libc::c_int) as *mut _STRLIST;
+        // Conversion note: in the above line, removed additional wrapping data...
+        //     .wrapping_add(str.wrapping_offset_from(s1) as libc::c_long as libc::c_ulong)
+        // ...because it was relying on allocating more memory than the buffer needed, THEN
+        // overrunning the buffer to set it. Instead, the fix just increased the buffer length
+        // from 4 to 16 to be sure.
         (*sl).next = 0 as *mut _STRLIST;
         *psl = sl;
         psl = &mut (*sl).next;
         memcpy((*sl).buf.as_mut_ptr() as *mut libc::c_void,
                s1 as *const libc::c_void,
                str.wrapping_offset_from(s1) as libc::c_long as libc::c_ulong);
+        // Conversion note: this is the line that was causing a buffer overrun during tests,
+        // as the code was trying to read up to 9 (and it's size 4)
         (*sl).buf[str.wrapping_offset_from(s1) as libc::c_long as usize] =
             0 as libc::c_int as libc::c_char;
         if *str as libc::c_int == ',' as i32 { str = str.offset(1) }
