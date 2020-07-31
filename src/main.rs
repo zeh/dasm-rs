@@ -12,6 +12,9 @@
 #![feature(register_tool)]
 #![register_tool(c2rust)]
 
+#[macro_use]
+extern crate smart_default;
+
 use ::libc;
 
 pub mod exp;
