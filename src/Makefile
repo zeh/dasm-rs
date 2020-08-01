@@ -26,8 +26,13 @@
 # trunk/ Makefile!
 
 
-all:
+all: build-release
+
+build-release:
 	cargo build --release
+
+build-debug:
+	cargo build
 
 clean:
 	cargo clean

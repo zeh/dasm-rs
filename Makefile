@@ -28,7 +28,7 @@
 # delete automatically generated documentation in clean: below
 
 # just an alias for build really...
-all: build
+all: build-release
 	echo "Build complete, use 'make test' to run tests."
 
 # install, currently not implemented
@@ -36,14 +36,20 @@ install: build
 	echo "Installation not implemented, you're on your own, sorry."
 
 # just run all the tests
-test: build
+test: build-debug
 	echo "Running tests..."
 	(cd test; $(MAKE); cd ..)
 	echo "Tests were run, but testing is not fully automated yet."
 	echo "In other words, don't rely on what you saw too much."
 
 # just build everything and copy binaries to trunk/bin/
-build:
+build-debug:
+	(cd src; $(MAKE) build-debug; cd ..)
+	mkdir -p bin
+	cp target/debug/dasm bin/dasm
+	cp target/debug/ftohex bin/ftohex
+
+build-release:
 	(cd src; $(MAKE); cd ..)
 	mkdir -p bin
 	cp target/release/dasm bin/dasm
