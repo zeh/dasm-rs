@@ -28,7 +28,17 @@ pub mod mnef8;
 pub mod ops;
 pub mod symbols;
 
+pub mod constants;
 pub mod types;
+
+use constants::{
+    ALLOC_SIZE,
+    CHAR_TAB,
+    M_HASH_AND,
+    MAX_LINES,
+    MAX_SYMBOLS,
+    S_HASH_SIZE,
+};
 
 use types::enums::{
     AsmErrorEquates,
@@ -639,7 +649,7 @@ unsafe extern "C" fn CountUnresolvedSymbols() -> libc::c_int {
     let mut i: libc::c_int = 0;
     /* Pre-count unresolved symbols */
     i = 0 as libc::c_int;
-    while i < 1024 as libc::c_int {
+    while i < S_HASH_SIZE as libc::c_int {
         sym = *SHash.as_mut_ptr().offset(i as isize);
         while !sym.is_null() {
             if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
@@ -660,7 +670,7 @@ unsafe extern "C" fn ShowUnresolvedSymbols() -> libc::c_int {
                    *const libc::c_char);
         /* Display unresolved symbols */
         i = 0 as libc::c_int;
-        while i < 1024 as libc::c_int {
+        while i < S_HASH_SIZE as libc::c_int {
             sym = *SHash.as_mut_ptr().offset(i as isize);
             while !sym.is_null() {
                 if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
@@ -717,7 +727,7 @@ unsafe extern "C" fn ShowSymbols(mut file: *mut FILE, mut bTableSort: bool) {
     /* Sort the symbol list either via name, or by value */
     /* First count the number of symbols */
     i = 0 as libc::c_int;
-    while i < 1024 as libc::c_int {
+    while i < S_HASH_SIZE as libc::c_int {
         sym = *SHash.as_mut_ptr().offset(i as isize);
         while !sym.is_null() { nSymbols += 1; sym = (*sym).next }
         i += 1
@@ -733,7 +743,7 @@ unsafe extern "C" fn ShowSymbols(mut file: *mut FILE, mut bTableSort: bool) {
                     as *const libc::c_char);
         /* Display complete symbol table */
         i = 0 as libc::c_int;
-        while i < 1024 as libc::c_int {
+        while i < S_HASH_SIZE as libc::c_int {
             sym = *SHash.as_mut_ptr().offset(i as isize);
             while !sym.is_null() {
                 fprintf(file,
@@ -748,7 +758,7 @@ unsafe extern "C" fn ShowSymbols(mut file: *mut FILE, mut bTableSort: bool) {
         /* Copy the element pointers into the symbol array */
         let mut nPtr: libc::c_int = 0 as libc::c_int;
         i = 0 as libc::c_int;
-        while i < 1024 as libc::c_int {
+        while i < S_HASH_SIZE as libc::c_int {
             sym = *SHash.as_mut_ptr().offset(i as isize);
             while !sym.is_null() {
                 let fresh0 = nPtr;
@@ -952,7 +962,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
     let mut current_block: u64;
     let mut nError: AsmErrorEquates = AsmErrorEquates::None;
     let mut bDoAllPasses: bool = 0 as libc::c_int != 0;
-    let mut buf: [libc::c_char; 1024] = [0; 1024];
+    let mut buf: [libc::c_char; MAX_LINES] = [0; MAX_LINES];
     let mut i: libc::c_int = 0;
     let mut mne: *mut _MNE = 0 as *mut _MNE;
     let mut oldredo: libc::c_int = -(1 as libc::c_int);
@@ -1233,7 +1243,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                                         (*(*pIncfile).strlist).next
                                 }
                             } else if fgets(buf.as_mut_ptr(),
-                                            1024 as libc::c_int,
+                                            MAX_LINES as libc::c_int,
                                             (*pIncfile).fi).is_null() {
                                 break ;
                             }
@@ -1503,8 +1513,8 @@ unsafe extern "C" fn tabit(mut buf1: *mut libc::c_char,
 unsafe extern "C" fn outlistfile(mut comment: *const libc::c_char) {
     let mut xtrue: libc::c_char = 0;
     let mut c: libc::c_char = 0;
-    static mut buf1: [libc::c_char; 1056] = [0; 1056];
-    static mut buf2: [libc::c_char; 1056] = [0; 1056];
+    static mut buf1: [libc::c_char; MAX_LINES + 32] = [0; MAX_LINES + 32];
+    static mut buf2: [libc::c_char; MAX_LINES + 32] = [0; MAX_LINES + 32];
     let mut ptr: *const libc::c_char = 0 as *const libc::c_char;
     let mut dot: *const libc::c_char = 0 as *const libc::c_char;
     let mut i: libc::c_int = 0;
@@ -1576,7 +1586,7 @@ unsafe extern "C" fn outlistfile(mut comment: *const libc::c_char) {
 #[no_mangle]
 pub unsafe extern "C" fn sftos(mut val: libc::c_long, mut flags: libc::c_int)
  -> *mut libc::c_char {
-    static mut buf: [libc::c_char; 1038] = [0; 1038];
+    static mut buf: [libc::c_char; MAX_SYMBOLS + 14] = [0; MAX_SYMBOLS + 14];
     static mut c: libc::c_char = 0;
     let mut ptr: *mut libc::c_char =
         if c as libc::c_int != 0 {
@@ -1636,7 +1646,7 @@ pub unsafe extern "C" fn clearrefs() {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut i: libc::c_short = 0;
     i = 0 as libc::c_int as libc::c_short;
-    while (i as libc::c_int) < 1024 as libc::c_int {
+    while (i as libc::c_int) < S_HASH_SIZE as libc::c_int {
         sym = *SHash.as_mut_ptr().offset(i as isize);
         while !sym.is_null() {
             (*sym).flags =
@@ -1666,10 +1676,10 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
         match *str as libc::c_int {
             59 => { comment = str.offset(1 as libc::c_int as isize); break ; }
             13 | 10 => { break ; }
-            9 => { *str = ' ' as i32 as libc::c_char }
+            CHAR_TAB => { *str = ' ' as i32 as libc::c_char }
             39 => {
                 str = str.offset(1);
-                if *str as libc::c_int == 9 as libc::c_int {
+                if *str as libc::c_int == CHAR_TAB {
                     *str = ' ' as i32 as libc::c_char
                 }
                 if *str as libc::c_int == '\n' as i32 ||
@@ -1751,7 +1761,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
                                                                                   libc::c_int
                                                                                   as
                                                                                   isize)
-                                   > buf.offset(1024 as libc::c_int as isize)
+                                   > buf.offset(MAX_LINES as isize)
                                {
                                 if Xdebug {
                                     printf(b"str %8ld buf %8ld (add/strlen(str)): %d %ld\n\x00"
@@ -1787,8 +1797,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
                                                  as isize));
                             if str < buf ||
                                    str >=
-                                       buf.offset(1024 as libc::c_int as
-                                                      isize) {
+                                       buf.offset(MAX_LINES as isize) {
                                 panic(b"failure 3\x00" as *const u8 as
                                           *const libc::c_char);
                             }
@@ -2159,7 +2168,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
     let mut mac: *mut _MACRO = 0 as *mut _MACRO;
     let mut mne: *mut _MNE = 0 as *mut _MNE;
     let mut i: libc::c_uint = 0;
-    let mut buf: [libc::c_char; 1024] = [0; 1024];
+    let mut buf: [libc::c_char; MAX_LINES] = [0; MAX_LINES];
     let mut skipit: libc::c_int =
         !((*Ifstack).xtrue as libc::c_int != 0 &&
               (*Ifstack).acctrue as libc::c_int != 0) as libc::c_int;
@@ -2201,7 +2210,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
                    str);
         }
     }
-    while !fgets(buf.as_mut_ptr(), 1024 as libc::c_int,
+    while !fgets(buf.as_mut_ptr(), MAX_LINES as libc::c_int,
                  (*pIncfile).fi).is_null() {
         let mut comment: *const libc::c_char = 0 as *const libc::c_char;
         if Xdebug {
@@ -2273,7 +2282,7 @@ unsafe extern "C" fn hash1(mut str: *const libc::c_char) -> libc::c_uint {
         str = str.offset(1);
         result = result << 2 as libc::c_int ^ *fresh25 as libc::c_uint
     }
-    return result & 0x3ff as libc::c_int as libc::c_uint;
+    return result & M_HASH_AND as libc::c_int as libc::c_uint;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pushinclude(mut str: *mut libc::c_char) {
@@ -2467,15 +2476,15 @@ pub unsafe extern "C" fn permalloc(mut bytes: libc::c_int)
             libc::c_int;
     if bytes > left {
         buf =
-            malloc(16384 as libc::c_int as libc::c_ulong) as
+            malloc(ALLOC_SIZE as libc::c_int as libc::c_ulong) as
                 *mut libc::c_char;
         if buf.is_null() {
             panic(b"unable to malloc\x00" as *const u8 as
                       *const libc::c_char);
         }
         memset(buf as *mut libc::c_void, 0 as libc::c_int,
-               16384 as libc::c_int as libc::c_ulong);
-        left = 16384 as libc::c_int;
+            ALLOC_SIZE as libc::c_int as libc::c_ulong);
+        left = ALLOC_SIZE as libc::c_int;
         if bytes > left {
             panic(b"software error\x00" as *const u8 as *const libc::c_char);
         }

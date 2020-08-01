@@ -1,5 +1,9 @@
 use libc;
 
+use crate::constants::{
+    MAX_SYMBOLS,
+    S_HASH_AND,
+};
 use crate::types::enums::{
     AsmErrorEquates,
 };
@@ -134,8 +138,8 @@ pub unsafe extern "C" fn findsymbol(mut str: *const libc::c_char,
                                     mut len: libc::c_int) -> *mut _SYMBOL {
     let mut h1: libc::c_uint = 0; /*	permalloc zeros the array for us */
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut buf: [libc::c_char; 1038] = [0; 1038];
-    if len > 1024 as libc::c_int { len = 1024 as libc::c_int }
+    let mut buf: [libc::c_char; MAX_SYMBOLS + 14] = [0; MAX_SYMBOLS + 14];
+    if len > MAX_SYMBOLS as libc::c_int { len = MAX_SYMBOLS as libc::c_int }
     if *str.offset(0 as libc::c_int as isize) as libc::c_int == '.' as i32 {
         if len == 1 as libc::c_int {
             if (*Csegment).flags as libc::c_int & 0x20 as libc::c_int != 0 {
@@ -195,8 +199,8 @@ pub unsafe extern "C" fn CreateSymbol(mut str: *const libc::c_char,
                                       mut len: libc::c_int) -> *mut _SYMBOL {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut h1: libc::c_uint = 0;
-    let mut buf: [libc::c_char; 1038] = [0; 1038];
-    if len > 1024 as libc::c_int { len = 1024 as libc::c_int }
+    let mut buf: [libc::c_char; MAX_SYMBOLS + 14] = [0; MAX_SYMBOLS + 14];
+    if len > MAX_SYMBOLS as libc::c_int { len = MAX_SYMBOLS as libc::c_int }
     if *str.offset(0 as libc::c_int as isize) as libc::c_int == '.' as i32 {
         sprintf(buf.as_mut_ptr(),
                 b"%ld%.*s\x00" as *const u8 as *const libc::c_char,
@@ -237,7 +241,7 @@ unsafe extern "C" fn hash1(mut str: *const libc::c_char, mut len: libc::c_int)
         str = str.offset(1);
         result = result << 2 as libc::c_int ^ *fresh2 as libc::c_uint
     }
-    return result & 0x3ff as libc::c_int as libc::c_uint;
+    return result & S_HASH_AND as libc::c_int as libc::c_uint;
 }
 /*
 *  Label Support Routines
@@ -309,7 +313,7 @@ pub unsafe extern "C" fn programlabel() {
                 //if (F_verbose >= 1 || !(Redo_if & (REASON_OBSCURE)))
                 if Redo_if & REASON_OBSCURE as libc::c_int as libc::c_ulong ==
                        0 {
-                    let mut sBuffer: [libc::c_char; 4096] = [0; 4096];
+                    let mut sBuffer: [libc::c_char; MAX_SYMBOLS * 4] = [0; MAX_SYMBOLS * 4];
                     sprintf(sBuffer.as_mut_ptr(),
                             b"%s %s\x00" as *const u8 as *const libc::c_char,
                             (*sym).name,

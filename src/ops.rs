@@ -1,5 +1,10 @@
 use libc;
 
+use crate::constants::{
+    DEF_ORG_FILL,
+    MAX_LINES,
+    MAX_MACRO_LEVEL,
+};
 use crate::types::enums::{
     AsmErrorEquates,
     Format,
@@ -340,9 +345,9 @@ pub struct _SYMBOL {
  *  Handle mnemonics and pseudo ops
  */
 #[no_mangle]
-pub static mut Gen: [libc::c_uchar; 1024] = [0; 1024];
+pub static mut Gen: [libc::c_uchar; MAX_LINES] = [0; MAX_LINES];
 #[no_mangle]
-pub static mut OrgFill: libc::c_uchar = 255 as libc::c_int as libc::c_uchar;
+pub static mut OrgFill: libc::c_uchar = DEF_ORG_FILL as libc::c_uchar;
 #[no_mangle]
 pub static mut Glen: libc::c_int = 0;
 /*
@@ -1689,7 +1694,7 @@ pub unsafe extern "C" fn v_execmac(mut str: *mut libc::c_char,
     let mut sl: *mut _STRLIST = 0 as *mut _STRLIST;
     let mut s1: *mut libc::c_char = 0 as *mut libc::c_char;
     programlabel();
-    if Mlevel == 32 as libc::c_int as libc::c_uint {
+    if Mlevel == MAX_MACRO_LEVEL as libc::c_int as libc::c_uint {
         puts(b"infinite macro recursion\x00" as *const u8 as
                  *const libc::c_char);
         return
