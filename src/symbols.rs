@@ -4,6 +4,9 @@ use crate::constants::{
     MAX_SYMBOLS,
     S_HASH_AND,
 };
+use crate::types::flags::{
+    ReasonCodes,
+};
 use crate::types::enums::{
     AsmErrorEquates,
 };
@@ -61,23 +64,6 @@ extern "C" {
     #[no_mangle]
     fn permalloc(bytes: libc::c_int) -> *mut libc::c_char;
 }
-pub type REASON_CODES = libc::c_uint;
-pub const REASON_BRANCH_OUT_OF_RANGE: REASON_CODES = 32768;
-pub const REASON_PHASE_ERROR: REASON_CODES = 16384;
-pub const REASON_FORWARD_REFERENCE: REASON_CODES = 8192;
-pub const REASON_REPEAT_NOT_RESOLVED: REASON_CODES = 4096;
-pub const REASON_IF_NOT_RESOLVED: REASON_CODES = 2048;
-pub const REASON_EQU_VALUE_MISMATCH: REASON_CODES = 1024;
-pub const REASON_EQU_NOT_RESOLVED: REASON_CODES = 512;
-pub const REASON_ALIGN_NORMAL_ORIGIN_NOT_KNOWN: REASON_CODES = 256;
-pub const REASON_ALIGN_RELOCATABLE_ORIGIN_NOT_KNOWN: REASON_CODES = 128;
-pub const REASON_ALIGN_NOT_RESOLVED: REASON_CODES = 64;
-pub const REASON_DS_NOT_RESOLVED: REASON_CODES = 32;
-pub const REASON_DV_NOT_RESOLVED_COULD: REASON_CODES = 16;
-pub const REASON_DV_NOT_RESOLVED_PROBABLY: REASON_CODES = 8;
-pub const REASON_DC_NOT_RESOVED: REASON_CODES = 4;
-pub const REASON_OBSCURE: REASON_CODES = 2;
-pub const REASON_MNEMONIC_NOT_RESOLVED: REASON_CODES = 1;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _SEGMENT {
@@ -286,8 +272,7 @@ pub unsafe extern "C" fn programlabel() {
                (0x1 as libc::c_int | 0x4 as libc::c_int) ==
                0x1 as libc::c_int | 0x4 as libc::c_int {
             Redo += 1;
-            Redo_why |=
-                REASON_FORWARD_REFERENCE as libc::c_int as libc::c_ulong;
+            Redo_why |= ReasonCodes::ForwardReference;
             if Xdebug {
                 printf(b"redo 13: \'%s\' %04x %04x\n\x00" as *const u8 as
                            *const libc::c_char, (*sym).name,
@@ -296,8 +281,7 @@ pub unsafe extern "C" fn programlabel() {
         } else if cflags as libc::c_int & 0x1 as libc::c_int != 0 &&
                       (*sym).flags as libc::c_int & 0x4 as libc::c_int != 0 {
             Redo += 1;
-            Redo_why |=
-                REASON_FORWARD_REFERENCE as libc::c_int as libc::c_ulong
+            Redo_why |= ReasonCodes::ForwardReference
         } else if cflags as libc::c_int & 0x1 as libc::c_int == 0 &&
                       (*sym).flags as libc::c_int & 0x1 as libc::c_int == 0 {
             if pc != (*sym).value as libc::c_ulong {
@@ -310,9 +294,8 @@ pub unsafe extern "C" fn programlabel() {
                 //     below was causing aborts if verbosity was up, even when the
                 //     phase errors were the result of unevaluated IF expressions in
                 //     the previous pass.
-                //if (F_verbose >= 1 || !(Redo_if & (REASON_OBSCURE)))
-                if Redo_if & REASON_OBSCURE as libc::c_int as libc::c_ulong ==
-                       0 {
+                //if (F_verbose >= 1 || !(Redo_if & (ReasonCodes::Obscure)))
+                if Redo_if & ReasonCodes::Obscure == 0 {
                     let mut sBuffer: [libc::c_char; MAX_SYMBOLS * 4] = [0; MAX_SYMBOLS * 4];
                     sprintf(sBuffer.as_mut_ptr(),
                             b"%s %s\x00" as *const u8 as *const libc::c_char,
@@ -322,7 +305,7 @@ pub unsafe extern "C" fn programlabel() {
                            0 as libc::c_int != 0, sBuffer.as_mut_ptr());
                 }
                 Redo += 1;
-                Redo_why |= REASON_PHASE_ERROR as libc::c_int as libc::c_ulong
+                Redo_why |= ReasonCodes::PhaseError
             }
         }
     } else { sym = CreateSymbol(str, len) }

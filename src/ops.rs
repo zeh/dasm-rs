@@ -5,6 +5,9 @@ use crate::constants::{
     MAX_LINES,
     MAX_MACRO_LEVEL,
 };
+use crate::types::flags::{
+    ReasonCodes,
+};
 use crate::types::enums::{
     AddressModes,
     AsmErrorEquates,
@@ -214,23 +217,6 @@ pub struct _IO_FILE {
 }
 pub type _IO_lock_t = ();
 pub type FILE = _IO_FILE;
-pub type REASON_CODES = libc::c_uint;
-pub const REASON_BRANCH_OUT_OF_RANGE: REASON_CODES = 32768;
-pub const REASON_PHASE_ERROR: REASON_CODES = 16384;
-pub const REASON_FORWARD_REFERENCE: REASON_CODES = 8192;
-pub const REASON_REPEAT_NOT_RESOLVED: REASON_CODES = 4096;
-pub const REASON_IF_NOT_RESOLVED: REASON_CODES = 2048;
-pub const REASON_EQU_VALUE_MISMATCH: REASON_CODES = 1024;
-pub const REASON_EQU_NOT_RESOLVED: REASON_CODES = 512;
-pub const REASON_ALIGN_NORMAL_ORIGIN_NOT_KNOWN: REASON_CODES = 256;
-pub const REASON_ALIGN_RELOCATABLE_ORIGIN_NOT_KNOWN: REASON_CODES = 128;
-pub const REASON_ALIGN_NOT_RESOLVED: REASON_CODES = 64;
-pub const REASON_DS_NOT_RESOLVED: REASON_CODES = 32;
-pub const REASON_DV_NOT_RESOLVED_COULD: REASON_CODES = 16;
-pub const REASON_DV_NOT_RESOLVED_PROBABLY: REASON_CODES = 8;
-pub const REASON_DC_NOT_RESOVED: REASON_CODES = 4;
-pub const REASON_OBSCURE: REASON_CODES = 2;
-pub const REASON_MNEMONIC_NOT_RESOLVED: REASON_CODES = 1;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _STRLIST {
@@ -417,8 +403,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
     while !sym.is_null() {
         if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
             Redo += 1;
-            Redo_why |=
-                REASON_MNEMONIC_NOT_RESOLVED as libc::c_int as libc::c_ulong
+            Redo_why |= ReasonCodes::MnemonicNotResolved
         }
         sym = (*sym).next
     }
@@ -462,8 +447,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
         FreeSymbolList(symbase);
         //FIX
         Redo += 1;
-        Redo_why |=
-            REASON_MNEMONIC_NOT_RESOLVED as libc::c_int as libc::c_ulong;
+        Redo_why |= ReasonCodes::MnemonicNotResolved;
         return
     }
     if Mnext >= 0 as libc::c_int && Mnext < AddressModes::length() as libc::c_int {
@@ -476,8 +460,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             FreeSymbolList(symbase);
             //FIX: Cause assembly to fail when an invalid mode is used for an opcode...
             Redo += 1;
-            Redo_why |=
-                REASON_MNEMONIC_NOT_RESOLVED as libc::c_int as libc::c_ulong;
+            Redo_why |= ReasonCodes::MnemonicNotResolved;
             return
         }
     }
@@ -652,9 +635,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
                     asmerr(AsmErrorEquates::BranchOutOfRange,
                            0 as libc::c_int != 0, sBuffer_1.as_mut_ptr());
                     Redo += 1;
-                    Redo_why |=
-                        REASON_BRANCH_OUT_OF_RANGE as libc::c_int as
-                            libc::c_ulong;
+                    Redo_why |= ReasonCodes::BranchOutOfRange;
                     (*sym).flags =
                         ((*sym).flags as libc::c_int | 0x1 as libc::c_int) as
                             libc::c_uchar;
@@ -955,7 +936,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
         value = (*sym).value;
         if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
             Redo += 1;
-            Redo_why |= REASON_DC_NOT_RESOVED as libc::c_int as libc::c_ulong
+            Redo_why |= ReasonCodes::DCNotResolved
         }
         if (*sym).flags as libc::c_int & 0x8 as libc::c_int != 0 {
             let mut ptr: *mut libc::c_uchar =
@@ -969,9 +950,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
                     value = (*tmp).value;
                     if (*tmp).flags as libc::c_int & 0x1 as libc::c_int != 0 {
                         Redo += 1;
-                        Redo_why |=
-                            REASON_DV_NOT_RESOLVED_PROBABLY as libc::c_int as
-                                libc::c_ulong
+                        Redo_why |= ReasonCodes::DVNotResolvedProbably
                     }
                     FreeSymbolList(tmp);
                 }
@@ -1071,9 +1050,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
                 value = (*tmp).value;
                 if (*tmp).flags as libc::c_int & 0x1 as libc::c_int != 0 {
                     Redo += 1;
-                    Redo_why |=
-                        REASON_DV_NOT_RESOLVED_COULD as libc::c_int as
-                            libc::c_ulong
+                    Redo_why |= ReasonCodes::DVNotResolvedCould
                 }
                 FreeSymbolList(tmp);
             }
@@ -1207,14 +1184,13 @@ pub unsafe extern "C" fn v_ds(mut str: *mut libc::c_char,
         if !(*sym).next.is_null() { filler = (*(*sym).next).value }
         if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
             Redo += 1;
-            Redo_why |= REASON_DS_NOT_RESOLVED as libc::c_int as libc::c_ulong
+            Redo_why |= ReasonCodes::DSNotResolved
         } else {
             if !(*sym).next.is_null() &&
                    (*(*sym).next).flags as libc::c_int & 0x1 as libc::c_int !=
                        0 {
                 Redo += 1;
-                Redo_why |=
-                    REASON_DS_NOT_RESOLVED as libc::c_int as libc::c_ulong
+                Redo_why |= ReasonCodes::DSNotResolved
             }
             genfill(filler, (*sym).value, mult);
         }
@@ -1304,17 +1280,14 @@ pub unsafe extern "C" fn v_align(mut str: *mut libc::c_char,
     if !(*sym).next.is_null() {
         if (*(*sym).next).flags as libc::c_int & 0x1 as libc::c_int != 0 {
             Redo += 1;
-            Redo_why |=
-                REASON_ALIGN_NOT_RESOLVED as libc::c_int as libc::c_ulong
+            Redo_why |= ReasonCodes::AlignNotResolved
         } else { fill = (*(*sym).next).value as libc::c_uchar }
     }
     if rorg != 0 {
         if ((*Csegment).rflags as libc::c_int | (*sym).flags as libc::c_int) &
                0x1 as libc::c_int != 0 {
             Redo += 1;
-            Redo_why |=
-                REASON_ALIGN_RELOCATABLE_ORIGIN_NOT_KNOWN as libc::c_int as
-                    libc::c_ulong
+            Redo_why |= ReasonCodes::AlignRelocatableOriginNotKnown
         } else {
             let mut n: libc::c_long =
                 ((*sym).value as
@@ -1329,9 +1302,7 @@ pub unsafe extern "C" fn v_align(mut str: *mut libc::c_char,
     } else if ((*Csegment).flags as libc::c_int | (*sym).flags as libc::c_int)
                   & 0x1 as libc::c_int != 0 {
         Redo += 1;
-        Redo_why |=
-            REASON_ALIGN_NORMAL_ORIGIN_NOT_KNOWN as libc::c_int as
-                libc::c_ulong
+        Redo_why |= ReasonCodes::AlignNormalOriginNotKnown
     } else {
         let mut n_0: libc::c_long =
             ((*sym).value as
@@ -1406,8 +1377,7 @@ pub unsafe extern "C" fn v_equ(mut str: *mut libc::c_char,
     if (*lab).flags as libc::c_int & 0x1 as libc::c_int == 0 {
         if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
             Redo += 1;
-            Redo_why |=
-                REASON_EQU_NOT_RESOLVED as libc::c_int as libc::c_ulong
+            Redo_why |= ReasonCodes::EquNotResolved
         } else if (*lab).value != (*sym).value {
             asmerr(AsmErrorEquates::EquValueMismatch,
                    0 as libc::c_int != 0, 0 as *const libc::c_char);
@@ -1416,8 +1386,7 @@ pub unsafe extern "C" fn v_equ(mut str: *mut libc::c_char,
                    *Av.as_mut_ptr().offset(0 as libc::c_int as isize),
                    (*lab).value, (*sym).value);
             Redo += 1;
-            Redo_why |=
-                REASON_EQU_VALUE_MISMATCH as libc::c_int as libc::c_ulong
+            Redo_why |= ReasonCodes::EquValueMismatch
         }
     }
     (*lab).value = (*sym).value;
@@ -1803,7 +1772,7 @@ pub unsafe extern "C" fn v_if(mut str: *mut libc::c_char,
     sym = eval(str, 0 as libc::c_int);
     if (*sym).flags != 0 {
         Redo += 1;
-        Redo_why |= REASON_IF_NOT_RESOLVED as libc::c_int as libc::c_ulong;
+        Redo_why |= ReasonCodes::IfNotResolved;
         pushif(0 as libc::c_int != 0);
         (*Ifstack).acctrue = 0 as libc::c_int as libc::c_uchar;
         Redo_if |= 1 as libc::c_int as libc::c_ulong
@@ -1869,7 +1838,7 @@ pub unsafe extern "C" fn v_repeat(mut str: *mut libc::c_char,
     (*rp).flags = (*sym).flags;
     if (*rp).flags as libc::c_int != 0 as libc::c_int {
         Redo += 1;
-        Redo_why |= REASON_REPEAT_NOT_RESOLVED as libc::c_int as libc::c_ulong
+        Redo_why |= ReasonCodes::RepeatNotResolved
     }
     Reploop = rp;
     FreeSymbolList(sym);
@@ -1995,8 +1964,7 @@ pub unsafe extern "C" fn generate() {
                 if (*Csegment).flags as libc::c_int & 0x1 as libc::c_int != 0
                    {
                     Redo += 1;
-                    Redo_why |=
-                        REASON_OBSCURE as libc::c_int as libc::c_ulong;
+                    Redo_why |= ReasonCodes::Obscure;
                     return
                 }
                 org = (*Csegment).org;

@@ -39,7 +39,9 @@ use constants::{
     MAX_SYMBOLS,
     S_HASH_SIZE,
 };
-
+use types::flags:: {
+    ReasonCodes,
+};
 use types::enums::{
     AddressModes,
     AsmErrorEquates,
@@ -47,7 +49,6 @@ use types::enums::{
     Format,
     SortMode
 };
-
 use types::structs::{
     ErrorDefinition,
 };
@@ -260,23 +261,6 @@ pub type __compar_fn_t
     =
     Option<unsafe extern "C" fn(_: *const libc::c_void,
                                 _: *const libc::c_void) -> libc::c_int>;
-pub type REASON_CODES = libc::c_uint;
-pub const REASON_BRANCH_OUT_OF_RANGE: REASON_CODES = 32768;
-pub const REASON_PHASE_ERROR: REASON_CODES = 16384;
-pub const REASON_FORWARD_REFERENCE: REASON_CODES = 8192;
-pub const REASON_REPEAT_NOT_RESOLVED: REASON_CODES = 4096;
-pub const REASON_IF_NOT_RESOLVED: REASON_CODES = 2048;
-pub const REASON_EQU_VALUE_MISMATCH: REASON_CODES = 1024;
-pub const REASON_EQU_NOT_RESOLVED: REASON_CODES = 512;
-pub const REASON_ALIGN_NORMAL_ORIGIN_NOT_KNOWN: REASON_CODES = 256;
-pub const REASON_ALIGN_RELOCATABLE_ORIGIN_NOT_KNOWN: REASON_CODES = 128;
-pub const REASON_ALIGN_NOT_RESOLVED: REASON_CODES = 64;
-pub const REASON_DS_NOT_RESOLVED: REASON_CODES = 32;
-pub const REASON_DV_NOT_RESOLVED_COULD: REASON_CODES = 16;
-pub const REASON_DV_NOT_RESOLVED_PROBABLY: REASON_CODES = 8;
-pub const REASON_DC_NOT_RESOVED: REASON_CODES = 4;
-pub const REASON_OBSCURE: REASON_CODES = 2;
-pub const REASON_MNEMONIC_NOT_RESOLVED: REASON_CODES = 1;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _STRLIST {
@@ -829,92 +813,70 @@ unsafe extern "C" fn ShowSegments() {
                *const libc::c_char, Redo_eval);
     printf(b"%d events requiring another assembler pass.\n\x00" as *const u8
                as *const libc::c_char, Redo);
+
+    // FIXME: rewrite more succinctly
     if Redo_why != 0 {
-        if Redo_why &
-               REASON_MNEMONIC_NOT_RESOLVED as libc::c_int as libc::c_ulong !=
-               0 {
+        if Redo_why & ReasonCodes::MnemonicNotResolved != 0 {
             printf(b" - Expression in mnemonic not resolved.\n\x00" as
                        *const u8 as *const libc::c_char);
         }
-        if Redo_why & REASON_OBSCURE as libc::c_int as libc::c_ulong != 0 {
+        if Redo_why & ReasonCodes::Obscure != 0 {
             printf(b" - Obscure reason - to be documented :)\n\x00" as
                        *const u8 as *const libc::c_char);
         }
-        if Redo_why & REASON_DC_NOT_RESOVED as libc::c_int as libc::c_ulong !=
-               0 {
+        if Redo_why & ReasonCodes::DCNotResolved != 0 {
             printf(b" - Expression in a DC not resolved.\n\x00" as *const u8
                        as *const libc::c_char);
         }
-        if Redo_why &
-               REASON_DV_NOT_RESOLVED_PROBABLY as libc::c_int as libc::c_ulong
-               != 0 {
+        if Redo_why & ReasonCodes::DVNotResolvedProbably != 0 {
             printf(b" - Expression in a DV not resolved (probably in DV\'s EQM symbol).\n\x00"
                        as *const u8 as *const libc::c_char);
         }
-        if Redo_why &
-               REASON_DV_NOT_RESOLVED_COULD as libc::c_int as libc::c_ulong !=
-               0 {
+        if Redo_why & ReasonCodes::DVNotResolvedCould != 0 {
             printf(b" - Expression in a DV not resolved (could be in DV\'s EQM symbol).\n\x00"
                        as *const u8 as *const libc::c_char);
         }
-        if Redo_why & REASON_DS_NOT_RESOLVED as libc::c_int as libc::c_ulong
-               != 0 {
+        if Redo_why & ReasonCodes::DSNotResolved != 0 {
             printf(b" - Expression in a DS not resolved.\n\x00" as *const u8
                        as *const libc::c_char);
         }
-        if Redo_why &
-               REASON_ALIGN_NOT_RESOLVED as libc::c_int as libc::c_ulong != 0
-           {
+        if Redo_why & ReasonCodes::AlignNotResolved != 0 {
             printf(b" - Expression in an ALIGN not resolved.\n\x00" as
                        *const u8 as *const libc::c_char);
         }
-        if Redo_why &
-               REASON_ALIGN_RELOCATABLE_ORIGIN_NOT_KNOWN as libc::c_int as
-                   libc::c_ulong != 0 {
+        if Redo_why & ReasonCodes::AlignRelocatableOriginNotKnown != 0 {
             printf(b" - ALIGN: Relocatable origin not known (if in RORG at the time).\n\x00"
                        as *const u8 as *const libc::c_char);
         }
-        if Redo_why &
-               REASON_ALIGN_NORMAL_ORIGIN_NOT_KNOWN as libc::c_int as
-                   libc::c_ulong != 0 {
+        if Redo_why & ReasonCodes::AlignNormalOriginNotKnown != 0 {
             printf(b" - ALIGN: Normal origin not known\t(if in ORG at the time).\n\x00"
                        as *const u8 as *const libc::c_char);
         }
-        if Redo_why & REASON_EQU_NOT_RESOLVED as libc::c_int as libc::c_ulong
-               != 0 {
+        if Redo_why & ReasonCodes::EquNotResolved != 0 {
             printf(b" - EQU: Expression not resolved.\n\x00" as *const u8 as
                        *const libc::c_char);
         }
-        if Redo_why &
-               REASON_EQU_VALUE_MISMATCH as libc::c_int as libc::c_ulong != 0
-           {
+        if Redo_why & ReasonCodes::EquValueMismatch != 0 {
             printf(b" - EQU: Value mismatch from previous pass (phase error).\n\x00"
                        as *const u8 as *const libc::c_char);
         }
-        if Redo_why & REASON_IF_NOT_RESOLVED as libc::c_int as libc::c_ulong
-               != 0 {
+        if Redo_why & ReasonCodes::IfNotResolved != 0 {
             printf(b" - IF: Expression not resolved.\n\x00" as *const u8 as
                        *const libc::c_char);
         }
-        if Redo_why &
-               REASON_REPEAT_NOT_RESOLVED as libc::c_int as libc::c_ulong != 0
-           {
+        if Redo_why & ReasonCodes::RepeatNotResolved != 0 {
             printf(b" - REPEAT: Expression not resolved.\n\x00" as *const u8
                        as *const libc::c_char);
         }
-        if Redo_why & REASON_FORWARD_REFERENCE as libc::c_int as libc::c_ulong
-               != 0 {
+        if Redo_why & ReasonCodes::ForwardReference != 0 {
             printf(b" - Label defined after it has been referenced (forward reference).\n\x00"
                        as *const u8 as *const libc::c_char);
         }
-        if Redo_why & REASON_PHASE_ERROR as libc::c_int as libc::c_ulong != 0
-           {
+        if Redo_why & ReasonCodes::PhaseError != 0 {
             printf(b" - Label value is different from that of the previous pass (phase error).\n\x00"
                        as *const u8 as *const libc::c_char);
         }
-        if Redo_why &
-               REASON_BRANCH_OUT_OF_RANGE as libc::c_int as libc::c_ulong != 0
-           {
+        if Redo_why & ReasonCodes::BranchOutOfRange != 0 {
             printf(b" - Branch was out of range.\n\x00" as *const u8 as
                        *const libc::c_char);
         }

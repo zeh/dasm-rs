@@ -1,5 +1,8 @@
 use libc;
 
+use crate::types::flags::{
+    ReasonCodes,
+};
 use crate::types::enums::{
     AddressModes,
     AsmErrorEquates,
@@ -69,23 +72,6 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type REASON_CODES = libc::c_uint;
-pub const REASON_BRANCH_OUT_OF_RANGE: REASON_CODES = 32768;
-pub const REASON_PHASE_ERROR: REASON_CODES = 16384;
-pub const REASON_FORWARD_REFERENCE: REASON_CODES = 8192;
-pub const REASON_REPEAT_NOT_RESOLVED: REASON_CODES = 4096;
-pub const REASON_IF_NOT_RESOLVED: REASON_CODES = 2048;
-pub const REASON_EQU_VALUE_MISMATCH: REASON_CODES = 1024;
-pub const REASON_EQU_NOT_RESOLVED: REASON_CODES = 512;
-pub const REASON_ALIGN_NORMAL_ORIGIN_NOT_KNOWN: REASON_CODES = 256;
-pub const REASON_ALIGN_RELOCATABLE_ORIGIN_NOT_KNOWN: REASON_CODES = 128;
-pub const REASON_ALIGN_NOT_RESOLVED: REASON_CODES = 64;
-pub const REASON_DS_NOT_RESOLVED: REASON_CODES = 32;
-pub const REASON_DV_NOT_RESOLVED_COULD: REASON_CODES = 16;
-pub const REASON_DV_NOT_RESOLVED_PROBABLY: REASON_CODES = 8;
-pub const REASON_DC_NOT_RESOVED: REASON_CODES = 4;
-pub const REASON_OBSCURE: REASON_CODES = 2;
-pub const REASON_MNEMONIC_NOT_RESOLVED: REASON_CODES = 1;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _MNE {
@@ -272,8 +258,7 @@ unsafe extern "C" fn parse_value(mut str: *mut libc::c_char,
         asmerr(AsmErrorEquates::SyntaxError, 1 as libc::c_int != 0, str);
     } else if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
         Redo += 1;
-        Redo_why |=
-            REASON_MNEMONIC_NOT_RESOLVED as libc::c_int as libc::c_ulong;
+        Redo_why |= ReasonCodes::MnemonicNotResolved;
         result = 1 as libc::c_int
     } else { *value = (*sym).value as libc::c_ulong }
     FreeSymbolList(sym);
