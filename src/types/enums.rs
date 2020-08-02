@@ -6,6 +6,7 @@ use num_enum::{IntoPrimitive, TryFromPrimitive};
 
 // Used for -T option
 // In original C code, "sortmode_t"
+// FIXME: revise whether we actually need the u8 conversion
 #[derive(Copy, Clone, IntoPrimitive, TryFromPrimitive, PartialEq, SmartDefault)]
 #[repr(u8)]
 pub enum SortMode {
@@ -16,6 +17,7 @@ pub enum SortMode {
 
 // Used for -E option
 // In original C code, "errorformat_t"
+// FIXME: revise whether we actually need the u8 conversion
 #[derive(Copy, Clone, IntoPrimitive, TryFromPrimitive, PartialEq, SmartDefault)]
 #[repr(u8)]
 pub enum ErrorFormat {
@@ -27,6 +29,7 @@ pub enum ErrorFormat {
 
 // Used for -f option
 // In original C code, "FORMAT"
+// FIXME: revise whether we actually need the u8 conversion
 #[derive(Copy, Clone, IntoPrimitive, TryFromPrimitive, PartialEq, SmartDefault)]
 #[repr(u8)]
 pub enum Format {
@@ -37,9 +40,10 @@ pub enum Format {
 }
 
 // In original C code, "ASM_ERROR_EQUATES"
-// FIXME: check which aren't used anymote. "BadError", for example, shouldn't be needed,
+// FIXME: check which aren't used anymore. "BadError", for example, shouldn't be needed,
 // as it's about passing invalid ints to error handling, which should never happen with
 // our named enum type.
+// FIXME: revise whether we actually need the u8 conversion
 #[derive(Copy, Clone, IntoPrimitive, TryFromPrimitive, PartialEq, SmartDefault)]
 #[repr(u8)]
 pub enum AsmErrorEquates {
