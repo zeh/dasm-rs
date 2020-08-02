@@ -1,4 +1,5 @@
-use ::libc;
+use libc;
+
 extern "C" {
     #[no_mangle]
     fn v_mnemonic(str: *mut libc::c_char, mne: *mut _MNE);

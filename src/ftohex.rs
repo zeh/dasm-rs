@@ -12,7 +12,8 @@
 #![feature(register_tool)]
 #![register_tool(c2rust)]
 
-use ::libc;
+use libc;
+
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
