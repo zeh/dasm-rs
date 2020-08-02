@@ -1,32 +1,13 @@
 use libc;
 
+use crate::types::enums::{
+    AddressModes,
+};
+
 extern "C" {
     #[no_mangle]
     fn v_mnemonic(str: *mut libc::c_char, mne: *mut _MNE);
 }
-pub type ADDRESS_MODES = libc::c_uint;
-pub const NUMOC: ADDRESS_MODES = 21;
-pub const AM_BSS: ADDRESS_MODES = 20;
-pub const AM_LONG: ADDRESS_MODES = 19;
-pub const AM_EXPLIST: ADDRESS_MODES = 18;
-pub const AM_SYMBOL: ADDRESS_MODES = 17;
-pub const AM_BITBRAMOD: ADDRESS_MODES = 16;
-pub const AM_BITMOD: ADDRESS_MODES = 15;
-pub const AM_0Y: ADDRESS_MODES = 14;
-pub const AM_0X: ADDRESS_MODES = 13;
-pub const AM_INDWORD: ADDRESS_MODES = 12;
-pub const AM_INDBYTEY: ADDRESS_MODES = 11;
-pub const AM_INDBYTEX: ADDRESS_MODES = 10;
-pub const AM_REL: ADDRESS_MODES = 9;
-pub const AM_WORDADRY: ADDRESS_MODES = 8;
-pub const AM_WORDADRX: ADDRESS_MODES = 7;
-pub const AM_WORDADR: ADDRESS_MODES = 6;
-pub const AM_BYTEADRY: ADDRESS_MODES = 5;
-pub const AM_BYTEADRX: ADDRESS_MODES = 4;
-pub const AM_BYTEADR: ADDRESS_MODES = 3;
-pub const AM_IMM16: ADDRESS_MODES = 2;
-pub const AM_IMM8: ADDRESS_MODES = 1;
-pub const AM_IMP: ADDRESS_MODES = 0;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _MNE {
@@ -54,21 +35,21 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"adc\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMM8 as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::Imm8 as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADR as libc::c_int |
+                                   AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int |
+                                   AddressModes::WordAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRY as libc::c_int |
+                                   AddressModes::WordAdrY as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEX as libc::c_int |
+                                   AddressModes::IndByteX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEY as libc::c_int) as
+                                   AddressModes::IndByteY as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x69 as libc::c_int as libc::c_uint,
@@ -92,7 +73,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"anc\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMM8 as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imm8 as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xb as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -109,21 +90,21 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"and\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMM8 as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::Imm8 as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADR as libc::c_int |
+                                   AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int |
+                                   AddressModes::WordAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRY as libc::c_int |
+                                   AddressModes::WordAdrY as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEX as libc::c_int |
+                                   AddressModes::IndByteX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEY as libc::c_int) as
+                                   AddressModes::IndByteY as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x29 as libc::c_int as libc::c_uint,
@@ -147,7 +128,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"ane\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMM8 as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imm8 as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x8b as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -164,7 +145,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"arr\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMM8 as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imm8 as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x6b as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -181,15 +162,15 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"asl\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::Imp as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADR as libc::c_int |
+                                   AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int) as
+                                   AddressModes::WordAdrX as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xa as libc::c_int as libc::c_uint,
@@ -210,7 +191,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"asr\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMM8 as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imm8 as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x4b as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -227,7 +208,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"bcc\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_REL as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Rel as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x90 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -244,7 +225,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"bcs\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_REL as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Rel as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xb0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -261,7 +242,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"beq\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_REL as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Rel as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xf0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -278,9 +259,9 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"bit\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_BYTEADR as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int) as
+                                   AddressModes::WordAdr as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x24 as libc::c_int as libc::c_uint,
@@ -298,7 +279,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"bmi\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_REL as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Rel as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x30 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -315,7 +296,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"bne\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_REL as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Rel as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xd0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -332,7 +313,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"bpl\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_REL as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Rel as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x10 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -349,7 +330,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"brk\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
@@ -366,7 +347,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"bvc\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_REL as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Rel as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x50 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -383,7 +364,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"bvs\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_REL as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Rel as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x70 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -400,7 +381,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"clc\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x18 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -417,7 +398,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"cld\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xd8 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -434,7 +415,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"cli\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x58 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -451,7 +432,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"clv\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xb8 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -468,21 +449,21 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"cmp\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMM8 as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::Imm8 as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADR as libc::c_int |
+                                   AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int |
+                                   AddressModes::WordAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRY as libc::c_int |
+                                   AddressModes::WordAdrY as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEX as libc::c_int |
+                                   AddressModes::IndByteX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEY as libc::c_int) as
+                                   AddressModes::IndByteY as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xc9 as libc::c_int as libc::c_uint,
@@ -506,11 +487,11 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"cpx\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMM8 as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::Imm8 as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADR as libc::c_int |
+                                   AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int) as
+                                   AddressModes::WordAdr as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xe0 as libc::c_int as libc::c_uint,
@@ -529,11 +510,11 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"cpy\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMM8 as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::Imm8 as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADR as libc::c_int |
+                                   AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int) as
+                                   AddressModes::WordAdr as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xc0 as libc::c_int as libc::c_uint,
@@ -552,19 +533,19 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"dcp\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_BYTEADR as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int |
+                                   AddressModes::WordAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRY as libc::c_int |
+                                   AddressModes::WordAdrY as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEX as libc::c_int |
+                                   AddressModes::IndByteX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEY as libc::c_int) as
+                                   AddressModes::IndByteY as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xc7 as libc::c_int as libc::c_uint,
@@ -587,13 +568,13 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"dec\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_BYTEADR as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int) as
+                                   AddressModes::WordAdrX as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xc6 as libc::c_int as libc::c_uint,
@@ -613,7 +594,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"dex\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xca as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -630,7 +611,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"dey\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x88 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -647,21 +628,21 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"eor\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMM8 as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::Imm8 as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADR as libc::c_int |
+                                   AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int |
+                                   AddressModes::WordAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRY as libc::c_int |
+                                   AddressModes::WordAdrY as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEX as libc::c_int |
+                                   AddressModes::IndByteX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEY as libc::c_int) as
+                                   AddressModes::IndByteY as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x49 as libc::c_int as libc::c_uint,
@@ -685,13 +666,13 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"inc\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_BYTEADR as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int) as
+                                   AddressModes::WordAdrX as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xe6 as libc::c_int as libc::c_uint,
@@ -711,7 +692,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"inx\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xe8 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -728,7 +709,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"iny\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xc8 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -745,19 +726,19 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"isb\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_BYTEADR as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int |
+                                   AddressModes::WordAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRY as libc::c_int |
+                                   AddressModes::WordAdrY as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEX as libc::c_int |
+                                   AddressModes::IndByteX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEY as libc::c_int) as
+                                   AddressModes::IndByteY as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xe7 as libc::c_int as libc::c_uint,
@@ -780,9 +761,9 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"jmp\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_WORDADR as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDWORD as libc::c_int) as
+                                   AddressModes::IndWord as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x4c as libc::c_int as libc::c_uint,
@@ -800,7 +781,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"jsr\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_WORDADR as libc::c_int)
+                          ((1 as libc::c_long) << AddressModes::WordAdr as i32)
                               as libc::c_ulong,
                       opcode:
                           [0x20 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -817,7 +798,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"las\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_WORDADRY as libc::c_int)
+                          ((1 as libc::c_long) << AddressModes::WordAdrY as i32)
                               as libc::c_ulong,
                       opcode:
                           [0xbb as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -834,17 +815,17 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"lax\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_BYTEADR as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRY as libc::c_int |
+                                   AddressModes::ByteAdrY as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRY as libc::c_int |
+                                   AddressModes::WordAdrY as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEX as libc::c_int |
+                                   AddressModes::IndByteX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEY as libc::c_int) as
+                                   AddressModes::IndByteY as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xa7 as libc::c_int as libc::c_uint,
@@ -866,21 +847,21 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"lda\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMM8 as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::Imm8 as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADR as libc::c_int |
+                                   AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int |
+                                   AddressModes::WordAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRY as libc::c_int |
+                                   AddressModes::WordAdrY as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEX as libc::c_int |
+                                   AddressModes::IndByteX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEY as libc::c_int) as
+                                   AddressModes::IndByteY as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xa9 as libc::c_int as libc::c_uint,
@@ -904,15 +885,15 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"ldx\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMM8 as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::Imm8 as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADR as libc::c_int |
+                                   AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRY as libc::c_int |
+                                   AddressModes::ByteAdrY as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRY as libc::c_int) as
+                                   AddressModes::WordAdrY as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xa2 as libc::c_int as libc::c_uint,
@@ -933,15 +914,15 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"ldy\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMM8 as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::Imm8 as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADR as libc::c_int |
+                                   AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int) as
+                                   AddressModes::WordAdrX as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xa0 as libc::c_int as libc::c_uint,
@@ -962,15 +943,15 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"lsr\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::Imp as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADR as libc::c_int |
+                                   AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int) as
+                                   AddressModes::WordAdrX as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x4a as libc::c_int as libc::c_uint,
@@ -991,7 +972,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"lxa\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMM8 as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imm8 as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xab as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1008,16 +989,16 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"nop\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int |
-                               (1 as libc::c_long) << AM_IMM8 as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::Imp as i32 |
+                               (1 as libc::c_long) << AddressModes::Imm8 as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADR as libc::c_int |
+                                   AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int) as
+                                   AddressModes::WordAdrX as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xea as libc::c_int as libc::c_uint,
@@ -1039,21 +1020,21 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"ora\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMM8 as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::Imm8 as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADR as libc::c_int |
+                                   AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int |
+                                   AddressModes::WordAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRY as libc::c_int |
+                                   AddressModes::WordAdrY as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEX as libc::c_int |
+                                   AddressModes::IndByteX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEY as libc::c_int) as
+                                   AddressModes::IndByteY as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x9 as libc::c_int as libc::c_uint,
@@ -1077,7 +1058,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"pha\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x48 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1094,7 +1075,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"php\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x8 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1111,7 +1092,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"pla\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x68 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1128,7 +1109,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"plp\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x28 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1145,19 +1126,19 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"rla\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_BYTEADR as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int |
+                                   AddressModes::WordAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRY as libc::c_int |
+                                   AddressModes::WordAdrY as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEX as libc::c_int |
+                                   AddressModes::IndByteX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEY as libc::c_int) as
+                                   AddressModes::IndByteY as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x27 as libc::c_int as libc::c_uint,
@@ -1180,15 +1161,15 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"rol\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::Imp as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADR as libc::c_int |
+                                   AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int) as
+                                   AddressModes::WordAdrX as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x2a as libc::c_int as libc::c_uint,
@@ -1209,15 +1190,15 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"ror\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::Imp as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADR as libc::c_int |
+                                   AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int) as
+                                   AddressModes::WordAdrX as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x6a as libc::c_int as libc::c_uint,
@@ -1238,19 +1219,19 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"rra\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_BYTEADR as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int |
+                                   AddressModes::WordAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRY as libc::c_int |
+                                   AddressModes::WordAdrY as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEX as libc::c_int |
+                                   AddressModes::IndByteX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEY as libc::c_int) as
+                                   AddressModes::IndByteY as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x67 as libc::c_int as libc::c_uint,
@@ -1273,7 +1254,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"rti\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x40 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1290,7 +1271,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"rts\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x60 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1307,13 +1288,13 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"sax\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_BYTEADR as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRY as libc::c_int |
+                                   AddressModes::ByteAdrY as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEX as libc::c_int) as
+                                   AddressModes::IndByteX as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x87 as libc::c_int as libc::c_uint,
@@ -1333,21 +1314,21 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"sbc\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMM8 as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::Imm8 as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADR as libc::c_int |
+                                   AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int |
+                                   AddressModes::WordAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRY as libc::c_int |
+                                   AddressModes::WordAdrY as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEX as libc::c_int |
+                                   AddressModes::IndByteX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEY as libc::c_int) as
+                                   AddressModes::IndByteY as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xe9 as libc::c_int as libc::c_uint,
@@ -1371,7 +1352,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"sbx\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMM8 as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imm8 as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xcb as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1388,7 +1369,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"sec\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x38 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1405,7 +1386,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"sed\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xf8 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1422,7 +1403,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"sei\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x78 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1439,9 +1420,9 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"sha\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_WORDADRY as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::WordAdrY as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEY as libc::c_int) as
+                                   AddressModes::IndByteY as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x9f as libc::c_int as libc::c_uint,
@@ -1459,7 +1440,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"shs\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_WORDADRY as libc::c_int)
+                          ((1 as libc::c_long) << AddressModes::WordAdrY as i32)
                               as libc::c_ulong,
                       opcode:
                           [0x9b as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1476,7 +1457,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"shx\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_WORDADRY as libc::c_int)
+                          ((1 as libc::c_long) << AddressModes::WordAdrY as i32)
                               as libc::c_ulong,
                       opcode:
                           [0x9e as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1493,7 +1474,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"shy\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_WORDADRX as libc::c_int)
+                          ((1 as libc::c_long) << AddressModes::WordAdrX as i32)
                               as libc::c_ulong,
                       opcode:
                           [0x9c as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1510,19 +1491,19 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"slo\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_BYTEADR as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int |
+                                   AddressModes::WordAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRY as libc::c_int |
+                                   AddressModes::WordAdrY as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEX as libc::c_int |
+                                   AddressModes::IndByteX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEY as libc::c_int) as
+                                   AddressModes::IndByteY as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x7 as libc::c_int as libc::c_uint,
@@ -1545,19 +1526,19 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"sre\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_BYTEADR as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int |
+                                   AddressModes::WordAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRY as libc::c_int |
+                                   AddressModes::WordAdrY as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEX as libc::c_int |
+                                   AddressModes::IndByteX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEY as libc::c_int) as
+                                   AddressModes::IndByteY as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x47 as libc::c_int as libc::c_uint,
@@ -1580,19 +1561,19 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"sta\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_BYTEADR as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int |
+                                   AddressModes::WordAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRX as libc::c_int |
+                                   AddressModes::WordAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADRY as libc::c_int |
+                                   AddressModes::WordAdrY as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEX as libc::c_int |
+                                   AddressModes::IndByteX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_INDBYTEY as libc::c_int) as
+                                   AddressModes::IndByteY as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x85 as libc::c_int as libc::c_uint,
@@ -1615,11 +1596,11 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"stx\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_BYTEADR as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRY as libc::c_int |
+                                   AddressModes::ByteAdrY as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int) as
+                                   AddressModes::WordAdr as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x86 as libc::c_int as libc::c_uint,
@@ -1638,11 +1619,11 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"sty\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_BYTEADR as libc::c_int |
+                          ((1 as libc::c_long) << AddressModes::ByteAdr as i32 |
                                (1 as libc::c_long) <<
-                                   AM_BYTEADRX as libc::c_int |
+                                   AddressModes::ByteAdrX as i32 |
                                (1 as libc::c_long) <<
-                                   AM_WORDADR as libc::c_int) as
+                                   AddressModes::WordAdr as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x84 as libc::c_int as libc::c_uint,
@@ -1661,7 +1642,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"tax\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xaa as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1678,7 +1659,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"tay\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xa8 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1695,7 +1676,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"tsx\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xba as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1712,7 +1693,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"txa\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x8a as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1729,7 +1710,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"txs\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x9a as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1746,7 +1727,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       name: b"tya\x00" as *const u8 as *const libc::c_char,
                       flags: 0 as libc::c_int as libc::c_uchar,
                       okmask:
-                          ((1 as libc::c_long) << AM_IMP as libc::c_int) as
+                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x98 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,

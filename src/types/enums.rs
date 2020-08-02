@@ -88,3 +88,36 @@ pub enum AsmErrorEquates {
 
 	EndOfTable, // FIXME: remove? This was added but might not be needed
 }
+
+// In original C code, "ADDRESS_MODES"
+#[derive(Copy, Clone, PartialEq)]
+pub enum AddressModes {
+	Imp,						// Implied
+	Imm8,						// Immediate 8 bits
+	Imm16,		        		// Immediate 16 bits
+	ByteAdr,					// Address 8 bits
+	ByteAdrX,					// Address 16 bits
+	ByteAdrY,					// Relative 8 bits
+	WordAdr,					// Index x 0 bits
+	WordAdrX,					// Index x 8 bits
+	WordAdrY,					// Index x 16 bits
+	Rel,						// Bit inst. special
+	IndByteX,					// Bit-bra inst. spec.
+	IndByteY,					// Index y 0 bits
+	IndWord,					// Index y 8 bits
+	ZeroX,						// Index x 0 bits
+	ZeroY,						// Index y 0 bits
+	BitMod,						// Ind addr 8 bits
+	BitBraMod,					// Ind addr 16 bits
+	Symbol,
+	ExpList,
+	Long,
+	BSS,
+}
+
+// Made to replace "NUMOC" in the original type
+impl AddressModes {
+    pub fn length() -> u32 {
+		return Self::BSS as u32 - Self::Imp as u32 + 1
+    }
+}

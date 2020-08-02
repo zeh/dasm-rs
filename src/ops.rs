@@ -6,6 +6,7 @@ use crate::constants::{
     MAX_MACRO_LEVEL,
 };
 use crate::types::enums::{
+    AddressModes,
     AsmErrorEquates,
     Format,
 };
@@ -230,29 +231,6 @@ pub const REASON_DV_NOT_RESOLVED_PROBABLY: REASON_CODES = 8;
 pub const REASON_DC_NOT_RESOVED: REASON_CODES = 4;
 pub const REASON_OBSCURE: REASON_CODES = 2;
 pub const REASON_MNEMONIC_NOT_RESOLVED: REASON_CODES = 1;
-pub type ADDRESS_MODES = libc::c_uint;
-pub const NUMOC: ADDRESS_MODES = 21;
-pub const AM_BSS: ADDRESS_MODES = 20;
-pub const AM_LONG: ADDRESS_MODES = 19;
-pub const AM_EXPLIST: ADDRESS_MODES = 18;
-pub const AM_SYMBOL: ADDRESS_MODES = 17;
-pub const AM_BITBRAMOD: ADDRESS_MODES = 16;
-pub const AM_BITMOD: ADDRESS_MODES = 15;
-pub const AM_0Y: ADDRESS_MODES = 14;
-pub const AM_0X: ADDRESS_MODES = 13;
-pub const AM_INDWORD: ADDRESS_MODES = 12;
-pub const AM_INDBYTEY: ADDRESS_MODES = 11;
-pub const AM_INDBYTEX: ADDRESS_MODES = 10;
-pub const AM_REL: ADDRESS_MODES = 9;
-pub const AM_WORDADRY: ADDRESS_MODES = 8;
-pub const AM_WORDADRX: ADDRESS_MODES = 7;
-pub const AM_WORDADR: ADDRESS_MODES = 6;
-pub const AM_BYTEADRY: ADDRESS_MODES = 5;
-pub const AM_BYTEADRX: ADDRESS_MODES = 4;
-pub const AM_BYTEADR: ADDRESS_MODES = 3;
-pub const AM_IMM16: ADDRESS_MODES = 2;
-pub const AM_IMM8: ADDRESS_MODES = 1;
-pub const AM_IMP: ADDRESS_MODES = 0;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _STRLIST {
@@ -447,10 +425,10 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
     sym = symbase;
     if (*mne).flags as libc::c_int & 0x40 as libc::c_int != 0 {
         if !(*sym).next.is_null() {
-            (*sym).addrmode = AM_BITMOD as libc::c_int as libc::c_uchar;
+            (*sym).addrmode = AddressModes::BitMod as u8;
             if (*mne).flags as libc::c_int & 0x20 as libc::c_int != 0 &&
                    !(*sym).next.is_null() {
-                (*sym).addrmode = AM_BITBRAMOD as libc::c_int as libc::c_uchar
+                (*sym).addrmode = AddressModes::BitBraMod as u8
             }
         }
     }
@@ -488,7 +466,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             REASON_MNEMONIC_NOT_RESOLVED as libc::c_int as libc::c_ulong;
         return
     }
-    if Mnext >= 0 as libc::c_int && Mnext < NUMOC as libc::c_int {
+    if Mnext >= 0 as libc::c_int && Mnext < AddressModes::length() as libc::c_int {
         /*	Force	*/
         addrmode = Mnext;
         if (*mne).okmask & ((1 as libc::c_long) << addrmode) as libc::c_ulong
@@ -520,7 +498,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
                 break ;
             }
             //FIX: for negative operands...
-            if addrmode == AM_IMM8 as libc::c_int &&
+            if addrmode == AddressModes::Imm8 as i32 &&
                    (*sym).value < 0 as libc::c_int as libc::c_long {
                 opsize = 1 as libc::c_int; /*  to end of instruction   */
                 (*sym).value =
@@ -638,7 +616,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
         opidx += 1
     }
     if (*mne).flags as libc::c_int & 0x20 as libc::c_int != 0 ||
-           addrmode == AM_REL as libc::c_int {
+           addrmode == AddressModes::Rel as i32 {
         opidx += 1;
         if sym.is_null() {
             asmerr(AsmErrorEquates::NotEnoughArgs,
@@ -843,7 +821,7 @@ pub unsafe extern "C" fn v_seg(mut str: *mut libc::c_char,
     (*seg).rflags = (*seg).initflags;
     (*seg).flags = (*seg).rflags;
     Seglist = seg;
-    if Mnext == AM_BSS as libc::c_int {
+    if Mnext == AddressModes::BSS as i32 {
         (*seg).flags =
             ((*seg).flags as libc::c_int | 0x10 as libc::c_int) as
                 libc::c_uchar
@@ -1221,8 +1199,8 @@ pub unsafe extern "C" fn v_ds(mut str: *mut libc::c_char,
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut mult: libc::c_int = 1 as libc::c_int;
     let mut filler: libc::c_long = 0 as libc::c_int as libc::c_long;
-    if Mnext == AM_WORDADR as libc::c_int { mult = 2 as libc::c_int }
-    if Mnext == AM_LONG as libc::c_int { mult = 4 as libc::c_int }
+    if Mnext == AddressModes::WordAdr as i32 { mult = 2 as libc::c_int }
+    if Mnext == AddressModes::Long as i32 { mult = 4 as libc::c_int }
     programlabel();
     sym = eval(str, 0 as libc::c_int);
     if !sym.is_null() {
@@ -1279,7 +1257,7 @@ pub unsafe extern "C" fn v_rorg(mut str: *mut libc::c_char,
     (*Csegment).flags =
         ((*Csegment).flags as libc::c_int | 0x20 as libc::c_int) as
             libc::c_uchar;
-    if (*sym).addrmode as libc::c_int != AM_IMP as libc::c_int {
+    if (*sym).addrmode as libc::c_int != AddressModes::Imp as i32 {
         (*Csegment).rorg = (*sym).value as libc::c_ulong;
         if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
             (*Csegment).rflags =

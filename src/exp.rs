@@ -1,6 +1,7 @@
 use libc;
 
 use crate::types::enums::{
+    AddressModes,
     AsmErrorEquates,
 };
 
@@ -109,29 +110,6 @@ pub const REASON_DV_NOT_RESOLVED_PROBABLY: REASON_CODES = 8;
 pub const REASON_DC_NOT_RESOVED: REASON_CODES = 4;
 pub const REASON_OBSCURE: REASON_CODES = 2;
 pub const REASON_MNEMONIC_NOT_RESOLVED: REASON_CODES = 1;
-pub type ADDRESS_MODES = libc::c_uint;
-pub const NUMOC: ADDRESS_MODES = 21;
-pub const AM_BSS: ADDRESS_MODES = 20;
-pub const AM_LONG: ADDRESS_MODES = 19;
-pub const AM_EXPLIST: ADDRESS_MODES = 18;
-pub const AM_SYMBOL: ADDRESS_MODES = 17;
-pub const AM_BITBRAMOD: ADDRESS_MODES = 16;
-pub const AM_BITMOD: ADDRESS_MODES = 15;
-pub const AM_0Y: ADDRESS_MODES = 14;
-pub const AM_0X: ADDRESS_MODES = 13;
-pub const AM_INDWORD: ADDRESS_MODES = 12;
-pub const AM_INDBYTEY: ADDRESS_MODES = 11;
-pub const AM_INDBYTEX: ADDRESS_MODES = 10;
-pub const AM_REL: ADDRESS_MODES = 9;
-pub const AM_WORDADRY: ADDRESS_MODES = 8;
-pub const AM_WORDADRX: ADDRESS_MODES = 7;
-pub const AM_WORDADR: ADDRESS_MODES = 6;
-pub const AM_BYTEADRY: ADDRESS_MODES = 5;
-pub const AM_BYTEADRX: ADDRESS_MODES = 4;
-pub const AM_BYTEADR: ADDRESS_MODES = 3;
-pub const AM_IMM16: ADDRESS_MODES = 2;
-pub const AM_IMM8: ADDRESS_MODES = 1;
-pub const AM_IMP: ADDRESS_MODES = 0;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _SYMBOL {
@@ -792,7 +770,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             40 => {
                 if wantmode != 0 {
                     (*cur).addrmode =
-                        AM_INDWORD as libc::c_int as libc::c_uchar;
+                        AddressModes::IndWord as u8;
                     str = str.offset(1);
                     current_block_184 = 3166194604430448652;
                 } else { current_block_184 = 18384894229789369419; }
@@ -801,19 +779,19 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             41 => {
                 if wantmode != 0 {
                     if (*cur).addrmode as libc::c_int ==
-                           AM_INDWORD as libc::c_int &&
+                        AddressModes::IndWord as i32 &&
                            *str.offset(1 as libc::c_int as isize) as
                                libc::c_int == ',' as i32 &&
                            *str.offset(2 as libc::c_int as isize) as
                                libc::c_int | 0x20 as libc::c_int == 'y' as i32
                        {
                         (*cur).addrmode =
-                            AM_INDBYTEY as libc::c_int as libc::c_uchar;
+                            AddressModes::IndByteY as u8;
                         str = str.offset(2 as libc::c_int as isize)
                     }
                     //FIX: detect illegal opc (zp),x syntax...
                     if (*cur).addrmode as libc::c_int ==
-                           AM_INDWORD as libc::c_int &&
+                            AddressModes::IndByteY as i32 &&
                            *str.offset(1 as libc::c_int as isize) as
                                libc::c_int == ',' as i32 &&
                            *str.offset(2 as libc::c_int as isize) as
@@ -839,7 +817,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             }
             93 => { current_block_184 = 8741107198128373303; }
             35 => {
-                (*cur).addrmode = AM_IMM8 as libc::c_int as libc::c_uchar;
+                (*cur).addrmode = AddressModes::Imm8 as u8;
                 str = str.offset(1);
                 /*
             * No other addressing mode is possible from now on
@@ -854,15 +832,15 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 scr =
                     *str.offset(1 as libc::c_int as isize) as libc::c_int |
                         0x20 as libc::c_int;
-                if (*cur).addrmode as libc::c_int == AM_INDWORD as libc::c_int
+                if (*cur).addrmode as libc::c_int == AddressModes::IndWord as i32
                        && scr == 'x' as i32 &&
                        IsAlphaNum(*str.offset(2 as libc::c_int as isize) as
                                       libc::c_int) == 0 {
                     (*cur).addrmode =
-                        AM_INDBYTEX as libc::c_int as libc::c_uchar;
+                        AddressModes::IndByteX as u8;
                     str = str.offset(1)
                 } else if (*cur).addrmode as libc::c_int ==
-                              AM_INDWORD as libc::c_int && scr == 'y' as i32
+                              AddressModes::IndWord as i32 && scr == 'y' as i32
                               &&
                               *str.offset(2 as libc::c_int as isize) as
                                   libc::c_int == ')' as i32 && wantmode != 0 {
@@ -880,39 +858,39 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                     //we treat the opcode as valid to allow passes to continue, which should
                    //allow other errors (like phase errros) to resolve before our "++Redo"
                    //ultimately forces a failure.
-                    (*cur).addrmode = AM_0Y as libc::c_int as libc::c_uchar;
+                    (*cur).addrmode = AddressModes::ZeroY as u8;
                     str = str.offset(1)
                 } else if scr == 'x' as i32 &&
                               IsAlphaNum(*str.offset(2 as libc::c_int as
                                                          isize) as
                                              libc::c_int) == 0 {
-                    (*cur).addrmode = AM_0X as libc::c_int as libc::c_uchar;
+                    (*cur).addrmode = AddressModes::ZeroX as u8;
                     str = str.offset(1);
                     //FIX: OPCODE.FORCE needs to be adjusted for x indexing...
-                    if Mnext == AM_WORDADR as libc::c_int {
-                        Mnext = AM_WORDADRX as libc::c_int
+                    if Mnext == AddressModes::WordAdr as i32 {
+                        Mnext = AddressModes::WordAdrX as i32
                     }
-                    if Mnext == AM_BYTEADR as libc::c_int {
-                        Mnext = AM_BYTEADRX as libc::c_int
+                    if Mnext == AddressModes::ByteAdr as i32 {
+                        Mnext = AddressModes::ByteAdrX as i32
                     }
-                    if Mnext == AM_INDWORD as libc::c_int {
-                        Mnext = AM_0X as libc::c_int
+                    if Mnext == AddressModes::IndWord as i32 {
+                        Mnext = AddressModes::ZeroX as i32
                     }
                 } else if scr == 'y' as i32 &&
                               IsAlphaNum(*str.offset(2 as libc::c_int as
                                                          isize) as
                                              libc::c_int) == 0 {
-                    (*cur).addrmode = AM_0Y as libc::c_int as libc::c_uchar;
+                    (*cur).addrmode = AddressModes::ZeroY as u8;
                     str = str.offset(1);
                     //FIX: OPCODE.FORCE needs to be adjusted for x indexing...
-                    if Mnext == AM_WORDADR as libc::c_int {
-                        Mnext = AM_WORDADRY as libc::c_int
+                    if Mnext == AddressModes::WordAdr as i32 {
+                        Mnext = AddressModes::WordAdrY as i32
                     }
-                    if Mnext == AM_BYTEADR as libc::c_int {
-                        Mnext = AM_BYTEADRY as libc::c_int
+                    if Mnext == AddressModes::ByteAdr as i32 {
+                        Mnext = AddressModes::ByteAdrY as i32
                     }
-                    if Mnext == AM_INDWORD as libc::c_int {
-                        Mnext = AM_0Y as libc::c_int
+                    if Mnext == AddressModes::IndWord as i32 {
+                        Mnext = AddressModes::ZeroY as i32
                     }
                 } else {
                     let mut pNewSymbol: *mut _SYMBOL = allocsymbol();
@@ -1047,7 +1025,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             }
         }
         if (*base).addrmode as libc::c_int == 0 as libc::c_int {
-            (*base).addrmode = AM_BYTEADR as libc::c_int as libc::c_uchar
+            (*base).addrmode = AddressModes::ByteAdr as libc::c_int as libc::c_uchar
         }
     }
     if Argi != Argibase || Opi != Opibase {
