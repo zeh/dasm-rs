@@ -31,7 +31,6 @@ pub struct _MNE {
  */
 #[no_mangle]
 pub static mut Mne6803: [_MNE; 125] =
-    unsafe {
         [{
              let mut init =
                  _MNE{next: 0 as *const _MNE as *mut _MNE,
@@ -2461,10 +2460,9 @@ pub static mut Mne6803: [_MNE; 125] =
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          }]
-    };
+;
 #[no_mangle]
 pub static mut MneHD6303: [_MNE; 7] =
-    unsafe {
         [{
              let mut init =
                  _MNE{next: 0 as *const _MNE as *mut _MNE,
@@ -2591,4 +2589,4 @@ pub static mut MneHD6303: [_MNE; 7] =
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          }]
-    };
+;

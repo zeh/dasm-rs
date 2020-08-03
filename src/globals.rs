@@ -319,7 +319,6 @@ pub static mut Opsize: [libc::c_uint; 17] =
      1 as libc::c_int as libc::c_uint];
 #[no_mangle]
 pub static mut Ops: [_MNE; 39] =
-    unsafe {
         [{
              let mut init =
                  _MNE{next: 0 as *const _MNE as *mut _MNE,
@@ -909,4 +908,4 @@ pub static mut Ops: [_MNE; 39] =
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          }]
-    };
+;

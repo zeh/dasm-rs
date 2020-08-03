@@ -783,7 +783,6 @@ unsafe extern "C" fn v_byteop(mut str: *mut libc::c_char,
 }
 #[no_mangle]
 pub static mut MneF8: [_MNE; 59] =
-    unsafe {
         [{
              let mut init =
                  _MNE{next: 0 as *const _MNE as *mut _MNE,
@@ -1770,4 +1769,4 @@ pub static mut MneF8: [_MNE; 59] =
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          }]
-    };
+;
