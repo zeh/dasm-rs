@@ -319,7 +319,7 @@ pub static mut Glen: libc::c_int = 0;
 */
 #[no_mangle]
 pub unsafe extern "C" fn v_processor(mut str: *mut libc::c_char,
-                                     mut dummy: *mut _MNE) {
+                                     mut _dummy: *mut _MNE) {
     static mut bCalled: bool = 0 as libc::c_int != 0; /*	lsb,msb */
     let mut PreviousProcessor: libc::c_ulong = Processor; /*	msb,lsb */
     Processor = 0 as libc::c_int as libc::c_ulong; /*	msb,lsb */
@@ -655,13 +655,13 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_trace(mut str: *mut libc::c_char,
-                                 mut dummy: *mut _MNE) {
+                                 mut _dummy: *mut _MNE) {
     bTrace =
         *str.offset(1 as libc::c_int as isize) as libc::c_int == 'n' as i32;
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_list(mut str: *mut libc::c_char,
-                                mut dummy: *mut _MNE) {
+                                mut _dummy: *mut _MNE) {
     programlabel();
     Glen = 0 as libc::c_int;
     if strncmp(str, b"localoff\x00" as *const u8 as *const libc::c_char,
@@ -718,7 +718,7 @@ unsafe extern "C" fn getfilename(mut str: *mut libc::c_char)
 /* ops.c */
 #[no_mangle]
 pub unsafe extern "C" fn v_include(mut str: *mut libc::c_char,
-                                   mut dummy: *mut _MNE) {
+                                   mut _dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     programlabel();
     // only eval the string if it's compliant with symbol naming
@@ -740,7 +740,7 @@ pub unsafe extern "C" fn v_include(mut str: *mut libc::c_char,
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_incbin(mut str: *mut libc::c_char,
-                                  mut dummy: *mut _MNE) {
+                                  mut _dummy: *mut _MNE) {
     let mut buf: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut binfile: *mut FILE = 0 as *mut FILE;
     programlabel();
@@ -776,7 +776,7 @@ pub unsafe extern "C" fn v_incbin(mut str: *mut libc::c_char,
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_seg(mut str: *mut libc::c_char,
-                               mut dummy: *mut _MNE) {
+                               mut _dummy: *mut _MNE) {
     let mut seg: *mut _SEGMENT =
         0 as *mut _SEGMENT; /* "might be used uninitialised" */
     seg = Seglist;
@@ -811,7 +811,7 @@ pub unsafe extern "C" fn v_seg(mut str: *mut libc::c_char,
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_hex(mut str: *mut libc::c_char,
-                               mut dummy: *mut _MNE) {
+                               mut _dummy: *mut _MNE) {
     let mut i: libc::c_int = 0;
     let mut result: libc::c_int = 0;
     programlabel();
@@ -859,8 +859,8 @@ pub unsafe extern "C" fn gethexdig(mut c: libc::c_int) -> libc::c_int {
     return 0 as libc::c_int;
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_err(mut str: *mut libc::c_char,
-                               mut dummy: *mut _MNE) {
+pub unsafe extern "C" fn v_err(mut _str: *mut libc::c_char,
+                               mut _dummy: *mut _MNE) {
     programlabel();
     asmerr(AsmErrorEquates::ErrPseudoOpEncountered,
            1 as libc::c_int != 0, 0 as *const libc::c_char);
@@ -1172,7 +1172,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_ds(mut str: *mut libc::c_char,
-                              mut dummy: *mut _MNE) {
+                              mut _dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut mult: libc::c_int = 1 as libc::c_int;
     let mut filler: libc::c_long = 0 as libc::c_int as libc::c_long;
@@ -1199,7 +1199,7 @@ pub unsafe extern "C" fn v_ds(mut str: *mut libc::c_char,
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_org(mut str: *mut libc::c_char,
-                               mut dummy: *mut _MNE) {
+                               mut _dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     sym = eval(str, 0 as libc::c_int);
     (*Csegment).org = (*sym).value as libc::c_ulong;
@@ -1228,7 +1228,7 @@ pub unsafe extern "C" fn v_org(mut str: *mut libc::c_char,
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_rorg(mut str: *mut libc::c_char,
-                                mut dummy: *mut _MNE) {
+                                mut _dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = eval(str, 0 as libc::c_int);
     (*Csegment).flags =
         ((*Csegment).flags as libc::c_int | 0x20 as libc::c_int) as
@@ -1253,8 +1253,8 @@ pub unsafe extern "C" fn v_rorg(mut str: *mut libc::c_char,
     FreeSymbolList(sym);
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_rend(mut str: *mut libc::c_char,
-                                mut dummy: *mut _MNE) {
+pub unsafe extern "C" fn v_rend(mut _str: *mut libc::c_char,
+                                mut _dummy: *mut _MNE) {
     programlabel();
     (*Csegment).flags =
         ((*Csegment).flags as libc::c_int & !(0x20 as libc::c_int)) as
@@ -1262,7 +1262,7 @@ pub unsafe extern "C" fn v_rend(mut str: *mut libc::c_char,
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_align(mut str: *mut libc::c_char,
-                                 mut dummy: *mut _MNE) {
+                                 mut _dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = eval(str, 0 as libc::c_int);
     let mut fill: libc::c_uchar = 0 as libc::c_int as libc::c_uchar;
     let mut rorg: libc::c_uchar =
@@ -1318,8 +1318,8 @@ pub unsafe extern "C" fn v_align(mut str: *mut libc::c_char,
     programlabel();
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_subroutine(mut str: *mut libc::c_char,
-                                      mut dummy: *mut _MNE) {
+pub unsafe extern "C" fn v_subroutine(mut _str: *mut libc::c_char,
+                                      mut _dummy: *mut _MNE) {
     Lastlocalindex = Lastlocalindex.wrapping_add(1);
     Localindex = Lastlocalindex;
     programlabel();
@@ -1418,7 +1418,7 @@ pub unsafe extern "C" fn v_equ(mut str: *mut libc::c_char,
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_eqm(mut str: *mut libc::c_char,
-                               mut dummy: *mut _MNE) {
+                               mut _dummy: *mut _MNE) {
     let mut lab: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut len: libc::c_int =
         strlen(*Av.as_mut_ptr().offset(0 as libc::c_int as isize)) as
@@ -1444,7 +1444,7 @@ pub unsafe extern "C" fn v_eqm(mut str: *mut libc::c_char,
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_echo(mut str: *mut libc::c_char,
-                                mut dummy: *mut _MNE) {
+                                mut _dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = eval(str, 0 as libc::c_int);
     let mut s: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut buf: [libc::c_char; 256] = [0; 256];
@@ -1480,7 +1480,7 @@ pub unsafe extern "C" fn v_echo(mut str: *mut libc::c_char,
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_set(mut str: *mut libc::c_char,
-                               mut dummy: *mut _MNE) {
+                               mut _dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut lab: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut dynamicname: [libc::c_char; 257] = [0; 257];
@@ -1706,8 +1706,8 @@ pub unsafe extern "C" fn v_execmac(mut str: *mut libc::c_char,
     Localdollarindex = Lastlocaldollarindex;
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_end(mut str: *mut libc::c_char,
-                               mut dummy: *mut _MNE) {
+pub unsafe extern "C" fn v_end(mut _str: *mut libc::c_char,
+                               mut _dummy: *mut _MNE) {
     /* Only ENDs current file and any macro calls within it */
     while (*pIncfile).flags as libc::c_int & 0x1 as libc::c_int != 0 {
         v_endm(0 as *mut libc::c_char, 0 as *mut _MNE);
@@ -1715,8 +1715,8 @@ pub unsafe extern "C" fn v_end(mut str: *mut libc::c_char,
     fseek((*pIncfile).fi, 0 as libc::c_int as libc::c_long, 2 as libc::c_int);
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_endm(mut str: *mut libc::c_char,
-                                mut dummy: *mut _MNE) {
+pub unsafe extern "C" fn v_endm(mut _str: *mut libc::c_char,
+                                mut _dummy: *mut _MNE) {
     let mut inc: *mut _INCFILE = pIncfile;
     let mut args: *mut _STRLIST = 0 as *mut _STRLIST;
     let mut an: *mut _STRLIST = 0 as *mut _STRLIST;
@@ -1738,13 +1738,13 @@ pub unsafe extern "C" fn v_endm(mut str: *mut libc::c_char,
     puts(b"not within a macro\x00" as *const u8 as *const libc::c_char);
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_mexit(mut str: *mut libc::c_char,
-                                 mut dummy: *mut _MNE) {
+pub unsafe extern "C" fn v_mexit(mut _str: *mut libc::c_char,
+                                 mut _dummy: *mut _MNE) {
     v_endm(0 as *mut libc::c_char, 0 as *mut _MNE);
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_ifconst(mut str: *mut libc::c_char,
-                                   mut dummy: *mut _MNE) {
+                                   mut _dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     programlabel();
     sym = eval(str, 0 as libc::c_int);
@@ -1753,7 +1753,7 @@ pub unsafe extern "C" fn v_ifconst(mut str: *mut libc::c_char,
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_ifnconst(mut str: *mut libc::c_char,
-                                    mut dummy: *mut _MNE) {
+                                    mut _dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     programlabel();
     sym = eval(str, 0 as libc::c_int);
@@ -1762,7 +1762,7 @@ pub unsafe extern "C" fn v_ifnconst(mut str: *mut libc::c_char,
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_if(mut str: *mut libc::c_char,
-                              mut dummy: *mut _MNE) {
+                              mut _dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     if (*Ifstack).xtrue == 0 || (*Ifstack).acctrue == 0 {
         pushif(0 as libc::c_int != 0);
@@ -1780,8 +1780,8 @@ pub unsafe extern "C" fn v_if(mut str: *mut libc::c_char,
     FreeSymbolList(sym);
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_else(mut str: *mut libc::c_char,
-                                mut dummy: *mut _MNE) {
+pub unsafe extern "C" fn v_else(mut _str: *mut libc::c_char,
+                                mut _dummy: *mut _MNE) {
     if (*Ifstack).acctrue as libc::c_int != 0 &&
            (*Ifstack).flags as libc::c_int & 0x4 as libc::c_int == 0 {
         programlabel();
@@ -1790,8 +1790,8 @@ pub unsafe extern "C" fn v_else(mut str: *mut libc::c_char,
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_endif(mut str: *mut libc::c_char,
-                                 mut dummy: *mut _MNE) {
+pub unsafe extern "C" fn v_endif(mut _str: *mut libc::c_char,
+                                 mut _dummy: *mut _MNE) {
     let mut ifs: *mut _IFSTACK = Ifstack;
     if (*ifs).flags as libc::c_int & 0x4 as libc::c_int == 0 {
         if (*ifs).acctrue != 0 { programlabel(); }
@@ -1803,7 +1803,7 @@ pub unsafe extern "C" fn v_endif(mut str: *mut libc::c_char,
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_repeat(mut str: *mut libc::c_char,
-                                  mut dummy: *mut _MNE) {
+                                  mut _dummy: *mut _MNE) {
     let mut rp: *mut _REPLOOP = 0 as *mut _REPLOOP;
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     if (*Ifstack).xtrue == 0 || (*Ifstack).acctrue == 0 {
@@ -1845,8 +1845,8 @@ pub unsafe extern "C" fn v_repeat(mut str: *mut libc::c_char,
     pushif(1 as libc::c_int != 0);
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_repend(mut str: *mut libc::c_char,
-                                  mut dummy: *mut _MNE) {
+pub unsafe extern "C" fn v_repend(mut _str: *mut libc::c_char,
+                                  mut _dummy: *mut _MNE) {
     if (*Ifstack).xtrue == 0 || (*Ifstack).acctrue == 0 {
         v_endif(0 as *mut libc::c_char, 0 as *mut _MNE);
         return
@@ -1880,7 +1880,7 @@ pub static mut incdirlist: *mut _STRLIST =
     0 as *const _STRLIST as *mut _STRLIST;
 #[no_mangle]
 pub unsafe extern "C" fn v_incdir(mut str: *mut libc::c_char,
-                                  mut dummy: *mut _MNE) {
+                                  mut _dummy: *mut _MNE) {
     let mut tail: *mut *mut _STRLIST = 0 as *mut *mut _STRLIST;
     let mut buf: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut found: libc::c_int = 0 as libc::c_int;
@@ -2028,12 +2028,6 @@ pub unsafe extern "C" fn generate() {
                            Glen as size_t, 1 as libc::c_int as size_t,
                            FI_temp);
                     Seglen += Glen as libc::c_long
-                }
-                _ => {
-                    asmerr(AsmErrorEquates::BadFormat,
-                           1 as libc::c_int != 0,
-                           b"Unhandled internal format specifier\x00" as
-                               *const u8 as *const libc::c_char);
                 }
             }
             org = org.wrapping_add(Glen as libc::c_ulong)

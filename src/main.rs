@@ -1856,7 +1856,7 @@ pub unsafe extern "C" fn findext(mut str: *mut libc::c_char) {
 */
 #[no_mangle]
 pub unsafe extern "C" fn rmnode(mut base: *mut *mut libc::c_void,
-                                mut bytes: libc::c_int) {
+                                mut _bytes: libc::c_int) {
     let mut node: *mut libc::c_void = 0 as *mut libc::c_void;
     node = *base;
     if !node.is_null() {
@@ -2099,7 +2099,7 @@ pub unsafe extern "C" fn findmne(mut str: *mut libc::c_char) -> *mut _MNE {
 /* ops.c */
 #[no_mangle]
 pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
-                                 mut dummy: *mut _MNE) {
+                                 mut _dummy: *mut _MNE) {
     let mut base: *mut _STRLIST =
         0 as *mut _STRLIST; /* slp, mac: might be used uninitialised */
     let mut defined: libc::c_int = 0 as libc::c_int; /* not really needed */
