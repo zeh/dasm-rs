@@ -7,6 +7,9 @@ use crate::types::enums::{
     AddressModes,
     AsmErrorEquates,
 };
+use crate::utils::{
+    transient_str_pointer_to_string,
+};
 
 extern "C" {
     pub type _IO_wide_data;
@@ -947,8 +950,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 if Opi != Opibase { Opi -= 1 }
                 str = str.offset(1);
                 if Argi == Argibase {
-                    puts(b"\']\' error, no arg on stack\x00" as *const u8 as
-                             *const libc::c_char);
+                    println!("\']\' error, no arg on stack");
                 } else {
                     if *str as libc::c_int == 'd' as i32 {
                         /*  STRING CONVERSION   */
@@ -979,8 +981,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             /*  eventually an argument      */
             {
                 if Opi == 32 as libc::c_int {
-                    puts(b"too many ops\x00" as *const u8 as
-                             *const libc::c_char);
+                    println!("too many ops");
                 } else {
                     let fresh0 = Opi;
                     Opi = Opi + 1;
@@ -1004,8 +1005,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 ((*cur).flags as libc::c_int | 0x8 as libc::c_int) as
                     libc::c_uchar;
             if Xdebug {
-                printf(b"STRING: %s\n\x00" as *const u8 as
-                           *const libc::c_char, (*cur).string);
+                println!("STRING: {}", transient_str_pointer_to_string((*cur).string));
             }
         }
         if (*base).addrmode as libc::c_int == 0 as libc::c_int {
@@ -1136,8 +1136,7 @@ unsafe extern "C" fn stackarg(mut val: libc::c_long, mut flags: libc::c_int,
     Argflags[Argi as usize] = flags as libc::c_uchar;
     Argi += 1;
     if Argi == 64 as libc::c_int {
-        puts(b"stackarg: maxargs stacked\x00" as *const u8 as
-                 *const libc::c_char);
+        println!("stackarg: maxargs stacked");
         Argi = Argibase
     }
     while Opi != Opibase &&
@@ -1147,7 +1146,7 @@ unsafe extern "C" fn stackarg(mut val: libc::c_long, mut flags: libc::c_int,
 }
 #[no_mangle]
 pub unsafe extern "C" fn doop(mut func: opfunc_t, mut pri: libc::c_int) {
-    if Xdebug { puts(b"doop\x00" as *const u8 as *const libc::c_char); }
+    if Xdebug { println!("doop"); }
     Lastwasop = 1 as libc::c_int;
     if Opi == Opibase || pri == 128 as libc::c_int {
         if Xdebug {
@@ -1170,8 +1169,7 @@ pub unsafe extern "C" fn doop(mut func: opfunc_t, mut pri: libc::c_int) {
     Oppri[Opi as usize] = pri;
     Opi += 1;
     if Opi == 32 as libc::c_int {
-        puts(b"doop: too many operators\x00" as *const u8 as
-                 *const libc::c_char);
+        println!("doop: too many operators");
         Opi = Opibase
     };
 }

@@ -96,12 +96,9 @@ unsafe fn main_0(mut ac: libc::c_int, mut av: *mut *mut libc::c_char)
     let mut infile: *mut FILE = 0 as *mut FILE;
     let mut outfile: *mut FILE = 0 as *mut FILE;
     if ac < 3 as libc::c_int {
-        puts(b"FTOHEX format infile [outfile]\x00" as *const u8 as
-                 *const libc::c_char);
-        puts(b"format 1 = DEFAULT, 2 = RAS, or 3 = RAW\x00" as *const u8 as
-                 *const libc::c_char);
-        puts(b"Copyright (c) 1988-2008 by various authors (see file AUTHORS).\x00"
-                 as *const u8 as *const libc::c_char);
+        println!("FTOHEX format infile [outfile]");
+        println!("format 1 = DEFAULT, 2 = RAS, or 3 = RAW");
+        println!("Copyright (c) 1988-2008 by various authors (see file AUTHORS).");
         exit(1 as libc::c_int);
     }
     format = atoi(*av.offset(1 as libc::c_int as isize));

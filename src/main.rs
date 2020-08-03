@@ -430,8 +430,7 @@ unsafe extern "C" fn ShowUnresolvedSymbols() -> libc::c_int {
     let mut i: libc::c_int = 0;
     let mut nUnresolved: libc::c_int = CountUnresolvedSymbols();
     if nUnresolved != 0 {
-        printf(b"--- Unresolved Symbol List\n\x00" as *const u8 as
-                   *const libc::c_char);
+        println!("--- Unresolved Symbol List");
         /* Display unresolved symbols */
         i = 0 as libc::c_int;
         while i < S_HASH_SIZE as libc::c_int {
@@ -585,8 +584,7 @@ unsafe extern "C" fn ShowSegments() {
     let mut sFormat: *const libc::c_char =
         b"%-24s %-3s %-8s %-8s %-8s %-8s\n\x00\x00" as *const u8 as
             *const libc::c_char;
-    printf(b"\n----------------------------------------------------------------------\n\x00"
-               as *const u8 as *const libc::c_char);
+    println!("\n----------------------------------------------------------------------");
     printf(sFormat, b"SEGMENT NAME\x00" as *const u8 as *const libc::c_char,
            b"\x00" as *const u8 as *const libc::c_char,
            b"INIT PC\x00" as *const u8 as *const libc::c_char,
@@ -609,8 +607,7 @@ unsafe extern "C" fn ShowSegments() {
                      (*seg).rflags as libc::c_int));
         seg = (*seg).next
     }
-    puts(b"----------------------------------------------------------------------\x00"
-             as *const u8 as *const libc::c_char);
+    println!("----------------------------------------------------------------------");
     printf(b"%d references to unknown symbols.\n\x00" as *const u8 as
                *const libc::c_char, Redo_eval);
     printf(b"%d events requiring another assembler pass.\n\x00" as *const u8
@@ -619,71 +616,55 @@ unsafe extern "C" fn ShowSegments() {
     // FIXME: rewrite more succinctly
     if Redo_why != 0 {
         if Redo_why & ReasonCodes::MnemonicNotResolved != 0 {
-            printf(b" - Expression in mnemonic not resolved.\n\x00" as
-                       *const u8 as *const libc::c_char);
+            println!(" - Expression in mnemonic not resolved.");
         }
         if Redo_why & ReasonCodes::Obscure != 0 {
-            printf(b" - Obscure reason - to be documented :)\n\x00" as
-                       *const u8 as *const libc::c_char);
+            println!(" - Obscure reason - to be documented :)");
         }
         if Redo_why & ReasonCodes::DCNotResolved != 0 {
-            printf(b" - Expression in a DC not resolved.\n\x00" as *const u8
-                       as *const libc::c_char);
+            println!(" - Expression in a DC not resolved.");
         }
         if Redo_why & ReasonCodes::DVNotResolvedProbably != 0 {
-            printf(b" - Expression in a DV not resolved (probably in DV\'s EQM symbol).\n\x00"
-                       as *const u8 as *const libc::c_char);
+            println!(" - Expression in a DV not resolved (probably in DV\'s EQM symbol).");
         }
         if Redo_why & ReasonCodes::DVNotResolvedCould != 0 {
-            printf(b" - Expression in a DV not resolved (could be in DV\'s EQM symbol).\n\x00"
-                       as *const u8 as *const libc::c_char);
+            println!(" - Expression in a DV not resolved (could be in DV\'s EQM symbol).");
         }
         if Redo_why & ReasonCodes::DSNotResolved != 0 {
-            printf(b" - Expression in a DS not resolved.\n\x00" as *const u8
-                       as *const libc::c_char);
+            println!(" - Expression in a DS not resolved.");
         }
         if Redo_why & ReasonCodes::AlignNotResolved != 0 {
-            printf(b" - Expression in an ALIGN not resolved.\n\x00" as
-                       *const u8 as *const libc::c_char);
+            println!(" - Expression in an ALIGN not resolved.");
         }
         if Redo_why & ReasonCodes::AlignRelocatableOriginNotKnown != 0 {
-            printf(b" - ALIGN: Relocatable origin not known (if in RORG at the time).\n\x00"
-                       as *const u8 as *const libc::c_char);
+            println!(" - ALIGN: Relocatable origin not known (if in RORG at the time).");
         }
         if Redo_why & ReasonCodes::AlignNormalOriginNotKnown != 0 {
-            printf(b" - ALIGN: Normal origin not known\t(if in ORG at the time).\n\x00"
-                       as *const u8 as *const libc::c_char);
+            println!(" - ALIGN: Normal origin not known (if in ORG at the time).");
         }
         if Redo_why & ReasonCodes::EquNotResolved != 0 {
-            printf(b" - EQU: Expression not resolved.\n\x00" as *const u8 as
-                       *const libc::c_char);
+            println!(" - EQU: Expression not resolved.");
         }
         if Redo_why & ReasonCodes::EquValueMismatch != 0 {
-            printf(b" - EQU: Value mismatch from previous pass (phase error).\n\x00"
-                       as *const u8 as *const libc::c_char);
+            println!(" - EQU: Value mismatch from previous pass (phase error).");
         }
         if Redo_why & ReasonCodes::IfNotResolved != 0 {
-            printf(b" - IF: Expression not resolved.\n\x00" as *const u8 as
-                       *const libc::c_char);
+            println!(" - IF: Expression not resolved.");
         }
         if Redo_why & ReasonCodes::RepeatNotResolved != 0 {
-            printf(b" - REPEAT: Expression not resolved.\n\x00" as *const u8
-                       as *const libc::c_char);
+            println!(" - REPEAT: Expression not resolved.");
         }
         if Redo_why & ReasonCodes::ForwardReference != 0 {
-            printf(b" - Label defined after it has been referenced (forward reference).\n\x00"
-                       as *const u8 as *const libc::c_char);
+            println!(" - Label defined after it has been referenced (forward reference).");
         }
         if Redo_why & ReasonCodes::PhaseError != 0 {
-            printf(b" - Label value is different from that of the previous pass (phase error).\n\x00"
-                       as *const u8 as *const libc::c_char);
+            println!(" - Label value is different from that of the previous pass (phase error).");
         }
         if Redo_why & ReasonCodes::BranchOutOfRange != 0 {
-            printf(b" - Branch was out of range.\n\x00" as *const u8 as
-                       *const libc::c_char);
+            println!(" - Branch was out of range.");
         }
     }
-    printf(b"\n\x00" as *const u8 as *const libc::c_char);
+    println!();
 }
 unsafe extern "C" fn DumpSymbolTable(mut bTableSort: bool) {
     if !F_symfile.is_null() {
@@ -766,13 +747,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                                0 as *mut libc::c_void as
                                    *mut *mut libc::c_char, 10 as libc::c_int)
                             as libc::c_int != 0 as libc::c_int;
-                    printf(b"Debug trace %s\n\x00" as *const u8 as
-                               *const libc::c_char,
-                           if Xdebug as libc::c_int != 0 {
-                               b"ON\x00" as *const u8 as *const libc::c_char
-                           } else {
-                               b"OFF\x00" as *const u8 as *const libc::c_char
-                           });
+                    println!("Debug trace {}", if Xdebug as libc::c_int != 0 { "ON" } else { "OFF" });
                     current_block = 17788412896529399552;
                 }
                 77 | 68 => {
@@ -920,7 +895,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                 passbuffer_clear(1 as libc::c_int);
                 loop  {
                     if F_verbose != 0 {
-                        puts(b"\x00" as *const u8 as *const libc::c_char);
+                        println!();
                         printf(b"START OF PASS: %d\n\x00" as *const u8 as
                                    *const libc::c_char, pass);
                     }
@@ -936,9 +911,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     Fisclear = 1 as libc::c_int as libc::c_uchar;
                     CheckSum = 0 as libc::c_int as libc::c_ulong;
                     if FI_temp.is_null() {
-                        printf(b"Warning: Unable to [re]open \'%s\'\n\x00" as
-                                   *const u8 as *const libc::c_char,
-                               F_outfile);
+                        println!("Warning: Unable to [re]open '{}'", transient_str_pointer_to_string(F_outfile));
                         return AsmErrorEquates::FileError
                     }
                     if !F_listfile.is_null() {
@@ -953,9 +926,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                                           *const libc::c_char
                                   });
                         if FI_listfile.is_null() {
-                            printf(b"Warning: Unable to [re]open \'%s\'\n\x00"
-                                       as *const u8 as *const libc::c_char,
-                                   F_listfile);
+                            println!("Warning: Unable to [re]open '{}'", transient_str_pointer_to_string(F_listfile));
                             return AsmErrorEquates::FileError
                         }
                     }
@@ -1141,53 +1112,31 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
         }
     }
     puts(dasm_id.as_ptr());
-    puts(b"Copyright (c) 1988-2020 by the DASM team.\x00" as *const u8 as
-             *const libc::c_char);
-    puts(b"License GPLv2+: GNU GPL version 2 or later (see file LICENSE).\x00"
-             as *const u8 as *const libc::c_char);
-    puts(b"DASM is free software: you are free to change and redistribute it.\x00"
-             as *const u8 as *const libc::c_char);
-    puts(b"There is ABSOLUTELY NO WARRANTY, to the extent permitted by law.\x00"
-             as *const u8 as *const libc::c_char);
-    puts(b"\x00" as *const u8 as *const libc::c_char);
-    puts(b"Usage: dasm sourcefile [options]\x00" as *const u8 as
-             *const libc::c_char);
-    puts(b"\x00" as *const u8 as *const libc::c_char);
-    puts(b"-f#      output format 1-3 (default 1)\x00" as *const u8 as
-             *const libc::c_char);
-    puts(b"-oname   output file name (else a.out)\x00" as *const u8 as
-             *const libc::c_char);
-    puts(b"-lname   list file name (else none generated)\x00" as *const u8 as
-             *const libc::c_char);
-    puts(b"-Lname   list file, containing all passes\x00" as *const u8 as
-             *const libc::c_char);
-    puts(b"-sname   symbol dump file name (else none generated)\x00" as
-             *const u8 as *const libc::c_char);
-    puts(b"-v#      verboseness 0-4 (default 0)\x00" as *const u8 as
-             *const libc::c_char);
-    puts(b"-d       debug mode (for developers)\x00" as *const u8 as
-             *const libc::c_char);
-    puts(b"-Dsymbol              define symbol, set to 0\x00" as *const u8 as
-             *const libc::c_char);
-    puts(b"-Dsymbol=expression   define symbol, set to expression\x00" as
-             *const u8 as *const libc::c_char);
-    puts(b"-Msymbol=expression   define symbol using EQM (same as -D)\x00" as
-             *const u8 as *const libc::c_char);
-    puts(b"-Idir    search directory for INCLUDE and INCBIN\x00" as *const u8
-             as *const libc::c_char);
-    puts(b"-p#      maximum number of passes\x00" as *const u8 as
-             *const libc::c_char);
-    puts(b"-P#      maximum number of passes, with fewer checks\x00" as
-             *const u8 as *const libc::c_char);
-    puts(b"-T#      symbol table sorting (default 0 = alphabetical, 1 = address/value)\x00"
-             as *const u8 as *const libc::c_char);
-    puts(b"-E#      error format (default 0 = MS, 1 = Dillon, 2 = GNU)\x00" as
-             *const u8 as *const libc::c_char);
-    puts(b"-S       strict syntax checking\x00" as *const u8 as
-             *const libc::c_char);
-    puts(b"\x00" as *const u8 as *const libc::c_char);
-    puts(b"Report bugs on https://github.com/dasm-assembler/dasm please!\x00"
-             as *const u8 as *const libc::c_char);
+    println!("Copyright (c) 1988-2020 by the DASM team.");
+    println!("License GPLv2+: GNU GPL version 2 or later (see file LICENSE).");
+    println!("DASM is free software: you are free to change and redistribute it.");
+    println!("There is ABSOLUTELY NO WARRANTY, to the extent permitted by law.");
+    println!();
+    println!("Usage: dasm sourcefile [options]");
+    println!();
+    println!("-f#      output format 1-3 (default 1)");
+    println!("-oname   output file name (else a.out)");
+    println!("-lname   list file name (else none generated)");
+    println!("-Lname   list file, containing all passes");
+    println!("-sname   symbol dump file name (else none generated)");
+    println!("-v#      verboseness 0-4 (default 0)");
+    println!("-d       debug mode (for developers)");
+    println!("-Dsymbol              define symbol, set to 0");
+    println!("-Dsymbol=expression   define symbol, set to expression");
+    println!("-Msymbol=expression   define symbol using EQM (same as -D)");
+    println!("-Idir    search directory for INCLUDE and INCBIN");
+    println!("-p#      maximum number of passes");
+    println!("-P#      maximum number of passes, with fewer checks");
+    println!("-T#      symbol table sorting (default 0 = alphabetical, 1 = address/value)");
+    println!("-E#      error format (default 0 = MS, 1 = Dillon, 2 = GNU)");
+    println!("-S       strict syntax checking");
+    println!();
+    println!("Report bugs on https://github.com/dasm-assembler/dasm please!");
     return AsmErrorEquates::CommandLine;
 }
 #[no_mangle]
@@ -1470,8 +1419,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
                         str = str.offset(1)
                     }
                     if *str as libc::c_int != '}' as i32 {
-                        puts(b"end brace required\x00" as *const u8 as
-                                 *const libc::c_char);
+                        println!("end brace required");
                         str = str.offset(-1)
                     } else {
                         add -= 1;
@@ -2050,8 +1998,7 @@ pub unsafe extern "C" fn pushinclude(mut str: *mut libc::c_char) {
         pIncfile = inf;
         return
     }
-    printf(b"Warning: Unable to open \'%s\'\n\x00" as *const u8 as
-               *const libc::c_char, str);
+    println!("Warning: Unable to open '{}'", transient_str_pointer_to_string(str));
 }
 #[no_mangle]
 pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool,

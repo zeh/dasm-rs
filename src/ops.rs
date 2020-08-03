@@ -850,8 +850,7 @@ pub unsafe extern "C" fn gethexdig(mut c: libc::c_int) -> libc::c_int {
             b"Bad Hex Digit %c\x00" as *const u8 as *const libc::c_char, c);
     asmerr(AsmErrorEquates::SyntaxError, 0 as libc::c_int != 0,
            sBuffer.as_mut_ptr());
-    puts(b"(Must be a valid hex digit)\x00" as *const u8 as
-             *const libc::c_char);
+    println!("(Must be a valid hex digit)");
     if !F_listfile.is_null() {
         fputs(b"(Must be a valid hex digit)\n\x00" as *const u8 as
                   *const libc::c_char, FI_listfile);
@@ -919,15 +918,13 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
         tmp = findsymbol(str, i);
         str = str.offset(i as isize);
         if tmp.is_null() {
-            puts(b"EQM label not found\x00" as *const u8 as
-                     *const libc::c_char);
+            println!("EQM label not found");
             return
         }
         if (*tmp).flags as libc::c_int & 0x20 as libc::c_int != 0 {
             macstr = (*tmp).string as *mut libc::c_void as *mut libc::c_char
         } else {
-            puts(b"must specify EQM label for DV\x00" as *const u8 as
-                     *const libc::c_char);
+            println!("must specify EQM label for DV");
             return
         }
     }
@@ -1642,8 +1639,7 @@ pub unsafe extern "C" fn v_execmac(mut str: *mut libc::c_char,
     let mut s1: *mut libc::c_char = 0 as *mut libc::c_char;
     programlabel();
     if Mlevel == MAX_MACRO_LEVEL as libc::c_int as libc::c_uint {
-        puts(b"infinite macro recursion\x00" as *const u8 as
-                 *const libc::c_char);
+        println!("infinite macro recursion");
         return
     }
     Mlevel = Mlevel.wrapping_add(1);
@@ -1735,7 +1731,7 @@ pub unsafe extern "C" fn v_endm(mut _str: *mut libc::c_char,
         free(inc as *mut libc::c_void);
         return
     }
-    puts(b"not within a macro\x00" as *const u8 as *const libc::c_char);
+    println!("not within a macro");
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_mexit(mut _str: *mut libc::c_char,
@@ -1796,8 +1792,7 @@ pub unsafe extern "C" fn v_endif(mut _str: *mut libc::c_char,
     if (*ifs).flags as libc::c_int & 0x4 as libc::c_int == 0 {
         if (*ifs).acctrue != 0 { programlabel(); }
         if (*ifs).file != pIncfile {
-            puts(b"too many endif\'s\x00" as *const u8 as
-                     *const libc::c_char);
+            println!("too many endif\'s");
         } else { Ifstack = (*ifs).next; free(ifs as *mut libc::c_void); }
     };
 }
@@ -1873,7 +1868,7 @@ pub unsafe extern "C" fn v_repend(mut _str: *mut libc::c_char,
         }
         return
     }
-    puts(b"no repeat\x00" as *const u8 as *const libc::c_char);
+    println!("no repeat");
 }
 #[no_mangle]
 pub static mut incdirlist: *mut _STRLIST =
