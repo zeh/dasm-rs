@@ -43,6 +43,17 @@ pub fn find_error_definition(errorType: AsmErrorEquates) -> &'static ErrorDefini
     return &ErrorDefinitions.iter().find(|e| e.errorType == errorType).unwrap();
 }
 
+/**
+ * Prints a message and exists.
+ * In original C code, "panic()" in main.c
+ * FIXME: this should probably be a panic!() instead, but for now we use this to follow original DASM C behavior.
+ * The output for errors should also use eprintln!(), but once again, the original used puts() instead.
+ */
+pub fn panic(message: &str) {
+    println!("{}", message);
+    std::process::exit(1);
+}
+
 // Tests
 
 #[cfg(test)]

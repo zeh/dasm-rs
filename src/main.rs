@@ -52,6 +52,7 @@ use types::enums::{
 use utils::{
     find_error_definition,
     hash_string,
+    panic,
     transient_str_pointer_to_string,
 };
 
@@ -720,10 +721,10 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                         Ok(digit) => {
                             match ErrorFormat::try_from(digit) {
                                 Ok(result) => { F_errorformat = result; }
-                                Err(_) => { panic_rs("Invalid error format for -E, must be 0, 1, 2"); }
+                                Err(_) => { panic("Invalid error format for -E, must be 0, 1, 2"); }
                             }
                         }
-                        Err(_) => { panic_rs("Invalid error format for -E, must be 0, 1, 2"); }
+                        Err(_) => { panic("Invalid error format for -E, must be 0, 1, 2"); }
                     }
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
@@ -733,10 +734,10 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                         Ok(digit) => {
                             match SortMode::try_from(digit) {
                                 Ok(result) => { F_sortmode = result; }
-                                Err(_) => { panic_rs("Invalid sorting mode for -T option, must be 0 or 1"); }
+                                Err(_) => { panic("Invalid sorting mode for -T option, must be 0 or 1"); }
                             }
                         }
-                        Err(_) => { panic_rs("Invalid sorting mode for -T option, must be 0 or 1"); }
+                        Err(_) => { panic("Invalid sorting mode for -T option, must be 0 or 1"); }
                     }
                     *pbTableSort = F_sortmode != SortMode::default();
                     current_block = 17788412896529399552; // FIXME: remove this
@@ -783,10 +784,10 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                         Ok(digit) => {
                             match Format::try_from(digit) {
                                 Ok(result) => { F_format = result; }
-                                Err(_) => { panic_rs("Illegal format specification"); }
+                                Err(_) => { panic("Illegal format specification"); }
                             }
                         }
-                        Err(_) => { panic_rs("Illegal format specification"); }
+                        Err(_) => { panic("Illegal format specification"); }
                     }
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
@@ -854,8 +855,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
             match current_block {
                 15042310719884093888 => {
                     if *str as libc::c_int == 0 as libc::c_int {
-                        panic(b"-o Switch requires file name.\x00" as
-                                  *const u8 as *const libc::c_char);
+                        panic("-o Switch requires file name.");
                     }
                 }
                 _ => { }
@@ -1461,8 +1461,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
                                            buf as libc::c_ulong, add,
                                            strlen(str) as libc::c_long);
                                 }
-                                panic(b"failure1\x00" as *const u8 as
-                                          *const libc::c_char);
+                                panic("failure1");
                             }
                             memmove(str.offset(add as isize) as
                                         *mut libc::c_void,
@@ -1473,8 +1472,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
                             str = str.offset(add as isize);
                             if str.offset(-(strlen((*strlist).buf.as_mut_ptr())
                                                 as isize)) < buf {
-                                panic(b"failure2\x00" as *const u8 as
-                                          *const libc::c_char);
+                                panic("failure2");
                             }
                             memmove(str.offset(-(strlen((*strlist).buf.as_mut_ptr())
                                                      as isize)) as
@@ -1488,8 +1486,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
                             if str < buf ||
                                    str >=
                                        buf.offset(MAX_LINES as isize) {
-                                panic(b"failure 3\x00" as *const u8 as
-                                          *const libc::c_char);
+                                panic("failure 3");
                             }
                             str = str.offset(-1)
                             /*  for loop increments string    */
@@ -1514,18 +1511,6 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
     }
     *str = 0 as libc::c_int as libc::c_char;
     return comment;
-}
-#[no_mangle]
-pub unsafe extern "C" fn panic(mut str: *const libc::c_char) {
-    puts(str);
-    exit(1 as libc::c_int);
-}
-
-// FIXME: this should probably be a panic!() instead, but for now we use this to follow original DASM C behavior.
-// The output for errors should also use eprintln!(), but once again, the original used puts() instead.
-pub fn panic_rs(message: &str) {
-    println!("{}", message);
-    std::process::exit(1);
 }
 
 /*
@@ -2131,7 +2116,7 @@ pub unsafe extern "C" fn ckmalloc(mut bytes: libc::c_int)
     let mut ptr: *mut libc::c_char =
         malloc(bytes as libc::c_ulong) as *mut libc::c_char;
     if !ptr.is_null() { return ptr }
-    panic(b"unable to malloc\x00" as *const u8 as *const libc::c_char);
+    panic("unable to malloc");
     return 0 as *mut libc::c_char;
 }
 #[no_mangle]
@@ -2159,14 +2144,13 @@ pub unsafe extern "C" fn permalloc(mut bytes: libc::c_int)
             malloc(ALLOC_SIZE as libc::c_int as libc::c_ulong) as
                 *mut libc::c_char;
         if buf.is_null() {
-            panic(b"unable to malloc\x00" as *const u8 as
-                      *const libc::c_char);
+            panic("unable to malloc");
         }
         memset(buf as *mut libc::c_void, 0 as libc::c_int,
             ALLOC_SIZE as libc::c_int as libc::c_ulong);
         left = ALLOC_SIZE as libc::c_int;
         if bytes > left {
-            panic(b"software error\x00" as *const u8 as *const libc::c_char);
+            panic("software error");
         }
     }
     ptr = buf;
@@ -2231,8 +2215,7 @@ pub unsafe extern "C" fn passbuffer_update(mut mbindex: libc::c_int,
             malloc(passbuffersize[mbindex as usize] as libc::c_ulong) as
                 *mut libc::c_char;
         if passbuffer[mbindex as usize].is_null() {
-            panic(b"couldn\'t allocate memory for message buffer.\x00" as
-                      *const u8 as *const libc::c_char);
+            panic("couldn\'t allocate memory for message buffer.");
         }
         *passbuffer[mbindex as usize].offset(0 as libc::c_int as isize) =
             0 as libc::c_int as libc::c_char
@@ -2254,8 +2237,7 @@ pub unsafe extern "C" fn passbuffer_update(mut mbindex: libc::c_int,
             realloc(passbuffer[mbindex as usize] as *mut libc::c_void,
                     newsizerequired as libc::c_ulong) as *mut libc::c_char;
         if passbuffer[mbindex as usize].is_null() {
-            panic(b"couldn\'t grow memory for message buffer.\x00" as
-                      *const u8 as *const libc::c_char);
+            panic("couldn\'t grow memory for message buffer.");
         }
         passbuffersize[mbindex as usize] = newsizerequired
     }
