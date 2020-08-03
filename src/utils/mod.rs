@@ -1,7 +1,18 @@
 use crate::constants::{
     M_HASH_AND,
+    ErrorDefinitions,
+};
+use crate::types::enums::{
+    AsmErrorEquates,
+};
+use crate::types::structs::{
+    ErrorDefinition,
 };
 
+/**
+ * Creates a simple hash for a string.
+ * In original C code, "hash1()" in main.c
+ */
 pub fn hash_string(text: String) -> u16 {
     let text_str = text.as_str();
     let mut result: u16 = 0;
@@ -28,6 +39,12 @@ pub fn transient_str_pointer_to_string(str: *const i8) -> String {
     return sstr_all;
 }
 
+pub fn find_error_definition(errorType: AsmErrorEquates) -> &'static ErrorDefinition {
+    return &ErrorDefinitions.iter().find(|e| e.errorType == errorType).unwrap();
+}
+
+// Tests
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -46,5 +63,13 @@ mod tests {
         assert_eq!(hash_string(String::from("subroutine")), 845);
         assert_eq!(hash_string(String::from("tya")), 709);
         assert_eq!(hash_string(String::from("word")), 668);
+    }
+
+    #[test]
+    fn test_find_error_definition() {
+        assert_eq!(find_error_definition(AsmErrorEquates::ValueMustBeLowerThan10).errorType, AsmErrorEquates::ValueMustBeLowerThan10);
+        assert_eq!(find_error_definition(AsmErrorEquates::LabelMismatch).errorType, AsmErrorEquates::LabelMismatch);
+        assert_eq!(find_error_definition(AsmErrorEquates::EquValueMismatch).fatal, false);
+        assert_eq!(find_error_definition(AsmErrorEquates::NotResolvable).description, "Source is not resolvable.");
 	}
 }

@@ -44,7 +44,7 @@ pub enum Format {
 // as it's about passing invalid ints to error handling, which should never happen with
 // our named enum type.
 // FIXME: revise whether we actually need the u8 conversion
-#[derive(Copy, Clone, IntoPrimitive, TryFromPrimitive, PartialEq, SmartDefault)]
+#[derive(Copy, Clone, Debug, IntoPrimitive, TryFromPrimitive, PartialEq, SmartDefault)]
 #[repr(u8)]
 pub enum AsmErrorEquates {
 	#[default]

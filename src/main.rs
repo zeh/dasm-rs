@@ -49,10 +49,8 @@ use types::enums::{
     Format,
     SortMode
 };
-use types::structs::{
-    ErrorDefinition,
-};
 use utils::{
+    find_error_definition,
     hash_string,
     transient_str_pointer_to_string,
 };
@@ -396,206 +394,6 @@ static mut erroradd1: [libc::c_char; 500] = [0; 500];
 // temp error holders
 static mut erroradd2: [libc::c_char; 500] = [0; 500];
 static mut erroradd3: [libc::c_char; 500] = [0; 500];
-/* Table encapsulates errors, descriptions, and fatality flags. */
-// FIXME: make sure %s interpolation still works (use {} ?)
-#[no_mangle]
-pub static mut sErrorDef: [ErrorDefinition; 39] = [
-	ErrorDefinition {
-		errorType: AsmErrorEquates::None,
-		fatal: true,
-		description: "OK",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::CommandLine,
-		fatal: true,
-		description: "Check command-line format.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::FileError,
-		fatal: true,
-		description: "Unable to open file.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::NotResolvable,
-		fatal: true,
-		description: "Source is not resolvable.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::TooManyPasses,
-		fatal: true,
-		description: "Too many passes (%s).",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::NonAbort,
-		fatal: true,
-		description: "See previous output",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::SyntaxError,
-		fatal: true,
-		description: "Syntax Error \'%s\'.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::ExpressionTableOverflow,
-		fatal: true,
-		description: "Expression table overflow.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::UnbalancedBraces,
-		fatal: true,
-		description: "Unbalanced Braces [].",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::DivisionByZero,
-		fatal: true,
-		description: "Division by zero.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::UnknownMnemonic,
-		fatal: true,
-		description: "Unknown Mnemonic \'%s\'.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::IllegalAddressingMode,
-		fatal: false,
-		description: "Illegal Addressing mode \'%s\'.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::IllegalForcedAddressingMode,
-		fatal: true,
-		description: "Illegal forced Addressing mode on \'%s\'.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::NotEnoughArgumentsPassedToMacro,
-		fatal: true,
-		description: "Not enough args passed to Macro.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::PrematureEOF,
-		fatal: false,
-		description: "Premature EOF.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::IllegalCharacter,
-		fatal: true,
-		description: "Illegal character \'%s\'.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::BranchOutOfRange,
-		fatal: false,
-		description: "Branch out of range (%s bytes).",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::ErrPseudoOpEncountered,
-		fatal: true,
-		description: "ERR pseudo-op encountered.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::OriginReverseIndexed,
-		fatal: false,
-		description: "Origin Reverse-indexed.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::EquValueMismatch,
-		fatal: false,
-		description: "EQU: Value mismatch.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::AddressMustBeLowerThan100,
-		fatal: true,
-		description: "Value in \'%s\' must be <$100.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::AddressMustBeLowerThan10000,
-		fatal: true,
-		description: "Value in \'%s\' must be <$10000.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::IllegalBitSpecification,
-		fatal: true,
-		description: "Illegal bit specification.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::NotEnoughArgs,
-		fatal: true,
-		description: "Not enough arguments.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::LabelMismatch,
-		fatal: false,
-		description: "Label mismatch...\n --> %s",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::MacroRepeated,
-		fatal: true,
-		description: "Macro \"%s\" definition is repeated.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::ValueUndefined,
-		fatal: true,
-		description: "Value Undefined.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::ProcessorNotSupported,
-		fatal: true,
-		description: "Processor \'%s\' not supported.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::RepeatNegative,
-		fatal: false,
-		description: "REPEAT parameter < 0 (ignored).",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::BadError,
-		fatal: true,
-		description: "Bad error value (internal error).",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::OnlyOneProcessorSupported,
-		fatal: true,
-		description: "Only one processor type may be selected.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::BadFormat,
-		fatal: true,
-		description: "Bad output format specified.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::ValueMustBeOneOrFour,
-		fatal: true,
-		description: "Value in \'%s\' must be 1 or 4.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::ValueMustBeLowerThan10,
-		fatal: true,
-		description: "Value in \'%s\' must be <$10.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::ValueMustBeLowerThan8,
-		fatal: true,
-		description: "Value in \'%s\' must be <$8.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::ValueMustBeLowerThanF,
-		fatal: true,
-		description: "Value in \'%s\' must be <$f.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::ValueMustBeLowerThan10000,
-		fatal: true,
-		description: "Value in \'%s\' must be <$10000.",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::IllegalOperandCombination,
-		fatal: true,
-		description: "Illegal combination of operands \'%s\'",
-	},
-	ErrorDefinition {
-		errorType: AsmErrorEquates::EndOfTable, // FIXME: remove? This was added but might not be needed
-		fatal: true,
-		description: "Doh! Internal end-of-table marker, report the bug!",
-	},
-];
 #[no_mangle]
 pub static mut bStopAtEnd: bool = 0 as libc::c_int != 0;
 #[no_mangle]
@@ -2263,7 +2061,7 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool,
     let mut pincfile: *mut _INCFILE = 0 as *mut _INCFILE;
     /* file pointer we print error messages to */
     let mut error_file: *mut FILE = 0 as *mut FILE;
-    if sErrorDef[err as usize].fatal {
+    if find_error_definition(err).fatal {
         bStopAtEnd = 1 as libc::c_int != 0
     }
     pincfile = pIncfile;
@@ -2271,7 +2069,7 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool,
         pincfile = (*pincfile).next
     }
     // FIXME: use real strings; this is a bit messy
-    let mut desc = sErrorDef[err as usize].description.clone().to_owned();
+    let mut desc = find_error_definition(err).description.clone().to_owned();
     desc.push_str("\n\x00");
     str = desc.as_ptr() as *const i8;
     /*
@@ -2456,7 +2254,7 @@ unsafe fn main_0(mut ac: libc::c_int, mut av: *mut *mut libc::c_char)
         passbuffer_output(0 as libc::c_int);
         printf(b"Fatal assembly error: %s\n\x00" as *const u8 as
                    *const libc::c_char,
-               sErrorDef[nError as usize].description);
+               find_error_definition(nError).description);
     }
     DumpSymbolTable(bTableSort);
     passbuffer_cleanup();
