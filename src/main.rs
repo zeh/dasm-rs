@@ -2199,9 +2199,7 @@ unsafe fn main_0(mut ac: libc::c_int, mut av: *mut *mut libc::c_char)
         passbuffer_output(1 as libc::c_int);
         // Only print errors if assembly is unsuccessful
         passbuffer_output(0 as libc::c_int);
-        printf(b"Fatal assembly error: %s\n\x00" as *const u8 as
-                   *const libc::c_char,
-               find_error_definition(nError).description);
+        println!("Fatal assembly error: {}", find_error_definition(nError).description);
     }
     DumpSymbolTable(bTableSort);
     passbuffer_cleanup();
