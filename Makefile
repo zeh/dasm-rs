@@ -29,18 +29,18 @@
 
 # just an alias for build really...
 all: build-release
-	echo "Build complete, use 'make test' to run tests."
+	@echo "Build complete, use 'make test' to run tests."
 
 # install, currently not implemented
 install: build
-	echo "Installation not implemented, you're on your own, sorry."
+	@echo "Installation not implemented, you're on your own, sorry."
 
 # just run all the tests
 test: build-debug
 	echo "Running tests..."
 	(cd test; $(MAKE); cd ..)
-	echo "Tests were run, but testing is not fully automated yet."
-	echo "In other words, don't rely on what you saw too much."
+	@echo "Tests were run, but testing is not fully automated yet."
+	@echo "In other words, don't rely on what you saw too much."
 
 # just build everything and copy binaries to trunk/bin/
 build-debug:
@@ -54,6 +54,16 @@ build-release:
 	mkdir -p bin
 	cp target/release/dasm bin/dasm
 	cp target/release/ftohex bin/ftohex
+	@echo ""
+	@echo "Statistics:"
+	@echo \* ftohex - $$(LC_ALL=en_US.UTF-8 numfmt --grouping $$(du --apparent-size --block=1 bin/ftohex | grep -o -i --regexp='[0-9]*'))b
+	@echo \* dasm - $$(LC_ALL=en_US.UTF-8 numfmt --grouping $$(du --apparent-size --block=1 bin/dasm | grep -o -i --regexp='[0-9]*'))b
+	@echo "* "unsafe" - $$(grep -o 'unsafe' src/*.rs | wc -l)"
+	@echo "* "libc::" - $$(grep -o 'libc::' src/*.rs | wc -l)"
+	@echo "* "memcpy" - $$(grep -o 'memcpy' src/*.rs | wc -l)"
+	@echo "* "malloc" - $$(grep -o '\bmalloc' src/*.rs | wc -l)"
+	@echo ""
+
 
 # release version to use for archive name
 # supply this to make when you run it as
