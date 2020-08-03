@@ -30,11 +30,11 @@ pub mod symbols;
 
 pub mod constants;
 pub mod types;
+pub mod utils;
 
 use constants::{
     ALLOC_SIZE,
     CHAR_TAB,
-    M_HASH_AND,
     MAX_LINES,
     MAX_SYMBOLS,
     S_HASH_SIZE,
@@ -51,6 +51,10 @@ use types::enums::{
 };
 use types::structs::{
     ErrorDefinition,
+};
+use utils::{
+    hash_string,
+    transient_str_pointer_to_string,
 };
 
 extern "C" {
@@ -2086,7 +2090,7 @@ pub unsafe extern "C" fn findmne(mut str: *mut libc::c_char) -> *mut _MNE {
         i += 1
     }
     buf[i as usize] = 0 as libc::c_int as libc::c_char;
-    mne = *MHash.as_mut_ptr().offset(hash1(buf.as_mut_ptr()) as isize);
+    mne = *MHash.as_mut_ptr().offset(hash_string(transient_str_pointer_to_string(buf.as_mut_ptr())) as isize);
     while !mne.is_null() {
         if strcmp(buf.as_mut_ptr(), (*mne).name) == 0 as libc::c_int {
             break ;
@@ -2107,7 +2111,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
     let mut sl: *mut _STRLIST = 0 as *mut _STRLIST;
     let mut mac: *mut _MACRO = 0 as *mut _MACRO;
     let mut mne: *mut _MNE = 0 as *mut _MNE;
-    let mut i: libc::c_uint = 0;
+    let mut i: u16 = 0;
     let mut buf: [libc::c_char; MAX_LINES] = [0; MAX_LINES];
     let mut skipit: libc::c_int =
         !((*Ifstack).xtrue as libc::c_int != 0 &&
@@ -2128,7 +2132,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
         mac =
             permalloc(::std::mem::size_of::<_MACRO>() as libc::c_ulong as
                           libc::c_int) as *mut _MACRO;
-        i = hash1(str);
+        i = hash_string(transient_str_pointer_to_string(str));
         (*mac).next = *MHash.as_mut_ptr().offset(i as isize) as *mut _MACRO;
         (*mac).vect =
             Some(v_execmac as
@@ -2208,21 +2212,12 @@ pub unsafe extern "C" fn addhashtable(mut mne: *mut _MNE) {
             }
             i += 1
         }
-        i = hash1((*mne).name) as libc::c_int;
+        i = hash_string(transient_str_pointer_to_string((*mne).name)) as libc::c_int;
         (*mne).next = *MHash.as_mut_ptr().offset(i as isize);
         let ref mut fresh24 = *MHash.as_mut_ptr().offset(i as isize);
         *fresh24 = mne;
         mne = mne.offset(1)
     };
-}
-unsafe extern "C" fn hash1(mut str: *const libc::c_char) -> libc::c_uint {
-    let mut result: libc::c_uint = 0 as libc::c_int as libc::c_uint;
-    while *str != 0 {
-        let fresh25 = str;
-        str = str.offset(1);
-        result = result << 2 as libc::c_int ^ *fresh25 as libc::c_uint
-    }
-    return result & M_HASH_AND as libc::c_int as libc::c_uint;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pushinclude(mut str: *mut libc::c_char) {
