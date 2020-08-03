@@ -54,15 +54,7 @@ build-release:
 	mkdir -p bin
 	cp target/release/dasm bin/dasm
 	cp target/release/ftohex bin/ftohex
-	@echo ""
-	@echo "Statistics:"
-	@echo \* ftohex - $$(LC_ALL=en_US.UTF-8 numfmt --grouping $$(du --apparent-size --block=1 bin/ftohex | grep -o -i --regexp='[0-9]*'))b
-	@echo \* dasm - $$(LC_ALL=en_US.UTF-8 numfmt --grouping $$(du --apparent-size --block=1 bin/dasm | grep -o -i --regexp='[0-9]*'))b
-	@echo "* "unsafe" - $$(grep -o 'unsafe' src/*.rs | wc -l)"
-	@echo "* "libc::" - $$(grep -o 'libc::' src/*.rs | wc -l)"
-	@echo "* "memcpy" - $$(grep -o 'memcpy' src/*.rs | wc -l)"
-	@echo "* "malloc" - $$(grep -o '\bmalloc' src/*.rs | wc -l)"
-	@echo ""
+	./stats.sh
 
 
 # release version to use for archive name
