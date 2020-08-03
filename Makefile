@@ -41,6 +41,7 @@ test: build-debug
 	(cd test; $(MAKE); cd ..)
 	@echo "Tests were run, but testing is not fully automated yet."
 	@echo "In other words, don't rely on what you saw too much."
+	cargo test
 
 # just build everything and copy binaries to trunk/bin/
 build-debug:

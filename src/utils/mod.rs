@@ -27,3 +27,24 @@ pub fn transient_str_pointer_to_string(str: *const i8) -> String {
     }
     return sstr_all;
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+	#[test]
+	fn test_hash_string() {
+        assert_eq!(hash_string(String::from("")), 0);
+        assert_eq!(hash_string(String::from("cli")), 1001);
+        assert_eq!(hash_string(String::from("ds")), 483);
+        assert_eq!(hash_string(String::from("incbin")), 298);
+        assert_eq!(hash_string(String::from("incdir")), 342);
+        assert_eq!(hash_string(String::from("list")), 40);
+        assert_eq!(hash_string(String::from("processor")), 830);
+        assert_eq!(hash_string(String::from("ror")), 750);
+        assert_eq!(hash_string(String::from("slo")), 751);
+        assert_eq!(hash_string(String::from("subroutine")), 845);
+        assert_eq!(hash_string(String::from("tya")), 709);
+        assert_eq!(hash_string(String::from("word")), 668);
+	}
+}
