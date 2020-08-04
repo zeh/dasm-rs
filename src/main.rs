@@ -18,17 +18,12 @@ extern crate smart_default;
 use libc;
 use std::convert::TryFrom;
 
-pub mod exp;
-pub mod globals;
-pub mod mne6303;
-pub mod mne6502;
-pub mod mne6811;
-pub mod mne68705;
-pub mod mnef8;
-pub mod ops;
-pub mod symbols;
-
 pub mod constants;
+pub mod expressions;
+pub mod globals;
+pub mod operations;
+pub mod processors;
+pub mod symbols;
 pub mod types;
 pub mod utils;
 
