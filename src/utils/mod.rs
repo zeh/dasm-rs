@@ -39,6 +39,11 @@ pub fn transient_str_pointer_to_string(str: *const i8) -> String {
     return sstr_all;
 }
 
+/**
+ * Searches for an ErrorDefinition in the ErrorDefinitions list,
+ * based on its errorType. This replaces the old index access
+ * where the entry would be in the index of the errorType's uint value.
+ */
 pub fn find_error_definition(errorType: AsmErrorEquates) -> &'static ErrorDefinition {
     return &ErrorDefinitions.iter().find(|e| e.errorType == errorType).unwrap();
 }
@@ -53,6 +58,8 @@ pub fn panic(message: &str) {
     println!("{}", message);
     std::process::exit(1);
 }
+
+
 
 // Tests
 
@@ -75,6 +82,8 @@ mod tests {
         assert_eq!(hash_string(String::from("tya")), 709);
         assert_eq!(hash_string(String::from("word")), 668);
     }
+
+    // FIXME: add tests for transient_str_pointer_to_string()
 
     #[test]
     fn test_find_error_definition() {
