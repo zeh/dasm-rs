@@ -50,7 +50,7 @@ use utils::{
     find_error_definition,
     hash_string,
     panic,
-    transient_str_pointer_to_string,
+    transient,
 };
 
 extern "C" {
@@ -906,7 +906,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     Fisclear = 1 as libc::c_int as libc::c_uchar;
                     CheckSum = 0 as libc::c_int as libc::c_ulong;
                     if FI_temp.is_null() {
-                        println!("Warning: Unable to [re]open '{}'", transient_str_pointer_to_string(F_outfile));
+                        println!("Warning: Unable to [re]open '{}'", transient::str_pointer_to_string(F_outfile));
                         return AsmErrorEquates::FileError
                     }
                     if !F_listfile.is_null() {
@@ -921,7 +921,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                                           *const libc::c_char
                                   });
                         if FI_listfile.is_null() {
-                            println!("Warning: Unable to [re]open '{}'", transient_str_pointer_to_string(F_listfile));
+                            println!("Warning: Unable to [re]open '{}'", transient::str_pointer_to_string(F_listfile));
                             return AsmErrorEquates::FileError
                         }
                     }
@@ -1816,7 +1816,7 @@ pub unsafe extern "C" fn findmne(mut str: *mut libc::c_char) -> *mut _MNE {
         i += 1
     }
     buf[i as usize] = 0 as libc::c_int as libc::c_char;
-    mne = *MHash.as_mut_ptr().offset(hash_string(transient_str_pointer_to_string(buf.as_mut_ptr())) as isize);
+    mne = *MHash.as_mut_ptr().offset(hash_string(transient::str_pointer_to_string(buf.as_mut_ptr())) as isize);
     while !mne.is_null() {
         if strcmp(buf.as_mut_ptr(), (*mne).name) == 0 as libc::c_int {
             break ;
@@ -1858,7 +1858,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
         mac =
             permalloc(::std::mem::size_of::<_MACRO>() as libc::c_ulong as
                           libc::c_int) as *mut _MACRO;
-        i = hash_string(transient_str_pointer_to_string(str));
+        i = hash_string(transient::str_pointer_to_string(str));
         (*mac).next = *MHash.as_mut_ptr().offset(i as isize) as *mut _MACRO;
         (*mac).vect =
             Some(v_execmac as
@@ -1938,7 +1938,7 @@ pub unsafe extern "C" fn addhashtable(mut mne: *mut _MNE) {
             }
             i += 1
         }
-        i = hash_string(transient_str_pointer_to_string((*mne).name)) as libc::c_int;
+        i = hash_string(transient::str_pointer_to_string((*mne).name)) as libc::c_int;
         (*mne).next = *MHash.as_mut_ptr().offset(i as isize);
         let ref mut fresh24 = *MHash.as_mut_ptr().offset(i as isize);
         *fresh24 = mne;
@@ -1977,7 +1977,7 @@ pub unsafe extern "C" fn pushinclude(mut str: *mut libc::c_char) {
         pIncfile = inf;
         return
     }
-    println!("Warning: Unable to open '{}'", transient_str_pointer_to_string(str));
+    println!("Warning: Unable to open '{}'", transient::str_pointer_to_string(str));
 }
 #[no_mangle]
 pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool,

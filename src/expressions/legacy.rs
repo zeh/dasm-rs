@@ -9,7 +9,7 @@ use crate::types::enums::{
     AsmErrorEquates,
 };
 use crate::utils::{
-    transient_str_pointer_to_string,
+    transient,
 };
 
 extern "C" {
@@ -1004,7 +1004,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 ((*cur).flags as libc::c_int | 0x8 as libc::c_int) as
                     libc::c_uchar;
             if state.debug {
-                println!("STRING: {}", transient_str_pointer_to_string((*cur).string));
+                println!("STRING: {}", transient::str_pointer_to_string((*cur).string));
             }
         }
         if (*base).addrmode as libc::c_int == 0 as libc::c_int {

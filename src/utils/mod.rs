@@ -9,6 +9,9 @@ use crate::types::structs::{
     ErrorDefinition,
 };
 
+// FIXME: drop this once it's not needed anymore
+pub mod transient;
+
 /**
  * Creates a simple hash for a string.
  * In original C code, "hash1()" in main.c
@@ -20,23 +23,6 @@ pub fn hash_string(text: String) -> u16 {
         result = result << 2 ^ c as u16;
     }
     return result & M_HASH_AND;
-}
-
-/**
- * Converts a *str (typically used for strings in DASM) to a proper Rust String.
- * This is likely inneficient, but should suffice for now.
- * FIXME: this should likely be removed in the future, once we drop all uses of *str.
- */
-pub fn transient_str_pointer_to_string(str: *const i8) -> String {
-    let mut sstr = str;
-    let mut sstr_all = String::from("");
-    unsafe {
-        while *sstr != 0 {
-            sstr_all.push_str(std::str::from_utf8(&[*sstr as u8]).unwrap());
-            sstr = sstr.offset(1);
-        }
-    }
-    return sstr_all;
 }
 
 /**
@@ -82,8 +68,6 @@ mod tests {
         assert_eq!(hash_string(String::from("tya")), 709);
         assert_eq!(hash_string(String::from("word")), 668);
     }
-
-    // FIXME: add tests for transient_str_pointer_to_string()
 
     #[test]
     fn test_find_error_definition() {
