@@ -1,5 +1,6 @@
 use libc;
 
+use crate::globals::state;
 use crate::types::flags::{
     ReasonCodes,
 };
@@ -34,8 +35,6 @@ extern "C" {
     fn strlen(_: *const libc::c_char) -> libc::c_ulong;
     #[no_mangle]
     static mut Mnext: libc::c_int;
-    #[no_mangle]
-    static mut Xdebug: bool;
     #[no_mangle]
     static mut Redo_why: libc::c_ulong;
     #[no_mangle]
@@ -158,7 +157,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
     cur = allocsymbol();
     base = cur;
     while *str != 0 {
-        if Xdebug {
+        if state.debug {
             printf(b"char \'%c\'\n\x00" as *const u8 as *const libc::c_char,
                    *str as libc::c_int);
         }
@@ -900,7 +899,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                         (*cur).flags =
                             ((*cur).flags as libc::c_int | 0x8 as libc::c_int)
                                 as libc::c_uchar;
-                        if Xdebug {
+                        if state.debug {
                             printf(b"STRING: %s\n\x00" as *const u8 as
                                        *const libc::c_char, (*cur).string);
                         }
@@ -1004,7 +1003,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             (*cur).flags =
                 ((*cur).flags as libc::c_int | 0x8 as libc::c_int) as
                     libc::c_uchar;
-            if Xdebug {
+            if state.debug {
                 println!("STRING: {}", transient_str_pointer_to_string((*cur).string));
             }
         }
@@ -1030,7 +1029,7 @@ pub unsafe extern "C" fn IsAlphaNum(mut c: libc::c_int) -> libc::c_int {
 }
 #[no_mangle]
 pub unsafe extern "C" fn evaltop() {
-    if Xdebug {
+    if state.debug {
         printf(b"evaltop @(A,O) %d %d\n\x00" as *const u8 as
                    *const libc::c_char, Argi, Opi);
     }
@@ -1104,7 +1103,7 @@ pub unsafe extern "C" fn evaltop() {
 unsafe extern "C" fn stackarg(mut val: libc::c_long, mut flags: libc::c_int,
                               mut ptr1: *const libc::c_char) {
     let mut str: *mut libc::c_char = 0 as *mut libc::c_char;
-    if Xdebug {
+    if state.debug {
         printf(b"stackarg %ld (@%d)\n\x00" as *const u8 as
                    *const libc::c_char, val, Argi);
     }
@@ -1146,10 +1145,12 @@ unsafe extern "C" fn stackarg(mut val: libc::c_long, mut flags: libc::c_int,
 }
 #[no_mangle]
 pub unsafe extern "C" fn doop(mut func: opfunc_t, mut pri: libc::c_int) {
-    if Xdebug { println!("doop"); }
+    if state.debug {
+        println!("doop");
+    }
     Lastwasop = 1 as libc::c_int;
     if Opi == Opibase || pri == 128 as libc::c_int {
-        if Xdebug {
+        if state.debug {
             printf(b"doop @ %d unary\n\x00" as *const u8 as
                        *const libc::c_char, Opi);
         }
@@ -1162,7 +1163,7 @@ pub unsafe extern "C" fn doop(mut func: opfunc_t, mut pri: libc::c_int) {
               pri <= Oppri[(Opi - 1 as libc::c_int) as usize] {
         evaltop();
     }
-    if Xdebug {
+    if state.debug {
         printf(b"doop @ %d\n\x00" as *const u8 as *const libc::c_char, Opi);
     }
     Opdis[Opi as usize] = func;

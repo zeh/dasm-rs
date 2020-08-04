@@ -4,6 +4,7 @@ use crate::constants::{
     MAX_SYMBOLS,
     S_HASH_AND,
 };
+use crate::globals::state;
 use crate::types::flags::{
     ReasonCodes,
 };
@@ -36,8 +37,6 @@ extern "C" {
     static mut Csegment: *mut _SEGMENT;
     #[no_mangle]
     static mut Av: [*mut libc::c_char; 0];
-    #[no_mangle]
-    static mut Xdebug: bool;
     #[no_mangle]
     static mut Redo_why: libc::c_ulong;
     #[no_mangle]
@@ -273,7 +272,7 @@ pub unsafe extern "C" fn programlabel() {
                0x1 as libc::c_int | 0x4 as libc::c_int {
             Redo += 1;
             Redo_why |= ReasonCodes::ForwardReference;
-            if Xdebug {
+            if state.debug {
                 printf(b"redo 13: \'%s\' %04x %04x\n\x00" as *const u8 as
                            *const libc::c_char, (*sym).name,
                        (*sym).flags as libc::c_int, cflags as libc::c_int);
@@ -294,7 +293,7 @@ pub unsafe extern "C" fn programlabel() {
                 //     below was causing aborts if verbosity was up, even when the
                 //     phase errors were the result of unevaluated IF expressions in
                 //     the previous pass.
-                //if (F_verbose >= 1 || !(Redo_if & (ReasonCodes::Obscure)))
+                //if (state.verbose >= 1 || !(Redo_if & (ReasonCodes::Obscure)))
                 if Redo_if & ReasonCodes::Obscure == 0 {
                     let mut sBuffer: [libc::c_char; MAX_SYMBOLS * 4] = [0; MAX_SYMBOLS * 4];
                     sprintf(sBuffer.as_mut_ptr(),

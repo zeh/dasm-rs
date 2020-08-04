@@ -4,11 +4,6 @@ use crate::constants::{
     M_HASH_SIZE,
     S_HASH_SIZE,
 };
-use crate::types::enums::{
-    ErrorFormat,
-    Format,
-    SortMode
-};
 
 extern "C" {
     pub type _IO_wide_data;
@@ -246,12 +241,6 @@ pub static mut Lastlocaldollarindex: libc::c_ulong = 0;
 #[no_mangle]
 pub static mut Processor: libc::c_ulong = 0 as libc::c_int as libc::c_ulong;
 #[no_mangle]
-pub static mut bTrace: bool = 0 as libc::c_int != 0;
-#[no_mangle]
-pub static mut Xdebug: bool = false;
-#[no_mangle]
-pub static mut bStrictMode: bool = 0 as libc::c_int != 0;
-#[no_mangle]
 pub static mut Outputformat: libc::c_uchar = 0;
 #[no_mangle]
 pub static mut Redo_why: libc::c_ulong = 0 as libc::c_int as libc::c_ulong;
@@ -267,14 +256,6 @@ pub static mut ListMode: libc::c_char = 1 as libc::c_int as libc::c_char;
 #[no_mangle]
 pub static mut CheckSum: libc::c_ulong = 0;
 /*	output data checksum		*/
-#[no_mangle]
-pub static mut F_format: Format = Format::Default; // Special static case, since we can't use ::default();
-#[no_mangle]
-pub static mut F_sortmode: SortMode = SortMode::Alpha; // Special static case, since we can't use ::default();
-#[no_mangle]
-pub static mut F_errorformat: ErrorFormat = ErrorFormat::Woe; // Special static case, since we can't use ::default();
-#[no_mangle]
-pub static mut F_verbose: libc::c_uchar = 0;
 #[no_mangle]
 pub static mut F_outfile: *const libc::c_char =
     b"a.out\x00" as *const u8 as *const libc::c_char;

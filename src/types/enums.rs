@@ -93,6 +93,19 @@ pub enum AsmErrorEquates {
 	EndOfTable, // FIXME: remove? This was added but might not be needed
 }
 
+// In original C code, used for F_verbose but without a clear enum
+// FIXME: remove derives as possible
+#[derive(Copy, Clone, Debug, IntoPrimitive, TryFromPrimitive, PartialEq, SmartDefault)]
+#[repr(u8)]
+pub enum Verbosity {
+	#[default]
+	None = 0,
+	One = 1,
+	Two = 2,
+	Three = 3,
+	Four = 4,
+}
+
 // In original C code, "ADDRESS_MODES"
 #[derive(Copy, Clone, PartialEq)]
 pub enum AddressModes {

@@ -5,6 +5,7 @@ use crate::constants::{
     MAX_LINES,
     MAX_MACRO_LEVEL,
 };
+use crate::globals::state;
 use crate::types::flags::{
     ReasonCodes,
 };
@@ -18,8 +19,6 @@ extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
     pub type _IO_marker;
-    #[no_mangle]
-    static mut bTrace: bool;
     #[no_mangle]
     fn fclose(__stream: *mut FILE) -> libc::c_int;
     #[no_mangle]
@@ -142,13 +141,9 @@ extern "C" {
     #[no_mangle]
     static mut FI_listfile: *mut FILE;
     #[no_mangle]
-    static mut bStrictMode: bool;
-    #[no_mangle]
     static mut MsbOrder: libc::c_uchar;
     #[no_mangle]
     static mut Redo_why: libc::c_ulong;
-    #[no_mangle]
-    static mut F_format: Format;
     #[no_mangle]
     static mut Lastlocaldollarindex: libc::c_ulong;
     #[no_mangle]
@@ -394,7 +389,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             libc::c_uchar;
     programlabel();
     symbase = eval(str, 1 as libc::c_int);
-    if bTrace {
+    if state.trace {
         printf(b"PC: %04lx  MNEMONIC: %s  addrmode: %d  \x00" as *const u8 as
                    *const libc::c_char, (*Csegment).org, (*mne).name,
                (*symbase).addrmode as libc::c_int);
@@ -431,7 +426,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
               == 0 && *Cvt.as_mut_ptr().offset(addrmode as isize) != 0 {
         addrmode = *Cvt.as_mut_ptr().offset(addrmode as isize) as libc::c_int
     }
-    if bTrace {
+    if state.trace {
         printf(b"mnemask: %08lx adrmode: %d  Cvt[am]: %d\n\x00" as *const u8
                    as *const libc::c_char, (*mne).okmask, addrmode,
                *Cvt.as_mut_ptr().offset(addrmode as isize));
@@ -464,7 +459,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             return
         }
     }
-    if bTrace {
+    if state.trace {
         printf(b"final addrmode = %d\n\x00" as *const u8 as
                    *const libc::c_char, addrmode);
     }
@@ -656,7 +651,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
 #[no_mangle]
 pub unsafe extern "C" fn v_trace(mut str: *mut libc::c_char,
                                  mut _dummy: *mut _MNE) {
-    bTrace =
+    state.trace =
         *str.offset(1 as libc::c_int as isize) as libc::c_int == 'n' as i32;
 }
 #[no_mangle]
@@ -1054,7 +1049,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
             match Mnext {
                 6 => {
                     //any value outside two's complement +ve and +ve word representation is invalid...
-                    if bStrictMode as libc::c_int != 0 &&
+                    if state.strictMode &&
                            (value < -(0xffff as libc::c_int) as libc::c_long
                                 ||
                                 value > 0xffff as libc::c_int as libc::c_long)
@@ -1963,13 +1958,13 @@ pub unsafe extern "C" fn generate() {
                     return
                 }
                 org = (*Csegment).org;
-                if F_format == Format::Default || F_format == Format::Ras {
+                if state.format == Format::Default || state.format == Format::Ras {
                     putc((org & 0xff as libc::c_int as libc::c_ulong) as
                              libc::c_int, FI_temp);
                     putc((org >> 8 as libc::c_int &
                               0xff as libc::c_int as libc::c_ulong) as
                              libc::c_int, FI_temp);
-                    if F_format == Format::Ras {
+                    if state.format == Format::Ras {
                         Seekback = ftell(FI_temp);
                         Seglen = 0 as libc::c_int as libc::c_long;
                         putc(0 as libc::c_int, FI_temp);
@@ -1977,7 +1972,7 @@ pub unsafe extern "C" fn generate() {
                     }
                 }
             }
-            match F_format {
+            match state.format {
                 Format::Raw | Format::Default => {
                     if (*Csegment).org < org {
                         printf(b"segment: %s %s  vs current org: %04lx\n\x00"
@@ -2037,7 +2032,7 @@ pub unsafe extern "C" fn generate() {
 #[no_mangle]
 pub unsafe extern "C" fn closegenerate() {
     if Redo == 0 {
-        if F_format == Format::Ras {
+        if state.format == Format::Ras {
             fseek(FI_temp, Seekback, 0 as libc::c_int);
             putc((Seglen & 0xff as libc::c_int as libc::c_long) as
                      libc::c_int, FI_temp);
