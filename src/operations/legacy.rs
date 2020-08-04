@@ -12,7 +12,9 @@ use crate::types::flags::{
 use crate::types::enums::{
     AddressModes,
     AsmErrorEquates,
+    BitOrder,
     Format,
+    ListMode,
 };
 
 extern "C" {
@@ -97,8 +99,6 @@ extern "C" {
     #[no_mangle]
     static mut Mlevel: libc::c_uint;
     #[no_mangle]
-    static mut ListMode: libc::c_char;
-    #[no_mangle]
     static mut Processor: libc::c_ulong;
     #[no_mangle]
     static mut CheckSum: libc::c_ulong;
@@ -133,27 +133,17 @@ extern "C" {
     #[no_mangle]
     fn FreeSymbolList(sym: *mut _SYMBOL);
     #[no_mangle]
-    static mut Fisclear: libc::c_uchar;
-    #[no_mangle]
     static mut FI_temp: *mut FILE;
     #[no_mangle]
     static mut F_listfile: *mut libc::c_char;
     #[no_mangle]
     static mut FI_listfile: *mut FILE;
     #[no_mangle]
-    static mut MsbOrder: libc::c_uchar;
-    #[no_mangle]
-    static mut Redo_why: libc::c_ulong;
-    #[no_mangle]
     static mut Lastlocaldollarindex: libc::c_ulong;
     #[no_mangle]
     fn programlabel();
     #[no_mangle]
     static mut Localdollarindex: libc::c_ulong;
-    #[no_mangle]
-    static mut Redo: libc::c_int;
-    #[no_mangle]
-    static mut Redo_if: libc::c_ulong;
     #[no_mangle]
     static mut Localindex: libc::c_ulong;
     #[no_mangle]
@@ -315,21 +305,21 @@ pub static mut Glen: libc::c_int = 0;
 #[no_mangle]
 pub unsafe extern "C" fn v_processor(mut str: *mut libc::c_char,
                                      mut _dummy: *mut _MNE) {
-    static mut bCalled: bool = 0 as libc::c_int != 0; /*	lsb,msb */
-    let mut PreviousProcessor: libc::c_ulong = Processor; /*	msb,lsb */
-    Processor = 0 as libc::c_int as libc::c_ulong; /*	msb,lsb */
+    static mut bCalled: bool = 0 as libc::c_int != 0;
+    let mut PreviousProcessor: libc::c_ulong = Processor;
+    Processor = 0 as libc::c_int as libc::c_ulong;
     if strcmp(str, b"6502\x00" as *const u8 as *const libc::c_char) ==
            0 as libc::c_int {
         if !bCalled {
-            addhashtable(Mne6502.as_mut_ptr()); /*	msb,lsb */
-        } /*	msb,lsb */
-        MsbOrder = 0 as libc::c_int as libc::c_uchar;
+            addhashtable(Mne6502.as_mut_ptr());
+        }
+        state.execution.bitOrder = BitOrder::LeastMost;
         Processor = 6502 as libc::c_int as libc::c_ulong
     }
     if strcmp(str, b"6803\x00" as *const u8 as *const libc::c_char) ==
            0 as libc::c_int {
         if !bCalled { addhashtable(Mne6803.as_mut_ptr()); }
-        MsbOrder = 1 as libc::c_int as libc::c_uchar;
+        state.execution.bitOrder = BitOrder::MostLeast;
         Processor = 6803 as libc::c_int as libc::c_ulong
     }
     if strcmp(str, b"HD6303\x00" as *const u8 as *const libc::c_char) ==
@@ -340,13 +330,13 @@ pub unsafe extern "C" fn v_processor(mut str: *mut libc::c_char,
             addhashtable(Mne6803.as_mut_ptr());
             addhashtable(MneHD6303.as_mut_ptr());
         }
-        MsbOrder = 1 as libc::c_int as libc::c_uchar;
+        state.execution.bitOrder = BitOrder::MostLeast;
         Processor = 6303 as libc::c_int as libc::c_ulong
     }
     if strcmp(str, b"68705\x00" as *const u8 as *const libc::c_char) ==
            0 as libc::c_int {
         if !bCalled { addhashtable(Mne68705.as_mut_ptr()); }
-        MsbOrder = 1 as libc::c_int as libc::c_uchar;
+        state.execution.bitOrder = BitOrder::MostLeast;
         Processor = 68705 as libc::c_int as libc::c_ulong
     }
     if strcmp(str, b"68HC11\x00" as *const u8 as *const libc::c_char) ==
@@ -354,7 +344,7 @@ pub unsafe extern "C" fn v_processor(mut str: *mut libc::c_char,
            strcmp(str, b"68hc11\x00" as *const u8 as *const libc::c_char) ==
                0 as libc::c_int {
         if !bCalled { addhashtable(Mne68HC11.as_mut_ptr()); }
-        MsbOrder = 1 as libc::c_int as libc::c_uchar;
+        state.execution.bitOrder = BitOrder::MostLeast;
         Processor = 6811 as libc::c_int as libc::c_ulong
     }
     if strcmp(str, b"F8\x00" as *const u8 as *const libc::c_char) ==
@@ -362,7 +352,7 @@ pub unsafe extern "C" fn v_processor(mut str: *mut libc::c_char,
            strcmp(str, b"f8\x00" as *const u8 as *const libc::c_char) ==
                0 as libc::c_int {
         if !bCalled { addhashtable(MneF8.as_mut_ptr()); }
-        MsbOrder = 1 as libc::c_int as libc::c_uchar;
+        state.execution.bitOrder = BitOrder::MostLeast;
         Processor = 0xf8 as libc::c_int as libc::c_ulong
     }
     bCalled = 1 as libc::c_int != 0;
@@ -389,7 +379,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             libc::c_uchar;
     programlabel();
     symbase = eval(str, 1 as libc::c_int);
-    if state.trace {
+    if state.execution.trace {
         printf(b"PC: %04lx  MNEMONIC: %s  addrmode: %d  \x00" as *const u8 as
                    *const libc::c_char, (*Csegment).org, (*mne).name,
                (*symbase).addrmode as libc::c_int);
@@ -397,8 +387,8 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
     sym = symbase;
     while !sym.is_null() {
         if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
-            Redo += 1;
-            Redo_why |= ReasonCodes::MnemonicNotResolved
+            state.execution.redoIndex += 1;
+            state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved
         }
         sym = (*sym).next
     }
@@ -426,7 +416,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
               == 0 && *Cvt.as_mut_ptr().offset(addrmode as isize) != 0 {
         addrmode = *Cvt.as_mut_ptr().offset(addrmode as isize) as libc::c_int
     }
-    if state.trace {
+    if state.execution.trace {
         printf(b"mnemask: %08lx adrmode: %d  Cvt[am]: %d\n\x00" as *const u8
                    as *const libc::c_char, (*mne).okmask, addrmode,
                *Cvt.as_mut_ptr().offset(addrmode as isize));
@@ -441,8 +431,8 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
                0 as libc::c_int != 0, sBuffer.as_mut_ptr());
         FreeSymbolList(symbase);
         //FIX
-        Redo += 1;
-        Redo_why |= ReasonCodes::MnemonicNotResolved;
+        state.execution.redoIndex += 1;
+        state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved;
         return
     }
     if Mnext >= 0 as libc::c_int && Mnext < AddressModes::length() as libc::c_int {
@@ -454,12 +444,12 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
                    0 as libc::c_int != 0, (*mne).name);
             FreeSymbolList(symbase);
             //FIX: Cause assembly to fail when an invalid mode is used for an opcode...
-            Redo += 1;
-            Redo_why |= ReasonCodes::MnemonicNotResolved;
+            state.execution.redoIndex += 1;
+            state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved;
             return
         }
     }
-    if state.trace {
+    if state.execution.trace {
         printf(b"final addrmode = %d\n\x00" as *const u8 as
                    *const libc::c_char, addrmode);
     }
@@ -562,7 +552,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             }
             if *Opsize.as_mut_ptr().offset(addrmode as isize) ==
                    2 as libc::c_int as libc::c_uint {
-                if MsbOrder != 0 {
+                if state.execution.bitOrder != BitOrder::LeastMost {
                     Gen[(opidx as libc::c_int - 1 as libc::c_int) as usize] =
                         ((*sym).value >> 8 as libc::c_int) as libc::c_uchar;
                     let fresh3 = opidx;
@@ -629,8 +619,8 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
                             dest);
                     asmerr(AsmErrorEquates::BranchOutOfRange,
                            0 as libc::c_int != 0, sBuffer_1.as_mut_ptr());
-                    Redo += 1;
-                    Redo_why |= ReasonCodes::BranchOutOfRange;
+                    state.execution.redoIndex += 1;
+                    state.execution.redoWhy |= ReasonCodes::BranchOutOfRange;
                     (*sym).flags =
                         ((*sym).flags as libc::c_int | 0x1 as libc::c_int) as
                             libc::c_uchar;
@@ -651,7 +641,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
 #[no_mangle]
 pub unsafe extern "C" fn v_trace(mut str: *mut libc::c_char,
                                  mut _dummy: *mut _MNE) {
-    state.trace =
+    state.execution.trace =
         *str.offset(1 as libc::c_int as isize) as libc::c_int == 'n' as i32;
 }
 #[no_mangle]
@@ -682,8 +672,10 @@ pub unsafe extern "C" fn v_list(mut str: *mut libc::c_char,
                   strncmp(str, b"OFF\x00" as *const u8 as *const libc::c_char,
                           2 as libc::c_int as libc::c_ulong) ==
                       0 as libc::c_int {
-        ListMode = 0 as libc::c_int as libc::c_char
-    } else { ListMode = 1 as libc::c_int as libc::c_char };
+        state.execution.listMode = ListMode::None
+    } else {
+        state.execution.listMode = ListMode::List
+    };
 }
 unsafe extern "C" fn getfilename(mut str: *mut libc::c_char)
  -> *mut libc::c_char {
@@ -742,7 +734,7 @@ pub unsafe extern "C" fn v_incbin(mut str: *mut libc::c_char,
     buf = getfilename(str);
     binfile = pfopen(buf, b"rb\x00" as *const u8 as *const libc::c_char);
     if !binfile.is_null() {
-        if Redo != 0 {
+        if state.execution.redoIndex != 0 {
             /* optimize: don't actually read the file if not needed */
             fseek(binfile, 0 as libc::c_int as libc::c_long,
                   2 as libc::c_int);
@@ -927,8 +919,8 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
     while !sym.is_null() {
         value = (*sym).value;
         if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
-            Redo += 1;
-            Redo_why |= ReasonCodes::DCNotResolved
+            state.execution.redoIndex += 1;
+            state.execution.redoWhy |= ReasonCodes::DCNotResolved
         }
         if (*sym).flags as libc::c_int & 0x8 as libc::c_int != 0 {
             let mut ptr: *mut libc::c_uchar =
@@ -941,14 +933,14 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
                     tmp = eval(macstr, 0 as libc::c_int);
                     value = (*tmp).value;
                     if (*tmp).flags as libc::c_int & 0x1 as libc::c_int != 0 {
-                        Redo += 1;
-                        Redo_why |= ReasonCodes::DVNotResolvedProbably
+                        state.execution.redoIndex += 1;
+                        state.execution.redoWhy |= ReasonCodes::DVNotResolvedProbably
                     }
                     FreeSymbolList(tmp);
                 }
                 match Mnext {
                     6 => {
-                        if MsbOrder != 0 {
+                        if state.execution.bitOrder != BitOrder::LeastMost {
                             let fresh7 = Glen;
                             Glen = Glen + 1;
                             Gen[fresh7 as usize] =
@@ -975,7 +967,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
                         }
                     }
                     19 => {
-                        if MsbOrder != 0 {
+                        if state.execution.bitOrder != BitOrder::LeastMost {
                             let fresh11 = Glen;
                             Glen = Glen + 1;
                             Gen[fresh11 as usize] =
@@ -1041,15 +1033,15 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
                 tmp = eval(macstr, 0 as libc::c_int);
                 value = (*tmp).value;
                 if (*tmp).flags as libc::c_int & 0x1 as libc::c_int != 0 {
-                    Redo += 1;
-                    Redo_why |= ReasonCodes::DVNotResolvedCould
+                    state.execution.redoIndex += 1;
+                    state.execution.redoWhy |= ReasonCodes::DVNotResolvedCould
                 }
                 FreeSymbolList(tmp);
             }
             match Mnext {
                 6 => {
                     //any value outside two's complement +ve and +ve word representation is invalid...
-                    if state.strictMode &&
+                    if state.parameters.strictMode &&
                            (value < -(0xffff as libc::c_int) as libc::c_long
                                 ||
                                 value > 0xffff as libc::c_int as libc::c_long)
@@ -1061,7 +1053,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
                         asmerr(AsmErrorEquates::AddressMustBeLowerThan10000,
                                0 as libc::c_int != 0, sBuffer_0.as_mut_ptr());
                     }
-                    if MsbOrder != 0 {
+                    if state.execution.bitOrder != BitOrder::LeastMost {
                         let fresh20 = Glen;
                         Glen = Glen + 1;
                         Gen[fresh20 as usize] =
@@ -1088,7 +1080,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
                     }
                 }
                 19 => {
-                    if MsbOrder != 0 {
+                    if state.execution.bitOrder != BitOrder::LeastMost {
                         let fresh24 = Glen;
                         Glen = Glen + 1;
                         Gen[fresh24 as usize] =
@@ -1175,14 +1167,14 @@ pub unsafe extern "C" fn v_ds(mut str: *mut libc::c_char,
     if !sym.is_null() {
         if !(*sym).next.is_null() { filler = (*(*sym).next).value }
         if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
-            Redo += 1;
-            Redo_why |= ReasonCodes::DSNotResolved
+            state.execution.redoIndex += 1;
+            state.execution.redoWhy |= ReasonCodes::DSNotResolved
         } else {
             if !(*sym).next.is_null() &&
                    (*(*sym).next).flags as libc::c_int & 0x1 as libc::c_int !=
                        0 {
-                Redo += 1;
-                Redo_why |= ReasonCodes::DSNotResolved
+                state.execution.redoIndex += 1;
+                state.execution.redoWhy |= ReasonCodes::DSNotResolved
             }
             genfill(filler, (*sym).value, mult);
         }
@@ -1271,15 +1263,15 @@ pub unsafe extern "C" fn v_align(mut str: *mut libc::c_char,
     }
     if !(*sym).next.is_null() {
         if (*(*sym).next).flags as libc::c_int & 0x1 as libc::c_int != 0 {
-            Redo += 1;
-            Redo_why |= ReasonCodes::AlignNotResolved
+            state.execution.redoIndex += 1;
+            state.execution.redoWhy |= ReasonCodes::AlignNotResolved
         } else { fill = (*(*sym).next).value as libc::c_uchar }
     }
     if rorg != 0 {
         if ((*Csegment).rflags as libc::c_int | (*sym).flags as libc::c_int) &
                0x1 as libc::c_int != 0 {
-            Redo += 1;
-            Redo_why |= ReasonCodes::AlignRelocatableOriginNotKnown
+            state.execution.redoIndex += 1;
+            state.execution.redoWhy |= ReasonCodes::AlignRelocatableOriginNotKnown
         } else {
             let mut n: libc::c_long =
                 ((*sym).value as
@@ -1293,8 +1285,8 @@ pub unsafe extern "C" fn v_align(mut str: *mut libc::c_char,
         }
     } else if ((*Csegment).flags as libc::c_int | (*sym).flags as libc::c_int)
                   & 0x1 as libc::c_int != 0 {
-        Redo += 1;
-        Redo_why |= ReasonCodes::AlignNormalOriginNotKnown
+        state.execution.redoIndex += 1;
+        state.execution.redoWhy |= ReasonCodes::AlignNormalOriginNotKnown
     } else {
         let mut n_0: libc::c_long =
             ((*sym).value as
@@ -1368,8 +1360,8 @@ pub unsafe extern "C" fn v_equ(mut str: *mut libc::c_char,
     }
     if (*lab).flags as libc::c_int & 0x1 as libc::c_int == 0 {
         if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
-            Redo += 1;
-            Redo_why |= ReasonCodes::EquNotResolved
+            state.execution.redoIndex += 1;
+            state.execution.redoWhy |= ReasonCodes::EquNotResolved
         } else if (*lab).value != (*sym).value {
             asmerr(AsmErrorEquates::EquValueMismatch,
                    0 as libc::c_int != 0, 0 as *const libc::c_char);
@@ -1377,8 +1369,8 @@ pub unsafe extern "C" fn v_equ(mut str: *mut libc::c_char,
                        as *const u8 as *const libc::c_char,
                    *Av.as_mut_ptr().offset(0 as libc::c_int as isize),
                    (*lab).value, (*sym).value);
-            Redo += 1;
-            Redo_why |= ReasonCodes::EquValueMismatch
+            state.execution.redoIndex += 1;
+            state.execution.redoWhy |= ReasonCodes::EquValueMismatch
         }
     }
     (*lab).value = (*sym).value;
@@ -1762,11 +1754,11 @@ pub unsafe extern "C" fn v_if(mut str: *mut libc::c_char,
     programlabel();
     sym = eval(str, 0 as libc::c_int);
     if (*sym).flags != 0 {
-        Redo += 1;
-        Redo_why |= ReasonCodes::IfNotResolved;
+        state.execution.redoIndex += 1;
+        state.execution.redoWhy |= ReasonCodes::IfNotResolved;
         pushif(0 as libc::c_int != 0);
         (*Ifstack).acctrue = 0 as libc::c_int as libc::c_uchar;
-        Redo_if |= 1 as libc::c_int as libc::c_ulong
+        state.execution.redoIf |= 1 as libc::c_int as libc::c_ulong
     } else { pushif((*sym).value != 0); }
     FreeSymbolList(sym);
 }
@@ -1827,8 +1819,8 @@ pub unsafe extern "C" fn v_repeat(mut str: *mut libc::c_char,
     (*rp).count = (*sym).value as libc::c_ulong;
     (*rp).flags = (*sym).flags;
     if (*rp).flags as libc::c_int != 0 as libc::c_int {
-        Redo += 1;
-        Redo_why |= ReasonCodes::RepeatNotResolved
+        state.execution.redoIndex += 1;
+        state.execution.redoWhy |= ReasonCodes::RepeatNotResolved
     }
     Reploop = rp;
     FreeSymbolList(sym);
@@ -1941,7 +1933,7 @@ pub unsafe extern "C" fn generate() {
     let mut seekpos: libc::c_long = 0;
     static mut org: libc::c_ulong = 0;
     let mut i: libc::c_int = 0;
-    if Redo == 0 {
+    if state.execution.redoIndex == 0 {
         if (*Csegment).flags as libc::c_int & 0x10 as libc::c_int == 0 {
             i = Glen - 1 as libc::c_int;
             while i >= 0 as libc::c_int {
@@ -1949,22 +1941,22 @@ pub unsafe extern "C" fn generate() {
                     CheckSum.wrapping_add(Gen[i as usize] as libc::c_ulong);
                 i -= 1
             }
-            if Fisclear != 0 {
-                Fisclear = 0 as libc::c_int as libc::c_uchar;
+            if state.execution.isClear {
+                state.execution.isClear = false;
                 if (*Csegment).flags as libc::c_int & 0x1 as libc::c_int != 0
                    {
-                    Redo += 1;
-                    Redo_why |= ReasonCodes::Obscure;
+                    state.execution.redoIndex += 1;
+                    state.execution.redoWhy |= ReasonCodes::Obscure;
                     return
                 }
                 org = (*Csegment).org;
-                if state.format == Format::Default || state.format == Format::Ras {
+                if state.parameters.format == Format::Default || state.parameters.format == Format::Ras {
                     putc((org & 0xff as libc::c_int as libc::c_ulong) as
                              libc::c_int, FI_temp);
                     putc((org >> 8 as libc::c_int &
                               0xff as libc::c_int as libc::c_ulong) as
                              libc::c_int, FI_temp);
-                    if state.format == Format::Ras {
+                    if state.parameters.format == Format::Ras {
                         Seekback = ftell(FI_temp);
                         Seglen = 0 as libc::c_int as libc::c_long;
                         putc(0 as libc::c_int, FI_temp);
@@ -1972,7 +1964,7 @@ pub unsafe extern "C" fn generate() {
                     }
                 }
             }
-            match state.format {
+            match state.parameters.format {
                 Format::Raw | Format::Default => {
                     if (*Csegment).org < org {
                         printf(b"segment: %s %s  vs current org: %04lx\n\x00"
@@ -2031,8 +2023,8 @@ pub unsafe extern "C" fn generate() {
 }
 #[no_mangle]
 pub unsafe extern "C" fn closegenerate() {
-    if Redo == 0 {
-        if state.format == Format::Ras {
+    if state.execution.redoIndex == 0 {
+        if state.parameters.format == Format::Ras {
             fseek(FI_temp, Seekback, 0 as libc::c_int);
             putc((Seglen & 0xff as libc::c_int as libc::c_long) as
                      libc::c_int, FI_temp);
@@ -2070,7 +2062,7 @@ pub unsafe extern "C" fn genfill(mut fill: libc::c_long,
             while (i as libc::c_ulong) <
                       ::std::mem::size_of::<[libc::c_uchar; 1024]>() as
                           libc::c_ulong {
-                if MsbOrder != 0 {
+                if state.execution.bitOrder != BitOrder::LeastMost {
                     Gen[(i + 0 as libc::c_int) as usize] = c1;
                     Gen[(i + 1 as libc::c_int) as usize] = c0
                 } else {
@@ -2086,7 +2078,7 @@ pub unsafe extern "C" fn genfill(mut fill: libc::c_long,
             while (i as libc::c_ulong) <
                       ::std::mem::size_of::<[libc::c_uchar; 1024]>() as
                           libc::c_ulong {
-                if MsbOrder != 0 {
+                if state.execution.bitOrder != BitOrder::LeastMost {
                     Gen[(i + 0 as libc::c_int) as usize] = c3;
                     Gen[(i + 1 as libc::c_int) as usize] = c2;
                     Gen[(i + 2 as libc::c_int) as usize] = c1;

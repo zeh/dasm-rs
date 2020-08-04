@@ -38,12 +38,6 @@ extern "C" {
     #[no_mangle]
     static mut Av: [*mut libc::c_char; 0];
     #[no_mangle]
-    static mut Redo_why: libc::c_ulong;
-    #[no_mangle]
-    static mut Redo: libc::c_int;
-    #[no_mangle]
-    static mut Redo_if: libc::c_ulong;
-    #[no_mangle]
     static mut Localindex: libc::c_ulong;
     #[no_mangle]
     static mut Localdollarindex: libc::c_ulong;
@@ -270,17 +264,17 @@ pub unsafe extern "C" fn programlabel() {
         if (*sym).flags as libc::c_int &
                (0x1 as libc::c_int | 0x4 as libc::c_int) ==
                0x1 as libc::c_int | 0x4 as libc::c_int {
-            Redo += 1;
-            Redo_why |= ReasonCodes::ForwardReference;
-            if state.debug {
+            state.execution.redoIndex += 1;
+            state.execution.redoWhy |= ReasonCodes::ForwardReference;
+            if state.parameters.debug {
                 printf(b"redo 13: \'%s\' %04x %04x\n\x00" as *const u8 as
                            *const libc::c_char, (*sym).name,
                        (*sym).flags as libc::c_int, cflags as libc::c_int);
             }
         } else if cflags as libc::c_int & 0x1 as libc::c_int != 0 &&
                       (*sym).flags as libc::c_int & 0x4 as libc::c_int != 0 {
-            Redo += 1;
-            Redo_why |= ReasonCodes::ForwardReference
+            state.execution.redoIndex += 1;
+            state.execution.redoWhy |= ReasonCodes::ForwardReference
         } else if cflags as libc::c_int & 0x1 as libc::c_int == 0 &&
                       (*sym).flags as libc::c_int & 0x1 as libc::c_int == 0 {
             if pc != (*sym).value as libc::c_ulong {
@@ -293,8 +287,8 @@ pub unsafe extern "C" fn programlabel() {
                 //     below was causing aborts if verbosity was up, even when the
                 //     phase errors were the result of unevaluated IF expressions in
                 //     the previous pass.
-                //if (state.verbose >= 1 || !(Redo_if & (ReasonCodes::Obscure)))
-                if Redo_if & ReasonCodes::Obscure == 0 {
+                //if (state.verbose >= 1 || !(state.execution.redoIf & (ReasonCodes::Obscure)))
+                if state.execution.redoIf & ReasonCodes::Obscure == 0 {
                     let mut sBuffer: [libc::c_char; MAX_SYMBOLS * 4] = [0; MAX_SYMBOLS * 4];
                     sprintf(sBuffer.as_mut_ptr(),
                             b"%s %s\x00" as *const u8 as *const libc::c_char,
@@ -303,8 +297,8 @@ pub unsafe extern "C" fn programlabel() {
                     asmerr(AsmErrorEquates::LabelMismatch,
                            0 as libc::c_int != 0, sBuffer.as_mut_ptr());
                 }
-                Redo += 1;
-                Redo_why |= ReasonCodes::PhaseError
+                state.execution.redoIndex += 1;
+                state.execution.redoWhy |= ReasonCodes::PhaseError
             }
         }
     } else { sym = CreateSymbol(str, len) }

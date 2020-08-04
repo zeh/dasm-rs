@@ -1,5 +1,6 @@
 use libc;
 
+use crate::globals::state;
 use crate::types::flags::{
     ReasonCodes,
 };
@@ -29,10 +30,6 @@ extern "C" {
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     static mut Csegment: *mut _SEGMENT;
-    #[no_mangle]
-    static mut Redo_why: libc::c_ulong;
-    #[no_mangle]
-    static mut Redo: libc::c_int;
     #[no_mangle]
     fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const libc::c_char)
      -> libc::c_int;
@@ -257,8 +254,8 @@ unsafe extern "C" fn parse_value(mut str: *mut libc::c_char,
            AddressModes::ByteAdr as i32 != (*sym).addrmode as libc::c_int {
         asmerr(AsmErrorEquates::SyntaxError, 1 as libc::c_int != 0, str);
     } else if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
-        Redo += 1;
-        Redo_why |= ReasonCodes::MnemonicNotResolved;
+        state.execution.redoIndex += 1;
+        state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved;
         result = 1 as libc::c_int
     } else { *value = (*sym).value as libc::c_ulong }
     FreeSymbolList(sym);

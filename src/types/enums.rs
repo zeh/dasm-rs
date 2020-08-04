@@ -93,7 +93,7 @@ pub enum AsmErrorEquates {
 	EndOfTable, // FIXME: remove? This was added but might not be needed
 }
 
-// In original C code, used for F_verbose but without a clear enum
+// In original C code, used for "F_verbose" but without a clear enum
 // FIXME: remove derives as possible
 #[derive(Copy, Clone, Debug, IntoPrimitive, TryFromPrimitive, PartialEq, SmartDefault)]
 #[repr(u8)]
@@ -104,6 +104,16 @@ pub enum Verbosity {
 	Two = 2,
 	Three = 3,
 	Four = 4,
+}
+
+// In original C code, used for "ListMode" but without a clear enum
+// FIXME: remove derives as possible
+#[derive(Copy, Clone, Debug, IntoPrimitive, TryFromPrimitive, PartialEq, SmartDefault)]
+#[repr(u8)]
+pub enum ListMode {
+	#[default]
+	List,
+	None,
 }
 
 // In original C code, "ADDRESS_MODES"
@@ -137,4 +147,12 @@ impl AddressModes {
     pub fn length() -> u32 {
 		return Self::BSS as u32 - Self::Imp as u32 + 1
     }
+}
+
+// In original C code, used for "MsbOrder" but without a clear enum
+#[derive(Copy, Clone, Debug, PartialEq, SmartDefault)]
+pub enum BitOrder {
+	LeastMost, // lsb, msb
+	#[default]
+	MostLeast, // msb, lsb
 }

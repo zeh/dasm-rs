@@ -222,11 +222,7 @@ pub static mut Av: [*mut libc::c_char; 256] =
 #[no_mangle]
 pub static mut Avbuf: [libc::c_char; 512] = [0; 512];
 #[no_mangle]
-pub static mut MsbOrder: libc::c_uchar = 1 as libc::c_int as libc::c_uchar;
-#[no_mangle]
 pub static mut Mnext: libc::c_int = 0;
-#[no_mangle]
-pub static mut Inclevel: libc::c_char = 0;
 #[no_mangle]
 pub static mut Mlevel: libc::c_uint = 0;
 #[no_mangle]
@@ -240,19 +236,6 @@ pub static mut Localdollarindex: libc::c_ulong = 0;
 pub static mut Lastlocaldollarindex: libc::c_ulong = 0;
 #[no_mangle]
 pub static mut Processor: libc::c_ulong = 0 as libc::c_int as libc::c_ulong;
-#[no_mangle]
-pub static mut Outputformat: libc::c_uchar = 0;
-#[no_mangle]
-pub static mut Redo_why: libc::c_ulong = 0 as libc::c_int as libc::c_ulong;
-#[no_mangle]
-pub static mut Redo_eval: libc::c_int = 0 as libc::c_int;
-/*  infinite loop detection only    */
-#[no_mangle]
-pub static mut Redo: libc::c_int = 0 as libc::c_int;
-#[no_mangle]
-pub static mut Redo_if: libc::c_ulong = 0 as libc::c_int as libc::c_ulong;
-#[no_mangle]
-pub static mut ListMode: libc::c_char = 1 as libc::c_int as libc::c_char;
 #[no_mangle]
 pub static mut CheckSum: libc::c_ulong = 0;
 /*	output data checksum		*/
@@ -269,8 +252,6 @@ pub static mut F_symfile: *mut libc::c_char =
 pub static mut FI_listfile: *mut FILE = 0 as *const FILE as *mut FILE;
 #[no_mangle]
 pub static mut FI_temp: *mut FILE = 0 as *const FILE as *mut FILE;
-#[no_mangle]
-pub static mut Fisclear: libc::c_uchar = 0;
 #[no_mangle]
 pub static mut Plab: libc::c_ulong = 0;
 #[no_mangle]

@@ -1,23 +1,47 @@
 use crate::types::enums::{
+    BitOrder,
 	Format,
-	ErrorFormat,
+    ErrorFormat,
+    ListMode,
     SortMode,
     Verbosity,
 };
 use crate::types::structs::{
+    ExecutionState,
     GlobalState,
+    OtherMainState,
+    ParametersState,
 };
 
 // FIXME: remove legacy module once it's all translated or moved somewhere else
 pub mod legacy;
 
+// Enums use explicit options since we can't use ::default()
 pub static mut state: GlobalState = GlobalState {
-    debug: false,
-    errorFormat: ErrorFormat::Woe, // Special static case, since we can't use ::default();
-    format: Format::Default, // Special static case, since we can't use ::default();
-    listAllPasses: false,
-    sortMode: SortMode::Alpha, // Special static case, since we can't use ::default();
-    strictMode: false,
-    trace: false,
-    verbosity: Verbosity::None, // Special static case, since we can't use ::default();
+    parameters: ParametersState {
+        debug: false,
+        errorFormat: ErrorFormat::Woe,
+        format: Format::Default,
+        listAllPasses: false,
+        maxPasses: 10,
+        sortMode: SortMode::Alpha,
+        strictMode: false,
+        verbosity: Verbosity::None,
+    },
+
+    other: OtherMainState {
+        incLevel: 0,
+        stopAtEnd: false,
+    },
+
+    execution: ExecutionState {
+        bitOrder: BitOrder::MostLeast,
+        isClear: false,
+        listMode: ListMode::List,
+        redoEval: 0,
+        redoIf: 0,
+        redoIndex: 0,
+        redoWhy: 0,
+        trace: false,
+    },
 };

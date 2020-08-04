@@ -4,8 +4,10 @@
 
 use crate::types::enums::{
 	AsmErrorEquates,
+	BitOrder,
 	Format,
 	ErrorFormat,
+	ListMode,
 	SortMode,
 	Verbosity,
 };
@@ -19,12 +21,39 @@ pub struct ErrorDefinition {
 }
 
 pub struct GlobalState {
+	// Set by main, coming from command line switches
+	pub parameters: ParametersState,
+
+	// Set by main, misc stuff
+	pub other: OtherMainState,
+
+	// Set by ::operations during execution
+	pub execution: ExecutionState,
+}
+
+pub struct ParametersState {
 	pub debug: bool,
 	pub errorFormat: ErrorFormat,
 	pub format: Format,
 	pub listAllPasses: bool,
+	pub maxPasses: u16,
 	pub sortMode: SortMode,
 	pub strictMode: bool,
-	pub trace: bool,
 	pub verbosity: Verbosity,
+}
+
+pub struct OtherMainState {
+	pub incLevel: i8,
+	pub stopAtEnd: bool,
+}
+
+pub struct ExecutionState {
+	pub bitOrder: BitOrder,
+	pub isClear: bool,
+	pub listMode: ListMode,
+	pub redoEval: i32,
+	pub redoIf: u64,
+	pub redoIndex: i32,
+	pub redoWhy: u64,
+	pub trace: bool,
 }
