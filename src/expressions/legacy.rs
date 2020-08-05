@@ -12,6 +12,10 @@ use crate::utils::{
     transient,
 };
 
+use crate::expressions::{
+    is_alpha_num,
+};
+
 pub const MAX_OPS: usize = 32;
 pub const MAX_ARGS: usize = 64;
 
@@ -806,9 +810,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                     *str.offset(1 as libc::c_int as isize) as libc::c_int |
                         0x20 as libc::c_int;
                 if (*cur).addrmode as libc::c_int == AddressModes::IndWord as i32
-                       && scr == 'x' as i32 &&
-                       IsAlphaNum(*str.offset(2 as libc::c_int as isize) as
-                                      libc::c_int) == 0 {
+                       && scr == 'x' as i32 && !is_alpha_num(*str.offset(2) as u8 as char) {
                     (*cur).addrmode =
                         AddressModes::IndByteX as u8;
                     str = str.offset(1)
@@ -831,10 +833,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                    //ultimately forces a failure.
                     (*cur).addrmode = AddressModes::ZeroY as u8;
                     str = str.offset(1)
-                } else if scr == 'x' as i32 &&
-                              IsAlphaNum(*str.offset(2 as libc::c_int as
-                                                         isize) as
-                                             libc::c_int) == 0 {
+                } else if scr == 'x' as i32 && !is_alpha_num(*str.offset(2) as u8 as char) {
                     (*cur).addrmode = AddressModes::ZeroX as u8;
                     str = str.offset(1);
                     //FIX: OPCODE.FORCE needs to be adjusted for x indexing...
@@ -847,10 +846,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                     if Mnext == AddressModes::IndWord as i32 {
                         Mnext = AddressModes::ZeroX as i32
                     }
-                } else if scr == 'y' as i32 &&
-                              IsAlphaNum(*str.offset(2 as libc::c_int as
-                                                         isize) as
-                                             libc::c_int) == 0 {
+                } else if scr == 'y' as i32 && !is_alpha_num(*str.offset(2) as u8 as char) {
                     (*cur).addrmode = AddressModes::ZeroY as u8;
                     str = str.offset(1);
                     //FIX: OPCODE.FORCE needs to be adjusted for x indexing...
@@ -1004,12 +1000,6 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
     state.expressions.argIndexBase = oldArgIndexBase;
     state.expressions.opIndexBase = oldOpIndexBase;
     return base;
-}
-#[no_mangle]
-pub unsafe extern "C" fn IsAlphaNum(mut c: libc::c_int) -> libc::c_int {
-    return (c >= 'a' as i32 && c <= 'z' as i32 ||
-                c >= 'A' as i32 && c <= 'Z' as i32 ||
-                c >= '0' as i32 && c <= '9' as i32) as libc::c_int;
 }
 #[no_mangle]
 pub unsafe extern "C" fn evaltop() {
