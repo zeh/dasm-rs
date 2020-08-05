@@ -2053,6 +2053,8 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool,
                 } else {
                     b"\x00" as *const u8 as *const libc::c_char
                 }); // dump messages from this pass
+        // FIXME: this line is creating an additional carriage return (compared to the original output),
+        // likely because sText already has a carriage return of its own.
         fprintf(error_file,
                 b"\n\x00" as *const u8 as
                     *const libc::c_char); // time to dump the errors from this pass!
