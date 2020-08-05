@@ -30,6 +30,13 @@ do
   else
     echo "    hex comparison: fail"
   fi
+  cmp -s $NAME.list.txt $NAME.list.txt.ref
+  if [ $? == 0 ]
+  then
+    echo "    list comparison: pass"
+  else
+    echo "    list comparison: fail"
+  fi
   echo
 done
 
@@ -44,7 +51,7 @@ do
   ../bin/dasm $i -S -f1 -o$NAME.bin -l$NAME.list.txt -DINEEPROM 2>&1 | \
     grep -vE 'error|Complete|^$'
   grep error $NAME.list.txt 2>&1 >/dev/null
-  if [ $? == 0 ] 
+  if [ $? == 0 ]
   then
     echo "    error triggered: pass"
   else

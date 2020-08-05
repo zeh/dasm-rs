@@ -1,0 +1,84 @@
+------- FILE labelchanges.asm LEVEL 1 PASS 5
+      1  1292 ????						; labelchanges.asm - test various cases of labels changing location in 
+      2  1292 ????						; successive passes. Test code provided by Thomas Jentzsch.
+      3  1292 ????
+      4  1292 ????				      processor	6502
+      5  1292 ????
+      6  1292 ????						;===============================================================================
+      7  1292 ????
+      8  1292 ????						; automatically decide whether to use a branch or a jump
+      9  1292 ????				      MAC	bnej
+     10  1292 ????				      IF	({1} - .) >= -126 && ({1} - .) <= 129
+     11  1292 ????				      bne	{1}
+     12  1292 ????				      ELSE
+     13  1292 ????				      beq	skip$
+     14  1292 ????				      jmp	{1}
+     15  1292 ????			   skip$
+     16  1292 ????				      ENDIF
+     17  1292 ????				      ENDM
+     18  1292 ????
+     19  1292 ????						;===============================================================================
+     20  1292 ????
+     21  1000					      ORG	$1000
+     22  1000
+     23  1000				   BackOk
+     24  1000		       ea ea ea ea*	      ds	126, $ea
+      0  107e					      BNEJ	BackOk
+      1  107e					      IF	(BackOk - .) >= -126 && (BackOk - .) <= 129
+      2  107e		       d0 80		      bne	BackOk
+      3  1080				  -	      ELSE
+      4  1080				  -	      beq	skip$
+      5  1080				  -	      jmp	BackOk
+      6  1080				  -skip$
+      7  1080					      ENDIF
+     26  1080
+     27  1080				   BackJmp
+     28  1080							; this has to use "jmp"
+     29  1080							; and is detected as such
+     30  1080		       ea ea ea ea*	      ds	126+1, $ea
+      0  10ff					      BNEJ	BackJmp
+      1  10ff				  -	      IF	(BackJmp - .) >= -126 && (BackJmp - .) <= 129
+      2  10ff				  -	      bne	BackJmp
+      3  10ff					      ELSE
+      4  10ff		       f0 03		      beq	skip$
+      5  1101		       4c 80 10 	      jmp	BackJmp
+      6  1104				   skip$
+      7  1104					      ENDIF
+     32  1104
+     33  1104							; this can use "bne"
+      0  1104					      BNEJ	ForwardOk
+      1  1104					      IF	(ForwardOk - .) >= -126 && (ForwardOk - .) <= 129
+      2  1104		       d0 7f		      bne	ForwardOk
+      3  1106				  -	      ELSE
+      4  1106				  -	      beq	skip$
+      5  1106				  -	      jmp	ForwardOk
+      6  1106				  -skip$
+      7  1106					      ENDIF
+     35  1106		       ea ea ea ea*	      ds	127, $ea
+     36  1185				   ForwardOk
+     37  1185
+     38  1185							; this has to use "jmp"
+     39  1185							; and is detected as such
+      0  1185					      BNEJ	ForwardJmp
+      1  1185				  -	      IF	(ForwardJmp - .) >= -126 && (ForwardJmp - .) <= 129
+      2  1185				  -	      bne	ForwardJmp
+      3  1185					      ELSE
+      4  1185		       f0 03		      beq	skip$
+      5  1187		       4c 0c 12 	      jmp	ForwardJmp
+      6  118a				   skip$
+      7  118a					      ENDIF
+     41  118a		       ea ea ea ea*	      ds	127+3, $ea
+     42  120c				   ForwardJmp
+     43  120c
+     44  120c							; this has to use "jmp"
+     45  120c							; and is detected as such
+      0  120c					      BNEJ	ForwardJmp2
+      1  120c				  -	      IF	(ForwardJmp2 - .) >= -126 && (ForwardJmp2 - .) <= 129
+      2  120c				  -	      bne	ForwardJmp2
+      3  120c					      ELSE
+      4  120c		       f0 03		      beq	skip$
+      5  120e		       4c 92 12 	      jmp	ForwardJmp2
+      6  1211				   skip$
+      7  1211					      ENDIF
+     47  1211		       ea ea ea ea*	      ds	127+2, $ea
+     48  1292				   ForwardJmp2
