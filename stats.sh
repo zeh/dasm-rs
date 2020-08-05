@@ -8,7 +8,7 @@ echo \* "memcpy" - $(grep -o -r 'memcpy' src | wc -l)
 echo \* "malloc" - $(grep -o -r '\bmalloc' src | wc -l)
 echo \* "printf" - $(grep -o -r 'printf' src | wc -l)
 echo \* "no_mangle" - $(grep -o -r 'no_mangle' src | wc -l)
-echo \* "transient_" - $(grep -o -r 'transient_' src | wc -l)
+echo \* "transient::" - $(grep -o -r 'transient::' src | wc -l)
 echo \* "FIXME:" - $(grep -o -r 'FIXME:' src | wc -l)
 echo \* LOC - $(find ./src -name '*.rs' -print0 | xargs -0 cat | wc -l)
 echo ""
