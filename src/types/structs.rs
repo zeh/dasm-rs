@@ -29,6 +29,9 @@ pub struct GlobalState {
 
 	// Set by ::operations during execution
 	pub execution: ExecutionState,
+
+	// Set by ::expressions during execution
+	pub expressions: ExpressionsState,
 }
 
 pub struct ParametersState {
@@ -56,4 +59,12 @@ pub struct ExecutionState {
 	pub redoIndex: i32,
 	pub redoWhy: u64,
 	pub trace: bool,
+}
+
+pub struct ExpressionsState {
+	pub argIndex: usize,
+	pub argIndexBase: usize,
+	pub lastWasOp: bool,
+	pub opIndex: usize,
+	pub opIndexBase: usize,
 }

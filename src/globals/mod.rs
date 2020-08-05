@@ -8,6 +8,7 @@ use crate::types::enums::{
 };
 use crate::types::structs::{
     ExecutionState,
+    ExpressionsState,
     GlobalState,
     OtherMainState,
     ParametersState,
@@ -44,4 +45,12 @@ pub static mut state: GlobalState = GlobalState {
         redoWhy: 0,
         trace: false,
     },
+
+    expressions: ExpressionsState {
+        argIndex: 0,
+        argIndexBase: 0,
+        lastWasOp: false,
+        opIndex: 0,
+        opIndexBase: 0,
+    }
 };

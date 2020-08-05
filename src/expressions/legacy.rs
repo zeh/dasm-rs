@@ -12,6 +12,9 @@ use crate::utils::{
     transient,
 };
 
+pub const MAX_OPS: usize = 32;
+pub const MAX_ARGS: usize = 64;
+
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
@@ -116,38 +119,28 @@ pub struct _SYMBOL {
 /* warning: Calling functions without prototype */
 pub type opfunc_t = Option<unsafe extern "C" fn() -> ()>;
 #[no_mangle]
-pub static mut Argflags: [libc::c_uchar; 64] = [0; 64];
+pub static mut Argflags: [libc::c_uchar; MAX_ARGS] = [0; MAX_ARGS];
 #[no_mangle]
-pub static mut Argstack: [libc::c_long; 64] = [0; 64];
+pub static mut Argstack: [libc::c_long; MAX_ARGS] = [0; MAX_ARGS];
 #[no_mangle]
-pub static mut Argstring: [*mut libc::c_char; 64] =
-    [0 as *const libc::c_char as *mut libc::c_char; 64];
+pub static mut Argstring: [*mut libc::c_char; MAX_ARGS] =
+    [0 as *const libc::c_char as *mut libc::c_char; MAX_ARGS];
 #[no_mangle]
-pub static mut Oppri: [libc::c_int; 32] = [0; 32];
+pub static mut Oppri: [libc::c_int; MAX_OPS] = [0; MAX_OPS];
 #[no_mangle]
-pub static mut Opdis: [opfunc_t; 32] = [None; 32];
-#[no_mangle]
-pub static mut Argi: libc::c_int = 0;
-#[no_mangle]
-pub static mut Opi: libc::c_int = 0;
-#[no_mangle]
-pub static mut Lastwasop: libc::c_int = 0;
-#[no_mangle]
-pub static mut Argibase: libc::c_int = 0;
-#[no_mangle]
-pub static mut Opibase: libc::c_int = 0;
+pub static mut Opdis: [opfunc_t; MAX_OPS] = [None; MAX_OPS];
 #[no_mangle]
 pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                               mut wantmode: libc::c_int) -> *mut _SYMBOL {
     let mut base: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut cur: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut oldargibase: libc::c_int = Argibase;
-    let mut oldopibase: libc::c_int = Opibase;
+    let mut oldArgIndexBase = state.expressions.argIndexBase;
+    let mut oldOpIndexBase = state.expressions.opIndexBase;
     let mut scr: libc::c_int = 0;
     let mut pLine: *const libc::c_char = str;
-    Argibase = Argi;
-    Opibase = Opi;
-    Lastwasop = 1 as libc::c_int;
+    state.expressions.argIndexBase = state.expressions.argIndex;
+    state.expressions.opIndexBase = state.expressions.opIndex;
+    state.expressions.lastWasOp = true;
     cur = allocsymbol();
     base = cur;
     while *str != 0 {
@@ -162,7 +155,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 current_block_184 = 3166194604430448652;
             }
             126 => {
-                if Lastwasop != 0 {
+                if state.expressions.lastWasOp {
                     doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
                                                                                  libc::c_long,
                                                                              _:
@@ -184,7 +177,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 current_block_184 = 3166194604430448652;
             }
             42 => {
-                if Lastwasop != 0 {
+                if state.expressions.lastWasOp {
                     pushsymbol(b".\x00" as *const u8 as *const libc::c_char);
                 } else {
                     doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
@@ -237,7 +230,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 current_block_184 = 3166194604430448652;
             }
             37 => {
-                if Lastwasop != 0 {
+                if state.expressions.lastWasOp {
                     str = pushbin(str.offset(1 as libc::c_int as isize))
                 } else {
                     doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
@@ -317,7 +310,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             }
             45 => {
                 /*  19: -   (or - unary)        */
-                if Lastwasop != 0 {
+                if state.expressions.lastWasOp {
                     doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
                                                                                  libc::c_long,
                                                                              _:
@@ -359,7 +352,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             }
             62 => {
                 /*  18: >> <<  17: > >= <= <    */
-                if Lastwasop != 0 {
+                if state.expressions.lastWasOp {
                     doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
                                                                                  libc::c_long,
                                                                              _:
@@ -454,7 +447,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 current_block_184 = 3166194604430448652;
             }
             60 => {
-                if Lastwasop != 0 {
+                if state.expressions.lastWasOp {
                     doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
                                                                                  libc::c_long,
                                                                              _:
@@ -579,7 +572,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             }
             33 => {
                 /*  16: !=                      */
-                if Lastwasop != 0 {
+                if state.expressions.lastWasOp {
                     doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
                                                                                  libc::c_long,
                                                                              _:
@@ -806,9 +799,9 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 wantmode = 0 as libc::c_int; /* to lower case */
                 current_block_184 = 3166194604430448652;
             }
-            44 => {
-                while Opi != Opibase { evaltop(); }
-                Lastwasop = 1 as libc::c_int;
+            44 => { // ',' - FIXME: convert back to original char
+                while state.expressions.opIndex != state.expressions.opIndexBase { evaltop(); }
+                state.expressions.lastWasOp = true;
                 scr =
                     *str.offset(1 as libc::c_int as isize) as libc::c_int |
                         0x20 as libc::c_int;
@@ -873,19 +866,19 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 } else {
                     let mut pNewSymbol: *mut _SYMBOL = allocsymbol();
                     (*cur).next = pNewSymbol;
-                    Argi -= 1;
-                    if Argi < Argibase {
+                    state.expressions.argIndex -= 1;
+                    if state.expressions.argIndex < state.expressions.argIndexBase {
                         asmerr(AsmErrorEquates::SyntaxError,
                                0 as libc::c_int != 0, pLine);
                     }
-                    if Argi > Argibase {
+                    if state.expressions.argIndex > state.expressions.argIndexBase {
                         asmerr(AsmErrorEquates::SyntaxError,
                                0 as libc::c_int != 0, pLine);
                     }
-                    (*cur).value = Argstack[Argi as usize];
-                    (*cur).flags = Argflags[Argi as usize];
+                    (*cur).value = Argstack[state.expressions.argIndex];
+                    (*cur).flags = Argflags[state.expressions.argIndex];
                     (*cur).string =
-                        Argstring[Argi as usize] as *mut libc::c_void as
+                        Argstring[state.expressions.argIndex] as *mut libc::c_void as
                             *mut libc::c_char;
                     if !(*cur).string.is_null() {
                         (*cur).flags =
@@ -934,27 +927,26 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             8741107198128373303 =>
             /* fall thru OK */
             {
-                while Opi != Opibase &&
-                          Oppri[(Opi - 1 as libc::c_int) as usize] != 0 {
+                while state.expressions.opIndex != state.expressions.opIndexBase &&
+                          Oppri[state.expressions.opIndex - 1] != 0 {
                     evaltop();
                 }
-                if Opi != Opibase { Opi -= 1 }
+                if state.expressions.opIndex != state.expressions.opIndexBase { state.expressions.opIndex -= 1 }
                 str = str.offset(1);
-                if Argi == Argibase {
+                if state.expressions.argIndex == state.expressions.argIndexBase {
                     println!("\']\' error, no arg on stack");
                 } else {
                     if *str as libc::c_int == 'd' as i32 {
                         /*  STRING CONVERSION   */
                         let mut buf: [libc::c_char; 32] = [0; 32];
                         str = str.offset(1);
-                        if Argflags[(Argi - 1 as libc::c_int) as usize] as
+                        if Argflags[state.expressions.argIndex - 1] as
                                libc::c_int == 0 as libc::c_int {
                             sprintf(buf.as_mut_ptr(),
                                     b"%ld\x00" as *const u8 as
                                         *const libc::c_char,
-                                    Argstack[(Argi - 1 as libc::c_int) as
-                                                 usize]);
-                            Argstring[(Argi - 1 as libc::c_int) as usize] =
+                                    Argstack[state.expressions.argIndex - 1]);
+                            Argstring[state.expressions.argIndex - 1] =
                                 strcpy(ckmalloc(strlen(buf.as_mut_ptr()).wrapping_add(1
                                                                                           as
                                                                                           libc::c_int
@@ -964,32 +956,32 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                                        buf.as_mut_ptr())
                         }
                     }
-                    Lastwasop = 0 as libc::c_int
+                    state.expressions.lastWasOp = false
                 }
             }
             18384894229789369419 =>
             /* fall thru OK */
             /*  eventually an argument      */
             {
-                if Opi == 32 as libc::c_int {
+                if state.expressions.opIndex == 32 {
                     println!("too many ops");
                 } else {
-                    let fresh0 = Opi;
-                    Opi = Opi + 1;
-                    Oppri[fresh0 as usize] = 0 as libc::c_int
+                    let fresh0 = state.expressions.opIndex;
+                    state.expressions.opIndex = state.expressions.opIndex + 1;
+                    Oppri[fresh0] = 0 as libc::c_int
                 }
                 str = str.offset(1)
             }
             _ => { }
         }
     }
-    while Opi != Opibase { evaltop(); }
-    if Argi != Argibase {
-        Argi -= 1;
-        (*cur).value = Argstack[Argi as usize];
-        (*cur).flags = Argflags[Argi as usize];
+    while state.expressions.opIndex != state.expressions.opIndexBase { evaltop(); }
+    if state.expressions.argIndex != state.expressions.argIndexBase {
+        state.expressions.argIndex -= 1;
+        (*cur).value = Argstack[state.expressions.argIndex];
+        (*cur).flags = Argflags[state.expressions.argIndex];
         (*cur).string =
-            Argstring[Argi as usize] as *mut libc::c_void as
+            Argstring[state.expressions.argIndex] as *mut libc::c_void as
                 *mut libc::c_char;
         if !(*cur).string.is_null() {
             (*cur).flags =
@@ -1003,14 +995,14 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             (*base).addrmode = AddressModes::ByteAdr as libc::c_int as libc::c_uchar
         }
     }
-    if Argi != Argibase || Opi != Opibase {
+    if state.expressions.argIndex != state.expressions.argIndexBase || state.expressions.opIndex != state.expressions.opIndexBase {
         asmerr(AsmErrorEquates::SyntaxError, 0 as libc::c_int != 0,
                pLine);
     }
-    Argi = Argibase;
-    Opi = Opibase;
-    Argibase = oldargibase;
-    Opibase = oldopibase;
+    state.expressions.argIndex = state.expressions.argIndexBase;
+    state.expressions.opIndex = state.expressions.opIndexBase;
+    state.expressions.argIndexBase = oldArgIndexBase;
+    state.expressions.opIndexBase = oldOpIndexBase;
     return base;
 }
 #[no_mangle]
@@ -1023,73 +1015,53 @@ pub unsafe extern "C" fn IsAlphaNum(mut c: libc::c_int) -> libc::c_int {
 pub unsafe extern "C" fn evaltop() {
     if state.parameters.debug {
         printf(b"evaltop @(A,O) %d %d\n\x00" as *const u8 as
-                   *const libc::c_char, Argi, Opi);
+                   *const libc::c_char, state.expressions.argIndex, state.expressions.opIndex);
     }
-    if Opi <= Opibase {
+    if state.expressions.opIndex <= state.expressions.opIndexBase {
         asmerr(AsmErrorEquates::SyntaxError, 0 as libc::c_int != 0,
                0 as *const libc::c_char);
-        Opi = Opibase;
+        state.expressions.opIndex = state.expressions.opIndexBase;
         return
     }
-    Opi -= 1;
-    if Oppri[Opi as usize] == 128 as libc::c_int {
-        if Argi < Argibase + 1 as libc::c_int {
+    state.expressions.opIndex -= 1;
+    if Oppri[state.expressions.opIndex] == 128 as libc::c_int {
+        if state.expressions.argIndex < state.expressions.argIndexBase + 1 {
             asmerr(AsmErrorEquates::SyntaxError, 0 as libc::c_int != 0,
                    0 as *const libc::c_char);
-            Argi = Argibase;
+            state.expressions.argIndex = state.expressions.argIndexBase;
             return
         }
-        Argi -= 1;
-        ::std::mem::transmute::<_,
-                                fn(_: _,
-                                   _:
-                                       _)>(Some((*Opdis.as_mut_ptr().offset(Opi
-                                                                                as
-                                                                                isize)).expect("non-null function pointer")).expect("non-null function pointer"))(Argstack[Argi
-                                                                                                                                                                               as
-                                                                                                                                                                               usize],
-                                                                                                                                                                  Argflags[Argi
-                                                                                                                                                                               as
-                                                                                                                                                                               usize]
-                                                                                                                                                                      as
-                                                                                                                                                                      libc::c_int);
+        state.expressions.argIndex -= 1;
+        ::std::mem::transmute::<_, fn(_: _, _: _)>(
+                Some(
+                    (
+                        *Opdis.as_mut_ptr().offset(state.expressions.opIndex as isize)
+                    ).expect("non-null function pointer")
+                ).expect("non-null function pointer")
+            )(
+                Argstack[state.expressions.argIndex],
+                Argflags[state.expressions.argIndex] as libc::c_int
+            );
     } else {
-        if Argi < Argibase + 2 as libc::c_int {
+        if state.expressions.argIndex < state.expressions.argIndexBase + 2 {
             asmerr(AsmErrorEquates::SyntaxError, 0 as libc::c_int != 0,
                    0 as *const libc::c_char);
-            Argi = Argibase;
+            state.expressions.argIndex = state.expressions.argIndexBase;
             return
         }
-        Argi -= 2 as libc::c_int;
-        ::std::mem::transmute::<_,
-                                fn(_: _, _: _, _: _,
-                                   _:
-                                       _)>(Some((*Opdis.as_mut_ptr().offset(Opi
-                                                                                as
-                                                                                isize)).expect("non-null function pointer")).expect("non-null function pointer"))(Argstack[Argi
-                                                                                                                                                                               as
-                                                                                                                                                                               usize],
-                                                                                                                                                                  Argstack[(Argi
-                                                                                                                                                                                +
-                                                                                                                                                                                1
-                                                                                                                                                                                    as
-                                                                                                                                                                                    libc::c_int)
-                                                                                                                                                                               as
-                                                                                                                                                                               usize],
-                                                                                                                                                                  Argflags[Argi
-                                                                                                                                                                               as
-                                                                                                                                                                               usize]
-                                                                                                                                                                      as
-                                                                                                                                                                      libc::c_int,
-                                                                                                                                                                  Argflags[(Argi
-                                                                                                                                                                                +
-                                                                                                                                                                                1
-                                                                                                                                                                                    as
-                                                                                                                                                                                    libc::c_int)
-                                                                                                                                                                               as
-                                                                                                                                                                               usize]
-                                                                                                                                                                      as
-                                                                                                                                                                      libc::c_int);
+        state.expressions.argIndex -= 2;
+        ::std::mem::transmute::<_, fn(_: _, _: _, _: _, _: _)>(
+                Some(
+                    (
+                        *Opdis.as_mut_ptr().offset(state.expressions.opIndex as isize)
+                    ).expect("non-null function pointer")
+                ).expect("non-null function pointer")
+            )(
+                Argstack[state.expressions.argIndex],
+                Argstack[state.expressions.argIndex + 1],
+                Argflags[state.expressions.argIndex] as libc::c_int,
+                Argflags[state.expressions.argIndex + 1] as libc::c_int
+            );
     };
 }
 unsafe extern "C" fn stackarg(mut val: libc::c_long, mut flags: libc::c_int,
@@ -1097,9 +1069,9 @@ unsafe extern "C" fn stackarg(mut val: libc::c_long, mut flags: libc::c_int,
     let mut str: *mut libc::c_char = 0 as *mut libc::c_char;
     if state.parameters.debug {
         printf(b"stackarg %ld (@%d)\n\x00" as *const u8 as
-                   *const libc::c_char, val, Argi);
+                   *const libc::c_char, val, state.expressions.argIndex);
     }
-    Lastwasop = 0 as libc::c_int;
+    state.expressions.lastWasOp = false;
     if flags & 0x8 as libc::c_int != 0 {
         /*
            Why unsigned char? Looks like we're converting to
@@ -1122,16 +1094,16 @@ unsafe extern "C" fn stackarg(mut val: libc::c_long, mut flags: libc::c_int,
         flags &= !(0x8 as libc::c_int);
         str = new
     }
-    Argstack[Argi as usize] = val;
-    Argstring[Argi as usize] = str;
-    Argflags[Argi as usize] = flags as libc::c_uchar;
-    Argi += 1;
-    if Argi == 64 as libc::c_int {
+    Argstack[state.expressions.argIndex] = val;
+    Argstring[state.expressions.argIndex] = str;
+    Argflags[state.expressions.argIndex] = flags as libc::c_uchar;
+    state.expressions.argIndex += 1;
+    if state.expressions.argIndex == 64 {
         println!("stackarg: maxargs stacked");
-        Argi = Argibase
+        state.expressions.argIndex = state.expressions.argIndexBase
     }
-    while Opi != Opibase &&
-              Oppri[(Opi - 1 as libc::c_int) as usize] == 128 as libc::c_int {
+    while state.expressions.opIndex != state.expressions.opIndexBase &&
+              Oppri[state.expressions.opIndex - 1] == 128 {
         evaltop();
     };
 }
@@ -1140,30 +1112,30 @@ pub unsafe extern "C" fn doop(mut func: opfunc_t, mut pri: libc::c_int) {
     if state.parameters.debug {
         println!("doop");
     }
-    Lastwasop = 1 as libc::c_int;
-    if Opi == Opibase || pri == 128 as libc::c_int {
+    state.expressions.lastWasOp = true;
+    if state.expressions.opIndex == state.expressions.opIndexBase || pri == 128 as libc::c_int {
         if state.parameters.debug {
             printf(b"doop @ %d unary\n\x00" as *const u8 as
-                       *const libc::c_char, Opi);
+                       *const libc::c_char, state.expressions.opIndex);
         }
-        Opdis[Opi as usize] = func;
-        Oppri[Opi as usize] = pri;
-        Opi += 1;
+        Opdis[state.expressions.opIndex] = func;
+        Oppri[state.expressions.opIndex] = pri;
+        state.expressions.opIndex += 1;
         return
     }
-    while Opi != Opibase && Oppri[(Opi - 1 as libc::c_int) as usize] != 0 &&
-              pri <= Oppri[(Opi - 1 as libc::c_int) as usize] {
+    while state.expressions.opIndex != state.expressions.opIndexBase && Oppri[state.expressions.opIndex - 1] != 0 &&
+              pri <= Oppri[state.expressions.opIndex - 1] {
         evaltop();
     }
     if state.parameters.debug {
-        printf(b"doop @ %d\n\x00" as *const u8 as *const libc::c_char, Opi);
+        printf(b"doop @ %d\n\x00" as *const u8 as *const libc::c_char, state.expressions.opIndex);
     }
-    Opdis[Opi as usize] = func;
-    Oppri[Opi as usize] = pri;
-    Opi += 1;
-    if Opi == 32 as libc::c_int {
+    Opdis[state.expressions.opIndex] = func;
+    Oppri[state.expressions.opIndex] = pri;
+    state.expressions.opIndex += 1;
+    if state.expressions.opIndex == 32 {
         println!("doop: too many operators");
-        Opi = Opibase
+        state.expressions.opIndex = state.expressions.opIndexBase
     };
 }
 #[no_mangle]
@@ -1196,12 +1168,12 @@ pub unsafe extern "C" fn op_not(mut v1: libc::c_long, mut f1: libc::c_int) {
 pub unsafe extern "C" fn op_mult(mut v1: libc::c_long, mut v2: libc::c_long,
                                  mut f1: libc::c_int, mut f2: libc::c_int) {
     stackarg(v1 * v2, f1 | f2, 0 as *const libc::c_char);
-    Lastwasop = 1 as libc::c_int;
+    state.expressions.lastWasOp = true;
 }
 #[no_mangle]
 pub unsafe extern "C" fn op_div(mut v1: libc::c_long, mut v2: libc::c_long,
                                 mut f1: libc::c_int, mut f2: libc::c_int) {
-    Lastwasop = 1 as libc::c_int;
+    state.expressions.lastWasOp = true;
     if f1 | f2 != 0 {
         stackarg(0 as libc::c_long, f1 | f2, 0 as *const libc::c_char);
         return
@@ -1223,7 +1195,7 @@ pub unsafe extern "C" fn op_mod(mut v1: libc::c_long, mut v2: libc::c_long,
     if v2 == 0 as libc::c_int as libc::c_long {
         stackarg(v1, 0 as libc::c_int, 0 as *const libc::c_char);
     } else { stackarg(v1 % v2, 0 as libc::c_int, 0 as *const libc::c_char); }
-    Lastwasop = 1 as libc::c_int;
+    state.expressions.lastWasOp = true;
 }
 #[no_mangle]
 pub unsafe extern "C" fn op_question(mut v1: libc::c_long,
@@ -1242,13 +1214,13 @@ pub unsafe extern "C" fn op_question(mut v1: libc::c_long,
 pub unsafe extern "C" fn op_add(mut v1: libc::c_long, mut v2: libc::c_long,
                                 mut f1: libc::c_int, mut f2: libc::c_int) {
     stackarg(v1 + v2, f1 | f2, 0 as *const libc::c_char);
-    Lastwasop = 1 as libc::c_int;
+    state.expressions.lastWasOp = true;
 }
 #[no_mangle]
 pub unsafe extern "C" fn op_sub(mut v1: libc::c_long, mut v2: libc::c_long,
                                 mut f1: libc::c_int, mut f2: libc::c_int) {
     stackarg(v1 - v2, f1 | f2, 0 as *const libc::c_char);
-    Lastwasop = 1 as libc::c_int;
+    state.expressions.lastWasOp = true;
 }
 #[no_mangle]
 pub unsafe extern "C" fn op_shiftright(mut v1: libc::c_long,
