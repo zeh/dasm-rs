@@ -2,6 +2,7 @@
 // - This file's contents came from "asm.h" in the original DASM C code -
 // ----------------------------------------------------------------------
 
+use crate::expressions;
 use crate::types::enums::{
 	AsmErrorEquates,
 	BitOrder,
@@ -62,9 +63,12 @@ pub struct ExecutionState {
 }
 
 pub struct ExpressionsState {
+	pub argFlags: [u8; expressions::MAX_ARGS],
 	pub argIndex: usize,
 	pub argIndexBase: usize,
+	pub argStack: [i64; expressions::MAX_ARGS],
 	pub lastWasOp: bool,
 	pub opIndex: usize,
 	pub opIndexBase: usize,
+	pub opPri: [usize; expressions::MAX_OPS],
 }

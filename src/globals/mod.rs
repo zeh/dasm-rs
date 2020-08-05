@@ -1,3 +1,4 @@
+use crate::expressions;
 use crate::types::enums::{
     BitOrder,
 	Format,
@@ -47,10 +48,13 @@ pub static mut state: GlobalState = GlobalState {
     },
 
     expressions: ExpressionsState {
+        argFlags: [0; expressions::MAX_ARGS],
         argIndex: 0,
         argIndexBase: 0,
+	    argStack: [0; expressions::MAX_ARGS],
         lastWasOp: false,
         opIndex: 0,
         opIndexBase: 0,
+        opPri: [0; expressions::MAX_OPS],
     }
 };

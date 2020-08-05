@@ -123,14 +123,8 @@ pub struct _SYMBOL {
 /* warning: Calling functions without prototype */
 pub type opfunc_t = Option<unsafe extern "C" fn() -> ()>;
 #[no_mangle]
-pub static mut Argflags: [libc::c_uchar; MAX_ARGS] = [0; MAX_ARGS];
-#[no_mangle]
-pub static mut Argstack: [libc::c_long; MAX_ARGS] = [0; MAX_ARGS];
-#[no_mangle]
 pub static mut Argstring: [*mut libc::c_char; MAX_ARGS] =
     [0 as *const libc::c_char as *mut libc::c_char; MAX_ARGS];
-#[no_mangle]
-pub static mut Oppri: [libc::c_int; MAX_OPS] = [0; MAX_OPS];
 #[no_mangle]
 pub static mut Opdis: [opfunc_t; MAX_OPS] = [None; MAX_OPS];
 #[no_mangle]
@@ -160,19 +154,12 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             }
             126 => {
                 if state.expressions.lastWasOp {
-                    doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_int)
-                                                            -> ()>,
-                                                 opfunc_t>(Some(op_invert as
-                                                                    unsafe extern "C" fn(_:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_int)
-                                                                        ->
-                                                                            ())),
-                         128 as libc::c_int);
+                    doop(
+                        ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_int) -> ()>, opfunc_t>(
+                            Some(op_invert as unsafe extern "C" fn(_: libc::c_long, _: libc::c_int) -> ())
+                        ),
+                        128
+                    );
                 } else {
                     asmerr(AsmErrorEquates::SyntaxError,
                            0 as libc::c_int != 0, pLine);
@@ -184,52 +171,23 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 if state.expressions.lastWasOp {
                     pushsymbol(b".\x00" as *const u8 as *const libc::c_char);
                 } else {
-                    doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_int,
-                                                                             _:
-                                                                                 libc::c_int)
-                                                            -> ()>,
-                                                 opfunc_t>(Some(op_mult as
-                                                                    unsafe extern "C" fn(_:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_int,
-                                                                                         _:
-                                                                                             libc::c_int)
-                                                                        ->
-                                                                            ())),
-                         20 as libc::c_int);
+                    doop(
+                        ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ()>, opfunc_t>(
+                            Some(op_mult as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
+                        ),
+                        20
+                    );
                 }
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
             47 => {
-                doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                             libc::c_long,
-                                                                         _:
-                                                                             libc::c_long,
-                                                                         _:
-                                                                             libc::c_int,
-                                                                         _:
-                                                                             libc::c_int)
-                                                        -> ()>,
-                                             opfunc_t>(Some(op_div as
-                                                                unsafe extern "C" fn(_:
-                                                                                         libc::c_long,
-                                                                                     _:
-                                                                                         libc::c_long,
-                                                                                     _:
-                                                                                         libc::c_int,
-                                                                                     _:
-                                                                                         libc::c_int)
-                                                                    -> ())),
-                     20 as libc::c_int);
+                doop(
+                    ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ()>, opfunc_t>(
+                        Some(op_div as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
+                    ),
+                    20
+                );
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
@@ -237,119 +195,54 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 if state.expressions.lastWasOp {
                     str = pushbin(str.offset(1 as libc::c_int as isize))
                 } else {
-                    doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_int,
-                                                                             _:
-                                                                                 libc::c_int)
-                                                            -> ()>,
-                                                 opfunc_t>(Some(op_mod as
-                                                                    unsafe extern "C" fn(_:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_int,
-                                                                                         _:
-                                                                                             libc::c_int)
-                                                                        ->
-                                                                            ())),
-                         20 as libc::c_int);
+                    doop(
+                        ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
+                            Some(op_mod as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
+                        ),
+                        20
+                    );
                     str = str.offset(1)
                 }
                 current_block_184 = 3166194604430448652;
             }
             63 => {
                 /*  10      */
-                doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                             libc::c_long,
-                                                                         _:
-                                                                             libc::c_long,
-                                                                         _:
-                                                                             libc::c_int,
-                                                                         _:
-                                                                             libc::c_int)
-                                                        -> ()>,
-                                             opfunc_t>(Some(op_question as
-                                                                unsafe extern "C" fn(_:
-                                                                                         libc::c_long,
-                                                                                     _:
-                                                                                         libc::c_long,
-                                                                                     _:
-                                                                                         libc::c_int,
-                                                                                     _:
-                                                                                         libc::c_int)
-                                                                    -> ())),
-                     10 as libc::c_int);
+                doop(
+                    ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
+                        Some(op_question as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
+                    ),
+                    10
+                );
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
             43 => {
                 /*  19      */
-                doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                             libc::c_long,
-                                                                         _:
-                                                                             libc::c_long,
-                                                                         _:
-                                                                             libc::c_int,
-                                                                         _:
-                                                                             libc::c_int)
-                                                        -> ()>,
-                                             opfunc_t>(Some(op_add as
-                                                                unsafe extern "C" fn(_:
-                                                                                         libc::c_long,
-                                                                                     _:
-                                                                                         libc::c_long,
-                                                                                     _:
-                                                                                         libc::c_int,
-                                                                                     _:
-                                                                                         libc::c_int)
-                                                                    -> ())),
-                     19 as libc::c_int);
+                doop(
+                    ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
+                        Some(op_add as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
+                    ),
+                    19
+                );
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
             45 => {
                 /*  19: -   (or - unary)        */
                 if state.expressions.lastWasOp {
-                    doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_int)
-                                                            -> ()>,
-                                                 opfunc_t>(Some(op_negate as
-                                                                    unsafe extern "C" fn(_:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_int)
-                                                                        ->
-                                                                            ())),
-                         128 as libc::c_int);
+                    doop(
+                        ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_int)-> ()>, opfunc_t>(
+                            Some(op_negate as unsafe extern "C" fn(_: libc::c_long, _: libc::c_int) -> ())
+                        ),
+                        128
+                    );
                 } else {
-                    doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_int,
-                                                                             _:
-                                                                                 libc::c_int)
-                                                            -> ()>,
-                                                 opfunc_t>(Some(op_sub as
-                                                                    unsafe extern "C" fn(_:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_int,
-                                                                                         _:
-                                                                                             libc::c_int)
-                                                                        ->
-                                                                            ())),
-                         19 as libc::c_int);
+                    doop(
+                        ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
+                            Some(op_sub as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
+                        ),
+                        19
+                    );
                 }
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
@@ -357,94 +250,37 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             62 => {
                 /*  18: >> <<  17: > >= <= <    */
                 if state.expressions.lastWasOp {
-                    doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_int)
-                                                            -> ()>,
-                                                 opfunc_t>(Some(op_takemsb as
-                                                                    unsafe extern "C" fn(_:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_int)
-                                                                        ->
-                                                                            ())),
-                         128 as libc::c_int);
+                    doop(
+                        ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_int)-> ()>, opfunc_t>(
+                            Some(op_takemsb as unsafe extern "C" fn(_: libc::c_long, _: libc::c_int) -> ())
+                        ),
+                        128
+                    );
                     str = str.offset(1)
                 } else {
-                    if *str.offset(1 as libc::c_int as isize) as libc::c_int
-                           == '>' as i32 {
-                        doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                                     libc::c_long,
-                                                                                 _:
-                                                                                     libc::c_long,
-                                                                                 _:
-                                                                                     libc::c_int,
-                                                                                 _:
-                                                                                     libc::c_int)
-                                                                -> ()>,
-                                                     opfunc_t>(Some(op_shiftright
-                                                                        as
-                                                                        unsafe extern "C" fn(_:
-                                                                                                 libc::c_long,
-                                                                                             _:
-                                                                                                 libc::c_long,
-                                                                                             _:
-                                                                                                 libc::c_int,
-                                                                                             _:
-                                                                                                 libc::c_int)
-                                                                            ->
-                                                                                ())),
-                             18 as libc::c_int);
+                    if *str.offset(1 as libc::c_int as isize) as libc::c_int == '>' as i32 {
+                        doop(
+                            ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
+                                Some(op_shiftright as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
+                            ),
+                            18
+                        );
                         str = str.offset(1)
-                    } else if *str.offset(1 as libc::c_int as isize) as
-                                  libc::c_int == '=' as i32 {
-                        doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                                     libc::c_long,
-                                                                                 _:
-                                                                                     libc::c_long,
-                                                                                 _:
-                                                                                     libc::c_int,
-                                                                                 _:
-                                                                                     libc::c_int)
-                                                                -> ()>,
-                                                     opfunc_t>(Some(op_greatereq
-                                                                        as
-                                                                        unsafe extern "C" fn(_:
-                                                                                                 libc::c_long,
-                                                                                             _:
-                                                                                                 libc::c_long,
-                                                                                             _:
-                                                                                                 libc::c_int,
-                                                                                             _:
-                                                                                                 libc::c_int)
-                                                                            ->
-                                                                                ())),
-                             17 as libc::c_int);
+                    } else if *str.offset(1 as libc::c_int as isize) as libc::c_int == '=' as i32 {
+                        doop(
+                            ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
+                                Some(op_greatereq as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
+                            ),
+                            17
+                        );
                         str = str.offset(1)
                     } else {
-                        doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                                     libc::c_long,
-                                                                                 _:
-                                                                                     libc::c_long,
-                                                                                 _:
-                                                                                     libc::c_int,
-                                                                                 _:
-                                                                                     libc::c_int)
-                                                                -> ()>,
-                                                     opfunc_t>(Some(op_greater
-                                                                        as
-                                                                        unsafe extern "C" fn(_:
-                                                                                                 libc::c_long,
-                                                                                             _:
-                                                                                                 libc::c_long,
-                                                                                             _:
-                                                                                                 libc::c_int,
-                                                                                             _:
-                                                                                                 libc::c_int)
-                                                                            ->
-                                                                                ())),
-                             17 as libc::c_int);
+                        doop(
+                            ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
+                                Some(op_greater as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
+                            ),
+                            17
+                        );
                     }
                     str = str.offset(1)
                 }
@@ -452,94 +288,36 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             }
             60 => {
                 if state.expressions.lastWasOp {
-                    doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_int)
-                                                            -> ()>,
-                                                 opfunc_t>(Some(op_takelsb as
-                                                                    unsafe extern "C" fn(_:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_int)
-                                                                        ->
-                                                                            ())),
-                         128 as libc::c_int);
+                    doop(
+                        ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_int)-> ()>, opfunc_t>(
+                            Some(op_takelsb as unsafe extern "C" fn(_: libc::c_long, _: libc::c_int) -> ())
+                        ),
+                        128
+                    );
                     str = str.offset(1)
                 } else {
-                    if *str.offset(1 as libc::c_int as isize) as libc::c_int
-                           == '<' as i32 {
-                        doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                                     libc::c_long,
-                                                                                 _:
-                                                                                     libc::c_long,
-                                                                                 _:
-                                                                                     libc::c_int,
-                                                                                 _:
-                                                                                     libc::c_int)
-                                                                -> ()>,
-                                                     opfunc_t>(Some(op_shiftleft
-                                                                        as
-                                                                        unsafe extern "C" fn(_:
-                                                                                                 libc::c_long,
-                                                                                             _:
-                                                                                                 libc::c_long,
-                                                                                             _:
-                                                                                                 libc::c_int,
-                                                                                             _:
-                                                                                                 libc::c_int)
-                                                                            ->
-                                                                                ())),
-                             18 as libc::c_int);
+                    if *str.offset(1 as libc::c_int as isize) as libc::c_int == '<' as i32 {
+                        doop(
+                            ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
+                                Some(op_shiftleft as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())),
+                            18
+                        );
                         str = str.offset(1)
-                    } else if *str.offset(1 as libc::c_int as isize) as
-                                  libc::c_int == '=' as i32 {
-                        doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                                     libc::c_long,
-                                                                                 _:
-                                                                                     libc::c_long,
-                                                                                 _:
-                                                                                     libc::c_int,
-                                                                                 _:
-                                                                                     libc::c_int)
-                                                                -> ()>,
-                                                     opfunc_t>(Some(op_smallereq
-                                                                        as
-                                                                        unsafe extern "C" fn(_:
-                                                                                                 libc::c_long,
-                                                                                             _:
-                                                                                                 libc::c_long,
-                                                                                             _:
-                                                                                                 libc::c_int,
-                                                                                             _:
-                                                                                                 libc::c_int)
-                                                                            ->
-                                                                                ())),
-                             17 as libc::c_int);
+                    } else if *str.offset(1 as libc::c_int as isize) as libc::c_int == '=' as i32 {
+                        doop(
+                            ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
+                                Some(op_smallereq as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
+                            ),
+                            17
+                        );
                         str = str.offset(1)
                     } else {
-                        doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                                     libc::c_long,
-                                                                                 _:
-                                                                                     libc::c_long,
-                                                                                 _:
-                                                                                     libc::c_int,
-                                                                                 _:
-                                                                                     libc::c_int)
-                                                                -> ()>,
-                                                     opfunc_t>(Some(op_smaller
-                                                                        as
-                                                                        unsafe extern "C" fn(_:
-                                                                                                 libc::c_long,
-                                                                                             _:
-                                                                                                 libc::c_long,
-                                                                                             _:
-                                                                                                 libc::c_int,
-                                                                                             _:
-                                                                                                 libc::c_int)
-                                                                            ->
-                                                                                ())),
-                             17 as libc::c_int);
+                        doop(
+                            ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
+                                Some(op_smaller as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
+                            ),
+                            17
+                        );
                     }
                     str = str.offset(1)
                 }
@@ -547,71 +325,34 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             }
             61 => {
                 /*  16: ==  (= same as ==)      */
-                if *str.offset(1 as libc::c_int as isize) as libc::c_int ==
-                       '=' as i32 {
+                if *str.offset(1 as libc::c_int as isize) as libc::c_int == '=' as i32 {
                     str = str.offset(1)
                 }
-                doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                             libc::c_long,
-                                                                         _:
-                                                                             libc::c_long,
-                                                                         _:
-                                                                             libc::c_int,
-                                                                         _:
-                                                                             libc::c_int)
-                                                        -> ()>,
-                                             opfunc_t>(Some(op_eqeq as
-                                                                unsafe extern "C" fn(_:
-                                                                                         libc::c_long,
-                                                                                     _:
-                                                                                         libc::c_long,
-                                                                                     _:
-                                                                                         libc::c_int,
-                                                                                     _:
-                                                                                         libc::c_int)
-                                                                    -> ())),
-                     16 as libc::c_int);
+                doop(
+                    ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
+                        Some(op_eqeq as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
+                    ),
+                    16
+                );
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
             33 => {
                 /*  16: !=                      */
                 if state.expressions.lastWasOp {
-                    doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_int)
-                                                            -> ()>,
-                                                 opfunc_t>(Some(op_not as
-                                                                    unsafe extern "C" fn(_:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_int)
-                                                                        ->
-                                                                            ())),
-                         128 as libc::c_int);
+                    doop(
+                        ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_int)-> ()>, opfunc_t>(
+                            Some(op_not as unsafe extern "C" fn(_: libc::c_long, _: libc::c_int) -> ())
+                        ),
+                        128
+                    );
                 } else {
-                    doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_int,
-                                                                             _:
-                                                                                 libc::c_int)
-                                                            -> ()>,
-                                                 opfunc_t>(Some(op_noteq as
-                                                                    unsafe extern "C" fn(_:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_int,
-                                                                                         _:
-                                                                                             libc::c_int)
-                                                                        ->
-                                                                            ())),
-                         16 as libc::c_int);
+                    doop(
+                        ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
+                            Some(op_noteq as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
+                        ),
+                        16
+                    );
                     str = str.offset(1)
                 }
                 str = str.offset(1);
@@ -619,129 +360,53 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             }
             38 => {
                 /*  15: &   12: &&              */
-                if *str.offset(1 as libc::c_int as isize) as libc::c_int ==
-                       '&' as i32 {
-                    doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_int,
-                                                                             _:
-                                                                                 libc::c_int)
-                                                            -> ()>,
-                                                 opfunc_t>(Some(op_andand as
-                                                                    unsafe extern "C" fn(_:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_int,
-                                                                                         _:
-                                                                                             libc::c_int)
-                                                                        ->
-                                                                            ())),
-                         12 as libc::c_int);
+                if *str.offset(1 as libc::c_int as isize) as libc::c_int == '&' as i32 {
+                    doop(
+                        ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
+                            Some(op_andand as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
+                        ),
+                        12
+                    );
                     str = str.offset(1)
                 } else {
-                    doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_int,
-                                                                             _:
-                                                                                 libc::c_int)
-                                                            -> ()>,
-                                                 opfunc_t>(Some(op_and as
-                                                                    unsafe extern "C" fn(_:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_int,
-                                                                                         _:
-                                                                                             libc::c_int)
-                                                                        ->
-                                                                            ())),
-                         15 as libc::c_int);
+                    doop(
+                        ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
+                            Some(op_and as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
+                        ),
+                        15
+                    );
                 }
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
             94 => {
                 /*  14: ^                       */
-                doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                             libc::c_long,
-                                                                         _:
-                                                                             libc::c_long,
-                                                                         _:
-                                                                             libc::c_int,
-                                                                         _:
-                                                                             libc::c_int)
-                                                        -> ()>,
-                                             opfunc_t>(Some(op_xor as
-                                                                unsafe extern "C" fn(_:
-                                                                                         libc::c_long,
-                                                                                     _:
-                                                                                         libc::c_long,
-                                                                                     _:
-                                                                                         libc::c_int,
-                                                                                     _:
-                                                                                         libc::c_int)
-                                                                    -> ())),
-                     14 as libc::c_int);
+                doop(
+                    ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
+                        Some(op_xor as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
+                    ),
+                    14
+                );
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
             124 => {
                 /*  13: |   11: ||              */
-                if *str.offset(1 as libc::c_int as isize) as libc::c_int ==
-                       '|' as i32 {
-                    doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_int,
-                                                                             _:
-                                                                                 libc::c_int)
-                                                            -> ()>,
-                                                 opfunc_t>(Some(op_oror as
-                                                                    unsafe extern "C" fn(_:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_int,
-                                                                                         _:
-                                                                                             libc::c_int)
-                                                                        ->
-                                                                            ())),
-                         11 as libc::c_int);
+                if *str.offset(1 as libc::c_int as isize) as libc::c_int == '|' as i32 {
+                    doop(
+                        ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
+                            Some(op_oror as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
+                        ),
+                        11
+                    );
                     str = str.offset(1)
                 } else {
-                    doop(::std::mem::transmute::<Option<unsafe extern "C" fn(_:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_long,
-                                                                             _:
-                                                                                 libc::c_int,
-                                                                             _:
-                                                                                 libc::c_int)
-                                                            -> ()>,
-                                                 opfunc_t>(Some(op_or as
-                                                                    unsafe extern "C" fn(_:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_long,
-                                                                                         _:
-                                                                                             libc::c_int,
-                                                                                         _:
-                                                                                             libc::c_int)
-                                                                        ->
-                                                                            ())),
-                         13 as libc::c_int);
+                    doop(
+                        ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
+                            Some(op_or as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
+                        ),
+                        13
+                    );
                 }
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
@@ -871,8 +536,8 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                         asmerr(AsmErrorEquates::SyntaxError,
                                0 as libc::c_int != 0, pLine);
                     }
-                    (*cur).value = Argstack[state.expressions.argIndex];
-                    (*cur).flags = Argflags[state.expressions.argIndex];
+                    (*cur).value = state.expressions.argStack[state.expressions.argIndex];
+                    (*cur).flags = state.expressions.argFlags[state.expressions.argIndex];
                     (*cur).string =
                         Argstring[state.expressions.argIndex] as *mut libc::c_void as
                             *mut libc::c_char;
@@ -923,8 +588,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             8741107198128373303 =>
             /* fall thru OK */
             {
-                while state.expressions.opIndex != state.expressions.opIndexBase &&
-                          Oppri[state.expressions.opIndex - 1] != 0 {
+                while state.expressions.opIndex != state.expressions.opIndexBase && state.expressions.opPri[state.expressions.opIndex - 1] != 0 {
                     evaltop();
                 }
                 if state.expressions.opIndex != state.expressions.opIndexBase { state.expressions.opIndex -= 1 }
@@ -936,12 +600,11 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                         /*  STRING CONVERSION   */
                         let mut buf: [libc::c_char; 32] = [0; 32];
                         str = str.offset(1);
-                        if Argflags[state.expressions.argIndex - 1] as
-                               libc::c_int == 0 as libc::c_int {
+                        if state.expressions.argFlags[state.expressions.argIndex - 1] == 0 {
                             sprintf(buf.as_mut_ptr(),
-                                    b"%ld\x00" as *const u8 as
-                                        *const libc::c_char,
-                                    Argstack[state.expressions.argIndex - 1]);
+                                b"%ld\x00" as *const u8 as *const libc::c_char,
+                                state.expressions.argStack[state.expressions.argIndex - 1]
+                            );
                             Argstring[state.expressions.argIndex - 1] =
                                 strcpy(ckmalloc(strlen(buf.as_mut_ptr()).wrapping_add(1
                                                                                           as
@@ -964,7 +627,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 } else {
                     let fresh0 = state.expressions.opIndex;
                     state.expressions.opIndex = state.expressions.opIndex + 1;
-                    Oppri[fresh0] = 0 as libc::c_int
+                    state.expressions.opPri[fresh0] = 0
                 }
                 str = str.offset(1)
             }
@@ -974,8 +637,8 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
     while state.expressions.opIndex != state.expressions.opIndexBase { evaltop(); }
     if state.expressions.argIndex != state.expressions.argIndexBase {
         state.expressions.argIndex -= 1;
-        (*cur).value = Argstack[state.expressions.argIndex];
-        (*cur).flags = Argflags[state.expressions.argIndex];
+        (*cur).value = state.expressions.argStack[state.expressions.argIndex];
+        (*cur).flags = state.expressions.argFlags[state.expressions.argIndex];
         (*cur).string =
             Argstring[state.expressions.argIndex] as *mut libc::c_void as
                 *mut libc::c_char;
@@ -1014,7 +677,7 @@ pub unsafe extern "C" fn evaltop() {
         return
     }
     state.expressions.opIndex -= 1;
-    if Oppri[state.expressions.opIndex] == 128 as libc::c_int {
+    if state.expressions.opPri[state.expressions.opIndex] == 128 {
         if state.expressions.argIndex < state.expressions.argIndexBase + 1 {
             asmerr(AsmErrorEquates::SyntaxError, 0 as libc::c_int != 0,
                    0 as *const libc::c_char);
@@ -1029,8 +692,8 @@ pub unsafe extern "C" fn evaltop() {
                     ).expect("non-null function pointer")
                 ).expect("non-null function pointer")
             )(
-                Argstack[state.expressions.argIndex],
-                Argflags[state.expressions.argIndex] as libc::c_int
+                state.expressions.argStack[state.expressions.argIndex],
+                state.expressions.argFlags[state.expressions.argIndex]
             );
     } else {
         if state.expressions.argIndex < state.expressions.argIndexBase + 2 {
@@ -1047,10 +710,10 @@ pub unsafe extern "C" fn evaltop() {
                     ).expect("non-null function pointer")
                 ).expect("non-null function pointer")
             )(
-                Argstack[state.expressions.argIndex],
-                Argstack[state.expressions.argIndex + 1],
-                Argflags[state.expressions.argIndex] as libc::c_int,
-                Argflags[state.expressions.argIndex + 1] as libc::c_int
+                state.expressions.argStack[state.expressions.argIndex],
+                state.expressions.argStack[state.expressions.argIndex + 1],
+                state.expressions.argFlags[state.expressions.argIndex],
+                state.expressions.argFlags[state.expressions.argIndex + 1]
             );
     };
 }
@@ -1084,44 +747,42 @@ unsafe extern "C" fn stackarg(mut val: libc::c_long, mut flags: libc::c_int,
         flags &= !(0x8 as libc::c_int);
         str = new
     }
-    Argstack[state.expressions.argIndex] = val;
+    state.expressions.argStack[state.expressions.argIndex] = val;
     Argstring[state.expressions.argIndex] = str;
-    Argflags[state.expressions.argIndex] = flags as libc::c_uchar;
+    state.expressions.argFlags[state.expressions.argIndex] = flags as u8; // FIXME: truncate, check source flags type...
     state.expressions.argIndex += 1;
     if state.expressions.argIndex == 64 {
         println!("stackarg: maxargs stacked");
         state.expressions.argIndex = state.expressions.argIndexBase
     }
-    while state.expressions.opIndex != state.expressions.opIndexBase &&
-              Oppri[state.expressions.opIndex - 1] == 128 {
+    while state.expressions.opIndex != state.expressions.opIndexBase && state.expressions.opPri[state.expressions.opIndex - 1] == 128 {
         evaltop();
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn doop(mut func: opfunc_t, mut pri: libc::c_int) {
+pub unsafe extern "C" fn doop(mut func: opfunc_t, mut pri: usize) {
     if state.parameters.debug {
         println!("doop");
     }
     state.expressions.lastWasOp = true;
-    if state.expressions.opIndex == state.expressions.opIndexBase || pri == 128 as libc::c_int {
+    if state.expressions.opIndex == state.expressions.opIndexBase || pri == 128 {
         if state.parameters.debug {
             printf(b"doop @ %d unary\n\x00" as *const u8 as
                        *const libc::c_char, state.expressions.opIndex);
         }
         Opdis[state.expressions.opIndex] = func;
-        Oppri[state.expressions.opIndex] = pri;
+        state.expressions.opPri[state.expressions.opIndex] = pri;
         state.expressions.opIndex += 1;
         return
     }
-    while state.expressions.opIndex != state.expressions.opIndexBase && Oppri[state.expressions.opIndex - 1] != 0 &&
-              pri <= Oppri[state.expressions.opIndex - 1] {
+    while state.expressions.opIndex != state.expressions.opIndexBase && state.expressions.opPri[state.expressions.opIndex - 1] != 0 && pri <= state.expressions.opPri[state.expressions.opIndex - 1] {
         evaltop();
     }
     if state.parameters.debug {
         printf(b"doop @ %d\n\x00" as *const u8 as *const libc::c_char, state.expressions.opIndex);
     }
     Opdis[state.expressions.opIndex] = func;
-    Oppri[state.expressions.opIndex] = pri;
+    state.expressions.opPri[state.expressions.opIndex] = pri;
     state.expressions.opIndex += 1;
     if state.expressions.opIndex == 32 {
         println!("doop: too many operators");
@@ -1312,8 +973,7 @@ pub unsafe extern "C" fn op_or(mut v1: libc::c_long, mut v2: libc::c_long,
     stackarg(v1 | v2, f1 | f2, 0 as *const libc::c_char);
 }
 #[no_mangle]
-pub unsafe extern "C" fn pushchar(mut str: *const libc::c_char)
- -> *const libc::c_char {
+pub unsafe extern "C" fn pushchar(mut str: *const libc::c_char) -> *const libc::c_char {
     if *str != 0 {
         stackarg(*str as libc::c_long, 0 as libc::c_int,
                  0 as *const libc::c_char);
@@ -1325,8 +985,7 @@ pub unsafe extern "C" fn pushchar(mut str: *const libc::c_char)
     return str;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pushhex(mut str: *const libc::c_char)
- -> *const libc::c_char {
+pub unsafe extern "C" fn pushhex(mut str: *const libc::c_char) -> *const libc::c_char {
     let mut val: libc::c_long = 0 as libc::c_int as libc::c_long;
     loop  {
         if *str as libc::c_int >= '0' as i32 &&
@@ -1352,8 +1011,7 @@ pub unsafe extern "C" fn pushhex(mut str: *const libc::c_char)
     return str;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pushoct(mut str: *const libc::c_char)
- -> *const libc::c_char {
+pub unsafe extern "C" fn pushoct(mut str: *const libc::c_char) -> *const libc::c_char {
     let mut val: libc::c_long = 0 as libc::c_int as libc::c_long;
     while *str as libc::c_int >= '0' as i32 &&
               *str as libc::c_int <= '7' as i32 {
@@ -1366,8 +1024,7 @@ pub unsafe extern "C" fn pushoct(mut str: *const libc::c_char)
     return str;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pushdec(mut str: *const libc::c_char)
- -> *const libc::c_char {
+pub unsafe extern "C" fn pushdec(mut str: *const libc::c_char) -> *const libc::c_char {
     let mut val: libc::c_long = 0 as libc::c_int as libc::c_long;
     while *str as libc::c_int >= '0' as i32 &&
               *str as libc::c_int <= '9' as i32 {
@@ -1380,8 +1037,7 @@ pub unsafe extern "C" fn pushdec(mut str: *const libc::c_char)
     return str;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pushbin(mut str: *const libc::c_char)
- -> *const libc::c_char {
+pub unsafe extern "C" fn pushbin(mut str: *const libc::c_char) -> *const libc::c_char {
     let mut val: libc::c_long = 0 as libc::c_int as libc::c_long;
     while *str as libc::c_int == '0' as i32 ||
               *str as libc::c_int == '1' as i32 {
@@ -1394,8 +1050,7 @@ pub unsafe extern "C" fn pushbin(mut str: *const libc::c_char)
     return str;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pushstr(mut str: *const libc::c_char)
- -> *const libc::c_char {
+pub unsafe extern "C" fn pushstr(mut str: *const libc::c_char) -> *const libc::c_char {
     stackarg(0 as libc::c_int as libc::c_long, 0x8 as libc::c_int, str);
     while *str as libc::c_int != 0 && *str as libc::c_int != '\"' as i32 {
         str = str.offset(1)
@@ -1404,8 +1059,7 @@ pub unsafe extern "C" fn pushstr(mut str: *const libc::c_char)
     return str;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pushsymbol(mut str: *const libc::c_char)
- -> *const libc::c_char {
+pub unsafe extern "C" fn pushsymbol(mut str: *const libc::c_char) -> *const libc::c_char {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut ptr: *const libc::c_char = 0 as *const libc::c_char;
     let mut macro_0: libc::c_uchar = 0 as libc::c_int as libc::c_uchar;
