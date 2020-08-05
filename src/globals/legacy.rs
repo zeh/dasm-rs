@@ -243,13 +243,8 @@ pub static mut CheckSum: libc::c_ulong = 0;
 pub static mut F_outfile: *const libc::c_char =
     b"a.out\x00" as *const u8 as *const libc::c_char;
 #[no_mangle]
-pub static mut F_listfile: *mut libc::c_char =
-    0 as *const libc::c_char as *mut libc::c_char;
-#[no_mangle]
 pub static mut F_symfile: *mut libc::c_char =
     0 as *const libc::c_char as *mut libc::c_char;
-#[no_mangle]
-pub static mut FI_listfile: *mut FILE = 0 as *const FILE as *mut FILE;
 #[no_mangle]
 pub static mut FI_temp: *mut FILE = 0 as *const FILE as *mut FILE;
 #[no_mangle]

@@ -9,6 +9,7 @@ use crate::types::enums::{
     AsmErrorEquates,
 };
 use crate::utils::{
+    filesystem,
     transient,
 };
 
@@ -42,10 +43,6 @@ extern "C" {
     fn strlen(_: *const libc::c_char) -> libc::c_ulong;
     #[no_mangle]
     static mut Mnext: libc::c_int;
-    #[no_mangle]
-    static mut F_listfile: *mut libc::c_char;
-    #[no_mangle]
-    static mut FI_listfile: *mut FILE;
     #[no_mangle]
     fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const libc::c_char)
      -> libc::c_int;
@@ -1075,19 +1072,22 @@ pub unsafe extern "C" fn pushsymbol(mut str: *const libc::c_char) -> *const libc
         ptr = ptr.offset(1)
     }
     if ptr == str {
-        asmerr(AsmErrorEquates::IllegalCharacter, 0 as libc::c_int != 0,
-               str);
-        printf(b"char = \'%c\' %d (-1: %d)\n\x00" as *const u8 as
-                   *const libc::c_char, *str as libc::c_int,
-               *str as libc::c_int,
-               *str.offset(-(1 as libc::c_int as isize)) as libc::c_int);
-        if !F_listfile.is_null() {
-            fprintf(FI_listfile,
-                    b"char = \'%c\' code %d\n\x00" as *const u8 as
-                        *const libc::c_char, *str as libc::c_int,
-                    *str as libc::c_int);
-        }
-        return str.offset(1 as libc::c_int as isize)
+        asmerr(AsmErrorEquates::IllegalCharacter, 0 as libc::c_int != 0, str);
+        println!("char = '{}' {} (-1: {})",
+            transient::str_pointer_to_string(str),
+            transient::str_pointer_to_string(str).as_bytes()[0],
+            transient::str_pointer_to_string(str.offset(-1)).as_bytes()[0],
+        );
+        filesystem::writeln_to_file_maybe(
+            &mut state.output.listFile,
+            format!(
+                "char = '{}' code {}",
+                // FIXME: pass correct code
+                transient::str_pointer_to_string(str), // %c
+                transient::str_pointer_to_string(str).as_bytes()[0], // %d
+            ).as_str(),
+        );
+        return str.offset(1);
     }
     if *ptr as libc::c_int == '$' as i32 { ptr = ptr.offset(1) }
     sym =

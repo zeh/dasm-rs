@@ -2,6 +2,8 @@
 // - This file's contents came from "asm.h" in the original DASM C code -
 // ----------------------------------------------------------------------
 
+use std::fs::File;
+
 use crate::expressions;
 use crate::types::enums::{
 	AsmErrorEquates,
@@ -33,6 +35,9 @@ pub struct GlobalState {
 
 	// Set by ::expressions during execution
 	pub expressions: ExpressionsState,
+
+	// Written by
+	pub output: OutputState,
 }
 
 pub struct ParametersState {
@@ -40,6 +45,7 @@ pub struct ParametersState {
 	pub errorFormat: ErrorFormat,
 	pub format: Format,
 	pub listAllPasses: bool,
+	pub listFile: String,
 	pub maxPasses: u16,
 	pub sortMode: SortMode,
 	pub strictMode: bool,
@@ -71,4 +77,8 @@ pub struct ExpressionsState {
 	pub opIndex: usize,
 	pub opIndexBase: usize,
 	pub opPri: [usize; expressions::MAX_OPS],
+}
+
+pub struct OutputState {
+	pub listFile: Option<File>,
 }

@@ -12,6 +12,7 @@ use crate::types::structs::{
     ExpressionsState,
     GlobalState,
     OtherMainState,
+    OutputState,
     ParametersState,
 };
 
@@ -25,6 +26,7 @@ pub static mut state: GlobalState = GlobalState {
         errorFormat: ErrorFormat::Woe,
         format: Format::Default,
         listAllPasses: false,
+        listFile: String::new(),
         maxPasses: 10,
         sortMode: SortMode::Alpha,
         strictMode: false,
@@ -56,5 +58,9 @@ pub static mut state: GlobalState = GlobalState {
         opIndex: 0,
         opIndexBase: 0,
         opPri: [0; expressions::MAX_OPS],
-    }
+    },
+
+    output: OutputState {
+        listFile: None,
+    },
 };

@@ -48,6 +48,7 @@ use types::enums::{
     Verbosity,
 };
 use utils::{
+    filesystem,
     find_error_definition,
     hash_string,
     panic,
@@ -159,11 +160,7 @@ extern "C" {
     #[no_mangle]
     static mut F_outfile: *const libc::c_char;
     #[no_mangle]
-    static mut F_listfile: *mut libc::c_char;
-    #[no_mangle]
     static mut F_symfile: *mut libc::c_char;
-    #[no_mangle]
-    static mut FI_listfile: *mut FILE;
     #[no_mangle]
     static mut FI_temp: *mut FILE;
     #[no_mangle]
@@ -814,7 +811,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                 /* fall through to 'l' */
                 /*  F_listfile  */
                 {
-                    F_listfile = str;
+                    state.parameters.listFile = transient::str_pointer_to_string(str);
                     current_block = 15042310719884093888;
                 }
                 3124391281584211484 =>
@@ -892,20 +889,16 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                         println!("Warning: Unable to [re]open '{}'", transient::str_pointer_to_string(F_outfile));
                         return AsmErrorEquates::FileError
                     }
-                    if !F_listfile.is_null() {
-                        FI_listfile =
-                            fopen(F_listfile,
-                                  if state.parameters.listAllPasses &&
-                                         pass > 1 as libc::c_int {
-                                      b"a\x00" as *const u8 as
-                                          *const libc::c_char
-                                  } else {
-                                      b"w\x00" as *const u8 as
-                                          *const libc::c_char
-                                  });
-                        if FI_listfile.is_null() {
-                            println!("Warning: Unable to [re]open '{}'", transient::str_pointer_to_string(F_listfile));
-                            return AsmErrorEquates::FileError
+                    if !state.parameters.listFile.is_empty() {
+                        let fileOption = filesystem::create_new_file(state.parameters.listFile.as_str());
+                        match fileOption {
+                            Ok(file) => {
+                                state.output.listFile = Some(file);
+                            },
+                            _ => {
+                                println!("Warning: Unable to [re]open '{}'", state.parameters.listFile);
+                                return AsmErrorEquates::FileError
+                            },
                         }
                     }
                     pushinclude(*av.offset(1 as libc::c_int as isize));
@@ -987,8 +980,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                                               0 {
                                 programlabel();
                             }
-                            if !F_listfile.is_null() &&
-                                   state.execution.listMode != ListMode::None {
+                            if !state.parameters.listFile.is_empty() && state.execution.listMode != ListMode::None {
                                 outlistfile(comment);
                             }
                         }
@@ -1017,12 +1009,13 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
         if (state.parameters.verbosity as u8 > 1)
         printf("back to: %s\n", Incfile->name);
             */
-                            if !F_listfile.is_null() {
-                                fprintf(FI_listfile,
-                                        b"------- FILE %s\n\x00" as *const u8
-                                            as *const libc::c_char,
-                                        (*pIncfile).name);
-                            }
+                            filesystem::writeln_to_file_maybe(
+                                &mut state.output.listFile,
+                                format!(
+                                    "------- FILE {}",
+                                    transient::str_pointer_to_string((*pIncfile).name),
+                                ).as_str(),
+                            );
                         }
                     }
                     if state.parameters.verbosity as u8 >= Verbosity::One as u8 {
@@ -1036,7 +1029,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     }
                     closegenerate();
                     fclose(FI_temp);
-                    if !FI_listfile.is_null() { fclose(FI_listfile); }
+                    filesystem::close_file_maybe(&mut state.output.listFile);
                     if state.execution.redoIndex != 0 {
                         if !doAllPasses {
                             if state.execution.redoIndex == oldRedoIndex && state.execution.redoWhy == oldRedoWhy &&
@@ -1245,9 +1238,13 @@ unsafe extern "C" fn outlistfile(mut comment: *const libc::c_char) {
         sprintf(buf1.as_mut_ptr().offset(j as isize),
                 b"\t;%s\x00" as *const u8 as *const libc::c_char, comment);
     }
-    fwrite(buf2.as_mut_ptr() as *const libc::c_void,
-           tabit(buf1.as_mut_ptr(), buf2.as_mut_ptr()) as size_t,
-           1 as libc::c_int as size_t, FI_listfile);
+    // FIXME: convoluted conversion of max-length &[i8] to flexible-length &[u8]
+    let len = tabit(buf1.as_mut_ptr(), buf2.as_mut_ptr()) as usize;
+    let vec = buf2.to_vec()[0..len].iter().map(|&x| x as u8).collect::<Vec<_>>();
+    filesystem::write_buffer_to_file_maybe(
+        &mut state.output.listFile,
+        &vec,
+    );
     Glen = 0 as libc::c_int;
     Extstr = 0 as *mut libc::c_char;
 }
@@ -1830,7 +1827,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
         defined = 1 as libc::c_int
     } else {
         defined = (mne != 0 as *mut libc::c_void as *mut _MNE) as libc::c_int;
-        if !F_listfile.is_null() && state.execution.listMode != ListMode::None {
+        if !state.parameters.listFile.is_empty() && state.execution.listMode != ListMode::None {
             outlistfile(b"\x00" as *const u8 as *const libc::c_char);
         }
     }
@@ -1881,8 +1878,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
                 return
             }
         }
-        if skipit == 0 && !F_listfile.is_null() &&
-                state.execution.listMode != ListMode::None {
+        if skipit == 0 && !state.parameters.listFile.is_empty() && state.execution.listMode != ListMode::None {
             outlistfile(comment);
         }
         if defined == 0 {
@@ -1940,12 +1936,15 @@ pub unsafe extern "C" fn pushinclude(mut str: *mut libc::c_char) {
                    b"\x00" as *const u8 as *const libc::c_char, str);
         }
         state.other.incLevel += 1;
-        if !F_listfile.is_null() {
-            fprintf(FI_listfile,
-                    b"------- FILE %s LEVEL %d PASS %d\n\x00" as *const u8 as
-                        *const libc::c_char, str, state.other.incLevel as libc::c_int,
-                    pass);
-        }
+        filesystem::writeln_to_file_maybe(
+            &mut state.output.listFile,
+            format!(
+                "------- FILE {} LEVEL {} PASS {}",
+                transient::str_pointer_to_string(str),
+                state.other.incLevel,
+                pass,
+            ).as_str(),
+        );
         inf =
             zmalloc(::std::mem::size_of::<_INCFILE>() as libc::c_ulong as
                         libc::c_int) as *mut _INCFILE;
@@ -1968,7 +1967,8 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool,
     let mut str: *const libc::c_char = 0 as *const libc::c_char;
     let mut pincfile: *mut _INCFILE = 0 as *mut _INCFILE;
     /* file pointer we print error messages to */
-    let mut error_file: *mut FILE = 0 as *mut FILE;
+    let errorToFile = !state.parameters.listFile.is_empty();
+    let mut errorFile = &mut state.output.listFile;
     if find_error_definition(err).fatal {
         state.other.stopAtEnd = 1 as libc::c_int != 0
     }
@@ -1987,8 +1987,6 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool,
         they should really go to stderr, but we'll switch
         eventually I hope... [phf]
     */
-    /* determine the file pointer to use */
-    error_file = if !F_listfile.is_null() { FI_listfile } else { stdout };
     /* print first part of message, different formats offered */
     match state.parameters.errorFormat {
         ErrorFormat::Woe => {
@@ -1996,16 +1994,20 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool,
                 Error format for MS VisualStudio and relatives:
                 "file (line): error: string"
             */
-            if error_file != stdout {
-                fprintf(error_file,
-                        b"%s (%lu): error: \x00" as *const u8 as
-                            *const libc::c_char, (*pincfile).name,
-                        (*pincfile).lineno); // -FXQ
+            if errorToFile {
+                filesystem::write_to_file_maybe(errorFile, format!(
+                    "{} ({}): error: ",
+                    transient::str_pointer_to_string((*pincfile).name),
+                    (*pincfile).lineno
+                ).as_str());
             }
-            sprintf(erroradd1.as_mut_ptr(),
-                    b"%s (%lu): error: \x00" as *const u8 as
-                        *const libc::c_char, (*pincfile).name,
-                    (*pincfile).lineno);
+            // FIXME: add to erroradd1 and then output
+            sprintf(
+                erroradd1.as_mut_ptr(),
+                b"%s (%lu): error: \x00" as *const u8 as *const libc::c_char,
+                (*pincfile).name,
+                (*pincfile).lineno
+            );
         }
         ErrorFormat::Dillon => {
             /*
@@ -2017,62 +2019,79 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool,
                     "*line %4ld %-10s %s\n" (list file)
                     "line %4ld %-10s %s\n" (terminal)
             */
-            if error_file != stdout {
-                fprintf(error_file,
-                        b"line %7ld %-10s \x00" as *const u8 as
-                            *const libc::c_char, (*pincfile).lineno,
-                        (*pincfile).name); // -FXQ
+            // FIXME: proper alignment
+            if errorToFile {
+                filesystem::write_to_file_maybe(errorFile, format!(
+                    "line {} {} ",
+                    (*pincfile).lineno,
+                    transient::str_pointer_to_string((*pincfile).name),
+                ).as_str());
             }
-            sprintf(erroradd1.as_mut_ptr(),
-                    b"line %7ld %-10s \x00" as *const u8 as
-                        *const libc::c_char, (*pincfile).lineno,
-                    (*pincfile).name);
+            // FIXME: add to erroradd1 and then output
+            sprintf(
+                erroradd1.as_mut_ptr(),
+                b"line %7ld %-10s \x00" as *const u8 as *const libc::c_char,
+                (*pincfile).lineno,
+                (*pincfile).name,
+            );
         }
         ErrorFormat::GNU => {
             /*
                 GNU format error messages, from their coding
                 standards.
             */
-            if error_file != stdout {
-                fprintf(error_file,
-                        b"%s:%lu: error: \x00" as *const u8 as
-                            *const libc::c_char, (*pincfile).name,
-                        (*pincfile).lineno); // -FXQ
+            if errorToFile {
+                filesystem::write_to_file_maybe(errorFile, format!(
+                    "{}:{}: error: ",
+                    transient::str_pointer_to_string((*pincfile).name),
+                    (*pincfile).lineno,
+                ).as_str());
             }
-            sprintf(erroradd1.as_mut_ptr(),
-                    b"%s:%lu: error: \x00" as *const u8 as
-                        *const libc::c_char, (*pincfile).name,
-                    (*pincfile).lineno);
+            // FIXME: add to erroradd1 and then output
+            sprintf(
+                erroradd1.as_mut_ptr(),
+                b"%s:%lu: error: \x00" as *const u8 as
+                *const libc::c_char,
+                (*pincfile).name,
+                (*pincfile).lineno
+            );
         }
     }
-    if error_file != stdout {
+    if errorToFile {
         /* print second part of message, always the same for now */
-        fprintf(error_file, str,
-                if !sText.is_null() {
-                    sText
-                } else {
-                    b"\x00" as *const u8 as *const libc::c_char
-                }); // dump messages from this pass
-        // FIXME: this line is creating an additional carriage return (compared to the original output),
-        // likely because sText already has a carriage return of its own.
-        fprintf(error_file,
-                b"\n\x00" as *const u8 as
-                    *const libc::c_char); // time to dump the errors from this pass!
+        let mut errorMessage = transient::str_pointer_to_string(str);
+        // This is a bit of a hack: since we can't use variables as the template in format!(),
+        // we simply replace "{}" in the template with the expected string. This works well,
+        // but it means the template only supports a single {}, and no other formatting directive.
+        if !sText.is_null() {
+            errorMessage = errorMessage.replace("{}", transient::str_pointer_to_string(sText).as_str());
+        }
+        filesystem::write_to_file_maybe(errorFile, errorMessage.as_str());
     }
-    sprintf(erroradd2.as_mut_ptr(), str,
-            if !sText.is_null() {
-                sText
-            } else { b"\x00" as *const u8 as *const libc::c_char });
-    sprintf(erroradd3.as_mut_ptr(),
-            b"\n\x00" as *const u8 as *const libc::c_char);
+    // FIXME: add to erroradd1 and then output
+    // (also, the printf is wrong since template parameters have changed from "%s" to "{})
+    sprintf(
+        erroradd2.as_mut_ptr(), str,
+        if !sText.is_null() {
+            sText
+        } else {
+            b"\x00" as *const u8 as *const libc::c_char
+        }
+    );
+    // FIXME: add to erroradd1 and then output
+    sprintf(
+        erroradd3.as_mut_ptr(),
+        b"\n\x00" as *const u8 as *const libc::c_char
+    );
     passbuffer_update(0 as libc::c_int, erroradd1.as_mut_ptr());
     passbuffer_update(0 as libc::c_int, erroradd2.as_mut_ptr());
     passbuffer_update(0 as libc::c_int, erroradd3.as_mut_ptr());
     if bAbort {
         passbuffer_output(1 as libc::c_int);
-        fprintf(error_file,
-                b"Aborting assembly\n\x00" as *const u8 as
-                    *const libc::c_char);
+        filesystem::writeln_to_file_maybe(
+            errorFile,
+            "Aborting assembly"
+        );
         passbuffer_output(0 as libc::c_int);
         exit(1 as libc::c_int);
     }

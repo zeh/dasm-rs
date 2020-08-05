@@ -16,6 +16,10 @@ use crate::types::enums::{
     Format,
     ListMode,
 };
+use crate::utils::{
+    filesystem,
+    transient,
+};
 
 extern "C" {
     pub type _IO_wide_data;
@@ -134,10 +138,6 @@ extern "C" {
     fn FreeSymbolList(sym: *mut _SYMBOL);
     #[no_mangle]
     static mut FI_temp: *mut FILE;
-    #[no_mangle]
-    static mut F_listfile: *mut libc::c_char;
-    #[no_mangle]
-    static mut FI_listfile: *mut FILE;
     #[no_mangle]
     static mut Lastlocaldollarindex: libc::c_ulong;
     #[no_mangle]
@@ -838,10 +838,7 @@ pub unsafe extern "C" fn gethexdig(mut c: libc::c_int) -> libc::c_int {
     asmerr(AsmErrorEquates::SyntaxError, 0 as libc::c_int != 0,
            sBuffer.as_mut_ptr());
     println!("(Must be a valid hex digit)");
-    if !F_listfile.is_null() {
-        fputs(b"(Must be a valid hex digit)\n\x00" as *const u8 as
-                  *const libc::c_char, FI_listfile);
-    }
+    filesystem::writeln_to_file_maybe(&mut state.output.listFile, "(Must be a valid hex digit)");
     return 0 as libc::c_int;
 }
 #[no_mangle]
@@ -1445,11 +1442,10 @@ pub unsafe extern "C" fn v_echo(mut str: *mut libc::c_char,
                         b"$%lx\x00" as *const u8 as *const libc::c_char,
                         (*s).value);
             }
-            if !FI_listfile.is_null() {
-                fprintf(FI_listfile,
-                        b" %s\x00" as *const u8 as *const libc::c_char,
-                        buf.as_mut_ptr());
-            }
+            filesystem::write_to_file_maybe(
+                &mut state.output.listFile,
+                format!(" {}", transient::str_pointer_to_string(buf.as_mut_ptr())).as_str(),
+            );
             //printf(" %s", buf);
             addmsg(b" \x00" as *const u8 as *const libc::c_char as
                        *mut libc::c_char); // -FXQ supress output until final pass
@@ -1458,9 +1454,8 @@ pub unsafe extern "C" fn v_echo(mut str: *mut libc::c_char,
         s = (*s).next
     }
     //puts("");
-    addmsg(b"\n\x00" as *const u8 as *const libc::c_char as
-               *mut libc::c_char);
-    if !FI_listfile.is_null() { putc('\n' as i32, FI_listfile); };
+    addmsg(b"\n\x00" as *const u8 as *const libc::c_char as *mut libc::c_char);
+    filesystem::writeln_to_file_maybe(&mut state.output.listFile, "");
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_set(mut str: *mut libc::c_char,

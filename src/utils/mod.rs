@@ -12,6 +12,8 @@ use crate::types::structs::{
 // FIXME: drop this once it's not needed anymore
 pub mod transient;
 
+pub mod filesystem;
+
 /**
  * Creates a simple hash for a string.
  * In original C code, "hash1()" in main.c
@@ -44,7 +46,6 @@ pub fn panic(message: &str) {
     println!("{}", message);
     std::process::exit(1);
 }
-
 
 
 // Tests
