@@ -7,11 +7,5 @@
       6  0000 ????				      lda	#1
       7  0000 ????				      ENDM
       8  0000 ????				      MAC	testmac
-      9  0000 ????				      lda	#1
-     10  0000 ????				      ENDM
-     11  0000 ????
-     12  f800					      ORG	$f800
-     13  f800
-      0  f800					      testmac
-      1  f800		       a9 01		      lda	#1
-     15  f802
+doublemacro.asm (8): error: Macro "testmac" definition is repeated.
+Aborting assembly

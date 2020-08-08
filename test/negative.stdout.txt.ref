@@ -1,0 +1,5 @@
+negative.asm (30): error: Value in 'lda #256' must be <$100.
+negative.asm (36): error: Value in 'lda #1024' must be <$100.
+
+Unrecoverable error(s) in pass, aborting assembly!
+Complete.

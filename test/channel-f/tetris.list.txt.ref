@@ -1,0 +1,2130 @@
+------- FILE channel-f/tetris.asm LEVEL 1 PASS 2
+      1  1800					      processor	f8
+      2  0800					      org	$800
+      3  0800
+      4  0800		       28 00	   player1    equ	$2800
+      5  0800		       28 e4	   p1next     equ	$28e4
+      6  0800		       28 ec	   p1fig      equ	$28ec
+      7  0800		       28 fd	   p1activ    equ	$28fd
+      8  0800		       28 f5	   p1bonus    equ	$28f5
+      9  0800		       28 f6	   p1penalty  equ	$28f6
+     10  0800		       28 f7	   p1score    equ	$28f7	; 8 9
+     11  0800		       28 fb	   p1delay    equ	$28fb
+     12  0800		       28 fc	   p1delay_counter equ	$28fc
+     13  0800		       28 fe	   p1randomnext equ	$28fe
+     14  0800		       28 ff	   p1random   equ	$28ff
+     15  0800		       2a 80	   p1borderc1 equ	$2a80
+     16  0800		       2a 81	   p1borderc2 equ	$2a81
+     17  0800		       2a 82	   p1fieldposy equ	$2a82
+     18  0800		       2a 83	   p1fieldposx equ	$2a83
+     19  0800		       2a 84	   p1blockc1  equ	$2a84
+     20  0800		       2a 85	   p1blockc2  equ	$2a85
+     21  0800		       2a 86	   p1scoreparam equ	$2a86
+     22  0800		       2a 8a	   p1nextparam equ	$2a8a
+     23  0800							; equ $2a8e
+     24  0800
+     25  0800		       29 00	   player2    equ	$2900
+     26  0800		       29 e4	   p2next     equ	$29e4
+     27  0800		       29 ec	   p2fig      equ	$29ec
+     28  0800		       29 fd	   p2activ    equ	$29fd
+     29  0800		       29 f5	   p2bonus    equ	$29f5
+     30  0800		       29 f6	   p2penalty  equ	$29f6
+     31  0800		       29 f7	   p2score    equ	$29f7
+     32  0800		       29 fb	   p2delay    equ	$29fb
+     33  0800		       29 fc	   p2delay_counter equ	$29fc
+     34  0800		       29 fe	   p2randomnext equ	$29fe
+     35  0800		       29 ff	   p2random   equ	$29ff
+     36  0800		       2a 90	   p2borderc1 equ	$2a90
+     37  0800		       2a 91	   p2borderc2 equ	$2a91
+     38  0800		       2a 92	   p2fieldposy equ	$2a92
+     39  0800		       2a 93	   p2fieldposx equ	$2a93
+     40  0800		       2a 94	   p2blockc1  equ	$2a94
+     41  0800		       2a 95	   p2blockc2  equ	$2a95
+     42  0800		       2a 96	   p2scoreparam equ	$2a96
+     43  0800		       2a 9a	   p2nextparam equ	$2a9a
+     44  0800							; equ $2a9e
+     45  0800
+     46  0800							; player structure layout
+     47  0800							; 19 lines a 12 columns
+     48  0800							; ec next figure
+     49  0800							; ed figure (0..6, $ff for none)
+     50  0800							; ee rotation
+     51  0800							; ef x
+     52  0800							; f0 y
+     53  0800							; f5 bonus
+     54  0800							; f6 penalty
+     55  0800							; f7 score changed
+     56  0800							; f8/f9	score
+     57  0800							; fa	counter until speed change
+     58  0800							; fb	speed/delay
+     59  0800							; fc	speed/delay counter
+     60  0800							; fd activ
+     61  0800							; fe next randomnumber
+     62  0800							; ff actual randomnumber
+     63  0800
+     64  0800		       2a 00	   randomnumber equ	$2a00
+     65  0800		       2a 01	   gamemode   equ	$2a01
+     66  0800		       2a 02	   palvideomode equ	$2a02
+     67  0800							;shownextfigure: equ	$2a03
+     68  0800
+     69  0800				   header
+     70  0800		       55		      db.b	$55	; cartridge id
+     71  0801		       2b		      db.b	$2b	; unknown
+     72  0802				   entry
+     73  0802		       28 10 49 	      pi	clearscreen
+     74  0805		       2a 2a 01 	      dci	gamemode
+     75  0808		       70		      lis	0
+     76  0809		       17		      st
+     77  080a		       2a 2a 02 	      dci	palvideomode
+     78  080d		       71		      lis	1
+     79  080e		       17		      st
+     80  080f							;		dci	shownextfigure
+     81  080f							;		lis	0
+     82  080f							;		st
+     83  080f
+     84  080f							; load videmo mode constants
+     85  080f		       2a 2a 02 	      dci	palvideomode
+     86  0812		       16		      lm
+     87  0813		       2a 12 27 	      dci	pal
+     88  0816		       25 00		      ci	0
+     89  0818		       84 04		      bt	4,vmodepal
+     90  081a		       2a 12 43 	      dci	ntsc
+     91  081d		       20 10	   vmodepal   li	$10
+     92  081f		       0b		      lr	is,a
+     93  0820		       20 1c		      li	28
+     94  0822		       58		      lr	8,a
+     95  0823		       16	   vmode1     lm
+     96  0824		       5c		      lr	(is),a
+     97  0825		       0a		      lr	a,is
+     98  0826		       24 01		      ai	1
+     99  0828		       0b		      lr	is,a
+    100  0829		       38		      ds	8
+    101  082a		       94 f8		      bf	4,vmode1
+    102  082c		       20 10		      li	$10
+    103  082e		       0b		      lr	is,a
+    104  082f		       7e		      lis	14
+    105  0830		       58		      lr	8,a
+    106  0831		       2a 2a 80 	      dci	p1borderc1
+    107  0834		       4c	   vmode2     lr	a,(is)
+    108  0835		       17		      st
+    109  0836		       0a		      lr	a,is
+    110  0837		       24 01		      ai	1
+    111  0839		       0b		      lr	is,a
+    112  083a		       38		      ds	8
+    113  083b		       94 f8		      bf	4,vmode2
+    114  083d		       7e		      lis	14
+    115  083e		       58		      lr	8,a
+    116  083f		       2a 2a 90 	      dci	p2borderc1
+    117  0842		       4c	   vmode3     lr	a,(is)
+    118  0843		       17		      st
+    119  0844		       0a		      lr	a,is
+    120  0845		       24 01		      ai	1
+    121  0847		       0b		      lr	is,a
+    122  0848		       38		      ds	8
+    123  0849		       94 f8		      bf	4,vmode3
+    124  084b
+    125  084b		       2a 28 ec 	      dci	p1fig
+    126  084e		       70		      lis	0
+    127  084f		       17		      st
+    128  0850		       2a 29 ec 	      dci	p2fig
+    129  0853		       17		      st
+    130  0854		       2a 28 fd 	      dci	p1activ
+    131  0857		       17		      st
+    132  0858		       2a 29 fd 	      dci	p2activ
+    133  085b		       17		      st
+    134  085c
+    135  085c		       2a 28 00 	      dci	player1
+    136  085f		       28 0c 83 	      pi	clearfield
+    137  0862		       2a 29 00 	      dci	player2
+    138  0865		       28 0c 83 	      pi	clearfield
+    139  0868
+    140  0868		       2a 2a 80 	      dci	p1borderc1
+    141  086b		       16		      lm
+    142  086c		       54		      lr	4,a
+    143  086d		       16		      lm
+    144  086e		       55		      lr	5,a
+    145  086f		       16		      lm
+    146  0870		       50		      lr	0,a
+    147  0871		       16		      lm
+    148  0872		       51		      lr	1,a
+    149  0873		       2a 28 00 	      dci	player1
+    150  0876		       28 0b bd 	      pi	drawfield
+    151  0879
+    152  0879		       2a 2a 90 	      dci	p2borderc1
+    153  087c		       16		      lm
+    154  087d		       54		      lr	4,a
+    155  087e		       16		      lm
+    156  087f		       55		      lr	5,a
+    157  0880		       16		      lm
+    158  0881		       50		      lr	0,a
+    159  0882		       16		      lm
+    160  0883		       51		      lr	1,a
+    161  0884		       2a 29 00 	      dci	player2
+    162  0887		       28 0b bd 	      pi	drawfield
+    163  088a
+    164  088a		       2a 14 c0 	      dci	copyright
+    165  088d		       28 13 d2 	      pi	drawansistringv
+    166  0890
+    167  0890		       2a 14 2c 	      dci	thanx
+    168  0893		       28 13 ff 	      pi	drawansistring
+    169  0896
+    170  0896		       20 13		      li	$13
+    171  0898		       0b		      lr	is,a
+    172  0899		       20 30		      li	$30
+    173  089b		       5e		      lr	(is)-,a
+    174  089c		       5e		      lr	(is)-,a
+    175  089d		       5e		      lr	(is)-,a
+    176  089e		       5c		      lr	(is),a
+    177  089f		       2a 2a 86 	      dci	p1scoreparam
+    178  08a2		       16		      lm
+    179  08a3		       51		      lr	1,a
+    180  08a4		       16		      lm
+    181  08a5		       52		      lr	2,a
+    182  08a6		       16		      lm
+    183  08a7		       53		      lr	3,a
+    184  08a8		       16		      lm
+    185  08a9		       54		      lr	4,a
+    186  08aa		       74		      lis	4
+    187  08ab		       59		      lr	9,a
+    188  08ac		       28 13 bf 	      pi	drawstring
+    189  08af
+    190  08af		       20 10		      li	$10
+    191  08b1		       0b		      lr	is,a
+    192  08b2		       2a 2a 96 	      dci	p2scoreparam
+    193  08b5		       16		      lm
+    194  08b6		       51		      lr	1,a
+    195  08b7		       16		      lm
+    196  08b8		       52		      lr	2,a
+    197  08b9		       16		      lm
+    198  08ba		       53		      lr	3,a
+    199  08bb		       16		      lm
+    200  08bc		       54		      lr	4,a
+    201  08bd		       74		      lis	4
+    202  08be		       59		      lr	9,a
+    203  08bf		       28 13 bf 	      pi	drawstring
+    204  08c2
+    205  08c2		       2a 28 ec 	      dci	p1fig
+    206  08c5		       16		      lm
+    207  08c6		       50		      lr	0,a
+    208  08c7		       70		      lis	0
+    209  08c8		       51		      lr	1,a
+    210  08c9		       28 0e 2c 	      pi	getfigure
+    211  08cc
+    212  08cc		       20 31		      li	$31
+    213  08ce		       0b		      lr	is,a
+    214  08cf		       2a 28 e4 	      dci	p1next
+    215  08d2		       4d		      lr	a,(is)+
+    216  08d3		       17		      st
+    217  08d4		       4d		      lr	a,(is)+
+    218  08d5		       17		      st
+    219  08d6		       20 35		      li	$35
+    220  08d8		       0b		      lr	is,a
+    221  08d9		       4d		      lr	a,(is)+
+    222  08da		       17		      st
+    223  08db		       4d		      lr	a,(is)+
+    224  08dc		       17		      st
+    225  08dd		       20 39		      li	$39
+    226  08df		       0b		      lr	is,a
+    227  08e0		       4d		      lr	a,(is)+
+    228  08e1		       17		      st
+    229  08e2		       4d		      lr	a,(is)+
+    230  08e3		       17		      st
+    231  08e4		       20 3d		      li	$3d
+    232  08e6		       0b		      lr	is,a
+    233  08e7		       4d		      lr	a,(is)+
+    234  08e8		       17		      st
+    235  08e9		       4d		      lr	a,(is)+
+    236  08ea		       17		      st
+    237  08eb
+    238  08eb		       2a 2a 8a 	      dci	p1nextparam
+    239  08ee		       16		      lm
+    240  08ef		       50		      lr	0,a
+    241  08f0		       16		      lm
+    242  08f1		       51		      lr	1,a
+    243  08f2		       16		      lm
+    244  08f3		       54		      lr	4,a
+    245  08f4		       16		      lm
+    246  08f5		       55		      lr	5,a
+    247  08f6		       2a 28 e4 	      dci	p1next
+    248  08f9		       28 0c 23 	      pi	drawnext
+    249  08fc
+    250  08fc		       2a 28 ec 	      dci	p1fig
+    251  08ff		       16		      lm
+    252  0900		       50		      lr	0,a
+    253  0901		       70		      lis	0
+    254  0902		       51		      lr	1,a
+    255  0903		       28 0e 2c 	      pi	getfigure
+    256  0906
+    257  0906		       20 31		      li	$31
+    258  0908		       0b		      lr	is,a
+    259  0909		       2a 29 e4 	      dci	p2next
+    260  090c		       4d		      lr	a,(is)+
+    261  090d		       17		      st
+    262  090e		       4d		      lr	a,(is)+
+    263  090f		       17		      st
+    264  0910		       20 35		      li	$35
+    265  0912		       0b		      lr	is,a
+    266  0913		       4d		      lr	a,(is)+
+    267  0914		       17		      st
+    268  0915		       4d		      lr	a,(is)+
+    269  0916		       17		      st
+    270  0917		       20 39		      li	$39
+    271  0919		       0b		      lr	is,a
+    272  091a		       4d		      lr	a,(is)+
+    273  091b		       17		      st
+    274  091c		       4d		      lr	a,(is)+
+    275  091d		       17		      st
+    276  091e		       20 3d		      li	$3d
+    277  0920		       0b		      lr	is,a
+    278  0921		       4d		      lr	a,(is)+
+    279  0922		       17		      st
+    280  0923		       4d		      lr	a,(is)+
+    281  0924		       17		      st
+    282  0925
+    283  0925		       2a 2a 9a 	      dci	p2nextparam
+    284  0928		       16		      lm
+    285  0929		       50		      lr	0,a
+    286  092a		       16		      lm
+    287  092b		       51		      lr	1,a
+    288  092c		       16		      lm
+    289  092d		       54		      lr	4,a
+    290  092e		       16		      lm
+    291  092f		       55		      lr	5,a
+    292  0930		       2a 29 e4 	      dci	p2next
+    293  0933		       28 0c 23 	      pi	drawnext
+    294  0936
+    295  0936		       28 0f 8b    gameover   pi	random
+    296  0939
+    297  0939		       20 10		      li	$10
+    298  093b		       b0		      outs	0
+    299  093c		       a0		      ins	0
+    300  093d		       21 01		      ni	1
+    301  093f		       94 06		      bf	4,gameover1
+    302  0941		       2a 2a 01 	      dci	gamemode
+    303  0944		       71		      lis	1
+    304  0945		       17		      st
+    305  0946
+    306  0946		       70	   gameover1  lis	0
+    307  0947		       b4		      outs	4
+    308  0948		       a4		      ins	4
+    309  0949		       21 80		      ni	$80
+    310  094b		       94 06		      bf	4,gameover2
+    311  094d		       2a 2a 01 	      dci	gamemode
+    312  0950		       72		      lis	2
+    313  0951		       17		      st
+    314  0952
+    315  0952		       70	   gameover2  lis	0
+    316  0953		       b1		      outs	1
+    317  0954		       a1		      ins	1
+    318  0955		       21 80		      ni	$80
+    319  0957		       94 06		      bf	4,gameover3
+    320  0959		       2a 2a 01 	      dci	gamemode
+    321  095c		       73		      lis	3
+    322  095d		       17		      st
+    323  095e
+    324  095e		       2a 2a 01    gameover3  dci	gamemode
+    325  0961		       16		      lm
+    326  0962		       25 00		      ci	0
+    327  0964		       84 d1		      bt	4,gameover
+    328  0966
+    329  0966		       2a 2a 01 	      dci	gamemode
+    330  0969		       16		      lm
+    331  096a		       25 01		      ci	1
+    332  096c		       94 19		      bf	4,start1
+    333  096e		       2a 28 00 	      dci	player1
+    334  0971		       28 0c 83 	      pi	clearfield
+    335  0974		       2a 29 00 	      dci	player2
+    336  0977		       28 0c 83 	      pi	clearfield
+    337  097a		       71		      lis	1
+    338  097b		       2a 28 fd 	      dci	p1activ
+    339  097e		       17		      st
+    340  097f		       2a 29 fd 	      dci	p2activ
+    341  0982		       17		      st
+    342  0983		       29 09 a3 	      jmp	playing1
+    343  0986		       25 02	   start1     ci	2
+    344  0988		       94 0f		      bf	4,start2
+    345  098a		       2a 28 00 	      dci	player1
+    346  098d		       28 0c 83 	      pi	clearfield
+    347  0990		       71		      lis	1
+    348  0991		       2a 28 fd 	      dci	p1activ
+    349  0994		       17		      st
+    350  0995		       29 09 a3 	      jmp	playing1
+    351  0998		       2a 29 00    start2     dci	player2
+    352  099b		       28 0c 83 	      pi	clearfield
+    353  099e		       71		      lis	1
+    354  099f		       2a 29 fd 	      dci	p2activ
+    355  09a2		       17		      st
+    356  09a3		       70	   playing1   lis	0
+    357  09a4		       2a 2a 01 	      dci	gamemode
+    358  09a7		       17		      st
+    359  09a8
+    360  09a8		       2a 28 fd 	      dci	p1activ
+    361  09ab		       16		      lm
+    362  09ac		       25 00		      ci	0
+    363  09ae		       84 23		      bt	4,playingx
+    364  09b0		       2a 2a 80 	      dci	p1borderc1
+    365  09b3		       16		      lm
+    366  09b4		       54		      lr	4,a
+    367  09b5		       16		      lm
+    368  09b6		       55		      lr	5,a
+    369  09b7		       16		      lm
+    370  09b8		       50		      lr	0,a
+    371  09b9		       16		      lm
+    372  09ba		       51		      lr	1,a
+    373  09bb		       2a 28 00 	      dci	player1
+    374  09be		       28 0b bd 	      pi	drawfield
+    375  09c1
+    376  09c1		       2a 2a 8a 	      dci	p1nextparam
+    377  09c4		       16		      lm
+    378  09c5		       50		      lr	0,a
+    379  09c6		       16		      lm
+    380  09c7		       51		      lr	1,a
+    381  09c8		       16		      lm
+    382  09c9		       54		      lr	4,a
+    383  09ca		       16		      lm
+    384  09cb		       55		      lr	5,a
+    385  09cc		       2a 28 e4 	      dci	p1next
+    386  09cf		       28 0c 23 	      pi	drawnext
+    387  09d2
+    388  09d2		       2a 29 fd    playingx   dci	p2activ
+    389  09d5		       16		      lm
+    390  09d6		       25 00		      ci	0
+    391  09d8		       84 23		      bt	4,playingy
+    392  09da		       2a 2a 90 	      dci	p2borderc1
+    393  09dd		       16		      lm
+    394  09de		       54		      lr	4,a
+    395  09df		       16		      lm
+    396  09e0		       55		      lr	5,a
+    397  09e1		       16		      lm
+    398  09e2		       50		      lr	0,a
+    399  09e3		       16		      lm
+    400  09e4		       51		      lr	1,a
+    401  09e5		       2a 29 00 	      dci	player2
+    402  09e8		       28 0b bd 	      pi	drawfield
+    403  09eb
+    404  09eb		       2a 2a 9a 	      dci	p2nextparam
+    405  09ee		       16		      lm
+    406  09ef		       50		      lr	0,a
+    407  09f0		       16		      lm
+    408  09f1		       51		      lr	1,a
+    409  09f2		       16		      lm
+    410  09f3		       54		      lr	4,a
+    411  09f4		       16		      lm
+    412  09f5		       55		      lr	5,a
+    413  09f6		       2a 29 e4 	      dci	p2next
+    414  09f9		       28 0c 23 	      pi	drawnext
+    415  09fc
+    416  09fc				   playingy
+    417  09fc		       20 10	   playing    li	$10
+    418  09fe		       b0		      outs	0
+    419  09ff
+    420  09ff		       2a 28 fd 	      dci	p1activ
+    421  0a02		       16		      lm
+    422  0a03		       25 00		      ci	0
+    423  0a05		       94 04		      bf	4,playing1b
+    424  0a07		       29 0a c1    waste1a    jmp	waste1
+    425  0a0a				   playing1b
+    426  0a0a		       70		      lis	0
+    427  0a0b		       b4		      outs	4
+    428  0a0c		       a4		      ins	4
+    429  0a0d		       21 04		      ni	4
+    430  0a0f		       84 0f		      bt	4,playing1a
+    431  0a11
+    432  0a11		       2a 28 fc 	      dci	p1delay_counter
+    433  0a14		       16		      lm
+    434  0a15		       24 ff		      ai	$ff
+    435  0a17		       2a 28 fc 	      dci	p1delay_counter
+    436  0a1a		       17		      st
+    437  0a1b		       25 00		      ci	0
+    438  0a1d		       94 e9		      bf	4,waste1a
+    439  0a1f		       2a 28 fb    playing1a  dci	p1delay
+    440  0a22		       16		      lm
+    441  0a23		       17		      st
+    442  0a24
+    443  0a24		       70		      lis	0
+    444  0a25		       b4		      outs	4
+    445  0a26		       a4		      ins	4
+    446  0a27		       59		      lr	9,a
+    447  0a28		       2a 28 ec 	      dci	p1fig
+    448  0a2b		       28 0c c8 	      pi	move
+    449  0a2e
+    450  0a2e		       2a 28 f5 	      dci	p1bonus
+    451  0a31		       16		      lm
+    452  0a32		       25 00		      ci	0
+    453  0a34		       84 10		      bt	4,playing1x
+    454  0a36		       24 ff		      ai	$ff
+    455  0a38		       2a 29 f6 	      dci	p2penalty
+    456  0a3b		       88		      am
+    457  0a3c		       2a 29 f6 	      dci	p2penalty
+    458  0a3f		       17		      st
+    459  0a40		       70		      lis	0
+    460  0a41		       2a 28 f5 	      dci	p1bonus
+    461  0a44		       17		      st
+    462  0a45
+    463  0a45		       2a 2a 82    playing1x  dci	p1fieldposy
+    464  0a48		       16		      lm
+    465  0a49		       50		      lr	0,a
+    466  0a4a		       16		      lm
+    467  0a4b		       51		      lr	1,a
+    468  0a4c		       16		      lm
+    469  0a4d		       54		      lr	4,a
+    470  0a4e		       16		      lm
+    471  0a4f		       55		      lr	5,a
+    472  0a50		       2a 28 00 	      dci	player1
+    473  0a53		       28 0b eb 	      pi	drawfielddiff
+    474  0a56
+    475  0a56		       2a 2a 8a 	      dci	p1nextparam
+    476  0a59		       16		      lm
+    477  0a5a		       50		      lr	0,a
+    478  0a5b		       16		      lm
+    479  0a5c		       51		      lr	1,a
+    480  0a5d		       16		      lm
+    481  0a5e		       54		      lr	4,a
+    482  0a5f		       16		      lm
+    483  0a60		       55		      lr	5,a
+    484  0a61		       2a 28 e4 	      dci	p1next
+    485  0a64		       28 0c 4e 	      pi	drawnextdiff
+    486  0a67
+    487  0a67
+    488  0a67		       2a 28 f7 	      dci	p1score
+    489  0a6a		       16		      lm
+    490  0a6b		       25 01		      ci	1
+    491  0a6d		       94 31		      bf	4,playing1c
+    492  0a6f		       20 13		      li	$13
+    493  0a71		       0b		      lr	is,a
+    494  0a72		       16		      lm
+    495  0a73		       50		      lr	0,a
+    496  0a74		       21 0f		      ni	$f
+    497  0a76		       22 30		      oi	$30
+    498  0a78		       5e		      lr	(is)-,a
+    499  0a79		       40		      lr	a,0
+    500  0a7a		       14		      sr	4
+    501  0a7b		       22 30		      oi	$30
+    502  0a7d		       5e		      lr	(is)-,a
+    503  0a7e		       16		      lm
+    504  0a7f		       50		      lr	0,a
+    505  0a80		       21 0f		      ni	$0f
+    506  0a82		       22 30		      oi	$30
+    507  0a84		       5e		      lr	(is)-,a
+    508  0a85		       40		      lr	a,0
+    509  0a86		       14		      sr	4
+    510  0a87		       22 30		      oi	$30
+    511  0a89		       5c		      lr	(is),a
+    512  0a8a		       2a 2a 86 	      dci	p1scoreparam
+    513  0a8d		       16		      lm
+    514  0a8e		       51		      lr	1,a
+    515  0a8f		       16		      lm
+    516  0a90		       52		      lr	2,a
+    517  0a91		       16		      lm
+    518  0a92		       53		      lr	3,a
+    519  0a93		       16		      lm
+    520  0a94		       54		      lr	4,a
+    521  0a95		       74		      lis	4
+    522  0a96		       59		      lr	9,a
+    523  0a97		       28 13 bf 	      pi	drawstring
+    524  0a9a
+    525  0a9a		       2a 28 f7 	      dci	p1score
+    526  0a9d		       70		      lis	0
+    527  0a9e		       17		      st
+    528  0a9f
+    529  0a9f		       2a 28 fd    playing1c  dci	p1activ
+    530  0aa2		       16		      lm
+    531  0aa3		       25 00		      ci	0
+    532  0aa5		       94 1e		      bf	4,playing2
+    533  0aa7		       2a 29 fd 	      dci	p2activ
+    534  0aaa		       16		      lm
+    535  0aab		       25 00		      ci	0
+    536  0aad		       84 0b		      bt	4,playing1d
+    537  0aaf		       2a 29 fd 	      dci	p2activ
+    538  0ab2		       70		      lis	0
+    539  0ab3		       17		      st
+    540  0ab4		       2a 14 ac 	      dci	player2won
+    541  0ab7		       90 04		      bf	0,playing1e
+    542  0ab9		       2a 14 6c    playing1d  dci	strgameover1
+    543  0abc		       28 13 ff    playing1e  pi	drawansistring
+    544  0abf		       90 04		      bf	0,playing2
+    545  0ac1		       28 0f 8b    waste1     pi	random
+    546  0ac4
+    547  0ac4		       20 10	   playing2   li	$10
+    548  0ac6		       b0		      outs	0
+    549  0ac7
+    550  0ac7		       2a 29 fd 	      dci	p2activ
+    551  0aca		       16		      lm
+    552  0acb		       25 00		      ci	0
+    553  0acd		       94 04		      bf	4,playing2b
+    554  0acf		       29 0b 89    waste2a    jmp	waste2
+    555  0ad2		       70	   playing2b  lis	0
+    556  0ad3		       b1		      outs	1
+    557  0ad4		       a1		      ins	1
+    558  0ad5		       21 04		      ni	4
+    559  0ad7		       84 0f		      bt	4,playing2a
+    560  0ad9
+    561  0ad9		       2a 29 fc 	      dci	p2delay_counter
+    562  0adc		       16		      lm
+    563  0add		       24 ff		      ai	$ff
+    564  0adf		       2a 29 fc 	      dci	p2delay_counter
+    565  0ae2		       17		      st
+    566  0ae3		       25 00		      ci	0
+    567  0ae5		       94 e9		      bf	4,waste2a
+    568  0ae7		       2a 29 fb    playing2a  dci	p2delay
+    569  0aea		       16		      lm
+    570  0aeb		       17		      st
+    571  0aec
+    572  0aec		       70		      lis	0
+    573  0aed		       b1		      outs	1
+    574  0aee		       a1		      ins	1
+    575  0aef		       59		      lr	9,a
+    576  0af0		       2a 29 ec 	      dci	p2fig
+    577  0af3		       28 0c c8 	      pi	move
+    578  0af6
+    579  0af6		       2a 29 f5 	      dci	p2bonus
+    580  0af9		       16		      lm
+    581  0afa		       25 00		      ci	0
+    582  0afc		       84 10		      bt	4,playing2x
+    583  0afe		       24 ff		      ai	$ff
+    584  0b00		       2a 28 f6 	      dci	p1penalty
+    585  0b03		       88		      am
+    586  0b04		       2a 28 f6 	      dci	p1penalty
+    587  0b07		       17		      st
+    588  0b08		       70		      lis	0
+    589  0b09		       2a 29 f5 	      dci	p2bonus
+    590  0b0c		       17		      st
+    591  0b0d
+    592  0b0d		       2a 2a 92    playing2x  dci	p2fieldposy
+    593  0b10		       16		      lm
+    594  0b11		       50		      lr	0,a
+    595  0b12		       16		      lm
+    596  0b13		       51		      lr	1,a
+    597  0b14		       16		      lm
+    598  0b15		       54		      lr	4,a
+    599  0b16		       16		      lm
+    600  0b17		       55		      lr	5,a
+    601  0b18		       2a 29 00 	      dci	player2
+    602  0b1b		       28 0b eb 	      pi	drawfielddiff
+    603  0b1e
+    604  0b1e		       2a 2a 9a 	      dci	p2nextparam
+    605  0b21		       16		      lm
+    606  0b22		       50		      lr	0,a
+    607  0b23		       16		      lm
+    608  0b24		       51		      lr	1,a
+    609  0b25		       16		      lm
+    610  0b26		       54		      lr	4,a
+    611  0b27		       16		      lm
+    612  0b28		       55		      lr	5,a
+    613  0b29		       2a 29 e4 	      dci	p2next
+    614  0b2c		       28 0c 4e 	      pi	drawnextdiff
+    615  0b2f
+    616  0b2f		       2a 29 f7 	      dci	p2score
+    617  0b32		       16		      lm
+    618  0b33		       25 01		      ci	1
+    619  0b35		       94 31		      bf	4,playing2c
+    620  0b37		       20 13		      li	$13
+    621  0b39		       0b		      lr	is,a
+    622  0b3a		       16		      lm
+    623  0b3b		       50		      lr	0,a
+    624  0b3c		       21 0f		      ni	$f
+    625  0b3e		       22 30		      oi	$30
+    626  0b40		       5e		      lr	(is)-,a
+    627  0b41		       40		      lr	a,0
+    628  0b42		       14		      sr	4
+    629  0b43		       22 30		      oi	$30
+    630  0b45		       5e		      lr	(is)-,a
+    631  0b46		       16		      lm
+    632  0b47		       50		      lr	0,a
+    633  0b48		       21 0f		      ni	$0f
+    634  0b4a		       22 30		      oi	$30
+    635  0b4c		       5e		      lr	(is)-,a
+    636  0b4d		       40		      lr	a,0
+    637  0b4e		       14		      sr	4
+    638  0b4f		       22 30		      oi	$30
+    639  0b51		       5c		      lr	(is),a
+    640  0b52		       2a 2a 96 	      dci	p2scoreparam
+    641  0b55		       16		      lm
+    642  0b56		       51		      lr	1,a
+    643  0b57		       16		      lm
+    644  0b58		       52		      lr	2,a
+    645  0b59		       16		      lm
+    646  0b5a		       53		      lr	3,a
+    647  0b5b		       16		      lm
+    648  0b5c		       54		      lr	4,a
+    649  0b5d		       74		      lis	4
+    650  0b5e		       59		      lr	9,a
+    651  0b5f		       28 13 bf 	      pi	drawstring
+    652  0b62
+    653  0b62		       2a 29 f7 	      dci	p2score
+    654  0b65		       70		      lis	0
+    655  0b66		       17		      st
+    656  0b67
+    657  0b67		       2a 29 fd    playing2c  dci	p2activ
+    658  0b6a		       16		      lm
+    659  0b6b		       25 00		      ci	0
+    660  0b6d		       94 1e		      bf	4,game
+    661  0b6f		       2a 28 fd 	      dci	p1activ
+    662  0b72		       16		      lm
+    663  0b73		       25 00		      ci	0
+    664  0b75		       84 0b		      bt	4,playing2d
+    665  0b77		       2a 28 fd 	      dci	p1activ
+    666  0b7a		       70		      lis	0
+    667  0b7b		       17		      st
+    668  0b7c		       2a 14 98 	      dci	player1won
+    669  0b7f		       90 04		      bf	0,playing2e
+    670  0b81		       2a 14 82    playing2d  dci	strgameover2
+    671  0b84		       28 13 ff    playing2e  pi	drawansistring
+    672  0b87		       90 04		      bf	0,game
+    673  0b89		       28 0f 8b    waste2     pi	random
+    674  0b8c				   game
+    675  0b8c							; avoid standing random number if no key pressed
+    676  0b8c		       2a 2a 00 	      dci	randomnumber
+    677  0b8f		       16		      lm
+    678  0b90		       2a 2a 00 	      dci	randomnumber
+    679  0b93		       24 01		      ai	1
+    680  0b95		       17		      st
+    681  0b96		       2a 28 ff 	      dci	p1random
+    682  0b99		       16		      lm
+    683  0b9a		       2a 28 ff 	      dci	p1random
+    684  0b9d		       24 01		      ai	1
+    685  0b9f		       17		      st
+    686  0ba0		       2a 29 ff 	      dci	p2random
+    687  0ba3		       16		      lm
+    688  0ba4		       2a 29 ff 	      dci	p2random
+    689  0ba7		       24 01		      ai	1
+    690  0ba9		       17		      st
+    691  0baa
+    692  0baa		       28 0f 8b 	      pi	random
+    693  0bad		       2a 28 fd 	      dci	p1activ
+    694  0bb0		       16		      lm
+    695  0bb1		       2a 29 fd 	      dci	p2activ
+    696  0bb4		       8b		      om
+    697  0bb5		       84 04		      bt	4,playing3
+    698  0bb7		       29 09 fc 	      jmp	playing
+    699  0bba		       29 09 36    playing3   jmp	gameover
+    700  0bbd
+    701  0bbd							; dci	address
+    702  0bbd							; r0 video row
+    703  0bbd							; r1 video col
+    704  0bbd							; r4 color
+    705  0bbd							; r5 color 2
+    706  0bbd		       08	   drawfield  lr	k,p
+    707  0bbe		       20 13		      li	19
+    708  0bc0		       56		      lr	6,a
+    709  0bc1		       41		      lr	a,1
+    710  0bc2		       58		      lr	8,a
+    711  0bc3		       20 0c	   dfloopl    li	12
+    712  0bc5		       57		      lr	7,a
+    713  0bc6
+    714  0bc6		       16	   dfloopc    lm
+    715  0bc7		       25 00		      ci	0
+    716  0bc9		       94 08		      bf	4,dfset
+    717  0bcb		       20 c0		      li	$c0
+    718  0bcd		       52		      lr	2,a
+    719  0bce		       53		      lr	3,a
+    720  0bcf		       29 0b d6 	      jmp	dfcont
+    721  0bd2		       44	   dfset      lr	a,4
+    722  0bd3		       52		      lr	2,a
+    723  0bd4		       45		      lr	a,5
+    724  0bd5		       53		      lr	3,a
+    725  0bd6		       28 0f b4    dfcont     pi	drawblock
+    726  0bd9		       41		      lr	a,1
+    727  0bda		       24 fd		      ai	$fd
+    728  0bdc		       51		      lr	1,a
+    729  0bdd		       37		      ds	7
+    730  0bde		       94 e7		      bf	4,dfloopc
+    731  0be0		       48		      lr	a,8
+    732  0be1		       51		      lr	1,a
+    733  0be2		       40		      lr	a,0
+    734  0be3		       24 fd		      ai	$fd
+    735  0be5		       50		      lr	0,a
+    736  0be6		       36		      ds	6
+    737  0be7		       94 db		      bf	4,dfloopl
+    738  0be9		       09		      lr	p,k
+    739  0bea		       1c		      pop
+    740  0beb
+    741  0beb							; dci	address
+    742  0beb							; r0 video row
+    743  0beb							; r1 video col
+    744  0beb							; r4 color
+    745  0beb							; r5 color 2
+    746  0beb		       08	   drawfielddiff lr	k,p
+    747  0bec		       20 13		      li	19
+    748  0bee		       56		      lr	6,a
+    749  0bef		       41		      lr	a,1
+    750  0bf0		       58		      lr	8,a
+    751  0bf1		       0e		      lr	q,dc
+    752  0bf2		       20 0c	   dfdloopl   li	12
+    753  0bf4		       57		      lr	7,a
+    754  0bf5
+    755  0bf5		       16	   dfdloopc   lm
+    756  0bf6		       21 ff		      ni	$ff
+    757  0bf8		       81 17		      bt	1,dfdnot
+    758  0bfa		       21 7f		      ni	$7f
+    759  0bfc		       94 0a		      bf	4,dfdset
+    760  0bfe		       0f		      lr	dc,q
+    761  0bff		       17		      st
+    762  0c00		       20 c0		      li	$c0
+    763  0c02		       52		      lr	2,a
+    764  0c03		       53		      lr	3,a
+    765  0c04		       29 0c 0d 	      jmp	dfdcont
+    766  0c07		       0f	   dfdset     lr	dc,q
+    767  0c08		       17		      st
+    768  0c09		       44		      lr	a,4
+    769  0c0a		       52		      lr	2,a
+    770  0c0b		       45		      lr	a,5
+    771  0c0c		       53		      lr	3,a
+    772  0c0d		       28 0f b4    dfdcont    pi	drawblock
+    773  0c10		       0e	   dfdnot     lr	q,dc
+    774  0c11		       41		      lr	a,1
+    775  0c12		       24 fd		      ai	$fd
+    776  0c14		       51		      lr	1,a
+    777  0c15		       37		      ds	7
+    778  0c16		       94 de		      bf	4,dfdloopc
+    779  0c18		       48		      lr	a,8
+    780  0c19		       51		      lr	1,a
+    781  0c1a		       40		      lr	a,0
+    782  0c1b		       24 fd		      ai	$fd
+    783  0c1d		       50		      lr	0,a
+    784  0c1e		       36		      ds	6
+    785  0c1f		       94 d2		      bf	4,dfdloopl
+    786  0c21		       09		      lr	p,k
+    787  0c22		       1c		      pop
+    788  0c23
+    789  0c23							; dci	address
+    790  0c23							; r0 video row
+    791  0c23							; r1 video col
+    792  0c23							; r4 color
+    793  0c23							; r5 color 2
+    794  0c23		       08	   drawnext   lr	k,p
+    795  0c24		       74		      lis	4
+    796  0c25		       56		      lr	6,a
+    797  0c26		       41		      lr	a,1
+    798  0c27		       58		      lr	8,a
+    799  0c28		       72	   dfnloopl   lis	2
+    800  0c29		       57		      lr	7,a
+    801  0c2a
+    802  0c2a		       16	   dfnloopc   lm
+    803  0c2b		       25 00		      ci	0
+    804  0c2d		       94 07		      bf	4,dfnset
+    805  0c2f		       70		      lis	0
+    806  0c30		       52		      lr	2,a
+    807  0c31		       53		      lr	3,a
+    808  0c32		       29 0c 39 	      jmp	dfncont
+    809  0c35		       44	   dfnset     lr	a,4
+    810  0c36		       52		      lr	2,a
+    811  0c37		       45		      lr	a,5
+    812  0c38		       53		      lr	3,a
+    813  0c39		       28 0f b4    dfncont    pi	drawblock
+    814  0c3c		       41		      lr	a,1
+    815  0c3d		       24 fd		      ai	$fd
+    816  0c3f		       51		      lr	1,a
+    817  0c40		       37		      ds	7
+    818  0c41		       94 e8		      bf	4,dfnloopc
+    819  0c43		       48		      lr	a,8
+    820  0c44		       51		      lr	1,a
+    821  0c45		       40		      lr	a,0
+    822  0c46		       24 fd		      ai	$fd
+    823  0c48		       50		      lr	0,a
+    824  0c49		       36		      ds	6
+    825  0c4a		       94 dd		      bf	4,dfnloopl
+    826  0c4c		       09		      lr	p,k
+    827  0c4d		       1c		      pop
+    828  0c4e
+    829  0c4e
+    830  0c4e							; dci	address
+    831  0c4e							; r0 video row
+    832  0c4e							; r1 video col
+    833  0c4e							; r4 color
+    834  0c4e							; r5 color 2
+    835  0c4e		       08	   drawnextdiff lr	k,p
+    836  0c4f		       74		      lis	4
+    837  0c50		       56		      lr	6,a
+    838  0c51		       41		      lr	a,1
+    839  0c52		       58		      lr	8,a
+    840  0c53		       0e		      lr	q,dc
+    841  0c54		       72	   dndloopl   lis	2
+    842  0c55		       57		      lr	7,a
+    843  0c56
+    844  0c56		       16	   dndloopc   lm
+    845  0c57		       21 ff		      ni	$ff
+    846  0c59		       81 16		      bt	1,dndnot
+    847  0c5b		       21 7f		      ni	$7f
+    848  0c5d		       94 09		      bf	4,dndset
+    849  0c5f		       0f		      lr	dc,q
+    850  0c60		       17		      st
+    851  0c61		       70		      lis	0
+    852  0c62		       52		      lr	2,a
+    853  0c63		       53		      lr	3,a
+    854  0c64		       29 0c 6d 	      jmp	dndcont
+    855  0c67		       0f	   dndset     lr	dc,q
+    856  0c68		       17		      st
+    857  0c69		       44		      lr	a,4
+    858  0c6a		       52		      lr	2,a
+    859  0c6b		       45		      lr	a,5
+    860  0c6c		       53		      lr	3,a
+    861  0c6d		       28 0f b4    dndcont    pi	drawblock
+    862  0c70		       0e	   dndnot     lr	q,dc
+    863  0c71		       41		      lr	a,1
+    864  0c72		       24 fd		      ai	$fd
+    865  0c74		       51		      lr	1,a
+    866  0c75		       37		      ds	7
+    867  0c76		       94 df		      bf	4,dndloopc
+    868  0c78		       48		      lr	a,8
+    869  0c79		       51		      lr	1,a
+    870  0c7a		       40		      lr	a,0
+    871  0c7b		       24 fd		      ai	$fd
+    872  0c7d		       50		      lr	0,a
+    873  0c7e		       36		      ds	6
+    874  0c7f		       94 d4		      bf	4,dndloopl
+    875  0c81		       09		      lr	p,k
+    876  0c82		       1c		      pop
+    877  0c83
+    878  0c83							; dci address
+    879  0c83		       11	   clearfield lr	h,dc
+    880  0c84		       20 e4		      li	228
+    881  0c86		       50		      lr	0,a
+    882  0c87		       20 00		      li	0
+    883  0c89		       17	   cfloop     st
+    884  0c8a		       30		      ds	0
+    885  0c8b		       94 fd		      bf	4,cfloop
+    886  0c8d		       10		      lr	dc,h
+    887  0c8e		       20 12		      li	18
+    888  0c90		       50		      lr	0,a
+    889  0c91		       20 01		      li	1
+    890  0c93		       17	   cfloop1    st
+    891  0c94		       20 0a		      li	10
+    892  0c96		       8e		      adc
+    893  0c97		       20 01		      li	1
+    894  0c99		       17		      st
+    895  0c9a		       30		      ds	0
+    896  0c9b		       94 f7		      bf	4,cfloop1
+    897  0c9d		       17		      st
+    898  0c9e		       17		      st
+    899  0c9f		       17		      st
+    900  0ca0		       17		      st
+    901  0ca1		       17		      st
+    902  0ca2		       17		      st
+    903  0ca3		       17		      st
+    904  0ca4		       17		      st
+    905  0ca5		       17		      st
+    906  0ca6		       17		      st
+    907  0ca7		       17		      st
+    908  0ca8		       17		      st
+    909  0ca9		       70		      lis	0
+    910  0caa		       8d		      cm		; playing $2[89]e4
+    911  0cab		       8d		      cm
+    912  0cac		       8d		      cm
+    913  0cad		       8d		      cm
+    914  0cae		       8d		      cm
+    915  0caf		       8d		      cm
+    916  0cb0		       8d		      cm
+    917  0cb1		       8d		      cm
+    918  0cb2		       8d		      cm		; $2[89]ec
+    919  0cb3		       20 ff		      li	$ff
+    920  0cb5		       17		      st		; no figure
+    921  0cb6		       11		      lr	h,dc
+    922  0cb7		       20 f5		      li	$f5
+    923  0cb9		       5b		      lr	11,a
+    924  0cba		       10		      lr	dc,h
+    925  0cbb		       70		      lis	0
+    926  0cbc		       17		      st
+    927  0cbd		       17		      st
+    928  0cbe		       17		      st
+    929  0cbf		       17		      st
+    930  0cc0		       17		      st
+    931  0cc1		       71		      lis	1
+    932  0cc2		       17		      st
+    933  0cc3		       7a		      lis	10
+    934  0cc4		       17		      st
+    935  0cc5		       71		      lis	1
+    936  0cc6		       17		      st
+    937  0cc7		       1c		      pop
+    938  0cc8
+    939  0cc8							; dci field
+    940  0cc8							; r9 keys
+    941  0cc8		       08	   move       lr	k,p
+    942  0cc9		       0e		      lr	q,dc
+    943  0cca		       16		      lm
+    944  0ccb							;		ci	0
+    945  0ccb							;		bf	4,moveend1
+    946  0ccb							;		jmp	moveend
+    947  0ccb		       16	   moveend1   lm
+    948  0ccc		       25 ff		      ci	$ff
+    949  0cce		       94 04		      bf	4,next1
+    950  0cd0		       29 0d 72 	      jmp	next
+    951  0cd3		       50	   next1      lr	0,a
+    952  0cd4		       16		      lm
+    953  0cd5		       51		      lr	1,a
+    954  0cd6		       16		      lm
+    955  0cd7		       52		      lr	2,a
+    956  0cd8		       16		      lm
+    957  0cd9		       53		      lr	3,a
+    958  0cda		       28 0e 2c 	      pi	getfigure
+    959  0cdd		       28 0f 01 	      pi	fieldpos
+    960  0ce0		       28 0f 41 	      pi	clearfigure
+    961  0ce3		       49		      lr	a,9
+    962  0ce4		       21 01		      ni	$1
+    963  0ce6		       94 05		      bf	4,nmoveright
+    964  0ce8		       42		      lr	a,2
+    965  0ce9		       24 01		      ai	1
+    966  0ceb		       52		      lr	2,a
+    967  0cec		       49	   nmoveright lr	a,9
+    968  0ced		       21 02		      ni	$2
+    969  0cef		       94 05		      bf	4,nmoveleft
+    970  0cf1		       42		      lr	a,2
+    971  0cf2		       24 ff		      ai	$ff
+    972  0cf4		       52		      lr	2,a
+    973  0cf5		       49	   nmoveleft  lr	a,9
+    974  0cf6		       21 10		      ni	$10
+    975  0cf8		       94 07		      bf	4,nmovecc
+    976  0cfa		       41		      lr	a,1
+    977  0cfb		       24 01		      ai	1
+    978  0cfd		       21 03		      ni	3
+    979  0cff		       51		      lr	1,a
+    980  0d00		       49	   nmovecc    lr	a,9
+    981  0d01		       21 20		      ni	$20
+    982  0d03		       94 07		      bf	4,nmovec
+    983  0d05		       41		      lr	a,1
+    984  0d06		       24 ff		      ai	$ff
+    985  0d08		       21 03		      ni	3
+    986  0d0a		       51		      lr	1,a
+    987  0d0b		       28 0e 2c    nmovec     pi	getfigure
+    988  0d0e		       28 0f 01 	      pi	fieldpos
+    989  0d11		       28 0f 17 	      pi	testfigure
+    990  0d14		       25 00		      ci	0
+    991  0d16		       84 0e		      bt	4,nreload
+    992  0d18		       0f		      lr	dc,q
+    993  0d19		       16		      lm
+    994  0d1a		       16		      lm
+    995  0d1b		       50		      lr	0,a
+    996  0d1c		       16		      lm
+    997  0d1d		       51		      lr	1,a
+    998  0d1e		       16		      lm
+    999  0d1f		       52		      lr	2,a
+   1000  0d20		       16		      lm
+   1001  0d21		       53		      lr	3,a
+   1002  0d22		       28 0e 2c 	      pi	getfigure
+   1003  0d25		       0f	   nreload    lr	dc,q
+   1004  0d26		       16		      lm
+   1005  0d27		       40		      lr	a,0
+   1006  0d28		       17		      st
+   1007  0d29		       41		      lr	a,1
+   1008  0d2a		       17		      st
+   1009  0d2b		       42		      lr	a,2
+   1010  0d2c		       17		      st
+   1011  0d2d		       43		      lr	a,3
+   1012  0d2e		       17		      st
+   1013  0d2f		       43		      lr	a,3
+   1014  0d30		       24 01		      ai	1
+   1015  0d32		       53		      lr	3,a
+   1016  0d33		       28 0f 01 	      pi	fieldpos
+   1017  0d36		       28 0f 17 	      pi	testfigure
+   1018  0d39		       59		      lr	9,a
+   1019  0d3a		       25 00		      ci	0
+   1020  0d3c		       94 08		      bf	4,nmovedown
+   1021  0d3e		       0f		      lr	dc,q
+   1022  0d3f		       16		      lm
+   1023  0d40		       16		      lm
+   1024  0d41		       16		      lm
+   1025  0d42		       16		      lm
+   1026  0d43		       43		      lr	a,3
+   1027  0d44		       17		      st
+   1028  0d45		       0f	   nmovedown  lr	dc,q
+   1029  0d46		       16		      lm
+   1030  0d47		       16		      lm
+   1031  0d48		       16		      lm
+   1032  0d49		       16		      lm
+   1033  0d4a		       16		      lm
+   1034  0d4b		       53		      lr	3,a
+   1035  0d4c		       28 0f 01 	      pi	fieldpos
+   1036  0d4f		       28 0f 66 	      pi	setfigure
+   1037  0d52		       49		      lr	a,9
+   1038  0d53		       25 00		      ci	0
+   1039  0d55		       94 04		      bf	4,nmovedown1
+   1040  0d57		       29 0e 2a 	      jmp	moveend
+   1041  0d5a		       28 0e 59    nmovedown1 pi	findlines
+   1042  0d5d		       0f		      lr	dc,q
+   1043  0d5e		       11		      lr	h,dc
+   1044  0d5f		       20 f6		      li	$f6
+   1045  0d61		       5b		      lr	11,a
+   1046  0d62		       10		      lr	dc,h
+   1047  0d63		       16		      lm
+   1048  0d64		       25 00		      ci	0
+   1049  0d66		       84 0b		      bt	4,next
+   1050  0d68		       54		      lr	4,a
+   1051  0d69		       10		      lr	dc,h
+   1052  0d6a		       70		      lis	0
+   1053  0d6b		       17		      st
+   1054  0d6c		       28 0e b3    mpen       pi	penalty
+   1055  0d6f		       34		      ds	4
+   1056  0d70		       94 fb		      bf	4,mpen
+   1057  0d72		       0f	   next       lr	dc,q
+   1058  0d73		       11		      lr	h,dc
+   1059  0d74		       20 fa		      li	$fa
+   1060  0d76		       5b		      lr	11,a
+   1061  0d77		       10		      lr	dc,h
+   1062  0d78		       16		      lm
+   1063  0d79		       24 01		      ai	1
+   1064  0d7b		       10		      lr	dc,h
+   1065  0d7c		       17		      st
+   1066  0d7d		       25 50		      ci	$50
+   1067  0d7f		       94 0e		      bf	4,next2
+   1068  0d81		       10		      lr	dc,h
+   1069  0d82		       70		      lis	0
+   1070  0d83		       17		      st
+   1071  0d84		       16		      lm
+   1072  0d85		       25 01		      ci	1
+   1073  0d87		       84 06		      bt	4,next2
+   1074  0d89		       24 ff		      ai	$ff
+   1075  0d8b		       10		      lr	dc,h
+   1076  0d8c		       8d		      cm
+   1077  0d8d		       17		      st
+   1078  0d8e		       0f	   next2      lr	dc,q
+   1079  0d8f		       16		      lm
+   1080  0d90		       17		      st
+   1081  0d91		       0f		      lr	dc,q
+   1082  0d92		       11		      lr	h,dc
+   1083  0d93		       20 fe		      li	$fe
+   1084  0d95		       5b		      lr	11,a
+   1085  0d96		       10		      lr	dc,h
+   1086  0d97		       16		      lm
+   1087  0d98		       16		      lm
+   1088  0d99		       21 07		      ni	7
+   1089  0d9b		       25 07		      ci	7
+   1090  0d9d		       94 02		      bf	4,nextloop
+   1091  0d9f		       70		      lis	0
+   1092  0da0		       50	   nextloop   lr	0,a
+   1093  0da1		       10		      lr	dc,h
+   1094  0da2		       16		      lm
+   1095  0da3		       17		      st
+   1096  0da4		       0f		      lr	dc,q
+   1097  0da5		       16		      lm
+   1098  0da6		       17		      st
+   1099  0da7		       0f		      lr	dc,q
+   1100  0da8		       40		      lr	a,0
+   1101  0da9		       17		      st
+   1102  0daa		       8d		      cm
+   1103  0dab		       20 00		      li	0	; rotation
+   1104  0dad		       51		      lr	1,a
+   1105  0dae		       17		      st
+   1106  0daf		       20 04		      li	$4	; x
+   1107  0db1		       52		      lr	2,a
+   1108  0db2		       17		      st
+   1109  0db3		       20 00		      li	$0	; y
+   1110  0db5		       53		      lr	3,a
+   1111  0db6		       17		      st
+   1112  0db7		       0f		      lr	dc,q
+   1113  0db8		       8d		      cm
+   1114  0db9		       16		      lm
+   1115  0dba		       50		      lr	0,a
+   1116  0dbb		       16		      lm
+   1117  0dbc		       51		      lr	1,a
+   1118  0dbd		       28 0e 2c 	      pi	getfigure
+   1119  0dc0		       0f		      lr	dc,q
+   1120  0dc1		       28 0f 01 	      pi	fieldpos
+   1121  0dc4		       28 0f 17 	      pi	testfigure
+   1122  0dc7		       25 00		      ci	0
+   1123  0dc9		       84 0b		      bt	4, nextend
+   1124  0dcb							; end of game
+   1125  0dcb		       0f		      lr	dc,q
+   1126  0dcc		       11		      lr	h,dc
+   1127  0dcd		       20 fd		      li	$fd
+   1128  0dcf		       5b		      lr	11,a
+   1129  0dd0		       10		      lr	dc,h
+   1130  0dd1		       20 00		      li	$0
+   1131  0dd3		       17		      st
+   1132  0dd4		       0f		      lr	dc,q
+   1133  0dd5		       11	   nextend    lr	h,dc
+   1134  0dd6		       20 f7		      li	$f7
+   1135  0dd8		       5b		      lr	11,a
+   1136  0dd9		       10		      lr	dc,h
+   1137  0dda		       71		      lis	1
+   1138  0ddb		       17		      st
+   1139  0ddc		       20 67		      li	$67
+   1140  0dde		       89		      amd
+   1141  0ddf		       54		      lr	4,a
+   1142  0de0		       20 66		      li	$66
+   1143  0de2		       19		      lnk
+   1144  0de3		       89		      amd
+   1145  0de4		       55		      lr	5,a
+   1146  0de5		       10		      lr	dc,h
+   1147  0de6		       8d		      cm
+   1148  0de7		       44		      lr	a,4
+   1149  0de8		       17		      st
+   1150  0de9		       45		      lr	a,5
+   1151  0dea		       17		      st
+   1152  0deb		       28 0f 01 	      pi	fieldpos
+   1153  0dee		       28 0f 66 	      pi	setfigure
+   1154  0df1
+   1155  0df1
+   1156  0df1		       0f		      lr	dc,q
+   1157  0df2		       16		      lm
+   1158  0df3		       50		      lr	0,a
+   1159  0df4		       70		      lis	0
+   1160  0df5		       51		      lr	1,a
+   1161  0df6		       28 0e 2c 	      pi	getfigure
+   1162  0df9
+   1163  0df9		       20 31		      li	$31
+   1164  0dfb		       0b		      lr	is,a
+   1165  0dfc		       11		      lr	h,dc
+   1166  0dfd		       20 e4		      li	$e4
+   1167  0dff		       5b		      lr	11,a
+   1168  0e00		       10		      lr	dc,h
+   1169  0e01		       4d		      lr	a,(is)+
+   1170  0e02		       22 80		      oi	$80
+   1171  0e04		       17		      st
+   1172  0e05		       4d		      lr	a,(is)+
+   1173  0e06		       22 80		      oi	$80
+   1174  0e08		       17		      st
+   1175  0e09		       20 35		      li	$35
+   1176  0e0b		       0b		      lr	is,a
+   1177  0e0c		       4d		      lr	a,(is)+
+   1178  0e0d		       22 80		      oi	$80
+   1179  0e0f		       17		      st
+   1180  0e10		       4d		      lr	a,(is)+
+   1181  0e11		       22 80		      oi	$80
+   1182  0e13		       17		      st
+   1183  0e14		       20 39		      li	$39
+   1184  0e16		       0b		      lr	is,a
+   1185  0e17		       4d		      lr	a,(is)+
+   1186  0e18		       22 80		      oi	$80
+   1187  0e1a		       17		      st
+   1188  0e1b		       4d		      lr	a,(is)+
+   1189  0e1c		       22 80		      oi	$80
+   1190  0e1e		       17		      st
+   1191  0e1f		       20 3d		      li	$3d
+   1192  0e21		       0b		      lr	is,a
+   1193  0e22		       4d		      lr	a,(is)+
+   1194  0e23		       22 80		      oi	$80
+   1195  0e25		       17		      st
+   1196  0e26		       4d		      lr	a,(is)+
+   1197  0e27		       22 80		      oi	$80
+   1198  0e29		       17		      st
+   1199  0e2a
+   1200  0e2a		       09	   moveend    lr	p,k
+   1201  0e2b		       1c		      pop
+   1202  0e2c
+   1203  0e2c							; r0 figure
+   1204  0e2c							; r1 rotation
+   1205  0e2c		       11	   getfigure  lr	h,dc
+   1206  0e2d		       2a 10 67 	      dci	figures
+   1207  0e30		       40		      lr	a,0
+   1208  0e31		       25 00		      ci	0
+   1209  0e33		       84 08		      bt	4,gfn
+   1210  0e35		       54		      lr	4,a
+   1211  0e36		       20 40		      li	$40
+   1212  0e38		       8e	   gfn1       adc
+   1213  0e39		       34		      ds	4
+   1214  0e3a		       94 fd		      bf	4,gfn1
+   1215  0e3c		       41	   gfn	      lr	a,1
+   1216  0e3d		       25 00		      ci	0
+   1217  0e3f		       84 08		      bt	4,gff
+   1218  0e41		       54		      lr	4,a
+   1219  0e42		       20 10		      li	$10
+   1220  0e44		       8e	   gff1       adc
+   1221  0e45		       34		      ds	4
+   1222  0e46		       94 fd		      bf	4,gff1
+   1223  0e48		       20 30	   gff	      li	$30
+   1224  0e4a		       0b		      lr	is,a
+   1225  0e4b		       20 10		      li	$10
+   1226  0e4d		       54		      lr	4,a
+   1227  0e4e		       16	   gfloop     lm
+   1228  0e4f		       5c		      lr	(is),a
+   1229  0e50		       0a		      lr	a,is
+   1230  0e51		       24 01		      ai	1
+   1231  0e53		       0b		      lr	is,a
+   1232  0e54		       34		      ds	4
+   1233  0e55		       94 f8		      bf	4,gfloop
+   1234  0e57		       10		      lr	dc,h
+   1235  0e58		       1c		      pop
+   1236  0e59
+   1237  0e59
+   1238  0e59				   findlines
+   1239  0e59		       11		      lr	h,dc
+   1240  0e5a		       20 cd		      li	205	; 17*(1+10+1)+1
+   1241  0e5c		       5b		      lr	11,a	; hl
+   1242  0e5d		       10	   fl2	      lr	dc,h
+   1243  0e5e		       20 09		      li	9
+   1244  0e60		       58		      lr	8,a
+   1245  0e61		       16		      lm
+   1246  0e62		       8a	   fl1	      nm
+   1247  0e63		       38		      ds	8
+   1248  0e64		       94 fd		      bf	4,fl1
+   1249  0e66		       21 01		      ni	1
+   1250  0e68		       94 0a		      bf	4,fl3
+   1251  0e6a		       4b	   fl1c       lr	a,11
+   1252  0e6b		       24 f4		      ai	244	; -12
+   1253  0e6d		       5b		      lr	11,a
+   1254  0e6e		       25 01		      ci	1
+   1255  0e70		       94 ec		      bf	4,fl2
+   1256  0e72		       1c		      pop
+   1257  0e73							; zeile gefunden
+   1258  0e73		       4b	   fl3	      lr	a,11
+   1259  0e74		       59		      lr	9,a
+   1260  0e75		       20 f5		      li	$f5
+   1261  0e77		       5b		      lr	11,a
+   1262  0e78		       10		      lr	dc,h
+   1263  0e79		       16		      lm
+   1264  0e7a		       24 01		      ai	1
+   1265  0e7c		       10		      lr	dc,h
+   1266  0e7d		       17		      st
+   1267  0e7e		       49		      lr	a,9
+   1268  0e7f		       5b		      lr	11,a
+   1269  0e80		       4b	   fl1d       lr	a,11
+   1270  0e81		       24 f4		      ai	244
+   1271  0e83		       5b		      lr	11,a
+   1272  0e84		       25 01		      ci	1
+   1273  0e86		       94 06		      bf	4,fl1e
+   1274  0e88		       49		      lr	a,9
+   1275  0e89		       5b		      lr	11,a
+   1276  0e8a		       29 0e 5d 	      jmp	fl2
+   1277  0e8d		       10	   fl1e       lr	dc,h
+   1278  0e8e		       20 30		      li	$30
+   1279  0e90		       0b		      lr	is,a
+   1280  0e91		       20 0a		      li	10
+   1281  0e93		       58		      lr	8,a
+   1282  0e94		       16	   fl1a       lm
+   1283  0e95		       5c		      lr	(is),a
+   1284  0e96		       0a		      lr	a,is
+   1285  0e97		       24 01		      ai	1
+   1286  0e99		       0b		      lr	is,a
+   1287  0e9a		       38		      ds	8
+   1288  0e9b		       94 f8		      bf	4,fl1a
+   1289  0e9d		       16		      lm
+   1290  0e9e		       16		      lm
+   1291  0e9f		       20 30		      li	$30
+   1292  0ea1		       0b		      lr	is,a
+   1293  0ea2		       20 0a		      li	10
+   1294  0ea4		       58		      lr	8,a
+   1295  0ea5		       4c	   fl1b       lr	a,(is)
+   1296  0ea6							; probably doing check to only redraw changed blocks
+   1297  0ea6		       22 80		      oi	$80
+   1298  0ea8		       17		      st
+   1299  0ea9		       0a		      lr	a,is
+   1300  0eaa		       24 01		      ai	1
+   1301  0eac		       0b		      lr	is,a
+   1302  0ead		       38		      ds	8
+   1303  0eae		       94 f6		      bf	4,fl1b
+   1304  0eb0		       29 0e 80 	      jmp	fl1d
+   1305  0eb3
+   1306  0eb3		       20 11	   penalty    li	17
+   1307  0eb5		       56		      lr	6,a
+   1308  0eb6		       7d		      lis	13
+   1309  0eb7		       0f		      lr	dc,q
+   1310  0eb8		       11		      lr	h,dc
+   1311  0eb9		       5b		      lr	11,a
+   1312  0eba		       10	   penalty3   lr	dc,h
+   1313  0ebb		       7a		      lis	10
+   1314  0ebc		       55		      lr	5,a
+   1315  0ebd		       20 30		      li	$30
+   1316  0ebf		       0b		      lr	is,a
+   1317  0ec0		       16	   penalty1   lm
+   1318  0ec1		       5c		      lr	(is),a
+   1319  0ec2		       0a		      lr	a,is
+   1320  0ec3		       24 01		      ai	1
+   1321  0ec5		       0b		      lr	is,a
+   1322  0ec6		       35		      ds	5
+   1323  0ec7		       94 f8		      bf	4,penalty1
+   1324  0ec9		       4b		      lr	a,11
+   1325  0eca		       24 f4		      ai	$f4	; -12
+   1326  0ecc		       5b		      lr	11,a
+   1327  0ecd		       10		      lr	dc,h
+   1328  0ece		       20 30		      li	$30
+   1329  0ed0		       0b		      lr	is,a
+   1330  0ed1		       7a		      lis	10
+   1331  0ed2		       55		      lr	5,a
+   1332  0ed3		       4c	   penalty2   lr	a,(is)
+   1333  0ed4		       22 80		      oi	$80
+   1334  0ed6		       17		      st
+   1335  0ed7		       0a		      lr	a,is
+   1336  0ed8		       24 01		      ai	1
+   1337  0eda		       0b		      lr	is,a
+   1338  0edb		       35		      ds	5
+   1339  0edc		       94 f6		      bf	4,penalty2
+   1340  0ede		       4b		      lr	a,11
+   1341  0edf		       24 18		      ai	24
+   1342  0ee1		       5b		      lr	11,a
+   1343  0ee2		       36		      ds	6
+   1344  0ee3		       94 d6		      bf	4,penalty3
+   1345  0ee5		       4b		      lr	a,11
+   1346  0ee6		       24 f4		      ai	$f4
+   1347  0ee8		       5b		      lr	11,a
+   1348  0ee9		       10		      lr	dc,h
+   1349  0eea		       7a		      lis	10
+   1350  0eeb		       55		      lr	5,a
+   1351  0eec		       20 81		      li	$81
+   1352  0eee		       17	   penalty5   st
+   1353  0eef		       35		      ds	5
+   1354  0ef0		       94 fd		      bf	4,penalty5
+   1355  0ef2		       20 ff		      li	$ff
+   1356  0ef4		       5b		      lr	11,a
+   1357  0ef5		       10		      lr	dc,h
+   1358  0ef6		       16		      lm
+   1359  0ef7		       21 07		      ni	7
+   1360  0ef9		       24 ce		      ai	206	;12*17+1+1
+   1361  0efb		       5b		      lr	11,a
+   1362  0efc		       10		      lr	dc,h
+   1363  0efd		       20 80		      li	$80
+   1364  0eff		       17		      st
+   1365  0f00		       1c		      pop
+   1366  0f01							; r2 x
+   1367  0f01							; r3 y
+   1368  0f01							; dci
+   1369  0f01		       11	   fieldpos   lr	h,dc
+   1370  0f02		       42		      lr	a,2
+   1371  0f03		       5b		      lr	$b,a
+   1372  0f04		       21 ff		      ni	$ff
+   1373  0f06		       81 02		      bt	1,fieldpos3
+   1374  0f08		       3a		      ds	$a
+   1375  0f09		       10	   fieldpos3  lr	dc,h
+   1376  0f0a		       43		      lr	a,3
+   1377  0f0b		       25 00		      ci	0
+   1378  0f0d		       84 08		      bt	4, fieldpos1
+   1379  0f0f		       54		      lr	4,a
+   1380  0f10		       20 0c		      li	12
+   1381  0f12		       8e	   fieldpos2  adc
+   1382  0f13		       34		      ds	4
+   1383  0f14		       94 fd		      bf	4, fieldpos2
+   1384  0f16				   fieldpos1
+   1385  0f16		       1c		      pop
+   1386  0f17
+   1387  0f17							; r0 figure
+   1388  0f17							; r1 rotation
+   1389  0f17							; r2 x
+   1390  0f17							; r3 y
+   1391  0f17							; dci field
+   1392  0f17		       11	   testfigure lr	h,dc
+   1393  0f18		       20 04		      li	4
+   1394  0f1a		       54		      lr	4,a
+   1395  0f1b		       20 30		      li	$30
+   1396  0f1d		       0b		      lr	is,a
+   1397  0f1e		       20 04	   tpy	      li	4
+   1398  0f20		       55		      lr	5,a
+   1399  0f21		       4c	   tpx	      lr	a,(is)
+   1400  0f22		       25 00		      ci	0
+   1401  0f24		       84 0a		      bt	4,tpnothing
+   1402  0f26		       16		      lm
+   1403  0f27		       21 7f		      ni	$7f
+   1404  0f29		       84 06		      bt	4,tpcont
+   1405  0f2b		       10		      lr	dc,h
+   1406  0f2c		       20 01		      li	1	; something in it
+   1407  0f2e		       1c		      pop
+   1408  0f2f		       8d	   tpnothing  cm
+   1409  0f30		       0a	   tpcont     lr	a,is
+   1410  0f31		       24 01		      ai	1
+   1411  0f33		       0b		      lr	is,a
+   1412  0f34		       35		      ds	5
+   1413  0f35		       94 eb		      bf	4,tpx
+   1414  0f37		       20 08		      li	8
+   1415  0f39		       8e		      adc
+   1416  0f3a		       34		      ds	4
+   1417  0f3b		       94 e2		      bf	4,tpy
+   1418  0f3d		       10		      lr	dc,h
+   1419  0f3e		       20 00		      li	0
+   1420  0f40		       1c		      pop
+   1421  0f41
+   1422  0f41							; r2 x
+   1423  0f41							; r2 y
+   1424  0f41							; dci field
+   1425  0f41		       11	   clearfigure lr	h,dc
+   1426  0f42		       20 04		      li	4
+   1427  0f44		       54		      lr	4,a
+   1428  0f45		       20 30		      li	$30
+   1429  0f47		       0b		      lr	is,a
+   1430  0f48
+   1431  0f48		       20 04	   cfy	      li	4
+   1432  0f4a		       55		      lr	5,a
+   1433  0f4b		       4c	   cfx	      lr	a,(is)
+   1434  0f4c		       25 00		      ci	0
+   1435  0f4e		       84 07		      bt	4,cfnothing
+   1436  0f50		       20 80		      li	$80
+   1437  0f52		       17		      st
+   1438  0f53		       29 0f 57 	      jmp	cfc
+   1439  0f56		       8d	   cfnothing  cm
+   1440  0f57		       0a	   cfc	      lr	a,is
+   1441  0f58		       24 01		      ai	1
+   1442  0f5a		       0b		      lr	is,a
+   1443  0f5b		       35		      ds	5
+   1444  0f5c		       94 ee		      bf	4,cfx
+   1445  0f5e		       20 08		      li	8
+   1446  0f60		       8e		      adc
+   1447  0f61		       34		      ds	4
+   1448  0f62		       94 e5		      bf	4,cfy
+   1449  0f64		       10		      lr	dc,h
+   1450  0f65		       1c		      pop
+   1451  0f66
+   1452  0f66							; dci field
+   1453  0f66		       11	   setfigure  lr	h,dc
+   1454  0f67		       20 04		      li	4
+   1455  0f69		       54		      lr	4,a
+   1456  0f6a		       20 30		      li	$30
+   1457  0f6c		       0b		      lr	is,a
+   1458  0f6d
+   1459  0f6d		       20 04	   sfy	      li	4
+   1460  0f6f		       55		      lr	5,a
+   1461  0f70		       4c	   sfx	      lr	a,(is)
+   1462  0f71		       25 00		      ci	0
+   1463  0f73		       84 07		      bt	4,sfnothing
+   1464  0f75		       20 81		      li	$81
+   1465  0f77		       17		      st
+   1466  0f78		       29 0f 7c 	      jmp	sfc
+   1467  0f7b		       8d	   sfnothing  cm
+   1468  0f7c		       0a	   sfc	      lr	a,is
+   1469  0f7d		       24 01		      ai	1
+   1470  0f7f		       0b		      lr	is,a
+   1471  0f80		       35		      ds	5
+   1472  0f81		       94 ee		      bf	4,sfx
+   1473  0f83		       20 08		      li	8
+   1474  0f85		       8e		      adc
+   1475  0f86		       34		      ds	4
+   1476  0f87		       94 e5		      bf	4,sfy
+   1477  0f89		       10		      lr	dc,h
+   1478  0f8a		       1c		      pop
+   1479  0f8b
+   1480  0f8b							; pseudo random number generation
+   1481  0f8b							; (f3853 timer not used; irqs generally difficult to use with subroutines)
+   1482  0f8b							; so if user presses a key in while loop simply its counter is taken
+   1483  0f8b							; (random number from 0 to 255)
+   1484  0f8b							; I expect a 50% change him to press
+   1485  0f8b							; 0 has several clocks more, so its more likely to come
+   1486  0f8b				   random
+   1487  0f8b		       20 10		      li	$10
+   1488  0f8d		       b0		      outs	0
+   1489  0f8e		       a0		      ins	0
+   1490  0f8f		       52		      lr	2,a
+   1491  0f90		       70		      lis	0
+   1492  0f91		       b4		      outs	4
+   1493  0f92		       a4		      ins	4
+   1494  0f93		       53		      lr	3,a
+   1495  0f94		       70		      lis	0
+   1496  0f95		       b1		      outs	1
+   1497  0f96		       a1		      ins	1
+   1498  0f97		       54		      lr	4,a
+   1499  0f98		       70		      lis	0
+   1500  0f99		       51		      lr	1,a
+   1501  0f9a				   random1
+   1502  0f9a							; currently not needed
+   1503  0f9a							;		ins	0
+   1504  0f9a							;		xs	2
+   1505  0f9a							;		bt	4,random1a
+   1506  0f9a							;		xs	2
+   1507  0f9a							;		lr	2,a
+   1508  0f9a							;		dci	randomnumber
+   1509  0f9a							;		lr	a,1
+   1510  0f9a							;		st
+   1511  0f9a		       a4	   random1a   ins	4
+   1512  0f9b		       e3		      xs	3
+   1513  0f9c		       84 08		      bt	4,random1b
+   1514  0f9e		       e3		      xs	3
+   1515  0f9f		       53		      lr	3,a
+   1516  0fa0		       2a 28 fe 	      dci	p1randomnext
+   1517  0fa3		       41		      lr	a,1
+   1518  0fa4		       17		      st
+   1519  0fa5		       a1	   random1b   ins	1
+   1520  0fa6		       e4		      xs	4
+   1521  0fa7		       84 08		      bt	4,random1c
+   1522  0fa9		       e4		      xs	4
+   1523  0faa		       54		      lr	4,a
+   1524  0fab		       2a 29 fe 	      dci	p2randomnext
+   1525  0fae		       41		      lr	a,1
+   1526  0faf		       17		      st
+   1527  0fb0		       31	   random1c   ds	1
+   1528  0fb1		       94 e8		      bf	4,random1
+   1529  0fb3		       1c		      pop
+   1530  0fb4
+   1531  0fb4							; r0 video row
+   1532  0fb4							; r1 video col
+   1533  0fb4							; r2 color
+   1534  0fb4							; r3 color 2
+   1535  0fb4		       20 50	   drawblock  li	$50
+   1536  0fb6		       b0		      outs	0
+   1537  0fb7		       a5		      ins	5
+   1538  0fb8		       21 c0		      ni	$c0
+   1539  0fba		       e0		      xs	0
+   1540  0fbb		       b5		      outs	5
+   1541  0fbc		       a4		      ins	4
+   1542  0fbd		       21 80		      ni	$80
+   1543  0fbf		       e1		      xs	1
+   1544  0fc0		       b4		      outs	4
+   1545  0fc1		       42		      lr	a,2
+   1546  0fc2		       b1		      outs	1
+   1547  0fc3		       20 60		      li	$60	; p 0/0
+   1548  0fc5		       b0		      outs	0
+   1549  0fc6		       20 50		      li	$50
+   1550  0fc8		       b0		      outs	0
+   1551  0fc9		       76		      lis	6
+   1552  0fca		       5a		      lr	10,a
+   1553  0fcb		       3a	   dbdelay1   ds	10
+   1554  0fcc		       94 fe		      bf	4,dbdelay1
+   1555  0fce		       a4		      ins	4
+   1556  0fcf		       24 ff		      ai	$ff
+   1557  0fd1		       b4		      outs	4
+   1558  0fd2		       20 60		      li	$60	; p 1/0
+   1559  0fd4		       b0		      outs	0
+   1560  0fd5		       20 50		      li	$50
+   1561  0fd7		       b0		      outs	0
+   1562  0fd8		       76		      lis	6
+   1563  0fd9		       5a		      lr	10,a
+   1564  0fda		       3a	   dbdelay2   ds	10
+   1565  0fdb		       94 fe		      bf	4,dbdelay2
+   1566  0fdd		       a4		      ins	4
+   1567  0fde		       24 ff		      ai	$ff
+   1568  0fe0		       b4		      outs	4
+   1569  0fe1		       20 60		      li	$60	; p 2/0
+   1570  0fe3		       b0		      outs	0
+   1571  0fe4		       20 50		      li	$50
+   1572  0fe6		       b0		      outs	0
+   1573  0fe7		       76		      lis	6
+   1574  0fe8		       5a		      lr	10,a
+   1575  0fe9		       3a	   dbdelay3   ds	10
+   1576  0fea		       94 fe		      bf	4,dbdelay3
+   1577  0fec		       a5		      ins	5
+   1578  0fed		       24 ff		      ai	$ff
+   1579  0fef		       b5		      outs	5
+   1580  0ff0		       20 60		      li	$60	; p 2/1
+   1581  0ff2		       b0		      outs	0
+   1582  0ff3		       20 50		      li	$50
+   1583  0ff5		       b0		      outs	0
+   1584  0ff6		       76		      lis	6
+   1585  0ff7		       5a		      lr	10,a
+   1586  0ff8		       3a	   dbdelay4   ds	10
+   1587  0ff9		       94 fe		      bf	4,dbdelay4
+   1588  0ffb		       a4		      ins	4
+   1589  0ffc		       1f		      inc
+   1590  0ffd		       b4		      outs	4
+   1591  0ffe		       43		      lr	a,3
+   1592  0fff		       b1		      outs	1
+   1593  1000		       20 60		      li	$60	; p 1/1
+   1594  1002		       b0		      outs	0
+   1595  1003		       20 50		      li	$50
+   1596  1005		       b0		      outs	0
+   1597  1006		       76		      lis	6
+   1598  1007		       5a		      lr	10,a
+   1599  1008		       3a	   dbdelay5   ds	10
+   1600  1009		       94 fe		      bf	4,dbdelay5
+   1601  100b		       a4		      ins	4
+   1602  100c		       1f		      inc
+   1603  100d		       b4		      outs	4
+   1604  100e		       42		      lr	a,2
+   1605  100f		       b1		      outs	1
+   1606  1010		       20 60		      li	$60	; p 0/1
+   1607  1012		       b0		      outs	0
+   1608  1013		       20 50		      li	$50
+   1609  1015		       b0		      outs	0
+   1610  1016		       76		      lis	6
+   1611  1017		       5a		      lr	10,a
+   1612  1018		       3a	   dbdelay6   ds	10
+   1613  1019		       94 fe		      bf	4,dbdelay6
+   1614  101b		       a5		      ins	5
+   1615  101c		       24 ff		      ai	$ff
+   1616  101e		       b5		      outs	5
+   1617  101f		       20 60		      li	$60	; p 0/2
+   1618  1021		       b0		      outs	0
+   1619  1022		       20 50		      li	$50
+   1620  1024		       b0		      outs	0
+   1621  1025		       76		      lis	6
+   1622  1026		       5a		      lr	10,a
+   1623  1027		       3a	   dbdelay7   ds	10
+   1624  1028		       94 fe		      bf	4,dbdelay7
+   1625  102a		       a4		      ins	4
+   1626  102b		       24 ff		      ai	$ff
+   1627  102d		       b4		      outs	4
+   1628  102e		       20 60		      li	$60	; p 1/2
+   1629  1030		       b0		      outs	0
+   1630  1031		       20 50		      li	$50
+   1631  1033		       b0		      outs	0
+   1632  1034		       76		      lis	6
+   1633  1035		       5a		      lr	10,a
+   1634  1036		       3a	   dbdelay8   ds	10
+   1635  1037		       94 fe		      bf	4,dbdelay8
+   1636  1039		       a4		      ins	4
+   1637  103a		       24 ff		      ai	$ff
+   1638  103c		       b4		      outs	4
+   1639  103d		       20 60		      li	$60	; p 2/2
+   1640  103f		       b0		      outs	0
+   1641  1040		       20 50		      li	$50
+   1642  1042		       b0		      outs	0
+   1643  1043		       76		      lis	6
+   1644  1044		       5a		      lr	10,a
+   1645  1045		       3a	   dbdelay9   ds	10
+   1646  1046		       94 fe		      bf	4,dbdelay9
+   1647  1048		       1c		      pop
+   1648  1049
+   1649  1049		       70	   clearscreen lis	0
+   1650  104a		       b1		      outs	1
+   1651  104b		       20 3f		      li	$3f
+   1652  104d		       50		      lr	0,a
+   1653  104e		       40	   csloopl    lr	a,0
+   1654  104f		       b5		      outs	5
+   1655  1050		       20 7f		      li	$7f
+   1656  1052		       51		      lr	1,a
+   1657  1053		       41	   csloopc    lr	a,1
+   1658  1054		       b4		      outs	4
+   1659  1055		       20 60		      li	$60
+   1660  1057		       b0		      outs	0
+   1661  1058		       20 50		      li	$50
+   1662  105a		       b0		      outs	0
+   1663  105b		       76		      lis	6	; in bowling 4
+   1664  105c		       54		      lr	4,a
+   1665  105d		       34	   csdelay    ds	4
+   1666  105e		       94 fe		      bf	4,csdelay
+   1667  1060		       31		      ds	1
+   1668  1061		       82 f1		      bt	2,csloopc
+   1669  1063		       30		      ds	0
+   1670  1064		       82 e9		      bt	2,csloopl
+   1671  1066		       1c		      pop
+   1672  1067
+   1673  1067							; 7 figures
+   1674  1067							; in 4 rotations
+   1675  1067							; 4x4 size
+   1676  1067				   figures
+   1677  1067		       00 01 00 00	      db.b	0,1,0,0
+   1678  106b		       00 01 00 00	      db.b	0,1,0,0
+   1679  106f		       00 01 00 00	      db.b	0,1,0,0
+   1680  1073		       00 01 00 00	      db.b	0,1,0,0
+   1681  1077
+   1682  1077		       00 00 00 00	      db.b	0,0,0,0
+   1683  107b		       01 01 01 01	      db.b	1,1,1,1
+   1684  107f		       00 00 00 00	      db.b	0,0,0,0
+   1685  1083		       00 00 00 00	      db.b	0,0,0,0
+   1686  1087
+   1687  1087		       00 01 00 00	      db.b	0,1,0,0
+   1688  108b		       00 01 00 00	      db.b	0,1,0,0
+   1689  108f		       00 01 00 00	      db.b	0,1,0,0
+   1690  1093		       00 01 00 00	      db.b	0,1,0,0
+   1691  1097
+   1692  1097		       00 00 00 00	      db.b	0,0,0,0
+   1693  109b		       01 01 01 01	      db.b	1,1,1,1
+   1694  109f		       00 00 00 00	      db.b	0,0,0,0
+   1695  10a3		       00 00 00 00	      db.b	0,0,0,0
+   1696  10a7							;
+   1697  10a7		       00 01 00 00	      db.b	0,1,0,0
+   1698  10ab		       00 01 01 00	      db.b	0,1,1,0
+   1699  10af		       00 00 01 00	      db.b	0,0,1,0
+   1700  10b3		       00 00 00 00	      db.b	0,0,0,0
+   1701  10b7
+   1702  10b7		       00 01 01 00	      db.b	0,1,1,0
+   1703  10bb		       01 01 00 00	      db.b	1,1,0,0
+   1704  10bf		       00 00 00 00	      db.b	0,0,0,0
+   1705  10c3		       00 00 00 00	      db.b	0,0,0,0
+   1706  10c7
+   1707  10c7		       00 01 00 00	      db.b	0,1,0,0
+   1708  10cb		       00 01 01 00	      db.b	0,1,1,0
+   1709  10cf		       00 00 01 00	      db.b	0,0,1,0
+   1710  10d3		       00 00 00 00	      db.b	0,0,0,0
+   1711  10d7
+   1712  10d7		       00 01 01 00	      db.b	0,1,1,0
+   1713  10db		       01 01 00 00	      db.b	1,1,0,0
+   1714  10df		       00 00 00 00	      db.b	0,0,0,0
+   1715  10e3		       00 00 00 00	      db.b	0,0,0,0
+   1716  10e7							;
+   1717  10e7		       00 00 01 00	      db.b	0,0,1,0
+   1718  10eb		       00 01 01 00	      db.b	0,1,1,0
+   1719  10ef		       00 01 00 00	      db.b	0,1,0,0
+   1720  10f3		       00 00 00 00	      db.b	0,0,0,0
+   1721  10f7
+   1722  10f7		       01 01 00 00	      db.b	1,1,0,0
+   1723  10fb		       00 01 01 00	      db.b	0,1,1,0
+   1724  10ff		       00 00 00 00	      db.b	0,0,0,0
+   1725  1103		       00 00 00 00	      db.b	0,0,0,0
+   1726  1107
+   1727  1107		       00 00 01 00	      db.b	0,0,1,0
+   1728  110b		       00 01 01 00	      db.b	0,1,1,0
+   1729  110f		       00 01 00 00	      db.b	0,1,0,0
+   1730  1113		       00 00 00 00	      db.b	0,0,0,0
+   1731  1117
+   1732  1117		       01 01 00 00	      db.b	1,1,0,0
+   1733  111b		       00 01 01 00	      db.b	0,1,1,0
+   1734  111f		       00 00 00 00	      db.b	0,0,0,0
+   1735  1123		       00 00 00 00	      db.b	0,0,0,0
+   1736  1127							;
+   1737  1127		       00 01 00 00	      db.b	0,1,0,0
+   1738  112b		       00 01 01 00	      db.b	0,1,1,0
+   1739  112f		       00 01 00 00	      db.b	0,1,0,0
+   1740  1133		       00 00 00 00	      db.b	0,0,0,0
+   1741  1137
+   1742  1137		       00 01 00 00	      db.b	0,1,0,0
+   1743  113b		       01 01 01 00	      db.b	1,1,1,0
+   1744  113f		       00 00 00 00	      db.b	0,0,0,0
+   1745  1143		       00 00 00 00	      db.b	0,0,0,0
+   1746  1147
+   1747  1147		       00 01 00 00	      db.b	0,1,0,0
+   1748  114b		       01 01 00 00	      db.b	1,1,0,0
+   1749  114f		       00 01 00 00	      db.b	0,1,0,0
+   1750  1153		       00 00 00 00	      db.b	0,0,0,0
+   1751  1157
+   1752  1157		       00 00 00 00	      db.b	0,0,0,0
+   1753  115b		       01 01 01 00	      db.b	1,1,1,0
+   1754  115f		       00 01 00 00	      db.b	0,1,0,0
+   1755  1163		       00 00 00 00	      db.b	0,0,0,0
+   1756  1167							;
+   1757  1167		       00 01 00 00	      db.b	0,1,0,0
+   1758  116b		       00 01 00 00	      db.b	0,1,0,0
+   1759  116f		       00 01 01 00	      db.b	0,1,1,0
+   1760  1173		       00 00 00 00	      db.b	0,0,0,0
+   1761  1177
+   1762  1177		       00 00 01 00	      db.b	0,0,1,0
+   1763  117b		       01 01 01 00	      db.b	1,1,1,0
+   1764  117f		       00 00 00 00	      db.b	0,0,0,0
+   1765  1183		       00 00 00 00	      db.b	0,0,0,0
+   1766  1187
+   1767  1187		       01 01 00 00	      db.b	1,1,0,0
+   1768  118b		       00 01 00 00	      db.b	0,1,0,0
+   1769  118f		       00 01 00 00	      db.b	0,1,0,0
+   1770  1193		       00 00 00 00	      db.b	0,0,0,0
+   1771  1197
+   1772  1197		       00 00 00 00	      db.b	0,0,0,0
+   1773  119b		       01 01 01 00	      db.b	1,1,1,0
+   1774  119f		       01 00 00 00	      db.b	1,0,0,0
+   1775  11a3		       00 00 00 00	      db.b	0,0,0,0
+   1776  11a7							;
+   1777  11a7		       00 01 01 00	      db.b	0,1,1,0
+   1778  11ab		       00 01 00 00	      db.b	0,1,0,0
+   1779  11af		       00 01 00 00	      db.b	0,1,0,0
+   1780  11b3		       00 00 00 00	      db.b	0,0,0,0
+   1781  11b7
+   1782  11b7		       01 00 00 00	      db.b	1,0,0,0
+   1783  11bb		       01 01 01 00	      db.b	1,1,1,0
+   1784  11bf		       00 00 00 00	      db.b	0,0,0,0
+   1785  11c3		       00 00 00 00	      db.b	0,0,0,0
+   1786  11c7
+   1787  11c7		       00 01 00 00	      db.b	0,1,0,0
+   1788  11cb		       00 01 00 00	      db.b	0,1,0,0
+   1789  11cf		       01 01 00 00	      db.b	1,1,0,0
+   1790  11d3		       00 00 00 00	      db.b	0,0,0,0
+   1791  11d7
+   1792  11d7		       00 00 00 00	      db.b	0,0,0,0
+   1793  11db		       01 01 01 00	      db.b	1,1,1,0
+   1794  11df		       00 00 01 00	      db.b	0,0,1,0
+   1795  11e3		       00 00 00 00	      db.b	0,0,0,0
+   1796  11e7							;
+   1797  11e7		       00 01 01 00	      db.b	0,1,1,0
+   1798  11eb		       00 01 01 00	      db.b	0,1,1,0
+   1799  11ef		       00 00 00 00	      db.b	0,0,0,0
+   1800  11f3		       00 00 00 00	      db.b	0,0,0,0
+   1801  11f7
+   1802  11f7		       00 01 01 00	      db.b	0,1,1,0
+   1803  11fb		       00 01 01 00	      db.b	0,1,1,0
+   1804  11ff		       00 00 00 00	      db.b	0,0,0,0
+   1805  1203		       00 00 00 00	      db.b	0,0,0,0
+   1806  1207
+   1807  1207		       00 01 01 00	      db.b	0,1,1,0
+   1808  120b		       00 01 01 00	      db.b	0,1,1,0
+   1809  120f		       00 00 00 00	      db.b	0,0,0,0
+   1810  1213		       00 00 00 00	      db.b	0,0,0,0
+   1811  1217
+   1812  1217		       00 01 01 00	      db.b	0,1,1,0
+   1813  121b		       00 01 01 00	      db.b	0,1,1,0
+   1814  121f		       00 00 00 00	      db.b	0,0,0,0
+   1815  1223		       00 00 00 00	      db.b	0,0,0,0
+   1816  1227
+   1817  1227				   pal
+   1818  1227							; player 1
+   1819  1227		       40 80		      db.b	$40, $80	; block border color border, mid
+   1820  1229		       3a 70		      db.b	$3a, $70	; fieldpos y, x
+   1821  122b		       40 00		      db.b	$40, 0	; block color border, mid
+   1822  122d		       3a 74 40 00	      db.b	$3a, $74, $40, 0	; score pos x,y,foreground, backgroundcolor
+   1823  1231		       0d 77 40 80	      db.b	$0d, $77, $40,$80	; x,y, color border, mid next figure
+   1824  1235
+   1825  1235							; player 2
+   1826  1235		       80 40		      db.b	$80, $40	; block border color border, mid
+   1827  1237		       3a 40		      db.b	$3a, $40	; fieldpos y, x
+   1828  1239		       80 00		      db.b	$80, 0	; block color border, mid
+   1829  123b		       3a 1b 80 00	      db.b	$3a, $1b, $80, 0	; score pos x,y,foreground, backgroundcolor
+   1830  123f		       0d 1b 80 40	      db.b	$0d, $1b, $80,$40
+   1831  1243
+   1832  1243				   ntsc
+   1833  1243							; player 1
+   1834  1243		       40 80		      db.b	$40, $80	; block border color border, mid
+   1835  1245		       3a 72		      db.b	$3a, $72	; fieldpos y, x
+   1836  1247		       40 00		      db.b	$40, 0	; block color border, mid
+   1837  1249		       3a 4d 40 00	      db.b	$3a, $4d, $40, 0	; score pos x,y,foreground, backgroundcolor
+   1838  124d		       0d 4d 40 80	      db.b	$0d, $4d, $40,$80	; x,y, color border, mid next figure
+   1839  1251
+   1840  1251							; player 2
+   1841  1251		       80 40		      db.b	$80, $40	; block border color border, mid
+   1842  1253		       3a 3e		      db.b	$3a, $3e	; fieldpos y, x
+   1843  1255		       80 00		      db.b	$80, 0	; block color border, mid
+   1844  1257		       3a 42 80 00	      db.b	$3a, $42, $80, 0	; score pos x,y,foreground, backgroundcolor
+   1845  125b		       0d 45 80 40	      db.b	$0d, $45, $80,$40
+   1846  125f
+   1847  125f		       00 00 00 00*ascii      db.b	0,0,0,0,0,0,0,0
+   1848  1267		       00 00 00 00*	      db.b	0,0,0,0,0,0,0,0
+   1849  126f		       00 00 00 00*	      db.b	0,0,0,0,0,0,0,0
+   1850  1277		       00 00 00 00*	      db.b	0,0,0,0,0,0,0,0
+   1851  127f		       24 00 00 00*	      db.b	36,0,0,0,0,0,0,0
+   1852  1287		       00 00 00 00*	      db.b	0,0,0,0,0,0,0,0
+   1853  128f		       00 01 02 03*	      db.b	0,1,2,3,4,5,6,7
+   1854  1297		       08 09 00 00*	      db.b	8,9,0,0,0,0,0,0
+   1855  129f		       25 0a 0b 0c*	      db.b	37,10,11,12,13,14,15,16
+   1856  12a7		       11 12 13 14*	      db.b	17,18,19,20,21,22,23,24
+   1857  12af		       19 1a 1b 1c*	      db.b	25,26,27,28,29,30,31,32
+   1858  12b7		       21 22 23 	      db.b	33,34,35
+   1859  12ba
+   1860  12ba		       40 a0 a0 a0*font       db.b	$40,$a0,$a0,$a0,$40	; 0
+   1861  12bf		       40 40 40 40*	      db.b	$40,$40,$40,$40,$40
+   1862  12c4		       c0 20 40 80*	      db.b	$c0,$20,$40,$80,$e0
+   1863  12c9		       e0 20 e0 20*	      db.b	$e0,$20,$e0,$20,$e0
+   1864  12ce		       a0 a0 e0 20*	      db.b	$a0,$a0,$e0,$20,$20
+   1865  12d3		       e0 80 c0 20*	      db.b	$e0,$80,$c0,$20,$c0
+   1866  12d8		       40 80 c0 a0*	      db.b	$40,$80,$c0,$a0,$40
+   1867  12dd		       e0 20 20 40*	      db.b	$e0,$20,$20,$40,$40
+   1868  12e2		       40 a0 40 a0*	      db.b	$40,$a0,$40,$a0,$40
+   1869  12e7		       40 a0 60 20*	      db.b	$40,$a0,$60,$20,$40
+   1870  12ec		       40 a0 e0 a0*	      db.b	$40,$a0,$e0,$a0,$a0	; a
+   1871  12f1		       c0 a0 c0 a0*	      db.b	$c0,$a0,$c0,$a0,$c0
+   1872  12f6		       60 80 80 80*	      db.b	$60,$80,$80,$80,$60
+   1873  12fb		       c0 a0 a0 a0*	      db.b	$c0,$a0,$a0,$a0,$c0
+   1874  1300		       e0 80 e0 80*	      db.b	$e0,$80,$e0,$80,$e0
+   1875  1305		       e0 80 e0 80*	      db.b	$e0,$80,$e0,$80,$80
+   1876  130a		       60 80 a0 a0*	      db.b	$60,$80,$a0,$a0,$60
+   1877  130f		       a0 a0 e0 a0*	      db.b	$a0,$a0,$e0,$a0,$a0
+   1878  1314		       40 40 40 40*	      db.b	$40,$40,$40,$40,$40
+   1879  1319		       40 40 40 40*	      db.b	$40,$40,$40,$40,$80
+   1880  131e		       a0 c0 80 c0*	      db.b	$a0,$c0,$80,$c0,$a0
+   1881  1323		       80 80 80 80*	      db.b	$80,$80,$80,$80,$e0
+   1882  1328		       a0 e0 a0 a0*	      db.b	$a0,$e0,$a0,$a0,$a0
+   1883  132d		       c0 a0 a0 a0*	      db.b	$c0,$a0,$a0,$a0,$a0
+   1884  1332		       40 a0 a0 a0*	      db.b	$40,$a0,$a0,$a0,$40	; o
+   1885  1337		       c0 a0 a0 c0*	      db.b	$c0,$a0,$a0,$c0,$80
+   1886  133c		       40 c0 c0 c0*	      db.b	$40,$c0,$c0,$c0,$60
+   1887  1341		       c0 a0 a0 c0*	      db.b	$c0,$a0,$a0,$c0,$a0
+   1888  1346		       60 80 40 20*	      db.b	$60,$80,$40,$20,$c0
+   1889  134b		       e0 40 40 40*	      db.b	$e0,$40,$40,$40,$40
+   1890  1350		       a0 a0 a0 a0*	      db.b	$a0,$a0,$a0,$a0,$60
+   1891  1355		       a0 a0 a0 a0*	      db.b	$a0,$a0,$a0,$a0,$40
+   1892  135a		       a0 a0 a0 e0*	      db.b	$a0,$a0,$a0,$e0,$a0
+   1893  135f		       a0 a0 40 a0*	      db.b	$a0,$a0,$40,$a0,$a0
+   1894  1364		       a0 a0 40 40*	      db.b	$a0,$a0,$40,$40,$40
+   1895  1369		       e0 20 40 80*	      db.b	$e0,$20,$40,$80,$e0
+   1896  136e		       00 00 00 00*	      db.b	0,0,0,0,0
+   1897  1373		       60 a0 a0 60*	      db.b	$60,$a0,$a0,$60,$a0	; tetris r
+   1898  1378
+   1899  1378
+   1900  1378							; r0 char as ascii
+   1901  1378							; r1 row
+   1902  1378							; r2 column
+   1903  1378							; r3 foreground color
+   1904  1378							; r4 background color
+   1905  1378				   drawchar
+   1906  1378		       2a 12 5f 	      dci	ascii
+   1907  137b		       40		      lr	a,0
+   1908  137c		       8e		      adc
+   1909  137d		       16		      lm
+   1910  137e		       2a 12 ba 	      dci	font
+   1911  1381		       8e		      adc
+   1912  1382		       8e		      adc
+   1913  1383		       8e		      adc
+   1914  1384		       8e		      adc
+   1915  1385		       8e		      adc
+   1916  1386		       20 05		      li	5
+   1917  1388		       5a		      lr	10,a
+   1918  1389		       a5		      ins	5
+   1919  138a		       21 c0		      ni	$c0
+   1920  138c		       e1		      xs	1
+   1921  138d		       b5		      outs	5
+   1922  138e		       16	   drawchar1  lm
+   1923  138f		       55		      lr	5,a
+   1924  1390		       42		      lr	a,2
+   1925  1391		       a4		      ins	4
+   1926  1392		       21 80		      ni	$80
+   1927  1394		       e2		      xs	2
+   1928  1395		       b4		      outs	4
+   1929  1396		       73		      lis	3
+   1930  1397		       58		      lr	8,a
+   1931  1398				   dcl4
+   1932  1398		       45		      lr	a,5
+   1933  1399		       21 80		      ni	$80
+   1934  139b		       94 04		      bf	4,dcl1
+   1935  139d		       44		      lr	a,4
+   1936  139e		       90 02		      bf	0,dcl2
+   1937  13a0		       43	   dcl1       lr	a,3
+   1938  13a1		       b1	   dcl2       outs	1
+   1939  13a2		       20 60		      li	$60
+   1940  13a4		       b0		      outs	0
+   1941  13a5		       20 50		      li	$50
+   1942  13a7		       b0		      outs	0
+   1943  13a8		       76		      lis	6
+   1944  13a9		       56		      lr	6,a
+   1945  13aa		       36	   dcl3       ds	6
+   1946  13ab		       94 fe		      bf	4,dcl3
+   1947  13ad		       45		      lr	a,5
+   1948  13ae		       13		      sl	1
+   1949  13af		       55		      lr	5,a
+   1950  13b0		       a4		      ins	4
+   1951  13b1		       24 ff		      ai	$ff
+   1952  13b3		       b4		      outs	4
+   1953  13b4		       38		      ds	8
+   1954  13b5		       94 e2		      bf	4,dcl4
+   1955  13b7		       a5		      ins	5
+   1956  13b8		       24 ff		      ai	$ff
+   1957  13ba		       b5		      outs	5
+   1958  13bb		       3a		      ds	10
+   1959  13bc		       94 d1		      bf	4,drawchar1
+   1960  13be
+   1961  13be		       1c		      pop
+   1962  13bf
+   1963  13bf							; is string
+   1964  13bf							; r1 row
+   1965  13bf							; r2 column
+   1966  13bf							; r3 foreground color
+   1967  13bf							; r4 background color
+   1968  13bf							; r9 count
+   1969  13bf				   drawstring
+   1970  13bf		       08		      lr	k,p
+   1971  13c0		       4c	   drawstring1 lr	a,(is)
+   1972  13c1		       50		      lr	0,a
+   1973  13c2		       28 13 78 	      pi	drawchar
+   1974  13c5		       0a		      lr	a,is
+   1975  13c6		       24 01		      ai	1
+   1976  13c8		       0b		      lr	is,a
+   1977  13c9		       41		      lr	a,1
+   1978  13ca		       24 fa		      ai	$fa
+   1979  13cc		       51		      lr	1,a
+   1980  13cd		       39		      ds	9
+   1981  13ce		       94 f1		      bf	4,drawstring1
+   1982  13d0		       09		      lr	p,k
+   1983  13d1		       1c		      pop
+   1984  13d2
+   1985  13d2							; dc string
+   1986  13d2				   drawansistringv
+   1987  13d2		       08		      lr	k,p
+   1988  13d3		       16	   drawstring3v lm
+   1989  13d4		       0e		      lr	q,dc
+   1990  13d5		       50		      lr	0,a
+   1991  13d6		       25 00		      ci	0
+   1992  13d8		       84 24		      bt	4,drawstring4v
+   1993  13da		       25 01		      ci	1
+   1994  13dc		       94 07		      bf	4,drawstring5v
+   1995  13de		       16		      lm
+   1996  13df		       51		      lr	1,a
+   1997  13e0		       16		      lm
+   1998  13e1		       52		      lr	2,a
+   1999  13e2		       90 f0		      bf	0,drawstring3v
+   2000  13e4		       25 02	   drawstring5v ci	2
+   2001  13e6		       94 07		      bf	4,drawstring6v
+   2002  13e8		       16		      lm
+   2003  13e9		       53		      lr	3,a
+   2004  13ea		       16		      lm
+   2005  13eb		       54		      lr	4,a
+   2006  13ec		       90 e6		      bf	0,drawstring3v
+   2007  13ee		       28 13 78    drawstring6v pi	drawchar
+   2008  13f1		       0a		      lr	a,is
+   2009  13f2		       24 01		      ai	1
+   2010  13f4		       0b		      lr	is,a
+   2011  13f5		       41		      lr	a,1
+   2012  13f6		       24 fa		      ai	$fa
+   2013  13f8		       51		      lr	1,a
+   2014  13f9		       0f		      lr	dc,q
+   2015  13fa		       29 13 d3 	      jmp	drawstring3v
+   2016  13fd
+   2017  13fd		       09	   drawstring4v lr	p,k
+   2018  13fe		       1c		      pop
+   2019  13ff
+   2020  13ff							; dc string
+   2021  13ff				   drawansistring
+   2022  13ff		       08		      lr	k,p
+   2023  1400		       16	   drawstring3 lm
+   2024  1401		       0e		      lr	q,dc
+   2025  1402		       50		      lr	0,a
+   2026  1403		       25 00		      ci	0
+   2027  1405		       84 24		      bt	4,drawstring4
+   2028  1407		       25 01		      ci	1
+   2029  1409		       94 07		      bf	4,drawstring5
+   2030  140b		       16		      lm
+   2031  140c		       51		      lr	1,a
+   2032  140d		       16		      lm
+   2033  140e		       52		      lr	2,a
+   2034  140f		       90 f0		      bf	0,drawstring3
+   2035  1411		       25 02	   drawstring5 ci	2
+   2036  1413		       94 07		      bf	4,drawstring6
+   2037  1415		       16		      lm
+   2038  1416		       53		      lr	3,a
+   2039  1417		       16		      lm
+   2040  1418		       54		      lr	4,a
+   2041  1419		       90 e6		      bf	0,drawstring3
+   2042  141b		       28 13 78    drawstring6 pi	drawchar
+   2043  141e		       0a		      lr	a,is
+   2044  141f		       24 01		      ai	1
+   2045  1421		       0b		      lr	is,a
+   2046  1422		       42		      lr	a,2
+   2047  1423		       24 fc		      ai	$fc
+   2048  1425		       52		      lr	2,a
+   2049  1426		       0f		      lr	dc,q
+   2050  1427		       29 14 00 	      jmp	drawstring3
+   2051  142a
+   2052  142a		       09	   drawstring4 lr	p,k
+   2053  142b		       1c		      pop
+   2054  142c
+   2055  142c				   thanx
+   2056  142c		       01 3a 3a 	      db.b	1, $3a, $3a
+   2057  142f		       01 34 3a 	      db.b	1, $34, $3a
+   2058  1432		       02 40 c0 	      db.b	2, $40, $c0
+   2059  1435		       20 48 41 4c*	      db.b	$20,$48,$41,$4c,$4c,$4f
+   2060  143b		       01 2e 3a 	      db.b	1, $2e, $3a
+   2061  143e		       01 28 3a 	      db.b	1, $28, $3a
+   2062  1441		       02 80 c0 	      db.b	2, $80, $c0
+   2063  1444		       20 46 52 41*	      db.b	$20,$46,$52,$41,$4e,$4b
+   2064  144a		       01 22 3a 	      db.b	1, $22, $3a
+   2065  144d		       01 1c 3a 	      db.b	1, $1c, $3a
+   2066  1450		       02 00 c0 	      db.b	2, $00, $c0
+   2067  1453		       46 52 45 44*	      db.b	$46,$52,$45,$44,$52,$49,$43
+   2068  145a		       01 16 3a 	      db.b	1, $16, $3a
+   2069  145d		       01 10 38 	      db.b	1, $10, $38
+   2070  1460		       02 40 c0 	      db.b	2, $40, $c0
+   2071  1463		       20 53 45 41*	      db.b	$20,$53,$45,$41,$4e
+   2072  1468		       01 0a 3a 	      db.b	1, $0a, $3a
+   2073  146b		       00		      db.b	0
+   2074  146c
+   2075  146c				   strgameover1
+   2076  146c		       02 80 c0 	      db.b	2, $80, $c0
+   2077  146f		       01 23 6f 	      db.b	1, $23, $6f
+   2078  1472		       20 47 41 4d*	      db.b	$20,$47,$41,$4d,$45,$20
+   2079  1478		       01 1d 68 	      db.b	1, $1d, $68
+   2080  147b		       20 4f 56 45*	      db.b	$20,$4f,$56,$45,$52,$20
+   2081  1481		       00		      db.b	0
+   2082  1482				   strgameover2
+   2083  1482		       02 40 c0 	      db.b	2, $40, $c0
+   2084  1485		       01 23 3b 	      db.b	1, $23, $3b
+   2085  1488		       20 47 41 4d*	      db.b	$20,$47,$41,$4d,$45,$20
+   2086  148e		       01 1d 34 	      db.b	1, $1d, $34
+   2087  1491		       20 4f 56 45*	      db.b	$20,$4f,$56,$45,$52,$20
+   2088  1497		       00		      db.b	0
+   2089  1498
+   2090  1498				   player1won
+   2091  1498		       02 80 c0 	      db.b	2, $80, $c0
+   2092  149b		       01 20 66 	      db.b	1, $20, $66
+   2093  149e		       57 4f 4e 	      db.b	$57,$4f,$4e
+   2094  14a1		       02 40 c0 	      db.b	2, $40, $c0
+   2095  14a4		       01 20 34 	      db.b	1, $20, $34
+   2096  14a7		       4c 4f 53 54	      db.b	$4c,$4f,$53,$54
+   2097  14ab		       00		      db.b	0
+   2098  14ac
+   2099  14ac				   player2won
+   2100  14ac		       02 80 c0 	      db.b	2, $80, $c0
+   2101  14af		       01 20 68 	      db.b	1, $20, $68
+   2102  14b2		       4c 4f 53 54	      db.b	$4c,$4f,$53,$54
+   2103  14b6		       02 40 c0 	      db.b	2, $40, $c0
+   2104  14b9		       01 20 32 	      db.b	1, $20, $32
+   2105  14bc		       57 4f 4e 	      db.b	$57,$4f,$4e
+   2106  14bf		       00		      db.b	0
+   2107  14c0
+   2108  14c0				   copyright
+   2109  14c0		       02 80 00 	      db.b	2, $80, $0
+   2110  14c3		       01 37 6d 	      db.b	1, $37, $6d
+   2111  14c6		       20 54 45 54*	      db.b	$20,$54,$45,$54,$40,$49,$53,$20
+   2112  14ce		       02 40 c0 	      db.b	2, $40, $c0
+   2113  14d1		       01 3a 68 	      db.b	1, $3a, $68
+   2114  14d4		       43 4f 50 59*	      db.b	$43,$4f,$50,$59,$52,$49,$47,$48,$54
+   2115  14dd		       02 40 00 	      db.b	2, $40, $0
+   2116  14e0		       01 2b 64 	      db.b	1, $2b, $64
+   2117  14e3		       32 30 30 34	      db.b	$32, $30, $30, $34
+   2118  14e7		       01 25 5f 	      db.b	1, $25, $5f
+   2119  14ea		       02 40 c0 	      db.b	2, $40, $c0
+   2120  14ed		       42 59		      db.b	$42,$59
+   2121  14ef		       01 3a 5a 	      db.b	1, $3a, $5a
+   2122  14f2		       02 00 c0 	      db.b	2, $00, $c0
+   2123  14f5		       20 20 50 45*	      db.b	$20,$20,$50,$45,$54,$45,$52
+   2124  14fc		       01 3a 56 	      db.b	1, $3a, $56
+   2125  14ff		       02 80 c0 	      db.b	2, $80, $c0
+   2126  1502		       20 54 52 41*	      db.b	$20,$54,$52,$41,$55,$4e,$45,$52
+   2127  150a		       00		      db.b	0
+   2128  150b
+   2129  1800		       00 00 00 00*	      align	4096-header

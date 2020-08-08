@@ -1,0 +1,10 @@
+------- FILE badopcode1.asm LEVEL 1 PASS 1
+      1  0000 ????						; Thomas Jentzsch <tjentzsch@web.de> test case for bug
+      2  0000 ????						; in error handling.
+      3  0000 ????
+      4  0000 ????				      processor	6502
+      5  0000 ????
+      6  f800					      ORG	$f800
+badopcode1.asm (7): error: Unknown Mnemonic 'ldz'.
+      7  f800					      ldz	#$00	; illegal mnemonic
+      8  f800

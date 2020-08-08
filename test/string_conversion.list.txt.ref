@@ -1,0 +1,54 @@
+------- FILE string_conversion.asm LEVEL 1 PASS 3
+      1  0823 ????						; Bug in string conversion.
+      2  0823 ????						; Reported 2007/08/25 by Eduardo Casino Almao <casino_e@movistar.es>
+      3  0823 ????
+      4  0823 ????						; I've found a bug in the string conversion feature ([exp]d) I'm using
+      5  0823 ????						; version 2.20.10b
+      6  0823 ????						;
+      7  0823 ????						; Basically, if exp is a not-yet-resolved label, the assembler aborts with
+      8  0823 ????						; "program.a: (XX): error Label mismatch...
+      9  0823 ????
+     10  0823 ????				      processor	6502
+     11  0823 ????
+     12  0801					      org	$0801
+     13  0801
+     14  0801		       1f 08		      word.w	endprg	; pointer to next line
+     15  0803		       b0 07		      word.w	1968	; line number
+     16  0805		       9e		      byte.b	$9e	; SYS token
+     17  0806		       32 30 38 32	      byte.b	[start]d	; ASCII of SYS address
+     18  080a		       20 54 45 53*	      byte.b	" TESTPROG BY TESTSOFT"	; Show copyright
+     19  081f		       00 00 00    endprg     byte.b	0,0,0	; End of BASIC program
+     20  0822
+     21  0822		       60	   start      rts
+     22  0823
+     23  0823							; The assembler outputs:
+     24  0823							;
+     25  0823							; DASM V2.20.10, Macro Assembler (C)1988-2004
+     26  0823							; testcase.a (13): error: Label mismatch...
+     27  0823							;  --> endprg 081c
+     28  0823							; testcase.a (16): error: Label mismatch...
+     29  0823							;  --> start 081f
+     30  0823							; Unrecoverable error(s) in pass, aborting assembly!
+     31  0823							; Complete.
+     32  0823							;
+     33  0823							; The offending code is in symbols.c, lines 203 to 210. I think that there
+     34  0823							; should be an extra condition, so if in the previous pass it has been a
+     35  0823							; string conversion, just go for another pass.
+     36  0823							;
+     37  0823							; -----CUT-----
+     38  0823							;	      /*
+     39  0823							;	      * If we had an unevaluated IF expression in the
+     40  0823							;	      * previous pass, don't complain about phase errors
+     41  0823							;	      * too loudly.
+     42  0823							;		  */
+     43  0823							; 203		  if (F_verbose >= 1 || !(Redo_if & (REASON_OBSCURE)))
+     44  0823							;		  {
+     45  0823							;		      char sBuffer[ MAX_SYM_LEN * 2 ];
+     46  0823							;		      sprintf( sBuffer, "%s %s", sym->name, sftos( sym->value, 0 ) );
+     47  0823							;		      /*, sftos(sym->value,
+     48  0823							;		      sym->flags) ); , sftos(pc, cflags & 7));*/
+     49  0823							;		      asmerr( ERROR_LABEL_MISMATCH, false, sBuffer );
+     50  0823							; 210		  }
+     51  0823							;		  ++Redo;
+     52  0823							;		  Redo_why |= REASON_PHASE_ERROR;
+     53  0823							; -----CUT-----

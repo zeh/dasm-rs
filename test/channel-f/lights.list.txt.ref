@@ -1,0 +1,1261 @@
+------- FILE channel-f/lights.asm LEVEL 1 PASS 2
+      1  1000 ????						; Sean Riddle's lights.asm, the first reallife program ever assembled
+      2  1000 ????						; by dasm2. The usual modifications to f8tool source were needed:
+      3  1000 ????						; - Needed to add the processor directive at the top of the source.
+      4  1000 ????						; - Needed to indent the org directives because dasm2 would parse
+      5  1000 ????						;   them as labels.
+      6  1000 ????						; - The first org directive sets the org fill value to 0, since this
+      7  1000 ????						;   is what f8tool uses and the reference binary was assembled with
+      8  1000 ????						;   f8tool.
+      9  1000 ????						;
+     10  1000 ????						;lights out
+     11  1000 ????						;by Sean Riddle
+     12  1000 ????						;6/2004
+     13  1000 ????						;members.cox.net/seanriddle
+     14  1000 ????						;
+     15  1000 ????						; Copyright (C) 2004 Sean Riddle (members.cox.net/seanriddle)
+     16  1000 ????						;
+     17  1000 ????						; lights is free software; you can redistribute it and/or modify
+     18  1000 ????						; it under the terms of the GNU General Public License as published by
+     19  1000 ????						; the Free Software Foundation; either version 2 of the License, or
+     20  1000 ????						; (at your option) any later version.
+     21  1000 ????						;
+     22  1000 ????						; lights is distributed in the hope that it will be useful,
+     23  1000 ????						; but WITHOUT ANY WARRANTY; without even the implied warranty of
+     24  1000 ????						; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     25  1000 ????						; GNU General Public License for more details.
+     26  1000 ????						;
+     27  1000 ????						; You should have received a copy of the GNU General Public License
+     28  1000 ????						; along with lights; if not, write to the Free Software
+     29  1000 ????						; Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+     30  1000 ????
+     31  1000 ????						;for the Channel F multigame
+     32  1000 ????						;it will play in MESS
+     33  1000 ????						;it requires MG RAM at $2800 (could be rewritten to use regs only)
+     34  1000 ????
+     35  1000 ????						;instructions:
+     36  1000 ????						;make all lights green
+     37  1000 ????						;l/r/u/d moves cursor
+     38  1000 ????						;push down toggles lights
+     39  1000 ????						;pull up replays current pattern
+     40  1000 ????						;when complete, the count of moves is shown
+     41  1000 ????						;then up replays pattern, down goes to next random
+     42  1000 ????						;after all 64 patterns are played randomly, the complements (red<->green) are played
+     43  1000 ????
+     44  1000 ????						;game 1 is normal - all included patterns are solvable
+     45  1000 ????						;game 2 is on a torus (wrap-around) !!! not all included patterns are solvable on a torus
+     46  1000 ????						;game 3 is lit-only (only lit buttons can be pressed)
+     47  1000 ????
+     48  1000 ????						;mode 1 toggles self and u/d/l/r neighbors - + pattern
+     49  1000 ????						;mode 2 only toggles u/d/l/r neighbors !!! not all included patterns are solvable in this mode
+     50  1000 ????						;mode 3 toggles self and nw/ne/sw/se neighbors - X pattern
+     51  1000 ????						;mode 4 toggles nw/ne/sw/ne - X not self
+     52  1000 ????
+     53  1000 ????						;todo:
+     54  1000 ????						;build game 2 or mode 2 patterns from random legal moves
+     55  1000 ????						;add random legal moves to patterns to create more
+     56  1000 ????						;rotate, invert patterns randomly for more variation
+     57  1000 ????						;three-state red, green, gray
+     58  1000 ????						;L modes
+     59  1000 ????						;more symbols-greek, smilies, arcade,
+     60  1000 ????						;currently 12 bytes short of 2K, but there's lots more room
+     61  1000 ????
+     62  1000 ????						;egg - certain game/mode combo, solve certain pattern in minimum moves
+     63  1000 ????
+     64  1000 ????				      processor	f8
+     65  1000 ????
+     66  1000 ????						;BIOS calls
+     67  1000 ????	       00 d0	   clrscrn    equ	$00d0	;uses r31
+     68  1000 ????	       00 8f	   delay      equ	$008f
+     69  1000 ????	       01 07	   pushk      equ	$0107	;used to allow more subroutine stack space
+     70  1000 ????	       01 1e	   popk       equ	$011e
+     71  1000 ????	       06 79	   drawchar   equ	$0679
+     72  1000 ????
+     73  1000 ????	       28 00	   array      equ	$2800	;use Schach RAM to hold current state of 25 lights
+     74  1000 ????	       29 00	   history    equ	$2900	;patterns we have already used, so we don't repeat
+     75  1000 ????	       2a 00	   temp4      equ	$2a00	;temp storage of 4 bytes
+     76  1000 ????
+     77  0800					      org	$800,0
+     78  0800		       55	   CartridgeStart db.b	$55	; valid cart indicator
+     79  0801		       2b		      NOP		; unused byte
+     80  0802
+     81  0802				   CartridgeEntry
+     82  0802		       70		      LIS	$0	; init the h/w
+     83  0803		       b1		      OUTS	1
+     84  0804		       b4		      OUTS	4
+     85  0805		       b5		      OUTS	5
+     86  0806		       b0		      OUTS	0
+     87  0807
+     88  0807		       64		      lisu	4	;r32=complement flag
+     89  0808		       68		      lisl	0
+     90  0809		       5c		      lr	(IS),a
+     91  080a
+     92  080a		       20 d6		      LI	$d6	;
+     93  080c		       53		      LR	$3,A	; clear screen to gray
+     94  080d		       28 00 d0 	      PI	clrscrn	;
+     95  0810
+     96  0810		       20 11		      li	$11
+     97  0812		       63		      lisu	3	;init R30 game 1, mode 1
+     98  0813		       6e		      lisl	6
+     99  0814		       5c		      lr	(IS),a
+    100  0815
+    101  0815		       20 4a		      li	$4a	;display G? prompt
+    102  0817		       50		      lr	0,a
+    103  0818		       28 0c 38 	      pi	prompt
+    104  081b		       44		      lr	a,4
+    105  081c		       15		      sl	4
+    106  081d		       63		      lisu	3	;r30 low nibble = game
+    107  081e		       6e		      lisl	6
+    108  081f		       5c		      lr	(IS),a	;game 1 - normal, game 2 - wraparound; game 3 - lit only
+    109  0820
+    110  0820		       28 0c 14 	      pi	prompts	;display S?/M? ; mode 1 normal, mode 2 no center toggle
+    111  0823
+    112  0823				   clrhist		;clear history of patterns presented
+    113  0823		       2a 29 00 	      dci	history
+    114  0826		       20 41		      li	$41	; # of patterns +1
+    115  0828		       50		      lr	0,a
+    116  0829				   clrhist2
+    117  0829		       70		      lis	0
+    118  082a		       17		      st
+    119  082b		       30		      ds	0
+    120  082c		       94 fc		      bf	4,clrhist2
+    121  082e
+    122  082e				   nextpat
+    123  082e		       62		      lisu	2	;random #
+    124  082f		       6d		      lisl	5
+    125  0830		       4c		      lr	a,(IS)
+    126  0831
+    127  0831		       63		      lisu	3
+    128  0832		       6d		      lisl	5
+    129  0833		       cc		      as	(IS)	;add to current pattern...
+    130  0834		       21 3f		      ni	$3f	;...mod 64...
+    131  0836		       5c		      lr	(IS),a	;...to get next pattern
+    132  0837
+    133  0837		       2a 29 00 	      dci	history	;check to see if we've already done this one
+    134  083a		       8e		      adc
+    135  083b		       0e		      lr	q,dc
+    136  083c		       16		      lm
+    137  083d		       21 ff		      ni	$ff
+    138  083f		       84 1a		      bt	4,unusedpat	;not yet used, display it
+    139  0841
+    140  0841							;pattern already used, check for unused from top
+    141  0841							;if not found, clear array and start over
+    142  0841
+    143  0841		       2a 29 00 	      dci	history
+    144  0844				   checknext
+    145  0844		       16		      lm
+    146  0845		       21 ff		      ni	$ff
+    147  0847		       94 fc		      bf	4,checknext	;will always complete because we zeroed 1 extra byte in clrhist
+    148  0849		       0e		      lr	q,dc
+    149  084a		       03		      lr	a,ql
+    150  084b		       24 ff		      ai	$ff	;lm moved us 1 past
+    151  084d		       07		      lr	ql,a
+    152  084e		       25 40		      ci	$40	;all done?
+    153  0850		       94 08		      bf	4,foundone
+    154  0852		       20 ff		      li	$ff
+    155  0854		       64		      lisu	4	; set flag to start complements (random/rotations later)
+    156  0855		       68		      lisl	0
+    157  0856		       5c		      lr	(IS),a
+    158  0857		       90 cb		      bf	0,clrhist	;no empty slots, start over
+    159  0859				   foundone
+    160  0859		       5c		      lr	(IS),a	;update the current pattern
+    161  085a
+    162  085a				   unusedpat
+    163  085a		       0f		      lr	dc,q	;mark it used
+    164  085b		       20 ff		      li	$ff
+    165  085d		       17		      st
+    166  085e
+    167  085e				   replay
+    168  085e		       63		      lisu	3	;current pattern # in r29
+    169  085f		       6d		      lisl	5
+    170  0860		       4c		      lr	a,(IS)
+    171  0861
+    172  0861		       2a 0d b9 	      dci	pats
+    173  0864		       8e		      adc		; add cur pat to data pointer 5 times to get to the pat data
+    174  0865		       8e		      adc
+    175  0866		       8e		      adc
+    176  0867		       8e		      adc
+    177  0868		       8e		      adc
+    178  0869
+    179  0869		       62	   getpat     lisu	2	;read bit pattern into regs 16-20
+    180  086a		       68		      lisl	0
+    181  086b		       75		      lis	5
+    182  086c		       51		      lr	1,a
+    183  086d				   getpatloop
+    184  086d		       16		      lm
+    185  086e		       5d		      lr	(is)+,a
+    186  086f		       31		      ds	1
+    187  0870		       94 fc		      bf	4,getpatloop
+    188  0872
+    189  0872		       2a 28 00 	      dci	array	;put byte pattern into RAM
+    190  0875		       75		      lis	5
+    191  0876		       52		      lr	2,a
+    192  0877
+    193  0877		       64		      lisu	4	;first time through 0, next time FF
+    194  0878		       68		      lisl	0
+    195  0879		       4c		      lr	a,(IS)
+    196  087a		       53		      lr	3,a	;temp
+    197  087b
+    198  087b		       62		      lisu	2
+    199  087c		       68		      lisl	0
+    200  087d				   storepatloop2
+    201  087d		       75		      lis	5
+    202  087e		       51		      lr	1,a
+    203  087f		       4d		      lr	a,(is)+
+    204  0880				   storepatloop
+    205  0880		       50		      lr	0,a
+    206  0881		       21 ff		      ni	$ff
+    207  0883
+    208  0883		       43		      lr	a,3
+    209  0884
+    210  0884		       91 03		      bf	1,onebit
+    211  0886		       90 02		      bf	0,storepat
+    212  0888				   onebit
+    213  0888		       18		      com
+    214  0889				   storepat
+    215  0889		       17		      st
+    216  088a		       40		      lr	a,0
+    217  088b		       13		      sl	1
+    218  088c		       50		      lr	0,a
+    219  088d		       31		      ds	1
+    220  088e		       94 f1		      bf	4,storepatloop
+    221  0890		       32		      ds	2
+    222  0891		       94 eb		      bf	4,storepatloop2
+    223  0893
+    224  0893		       70		      lis	0	;init variables to 0
+    225  0894		       63		      lisu	3
+    226  0895		       68		      lisl	0
+    227  0896		       5d		      lr	(IS)+,a	;r24=row (3:0)
+    228  0897		       5d		      lr	(IS)+,a	;r25=col (3:1)
+    229  0898		       5d		      lr	(IS)+,a	;r26=cursor (3:2)
+    230  0899		       5d		      lr	(IS)+,a	;r27=array index (3:3)
+    231  089a		       5d		      lr	(IS)+,a	;r28=parameter to toggle sub (3:4)
+    232  089b		       62		      lisu	2
+    233  089c		       6e		      lisl	6
+    234  089d		       5d		      lr	(IS)+,a	;r22=press counter lo (2:6)
+    235  089e		       5d		      lr	(IS)+,a	;r23=press counter hi (2:7)
+    236  089f
+    237  089f		       2a 0c 75 	      dci	grid	;draw the grid
+    238  08a2		       28 0b 4f 	      pi	drawlines
+    239  08a5
+    240  08a5							;draw lights
+    241  08a5		       20 18		      li	24	;array index
+    242  08a7		       63		      lisu	3
+    243  08a8		       6b		      lisl	3
+    244  08a9		       5c		      lr	(IS),a
+    245  08aa				   sqloop
+    246  08aa		       28 0b 8e 	      pi	drawlight
+    247  08ad		       63		      lisu	3
+    248  08ae		       6b		      lisl	3
+    249  08af		       4c		      lr	a,(IS)
+    250  08b0		       24 ff		      ai	$ff
+    251  08b2		       5c		      lr	(IS),a
+    252  08b3		       82 f6		      bt	2,sqloop	;branch if >= 0
+    253  08b5
+    254  08b5		       2a 0c e7 	      dci	currows
+    255  08b8		       16		      lm
+    256  08b9		       55		      lr	5,a	;upper row
+    257  08ba		       2a 0c ec 	      dci	curcols
+    258  08bd		       16		      lm
+    259  08be		       54		      lr	4,a	;left col
+    260  08bf		       2a 0c ac 	      dci	cursor	;start with the cursor in light 0
+    261  08c2		       28 0b 22 	      pi	square
+    262  08c5
+    263  08c5				   mainloop
+    264  08c5		       28 0a cf 	      pi	readhc
+    265  08c8		       50		      lr	0,a	;save controller input
+    266  08c9		       62		      lisu	2	;inc random seed
+    267  08ca		       6d		      lisl	5
+    268  08cb		       4c		      lr	a,(IS)
+    269  08cc		       1f		      inc
+    270  08cd		       5c		      lr	(IS),a
+    271  08ce
+    272  08ce							; redraw current square without cursor
+    273  08ce		       63		      lisu	3
+    274  08cf		       6a		      lisl	2
+    275  08d0		       4d		      lr	a,(IS)+
+    276  08d1		       5c		      lr	(IS),a
+    277  08d2		       28 0b 8e 	      pi	drawlight
+    278  08d5
+    279  08d5		       40		      lr	a,0
+    280  08d6		       21 0c		      ni	$0c
+    281  08d8		       84 20		      bt	4,notupdn
+    282  08da		       25 08		      ci	$08
+    283  08dc		       94 0d		      bf	4,down
+    284  08de		       63		      lisu	3	;up
+    285  08df		       68		      lisl	0	;r24 is row
+    286  08e0		       3c		      ds	(IS)	;prev row
+    287  08e1		       92 04		      bf	2,minrow	;>=0?
+    288  08e3				   updcurx
+    289  08e3		       29 09 bb 	      jmp	updcur
+    290  08e6				   minrow
+    291  08e6		       74		      lis	4
+    292  08e7		       5c		      lr	(IS),a
+    293  08e8		       90 fa		      bf	0,updcurx
+    294  08ea				   down
+    295  08ea		       63		      lisu	3
+    296  08eb		       68		      lisl	0
+    297  08ec		       4c		      lr	a,(IS)
+    298  08ed		       1f		      inc		;next row
+    299  08ee		       5c		      lr	(IS),a
+    300  08ef		       25 05		      ci	5	;too far?
+    301  08f1		       84 03		      bt	4,maxrow
+    302  08f3		       90 ef		      bf	0,updcurx
+    303  08f5				   maxrow
+    304  08f5		       70		      lis	0
+    305  08f6		       5c		      lr	(IS),a
+    306  08f7		       90 eb		      bf	0,updcurx
+    307  08f9				   notupdn
+    308  08f9		       40		      lr	a,0
+    309  08fa		       21 03		      ni	$03
+    310  08fc		       84 1d		      bt	4,notlfrt
+    311  08fe		       25 02		      ci	$02
+    312  0900		       94 0c		      bf	4,right
+    313  0902		       63		      lisu	3	;left
+    314  0903		       69		      lisl	1	;r25 is col
+    315  0904		       3c		      ds	(IS)	;prev col
+    316  0905		       92 03		      bf	2,prevcol	;>=0?
+    317  0907		       90 db		      bf	0,updcurx
+    318  0909				   prevcol
+    319  0909		       74		      lis	4
+    320  090a		       5c		      lr	(IS),a
+    321  090b		       90 d7		      bf	0,updcurx
+    322  090d				   right
+    323  090d		       63		      lisu	3
+    324  090e		       69		      lisl	1
+    325  090f		       4c		      lr	a,(IS)
+    326  0910		       1f		      inc		;next col
+    327  0911		       5c		      lr	(IS),a
+    328  0912		       25 05		      ci	5	;too far?
+    329  0914		       94 ce		      bf	4,updcurx
+    330  0916		       70		      lis	0
+    331  0917		       5c		      lr	(IS),a
+    332  0918		       90 ca		      bf	0,updcurx
+    333  091a				   notlfrt
+    334  091a		       40		      lr	a,0
+    335  091b		       21 c0		      ni	$c0
+    336  091d		       84 a7		      bt	4,mainloop
+    337  091f		       25 80		      ci	$80
+    338  0921		       84 04		      bt	4,pushdown
+    339  0923		       29 08 5e 	      jmp	replay	;pull up replays current pattern
+    340  0926
+    341  0926				   pushdown
+    342  0926		       63		      lisu	3
+    343  0927		       6e		      lisl	6
+    344  0928		       4c		      lr	a,(IS)
+    345  0929		       21 f0		      ni	$f0
+    346  092b		       25 40		      ci	$40	;if game=3, can only press lit buttons
+    347  092d		       94 20		      bf	4,allowpress
+    348  092f
+    349  092f		       63		      lisu	3
+    350  0930		       6a		      lisl	2	; get cursor loc
+    351  0931		       4c		      lr	a,(IS)
+    352  0932
+    353  0932		       2a 28 00 	      dci	array
+    354  0935		       8e		      adc
+    355  0936		       16		      lm
+    356  0937		       21 ff		      ni	$ff
+    357  0939		       94 14		      bf	4,allowpress
+    358  093b
+    359  093b							;make a bad sound
+    360  093b		       20 3f		      li	$3f
+    361  093d		       51		      lr	1,a
+    362  093e				   sndloop
+    363  093e		       20 80		      li	$80
+    364  0940		       b5		      outs	5
+    365  0941		       71		      lis	1
+    366  0942		       55		      lr	5,a
+    367  0943		       28 00 8f 	      pi	delay
+    368  0946		       70		      lis	0
+    369  0947		       b5		      outs	5
+    370  0948		       31		      ds	1
+    371  0949		       94 f4		      bf	4,sndloop
+    372  094b
+    373  094b		       29 09 bb 	      jmp	updcur
+    374  094e
+    375  094e				   allowpress
+    376  094e		       62		      lisu	2	;inc press counter
+    377  094f		       6e		      lisl	6
+    378  0950		       71		      lis	1
+    379  0951		       24 66		      ai	$66
+    380  0953		       dc		      asd	(IS)	;thanks Fredric!
+    381  0954		       5d		      lr	(IS)+,a
+    382  0955		       92 06		      bf	2,nocarry
+    383  0957		       71		      lis	1
+    384  0958		       24 66		      ai	$66
+    385  095a		       dc		      asd	(IS)
+    386  095b		       5c		      lr	(IS),a
+    387  095c				   nocarry
+    388  095c		       63		      lisu	3
+    389  095d		       6e		      lisl	6	;if mode=2 or 4, no center toggle
+    390  095e		       4c		      lr	a,(IS)
+    391  095f		       21 0f		      ni	$f	;mode in low nibble
+    392  0961		       25 02		      ci	$2
+    393  0963		       84 0d		      bt	4,nocenter
+    394  0965		       25 08		      ci	$8
+    395  0967		       84 09		      bt	4,nocenter
+    396  0969
+    397  0969		       63		      lisu	3
+    398  096a		       6a		      lisl	2	; get cursor loc
+    399  096b		       4c		      lr	a,(IS)
+    400  096c
+    401  096c		       6c		      lisl	4
+    402  096d		       5c		      lr	(IS),a
+    403  096e		       28 0a fc 	      pi	toggle	;toggle center light
+    404  0971
+    405  0971				   nocenter
+    406  0971		       2a 0c f1 	      dci	plustable
+    407  0974		       63		      lisu	3
+    408  0975		       6e		      lisl	6	;if mode=3 or 4, X toggle
+    409  0976		       4c		      lr	a,(IS)
+    410  0977		       21 0f		      ni	$f	;mode in low nibble
+    411  0979		       25 04		      ci	$4
+    412  097b		       84 07		      bt	4,xtoggle	;mode 3, X toggle
+    413  097d		       25 08		      ci	$8
+    414  097f		       84 03		      bt	4,xtoggle	;mode 4, X toggle
+    415  0981		       90 04		      bf	0,dotoggle
+    416  0983
+    417  0983				   xtoggle
+    418  0983		       2a 0d 55 	      dci	xtable
+    419  0986				   dotoggle
+    420  0986		       6a		      lisl	2
+    421  0987		       4c		      lr	a,(IS)	;get cursor loc
+    422  0988		       cc		      as	(IS)
+    423  0989		       cc		      as	(IS)
+    424  098a		       cc		      as	(IS)	;*4 for table offset
+    425  098b		       8e		      adc
+    426  098c		       16		      lm		;get 4 neighbors
+    427  098d		       50		      lr	0,a
+    428  098e		       16		      lm
+    429  098f		       51		      lr	1,a
+    430  0990		       16		      lm
+    431  0991		       52		      lr	2,a
+    432  0992		       16		      lm
+    433  0993
+    434  0993		       2a 2a 00 	      dci	temp4	;store them temporarily
+    435  0996		       17		      st		;t4
+    436  0997		       42		      lr	a,2
+    437  0998		       17		      st		;t3
+    438  0999		       41		      lr	a,1
+    439  099a		       17		      st		;t2
+    440  099b		       40		      lr	a,0
+    441  099c		       17		      st		;t1
+    442  099d
+    443  099d		       2a 2a 00 	      dci	temp4	;toggle each neighbor
+    444  09a0		       20 03		      li	3
+    445  09a2		       8e		      adc
+    446  09a3		       28 0a e1 	      pi	togglem	;t1
+    447  09a6
+    448  09a6		       2a 2a 00 	      dci	temp4
+    449  09a9		       16		      lm
+    450  09aa		       16		      lm
+    451  09ab		       28 0a e1 	      pi	togglem	;t2
+    452  09ae
+    453  09ae		       2a 2a 00 	      dci	temp4
+    454  09b1		       16		      lm
+    455  09b2		       28 0a e1 	      pi	togglem	;t3
+    456  09b5
+    457  09b5		       2a 2a 00 	      dci	temp4
+    458  09b8		       28 0a e1 	      pi	togglem	;t4
+    459  09bb
+    460  09bb				   updcur
+    461  09bb		       63		      lisu	3	;calc index from row and col
+    462  09bc		       68		      lisl	0
+    463  09bd		       4c		      lr	a,(IS)
+    464  09be		       cc		      as	(IS)
+    465  09bf		       cc		      as	(IS)
+    466  09c0		       cc		      as	(IS)
+    467  09c1		       cc		      as	(IS)	;row * 5
+    468  09c2
+    469  09c2		       63		      lisu	3
+    470  09c3		       69		      lisl	1
+    471  09c4		       cd		      as	(IS)+	;add in col
+    472  09c5		       5c		      lr	(IS),a
+    473  09c6
+    474  09c6		       2a 0c e7 	      dci	currows	;get row and column to draw cursor
+    475  09c9		       63		      lisu	3
+    476  09ca		       68		      lisl	0
+    477  09cb		       4d		      lr	a,(IS)+
+    478  09cc		       8e		      adc
+    479  09cd		       16		      lm
+    480  09ce		       55		      lr	5,a
+    481  09cf
+    482  09cf		       2a 0c ec 	      dci	curcols
+    483  09d2		       4c		      lr	a,(IS)
+    484  09d3		       8e		      adc
+    485  09d4		       16		      lm
+    486  09d5		       54		      lr	4,a
+    487  09d6
+    488  09d6		       2a 0c ac 	      dci	cursor	;draw the cursor
+    489  09d9		       28 0b 22 	      pi	square
+    490  09dc
+    491  09dc		       20 3f		      LI	$3F	;debounce by pausing a while
+    492  09de		       55		      LR	5,A
+    493  09df		       28 00 8f 	      pi	delay
+    494  09e2
+    495  09e2							;check for all green (win)
+    496  09e2		       2a 28 00 	      dci	array
+    497  09e5		       20 18		      li	24	;array index
+    498  09e7		       63		      lisu	3
+    499  09e8		       6b		      lisl	3
+    500  09e9		       5c		      lr	(IS),a
+    501  09ea				   chkloop
+    502  09ea		       16		      lm
+    503  09eb		       21 ff		      ni	$ff
+    504  09ed		       84 04		      bt	4,lighton
+    505  09ef		       29 08 c5 	      jmp	mainloop	;not a win
+    506  09f2				   lighton
+    507  09f2		       63		      lisu	3
+    508  09f3		       6b		      lisl	3
+    509  09f4		       4c		      lr	a,(IS)
+    510  09f5		       24 ff		      ai	$ff
+    511  09f7		       5c		      lr	(IS),a
+    512  09f8		       82 f1		      bt	2,chkloop
+    513  09fa
+    514  09fa							;made it here, all off
+    515  09fa							;make a winning sound
+    516  09fa		       20 3f		      li	$3f
+    517  09fc		       51		      lr	1,a
+    518  09fd				   snd2loop
+    519  09fd		       20 40		      li	$40
+    520  09ff		       b5		      outs	5
+    521  0a00
+    522  0a00		       41		      lr	a,1
+    523  0a01				   snd2loopa
+    524  0a01		       1f		      inc
+    525  0a02		       94 fe		      bf	4,snd2loopa
+    526  0a04
+    527  0a04		       70		      lis	0
+    528  0a05		       b5		      outs	5
+    529  0a06		       31		      ds	1
+    530  0a07		       94 f5		      bf	4,snd2loop
+    531  0a09
+    532  0a09		       20 20		      li	32	;draw 2 concentric squares
+    533  0a0b		       54		      lr	4,a
+    534  0a0c		       20 12		      li	18
+    535  0a0e		       55		      lr	5,a
+    536  0a0f		       2a 0c af 	      dci	winsq1
+    537  0a12		       28 0b 22 	      pi	square
+    538  0a15		       20 22		      li	34
+    539  0a17		       54		      lr	4,a
+    540  0a18		       20 14		      li	20
+    541  0a1a		       55		      lr	5,a
+    542  0a1b		       2a 0c b2 	      dci	winsq2
+    543  0a1e		       28 0b 22 	      pi	square
+    544  0a21
+    545  0a21							;print # of moves from r23/22 (2:7/6)
+    546  0a21		       20 1e		      li	$1e	;row
+    547  0a23		       52		      lr	2,a
+    548  0a24		       62		      lisu	2	;1000s digit
+    549  0a25		       6f		      lisl	7
+    550  0a26		       4c		      lr	a,(IS)
+    551  0a27		       14		      sr	4
+    552  0a28		       84 0c		      bt	4,lt1000
+    553  0a2a		       22 40		      oi	$40
+    554  0a2c		       50		      lr	0,a
+    555  0a2d		       20 2a		      li	$2a
+    556  0a2f		       51		      lr	1,a
+    557  0a30		       28 06 79 	      pi	drawchar
+    558  0a33		       90 04		      bf	0,d100
+    559  0a35
+    560  0a35				   lt1000
+    561  0a35		       20 2c		      li	$2c
+    562  0a37		       51		      lr	1,a
+    563  0a38				   d100
+    564  0a38		       41		      lr	a,1
+    565  0a39		       1f		      inc
+    566  0a3a		       51		      lr	1,a
+    567  0a3b		       62		      lisu	2	;100s digit
+    568  0a3c		       6f		      lisl	7
+    569  0a3d		       4c		      lr	a,(IS)
+    570  0a3e		       21 0f		      ni	$f
+    571  0a40		       94 07		      bf	4,gt100
+    572  0a42		       4c		      lr	a,(IS)	;print 0 if x0yz where x > 0
+    573  0a43		       21 ff		      ni	$ff
+    574  0a45		       84 0a		      bt	4,lt100
+    575  0a47		       70		      lis	0
+    576  0a48
+    577  0a48				   gt100
+    578  0a48		       22 40		      oi	$40
+    579  0a4a		       50		      lr	0,a
+    580  0a4b		       28 06 79 	      pi	drawchar
+    581  0a4e		       90 04		      bf	0,d10
+    582  0a50
+    583  0a50				   lt100
+    584  0a50		       20 30		      li	$30
+    585  0a52		       51		      lr	1,a
+    586  0a53				   d10
+    587  0a53		       41		      lr	a,1
+    588  0a54		       1f		      inc
+    589  0a55		       51		      lr	1,a
+    590  0a56		       62		      lisu	2	;10s digit
+    591  0a57		       6e		      lisl	6
+    592  0a58		       4c		      lr	a,(IS)
+    593  0a59		       14		      sr	4
+    594  0a5a		       94 08		      bf	4,gt10
+    595  0a5c		       6f		      lisl	7	;print 0 if xy0z where x or y > 0
+    596  0a5d		       4c		      lr	a,(IS)
+    597  0a5e		       21 ff		      ni	$ff
+    598  0a60		       84 0a		      bt	4,lt10
+    599  0a62		       70		      lis	0
+    600  0a63				   gt10
+    601  0a63		       22 40		      oi	$40
+    602  0a65		       50		      lr	0,a
+    603  0a66		       28 06 79 	      pi	drawchar
+    604  0a69		       90 04		      bf	0,d1
+    605  0a6b
+    606  0a6b				   lt10
+    607  0a6b		       20 34		      li	$34
+    608  0a6d		       51		      lr	1,a
+    609  0a6e				   d1
+    610  0a6e		       41		      lr	a,1
+    611  0a6f		       1f		      inc
+    612  0a70		       51		      lr	1,a
+    613  0a71		       62		      lisu	2	;1s digit
+    614  0a72		       6e		      lisl	6
+    615  0a73		       4c		      lr	a,(IS)
+    616  0a74		       21 0f		      ni	$f
+    617  0a76		       22 40		      oi	$40
+    618  0a78		       50		      lr	0,a
+    619  0a79		       28 06 79 	      pi	drawchar
+    620  0a7c
+    621  0a7c				   waitupdn
+    622  0a7c		       28 0a cf 	      pi	readhc	;wait for hc up/down
+    623  0a7f		       21 c0		      ni	$c0
+    624  0a81		       84 fa		      bt	4,waitupdn
+    625  0a83		       21 80		      ni	$80
+    626  0a85		       84 04		      bt	4,redo
+    627  0a87		       29 08 2e 	      jmp	nextpat	;down - get next random pattern
+    628  0a8a
+    629  0a8a				   redo
+    630  0a8a		       63		      lisu	3
+    631  0a8b		       6e		      lisl	6
+    632  0a8c		       4c		      lr	a,(IS)
+    633  0a8d		       25 41		      ci	$41
+    634  0a8f		       94 3c		      bf	4,replay2
+    635  0a91
+    636  0a91		       6d		      lisl	5
+    637  0a92		       4c		      lr	a,(IS)
+    638  0a93		       25 33		      ci	51
+    639  0a95		       94 36		      bf	4,replay2
+    640  0a97
+    641  0a97		       62		      lisu	2
+    642  0a98		       6f		      lisl	7
+    643  0a99		       4e		      lr	a,(IS)-
+    644  0a9a		       25 00		      ci	0
+    645  0a9c		       94 2f		      bf	4,replay2
+    646  0a9e		       4c		      lr	a,(IS)
+    647  0a9f		       25 18		      ci	$18
+    648  0aa1		       94 2a		      bf	4,replay2
+    649  0aa3
+    650  0aa3		       20 d6		      LI	$d6
+    651  0aa5		       53		      LR	$3,A
+    652  0aa6		       28 00 d0 	      PI	clrscrn
+    653  0aa9
+    654  0aa9		       2a 0f 00 	      dci	blitparm
+    655  0aac		       28 0b bb 	      pi	blit
+    656  0aaf
+    657  0aaf		       20 3f		      li	$3f
+    658  0ab1		       51		      lr	1,a
+    659  0ab2				   snd3loop
+    660  0ab2		       20 40		      li	$40
+    661  0ab4		       b5		      outs	5
+    662  0ab5		       20 01		      li	$1
+    663  0ab7		       55		      lr	5,a
+    664  0ab8		       28 00 8f 	      pi	delay
+    665  0abb		       70		      lis	0
+    666  0abc		       b5		      outs	5
+    667  0abd		       31		      ds	1
+    668  0abe		       94 f3		      bf	4,snd3loop
+    669  0ac0
+    670  0ac0		       28 0a cf 	      pi	readhc
+    671  0ac3		       20 d6		      LI	$d6
+    672  0ac5		       53		      LR	$3,A
+    673  0ac6		       28 00 d0 	      PI	clrscrn
+    674  0ac9
+    675  0ac9		       29 08 2e 	      jmp	nextpat
+    676  0acc				   replay2
+    677  0acc		       29 08 5e 	      jmp	replay	;up - replay current pattern
+    678  0acf
+    679  0acf
+    680  0acf				   readhc		;wait until one of the hand controllers is moved
+    681  0acf		       70		      lis	0
+    682  0ad0		       b0		      outs	0
+    683  0ad1		       70		      lis	0
+    684  0ad2		       b4		      outs	4
+    685  0ad3		       a4		      ins	4
+    686  0ad4		       18		      com		;un-invert port data
+    687  0ad5		       21 cf		      ni	$cf	;mask off twists, since we don't use them
+    688  0ad7		       94 08		      bf	4,gothc
+    689  0ad9		       b1		      outs	1
+    690  0ada		       a1		      ins	1
+    691  0adb		       18		      com
+    692  0adc		       21 cf		      ni	$cf
+    693  0ade		       84 f0		      bt	4,readhc
+    694  0ae0		       1c	   gothc      pop
+    695  0ae1
+    696  0ae1
+    697  0ae1				   togglem		;change a square (index in memory) from red to green or vice versa
+    698  0ae1		       08		      lr	k,p
+    699  0ae2		       28 01 07 	      pi	pushk
+    700  0ae5
+    701  0ae5		       16		      lm
+    702  0ae6		       50		      lr	0,a
+    703  0ae7		       21 80		      ni	$80	;if high bit set, then this was a wrap
+    704  0ae9		       84 0a		      bt	4,notwrapped
+    705  0aeb
+    706  0aeb		       63		      lisu	3
+    707  0aec		       6e		      lisl	6	;if game=$2x, allow wrap-around
+    708  0aed		       4c		      lr	a,(IS)
+    709  0aee		       21 f0		      ni	$f0	;mode in low nibble
+    710  0af0		       25 20		      ci	$20
+    711  0af2		       94 2b		      bf	4,toggleexit2	;no wrap allowed
+    712  0af4
+    713  0af4				   notwrapped
+    714  0af4		       40		      lr	a,0
+    715  0af5		       21 7f		      ni	$7f	;strip off "wrapped" bit
+    716  0af7		       63		      lisu	3
+    717  0af8		       6c		      lisl	4
+    718  0af9		       5c		      lr	(IS),a
+    719  0afa		       90 08		      bf	0,toggle2
+    720  0afc
+    721  0afc				   toggle		;change a square (index in r28) from red to green or vice versa
+    722  0afc		       08		      lr	k,p
+    723  0afd		       28 01 07 	      pi	pushk
+    724  0b00
+    725  0b00		       63		      lisu	3
+    726  0b01		       6c		      lisl	4
+    727  0b02		       4c		      lr	a,(IS)
+    728  0b03				   toggle2
+    729  0b03		       2a 28 00 	      dci	array
+    730  0b06		       8e		      adc
+    731  0b07		       16		      lm
+    732  0b08		       21 ff		      ni	$ff
+    733  0b0a		       4c		      lr	a,(IS)
+    734  0b0b		       2a 28 00 	      dci	array
+    735  0b0e		       8e		      adc
+    736  0b0f		       84 04		      bt	4,notset
+    737  0b11		       70		      lis	0
+    738  0b12		       90 03		      bf	0,toggleexit
+    739  0b14				   notset
+    740  0b14		       20 ff		      li	$ff
+    741  0b16
+    742  0b16				   toggleexit
+    743  0b16		       17		      st
+    744  0b17		       63		      lisu	3
+    745  0b18		       6c		      lisl	4
+    746  0b19		       4e		      lr	a,(IS)-
+    747  0b1a		       5c		      lr	(IS),a
+    748  0b1b		       28 0b 8e 	      pi	drawlight
+    749  0b1e				   toggleexit2
+    750  0b1e		       28 01 1e 	      pi	popk
+    751  0b21		       0c		      pk
+    752  0b22
+    753  0b22
+    754  0b22				   square		;draw a square
+    755  0b22							; dci to color,width,height
+    756  0b22							;r5=upper row
+    757  0b22							;r4=left col
+    758  0b22							; uses r2,r3,r6
+    759  0b22		       08		      lr	k,p
+    760  0b23		       28 01 07 	      pi	pushk
+    761  0b26		       16		      lm
+    762  0b27		       b1		      outs	1	;set the color
+    763  0b28
+    764  0b28		       45		      lr	a,5
+    765  0b29		       18		      com
+    766  0b2a		       b5		      outs	5	;set the row
+    767  0b2b
+    768  0b2b		       16		      lm		;
+    769  0b2c		       55		      lr	5,a	;save the width
+    770  0b2d
+    771  0b2d		       16		      lm
+    772  0b2e		       53		      lr	3,a	;store the height
+    773  0b2f
+    774  0b2f				   squarev
+    775  0b2f		       44		      lr	a,4
+    776  0b30		       52		      lr	2,a	;save col
+    777  0b31		       45		      lr	a,5	;get width
+    778  0b32		       56	   squareh    lr	6,a	;save temp
+    779  0b33
+    780  0b33		       42		      lr	a,2
+    781  0b34		       18		      com
+    782  0b35		       b4		      outs	4	;set the col
+    783  0b36		       42		      lr	a,2
+    784  0b37		       1f		      inc		;next col
+    785  0b38		       52		      lr	2,a
+    786  0b39
+    787  0b39		       28 0b 82 	      pi	plot
+    788  0b3c
+    789  0b3c		       46		      lr	a,6
+    790  0b3d		       24 ff		      ai	$ff
+    791  0b3f		       94 f2		      bf	4,squareh	;all done w/row
+    792  0b41
+    793  0b41		       a5		      ins	5	;next row
+    794  0b42		       24 ff		      ai	$ff	;complement, so subtract 1
+    795  0b44		       b5		      outs	5
+    796  0b45
+    797  0b45		       43		      lr	a,3
+    798  0b46		       24 ff		      ai	$ff
+    799  0b48		       53		      lr	3,a
+    800  0b49		       94 e5		      bf	4,squarev	;done full height?
+    801  0b4b		       28 01 1e 	      pi	popk
+    802  0b4e		       0c		      pk
+    803  0b4f
+    804  0b4f
+    805  0b4f				   drawlines		; dci to table of	color,len,row,start col (horiz if len<$80)
+    806  0b4f							;					color,len,col,start row (vert if len>$80)
+    807  0b4f							;					repeat until $FF
+    808  0b4f							;uses r5
+    809  0b4f		       08		      lr	k,p
+    810  0b50				   line2
+    811  0b50		       16		      lm
+    812  0b51		       25 ff		      ci	$ff
+    813  0b53		       84 19		      bt	4,lineexit	;ff means done
+    814  0b55		       b1		      outs	1	;set the color
+    815  0b56
+    816  0b56		       16		      lm		;get len
+    817  0b57		       21 ff		      ni	$ff	;lm doesn't set status flags
+    818  0b59		       91 14		      bf	1,vline	;vertical lines are negative (and sign bit backwards)
+    819  0b5b		       55		      lr	5,a	;horiz-save len
+    820  0b5c		       16		      lm
+    821  0b5d		       18		      com
+    822  0b5e		       b5		      outs	5	;set the row
+    823  0b5f		       16		      lm		;get starting column
+    824  0b60				   hline2
+    825  0b60		       18		      com
+    826  0b61		       b4		      outs	4	;set the column
+    827  0b62		       28 0b 82 	      pi	plot
+    828  0b65		       35		      ds	5
+    829  0b66		       84 e9		      bt	4,line2
+    830  0b68		       a4		      ins	4	;
+    831  0b69		       18		      com
+    832  0b6a		       1f		      inc
+    833  0b6b		       90 f4		      bf	0,hline2
+    834  0b6d				   lineexit
+    835  0b6d		       0c		      pk
+    836  0b6e
+    837  0b6e				   vline
+    838  0b6e		       21 3f		      ni	$3f	;mask off sign bit, limit len to 63 (height of screen)
+    839  0b70		       55		      lr	5,a	;save it
+    840  0b71		       16		      lm
+    841  0b72		       18		      com
+    842  0b73		       b4		      outs	4	;set the column
+    843  0b74		       16		      lm		;get starting row
+    844  0b75				   vline2
+    845  0b75		       18		      com
+    846  0b76		       b5		      outs	5	;set the row
+    847  0b77		       28 0b 82 	      pi	plot
+    848  0b7a		       35		      ds	5
+    849  0b7b		       84 d4		      bt	4,line2
+    850  0b7d		       a5		      ins	5
+    851  0b7e		       18		      com
+    852  0b7f		       1f		      inc
+    853  0b80		       90 f4		      bf	0,vline2
+    854  0b82
+    855  0b82
+    856  0b82				   plot 		;this is what you have to do to transfer data to the screen memory
+    857  0b82							;after setting row, column and color
+    858  0b82		       20 60		      li	$60
+    859  0b84		       b0		      outs	0
+    860  0b85		       20 50		      li	$50
+    861  0b87		       b0		      outs	0
+    862  0b88		       76		      lis	6	; little delay
+    863  0b89		       24 ff	   pdelay     ai	$ff
+    864  0b8b		       94 fd		      bf	4,pdelay
+    865  0b8d		       1c		      pop
+    866  0b8e
+    867  0b8e
+    868  0b8e				   drawlight		;draws a red or green square based off value passed in r27
+    869  0b8e		       08		      lr	k,p
+    870  0b8f		       28 01 07 	      pi	pushk
+    871  0b92
+    872  0b92		       63		      lisu	3
+    873  0b93		       6b		      lisl	3
+    874  0b94		       4c		      lr	a,(IS)
+    875  0b95		       2a 0c b5 	      dci	sqrows
+    876  0b98		       8e		      adc
+    877  0b99		       16		      lm
+    878  0b9a		       55		      lr	5,a
+    879  0b9b
+    880  0b9b		       4c		      lr	a,(IS)
+    881  0b9c		       2a 0c ce 	      dci	sqcols
+    882  0b9f		       8e		      adc
+    883  0ba0		       16		      lm
+    884  0ba1		       54		      lr	4,a
+    885  0ba2
+    886  0ba2		       4c		      lr	a,(IS)	; read color from array
+    887  0ba3		       2a 28 00 	      dci	array
+    888  0ba6		       8e		      adc
+    889  0ba7		       16		      lm
+    890  0ba8		       21 ff		      ni	$ff
+    891  0baa		       84 06		      bt	4,dogreen
+    892  0bac		       2a 0c a6 	      dci	redsq
+    893  0baf		       90 04		      bf	0,dosq
+    894  0bb1				   dogreen
+    895  0bb1		       2a 0c a9 	      dci	greensq
+    896  0bb4				   dosq
+    897  0bb4		       28 0b 22 	      pi	square
+    898  0bb7		       28 01 1e 	      pi	popk
+    899  0bba		       0c		      pk
+    900  0bbb
+    901  0bbb							;blit code from cart 26
+    902  0bbb				   blit
+    903  0bbb		       08		      LR	K,P
+    904  0bbc		       28 01 07 	      pi	pushk
+    905  0bbf		       60		      LISU	0
+    906  0bc0				   blitloop
+    907  0bc0		       6c		      LISL	4
+    908  0bc1				   getparms
+    909  0bc1		       16		      LM
+    910  0bc2		       5e		      LR	(IS)-,A
+    911  0bc3		       8f fd		      BR7	getparms
+    912  0bc5		       16		      LM
+    913  0bc6		       11		      LR	H,DC
+    914  0bc7		       2a 0f 00 	      DCI	blitparm
+    915  0bca		       8e		      ADC
+    916  0bcb
+    917  0bcb		       71		      LIS	1
+    918  0bcc		       57		      LR	$7,A
+    919  0bcd		       a5		      INS	5
+    920  0bce		       18		      COM
+    921  0bcf		       21 c0		      NI	$c0
+    922  0bd1		       c1		      AS	$1
+    923  0bd2		       18		      COM
+    924  0bd3				   blit2z
+    925  0bd3		       b5		      OUTS	5
+    926  0bd4		       33		      DS	$3
+    927  0bd5		       92 35		      BF	2,blitexit
+    928  0bd7		       42		      LR	A,$2
+    929  0bd8		       55		      LR	$5,A
+    930  0bd9		       40		      LR	A,$0
+    931  0bda		       18		      COM
+    932  0bdb				   blit2a
+    933  0bdb		       b4		      OUTS	4
+    934  0bdc		       37		      DS	$7
+    935  0bdd		       94 0c		      BF	4,blit2c
+    936  0bdf		       78		      LIS	8
+    937  0be0		       57		      LR	$7,A
+    938  0be1		       16		      LM
+    939  0be2		       56		      LR	$6,A
+    940  0be3		       71		      LIS	1
+    941  0be4		       f4		      NS	$4
+    942  0be5		       84 03		      BT	4,blit2b
+    943  0be7		       70		      LIS	0
+    944  0be8		       18		      COM
+    945  0be9				   blit2b
+    946  0be9		       8e		      ADC
+    947  0bea				   blit2c
+    948  0bea		       46		      LR	A,$6
+    949  0beb		       c6		      AS	$6
+    950  0bec		       56		      LR	$6,A
+    951  0bed		       44		      LR	A,$4
+    952  0bee		       82 02		      BT	2,blit2d
+    953  0bf0		       70		      LIS	0
+    954  0bf1				   blit2d
+    955  0bf1		       18		      COM
+    956  0bf2		       b1		      OUTS	1
+    957  0bf3		       76		      LIS	6
+    958  0bf4		       15		      SL	4
+    959  0bf5		       b0		      OUTS	0
+    960  0bf6		       13		      SL	1
+    961  0bf7		       b0		      OUTS	0
+    962  0bf8		       90 01		      BF	0,blit2e
+    963  0bfa				   blit2e
+    964  0bfa		       24 60		      AI	$60
+    965  0bfc		       94 fd		      BF	4,blit2e
+    966  0bfe		       35		      DS	$5
+    967  0bff		       84 06		      BT	4,blit2f
+    968  0c01		       a4		      INS	4
+    969  0c02		       24 ff		      AI	$ff
+    970  0c04		       90 d6		      BF	0,blit2a
+    971  0c06				   blit2f
+    972  0c06		       a5		      INS	5
+    973  0c07		       24 ff		      AI	$ff
+    974  0c09		       90 c9		      BF	0,blit2z
+    975  0c0b				   blitexit
+    976  0c0b
+    977  0c0b		       10		      LR	DC,H
+    978  0c0c		       72		      LIS	2
+    979  0c0d		       f4		      NS	$4
+    980  0c0e		       84 b1		      BT	4,blitloop
+    981  0c10		       28 01 1e 	      pi	popk
+    982  0c13		       0c		      PK
+    983  0c14
+    984  0c14
+    985  0c14							;from the BIOS, but I removed T? (time) prompt
+    986  0c14		       08	   prompts    LR	K,P	;
+    987  0c15		       28 01 07 	      PI	pushk	;
+    988  0c18		       20 85	   prompts2   LI	$85	; red 5 (S)
+    989  0c1a		       50		      LR	$0,A	;
+    990  0c1b		       28 0c 38 	      PI	prompt	;
+    991  0c1e		       44		      LR	A,$4	;
+    992  0c1f		       25 08		      CI	$08	; is it button 4, Start?
+    993  0c21		       94 05		      BF	$4,notbut4	; no, check others
+    994  0c23				   notbut2
+    995  0c23		       28 01 1e 	      PI	popk	; yes, return
+    996  0c26		       0c		      PK		;
+    997  0c27
+    998  0c27		       25 02	   notbut4    CI	$02	; is it button 2, Mode?
+    999  0c29		       94 f9		      BF	$4,notbut2	;
+   1000  0c2b		       20 8e		      LI	$8e	; red M
+   1001  0c2d		       50		      LR	$0,A	;
+   1002  0c2e		       28 0c 38 	      PI	prompt	;
+   1003  0c31		       63		      LISU	3	;
+   1004  0c32		       6e		      LISL	6	;
+   1005  0c33		       4c		      LR	A,(IS)	;
+   1006  0c34		       c4		      as	4	;add the mode to the game #
+   1007  0c35		       5c		      LR	(IS),A	;
+   1008  0c36		       90 e1		      BF	$0,prompts2	;
+   1009  0c38
+   1010  0c38
+   1011  0c38							;from the BIOS, but I added random # seed to readbuts
+   1012  0c38		       08	   prompt     LR	K,P	; $0099 - prints char r0 at row r1, col r2, waits for button
+   1013  0c39		       28 01 07 	      PI	pushk	;
+   1014  0c3c		       20 33		      LI	$33	; r1=$33
+   1015  0c3e		       51		      LR	$1,A	;
+   1016  0c3f		       20 13		      LI	$13	; r2=$13
+   1017  0c41		       52		      LR	$2,A	;
+   1018  0c42		       28 06 79 	      PI	drawchar	;
+   1019  0c45
+   1020  0c45		       20 8b		      LI	$8b	; r0=8b	red ?
+   1021  0c47		       50		      LR	$0,A	;
+   1022  0c48		       28 06 79 	      PI	drawchar	;
+   1023  0c4b
+   1024  0c4b		       28 0c 60 	      PI	readbuts	;
+   1025  0c4e		       20 33		      LI	$33	; r1=$33
+   1026  0c50		       51		      LR	$1,A	;
+   1027  0c51		       20 13		      LI	$13	; r2=$13
+   1028  0c53		       52		      LR	$2,A	;
+   1029  0c54		       7d		      LIS	$d	; r0=$d
+   1030  0c55		       50		      LR	$0,A	;
+   1031  0c56		       28 06 79 	      PI	drawchar	;
+   1032  0c59		       28 06 79 	      PI	drawchar	;
+   1033  0c5c		       28 01 1e 	      PI	popk	;
+   1034  0c5f		       0c		      PK		;
+   1035  0c60
+   1036  0c60				   readbuts
+   1037  0c60		       62		      lisu	2	;inc random seed
+   1038  0c61		       6d		      lisl	5
+   1039  0c62		       4c		      lr	a,(IS)
+   1040  0c63		       1f		      inc
+   1041  0c64		       5c		      lr	(IS),a
+   1042  0c65
+   1043  0c65		       a0		      INS	0	; $00c1 - read buttons
+   1044  0c66		       18		      COM		;
+   1045  0c67		       21 0f		      NI	$0f	;
+   1046  0c69		       84 f6		      BT	4,readbuts	;
+   1047  0c6b		       54		      LR	$4,A	;
+   1048  0c6c		       20 ff		      LI	$ff	;
+   1049  0c6e		       55		      LR	$5,A	;
+   1050  0c6f		       35	   dbounce    DS	$5	;
+   1051  0c70		       94 fe		      BF	$4,dbounce	;
+   1052  0c72		       29 00 8f 	      jmp	delay	;
+   1053  0c75
+   1054  0c75
+   1055  0c75							;colors: $40-red, $80=blue, $0=green, $c0=bkg
+   1056  0c75
+   1057  0c75							;data to draw lines for grid
+   1058  0c75				   grid 		;horiz-color,len,row,start col
+   1059  0c75		       80 42 07 12	      db.b	$80,66,7,18
+   1060  0c79		       80 42 11 12	      db.b	$80,66,17,18
+   1061  0c7d		       80 42 1b 12	      db.b	$80,66,27,18
+   1062  0c81		       80 42 25 12	      db.b	$80,66,37,18
+   1063  0c85		       80 42 2f 12	      db.b	$80,66,47,18
+   1064  0c89		       80 42 39 12	      db.b	$80,66,57,18
+   1065  0c8d							;vert-color,$80+len,col,start row
+   1066  0c8d		       80 b3 12 07	      db.b	$80,179,18,7	;179=128+51
+   1067  0c91		       80 b3 1f 07	      db.b	$80,179,31,7
+   1068  0c95		       80 b3 2c 07	      db.b	$80,179,44,7
+   1069  0c99		       80 b3 39 07	      db.b	$80,179,57,7
+   1070  0c9d		       80 b3 46 07	      db.b	$80,179,70,7
+   1071  0ca1		       80 b3 53 07	      db.b	$80,179,83,7
+   1072  0ca5		       ff		      db.b	$ff
+   1073  0ca6
+   1074  0ca6							;data to draw squares
+   1075  0ca6				   redsq		;color,width,height
+   1076  0ca6		       40 0c 09 	      db.b	$40,12,9
+   1077  0ca9				   greensq		;color,width,height
+   1078  0ca9		       00 0c 09 	      db.b	$0,12,9
+   1079  0cac				   cursor		;color,width,height
+   1080  0cac		       c0 04 03 	      db.b	$c0,4,3
+   1081  0caf				   winsq1
+   1082  0caf		       40 26 1d 	      db.b	$40,38,29	;red
+   1083  0cb2				   winsq2
+   1084  0cb2		       c0 22 19 	      db.b	$c0,34,25	;bkg
+   1085  0cb5
+   1086  0cb5							;locations to draw each light, based on index (0-24)
+   1087  0cb5				   sqrows
+   1088  0cb5		       08 08 08 08*	      db.b	8, 8, 8, 8, 8,18,18,18,18,18,28,28,28,28,28,38,38,38,38,38,48,48,48,48,48
+   1089  0cce				   sqcols
+   1090  0cce		       13 20 2d 3a*	      db.b	19,32,45,58,71,19,32,45,58,71,19,32,45,58,71,19,32,45,58,71,19,32,45,58,71
+   1091  0ce7
+   1092  0ce7							;locations to draw cursor, based on row/column
+   1093  0ce7				   currows
+   1094  0ce7		       0b 15 1f 29*	      db.b	11,21,31,41,51
+   1095  0cec				   curcols
+   1096  0cec		       17 24 31 3e*	      db.b	23,36,49,62,75
+   1097  0cf1
+   1098  0cf1				   plustable		;squares to toggle based on cursor N E W S +128 means wrapped
+   1099  0cf1		       94 01 84 05	      db.b	148, 1,132, 5
+   1100  0cf5		       95 02 00 06	      db.b	149, 2, 0, 6
+   1101  0cf9		       96 03 01 07	      db.b	150, 3, 1, 7
+   1102  0cfd		       97 04 02 08	      db.b	151, 4, 2, 8
+   1103  0d01		       98 80 03 09	      db.b	152,128, 3, 9
+   1104  0d05
+   1105  0d05		       00 06 89 0a	      db.b	0, 6,137, 10
+   1106  0d09		       01 07 05 0b	      db.b	1, 7, 5, 11
+   1107  0d0d		       02 08 06 0c	      db.b	2, 8, 6, 12
+   1108  0d11		       03 09 07 0d	      db.b	3, 9, 7, 13
+   1109  0d15		       04 85 08 0e	      db.b	4,133, 8, 14
+   1110  0d19
+   1111  0d19		       05 0b 8e 0f	      db.b	5, 11,142, 15
+   1112  0d1d		       06 0c 0a 10	      db.b	6, 12, 10, 16
+   1113  0d21		       07 0d 0b 11	      db.b	7, 13, 11, 17
+   1114  0d25		       08 0e 0c 12	      db.b	8, 14, 12, 18
+   1115  0d29		       09 8a 0d 13	      db.b	9,138, 13, 19
+   1116  0d2d
+   1117  0d2d		       0a 10 93 14	      db.b	10, 16,147, 20
+   1118  0d31		       0b 11 0f 15	      db.b	11, 17, 15, 21
+   1119  0d35		       0c 12 10 16	      db.b	12, 18, 16, 22
+   1120  0d39		       0d 13 11 17	      db.b	13, 19, 17, 23
+   1121  0d3d		       0e 8f 12 18	      db.b	14,143, 18, 24
+   1122  0d41
+   1123  0d41		       0f 15 98 80	      db.b	15, 21,152,128
+   1124  0d45		       10 16 14 81	      db.b	16, 22, 20,129
+   1125  0d49		       11 17 15 82	      db.b	17, 23, 21,130
+   1126  0d4d		       12 18 16 83	      db.b	18, 24, 22,131
+   1127  0d51		       13 94 17 84	      db.b	19,148, 23,132
+   1128  0d55
+   1129  0d55				   xtable		;squares to toggle based on cursor NW NE SW SE +128 means wrapped
+   1130  0d55		       98 95 89 06	      db.b	152,149,137, 6
+   1131  0d59		       94 96 05 07	      db.b	148,150, 5, 7
+   1132  0d5d		       95 97 06 08	      db.b	149,151, 6, 8
+   1133  0d61		       96 98 07 09	      db.b	150,152, 7, 9
+   1134  0d65		       97 94 08 85	      db.b	151,148, 8,133
+   1135  0d69
+   1136  0d69		       84 01 8e 0b	      db.b	132, 1,142, 11
+   1137  0d6d		       00 02 0a 0c	      db.b	0, 2, 10, 12
+   1138  0d71		       01 03 0b 0d	      db.b	1, 3, 11, 13
+   1139  0d75		       02 04 0c 0e	      db.b	2, 4, 12, 14
+   1140  0d79		       03 80 0d 8a	      db.b	3,128, 13,138
+   1141  0d7d
+   1142  0d7d		       89 06 93 10	      db.b	137, 6,147, 16
+   1143  0d81		       05 07 0f 11	      db.b	5, 7, 15, 17
+   1144  0d85		       06 08 10 12	      db.b	6, 8, 16, 18
+   1145  0d89		       07 09 11 13	      db.b	7, 9, 17, 19
+   1146  0d8d		       08 85 12 8f	      db.b	8,133, 18,143
+   1147  0d91
+   1148  0d91		       8e 0b 98 15	      db.b	142, 11,152, 21
+   1149  0d95		       0a 0c 14 16	      db.b	10, 12, 20, 22
+   1150  0d99		       0b 0d 15 17	      db.b	11, 13, 21, 23
+   1151  0d9d		       0c 0e 16 18	      db.b	12, 14, 22, 24
+   1152  0da1		       0d 8a 17 94	      db.b	13,138, 23,148
+   1153  0da5
+   1154  0da5		       93 10 84 81	      db.b	147, 16,132,129
+   1155  0da9		       0f 11 80 82	      db.b	15, 17,128,130
+   1156  0dad		       10 12 81 83	      db.b	16, 18,129,131
+   1157  0db1		       11 13 82 84	      db.b	17, 19,130,132
+   1158  0db5		       12 8f 84 80	      db.b	18,143,132,128
+   1159  0db9
+   1160  0db9							;the patterns - 1 bit is red, 0 is green
+   1161  0db9							;other code has to be adjusted to use more or less than 64 patterns
+   1162  0db9							;not all of these are solvable on a torus or if only the neighbors toggle
+   1163  0db9				   pats
+   1164  0db9							;				db		$00,$00,$00,$80,$c0		; easy one for test
+   1165  0db9
+   1166  0db9		       20 50 88 f8*	      db.b	$20,$50,$88,$F8,$88
+   1167  0dbe		       f0 88 88 88*	      db.b	$F0,$88,$88,$88,$F0
+   1168  0dc3		       f8 80 f8 80*	      db.b	$F8,$80,$F8,$80,$F8
+   1169  0dc8		       f8 80 f0 80*	      db.b	$F8,$80,$F0,$80,$80
+   1170  0dcd		       88 88 f8 88*	      db.b	$88,$88,$F8,$88,$88
+   1171  0dd2		       f8 20 20 20*	      db.b	$F8,$20,$20,$20,$F8
+   1172  0dd7		       90 a0 c0 a0*	      db.b	$90,$A0,$C0,$A0,$90
+   1173  0ddc		       80 80 80 80*	      db.b	$80,$80,$80,$80,$F8
+   1174  0de1		       88 d8 a8 88*	      db.b	$88,$D8,$A8,$88,$88
+   1175  0de6		       88 c8 a8 98*	      db.b	$88,$C8,$A8,$98,$88
+   1176  0deb		       70 88 88 88*	      db.b	$70,$88,$88,$88,$70
+   1177  0df0		       70 88 a8 90*	      db.b	$70,$88,$A8,$90,$68
+   1178  0df5		       70 80 70 08*	      db.b	$70,$80,$70,$08,$70
+   1179  0dfa		       f8 20 20 20*	      db.b	$F8,$20,$20,$20,$20
+   1180  0dff		       88 88 a8 d8*	      db.b	$88,$88,$A8,$D8,$88
+   1181  0e04		       88 50 20 50*	      db.b	$88,$50,$20,$50,$88
+   1182  0e09		       88 50 20 20*	      db.b	$88,$50,$20,$20,$20
+   1183  0e0e		       f8 10 20 40*	      db.b	$F8,$10,$20,$40,$F8
+   1184  0e13		       50 50 00 70*	      db.b	$50,$50,$00,$70,$20
+   1185  0e18		       20 70 f8 70*	      db.b	$20,$70,$F8,$70,$20
+   1186  0e1d		       d8 20 20 20*	      db.b	$D8,$20,$20,$20,$D8
+   1187  0e22		       00 00 20 00*	      db.b	$00,$00,$20,$00,$00
+   1188  0e27		       00 20 50 20*	      db.b	$00,$20,$50,$20,$00
+   1189  0e2c		       20 00 88 00*	      db.b	$20,$00,$88,$00,$20
+   1190  0e31		       50 a8 50 a8*	      db.b	$50,$A8,$50,$A8,$50
+   1191  0e36		       a8 70 f8 70*	      db.b	$A8,$70,$F8,$70,$A8
+   1192  0e3b		       00 d8 50 d8*	      db.b	$00,$D8,$50,$D8,$00
+   1193  0e40		       20 88 20 88*	      db.b	$20,$88,$20,$88,$20
+   1194  0e45		       f8 a8 88 a8*	      db.b	$F8,$A8,$88,$A8,$F8
+   1195  0e4a		       20 60 20 20*	      db.b	$20,$60,$20,$20,$70
+   1196  0e4f		       70 08 70 80*	      db.b	$70,$08,$70,$80,$F8
+   1197  0e54		       70 08 70 08*	      db.b	$70,$08,$70,$08,$70
+   1198  0e59		       f8 00 70 00*	      db.b	$F8,$00,$70,$00,$F8
+   1199  0e5e		       70 88 70 88*	      db.b	$70,$88,$70,$88,$70
+   1200  0e63		       f8 88 50 70*	      db.b	$F8,$88,$50,$70,$00
+   1201  0e68		       f8 70 20 00*	      db.b	$F8,$70,$20,$00,$00
+   1202  0e6d		       20 20 f8 20*	      db.b	$20,$20,$F8,$20,$20
+   1203  0e72		       a8 88 f8 88*	      db.b	$A8,$88,$F8,$88,$A8
+   1204  0e77		       c0 a0 a8 28*	      db.b	$C0,$A0,$A8,$28,$18
+   1205  0e7c		       18 08 20 80*	      db.b	$18,$08,$20,$80,$C0
+   1206  0e81		       d8 88 50 88*	      db.b	$D8,$88,$50,$88,$D8
+   1207  0e86		       18 c0 18 c0*	      db.b	$18,$C0,$18,$C0,$18
+   1208  0e8b		       a8 a8 a8 a8*	      db.b	$A8,$A8,$A8,$A8,$A8
+   1209  0e90		       00 f8 00 f8*	      db.b	$00,$F8,$00,$F8,$00
+   1210  0e95		       10 78 50 f0*	      db.b	$10,$78,$50,$F0,$40
+   1211  0e9a		       c0 e0 70 38*	      db.b	$C0,$E0,$70,$38,$18
+   1212  0e9f		       60 90 70 48*	      db.b	$60,$90,$70,$48,$30
+   1213  0ea4		       a8 a8 50 a8*	      db.b	$A8,$A8,$50,$A8,$A8
+   1214  0ea9		       98 f0 50 78*	      db.b	$98,$F0,$50,$78,$C8
+   1215  0eae		       70 a8 f8 f8*	      db.b	$70,$A8,$F8,$F8,$A8
+   1216  0eb3		       a0 e0 b8 10*	      db.b	$A0,$E0,$B8,$10,$38
+   1217  0eb8		       00 00 f8 50*	      db.b	$00,$00,$F8,$50,$50	; pi pattern
+   1218  0ebd		       00 40 00 10*	      db.b	$00,$40,$00,$10,$00
+   1219  0ec2		       00 50 00 50*	      db.b	$00,$50,$00,$50,$00
+   1220  0ec7		       10 48 20 90*	      db.b	$10,$48,$20,$90,$40
+   1221  0ecc		       78 e8 f8 b8*	      db.b	$78,$E8,$F8,$B8,$F0
+   1222  0ed1		       e0 90 e0 90*	      db.b	$E0,$90,$E0,$90,$E0
+   1223  0ed6		       30 48 c0 48*	      db.b	$30,$48,$C0,$48,$30
+   1224  0edb		       38 48 20 90*	      db.b	$38,$48,$20,$90,$E0
+   1225  0ee0		       00 38 00 e0*	      db.b	$00,$38,$00,$E0,$00
+   1226  0ee5		       20 20 d8 20*	      db.b	$20,$20,$D8,$20,$20
+   1227  0eea		       20 70 a8 20*	      db.b	$20,$70,$A8,$20,$20
+   1228  0eef		       c8 d0 20 58*	      db.b	$C8,$D0,$20,$58,$98
+   1229  0ef4		       00 70 50 70*	      db.b	$00,$70,$50,$70,$00
+   1230  0ef9
+   1231  0ef9							;8 bytes available here
+   1232  0ef9
+   1233  0f00					      org	$f00
+   1234  0f00				   blitparm
+   1235  0f00		       82 13 60 16*	      db.b	$82,19,96,$16,$8,$08,00,00
+   1236  0f08				   blitdata
+   1237  0f08		       00 45 f0 41*	      db.b	$00,$45,$F0,$41,$E1,$01,$F7,$80,$44,$20,$40,$00
+   1238  0f14		       00 45 00 41*	      db.b	$00,$45,$00,$41,$13,$81,$04,$40,$A4,$20,$A0,$00
+   1239  0f20		       00 7d e0 41*	      db.b	$00,$7D,$E0,$41,$E4,$41,$E7,$81,$14,$21,$10,$00
+   1240  0f2c		       00 45 04 41*	      db.b	$00,$45,$04,$41,$07,$C1,$04,$41,$F4,$21,$F0,$00
+   1241  0f38		       00 45 f3 81*	      db.b	$00,$45,$f3,$81,$04,$41,$F4,$41,$17,$BD,$10,$00
+   1242  0f44		       00 00 00 00*	      db.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+   1243  0f50		       00 00 00 00*	      db.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+   1244  0f5c		       f8 8e f1 c8*	      db.b	$F8,$8E,$F1,$C8,$BA,$1E,$04,$50,$72,$22,$3C,$F8
+   1245  0f68		       81 44 8a 28*	      db.b	$81,$44,$8A,$28,$92,$11,$03,$90,$82,$45,$22,$80
+   1246  0f74		       f2 24 f2 0f*	      db.b	$F2,$24,$F2,$0F,$92,$11,$74,$50,$73,$88,$BC,$F0
+   1247  0f80		       83 e4 8a 28*	      db.b	$83,$E4,$8A,$28,$92,$11,$07,$D0,$0A,$4F,$A2,$80
+   1248  0f8c		       82 2e 89 c8*	      db.b	$82,$2E,$89,$C8,$BB,$DE,$04,$5E,$72,$28,$A2,$F8
+   1249  0f98		       00 00 00 00*	      db.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+   1250  0fa4		       00 00 00 00*	      db.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+   1251  0fb0		       00 00 00 79*	      db.b	$00,$00,$00,$79,$17,$81,$17,$DF,$20,$00,$00,$00
+   1252  0fbc		       00 00 00 44*	      db.b	$00,$00,$00,$44,$E4,$41,$11,$10,$20,$00,$00,$00
+   1253  0fc8		       00 00 00 45*	      db.b	$00,$00,$00,$45,$17,$81,$11,$1E,$20,$00,$00,$00
+   1254  0fd4		       00 00 00 45*	      db.b	$00,$00,$00,$45,$F4,$41,$11,$10,$00,$00,$00,$00
+   1255  0fe0		       00 00 00 79*	      db.b	$00,$00,$00,$79,$14,$40,$E1,$1F,$20,$00,$00,$00
+   1256  0fec
+   1257  0fec							;4 bytes available here
+   1258  0fec
+   1259  0ff0					      org	$ff0
+   1260  0ff0		       53 65 61 6e*	      db.b	$53,$65,$61,$6e,$20,$52,$69,$64,$64,$6c,$65,$20,$32,$30,$30,$34
