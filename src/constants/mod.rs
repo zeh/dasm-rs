@@ -23,7 +23,9 @@ pub const S_HASH_SIZE: usize = 1024; // In original C code, "SHASHSIZE"
 pub const CHAR_TAB: i32 = 9;         // In original C code, "TAB"
 
 // Table encapsulates errors, descriptions, and fatality flags.
-// FIXME: make sure %s interpolation still works (use {} ?)
+// Notice that the "{}" inside the descriptions are used for simple
+// string substitution; it doesn't use println!()/sformat!(), so
+// advanced {:} configurations won't work.
 pub static ErrorDefinitions: [ErrorDefinition; 39] = [
     ErrorDefinition {
 		errorType: AsmErrorEquates::None,
@@ -48,7 +50,7 @@ pub static ErrorDefinitions: [ErrorDefinition; 39] = [
 	ErrorDefinition {
 		errorType: AsmErrorEquates::TooManyPasses,
 		fatal: true,
-		description: "Too many passes (%s).",
+		description: "Too many passes ({}).",
 	},
 	ErrorDefinition {
 		errorType: AsmErrorEquates::NonAbort,
@@ -58,7 +60,7 @@ pub static ErrorDefinitions: [ErrorDefinition; 39] = [
 	ErrorDefinition {
 		errorType: AsmErrorEquates::SyntaxError,
 		fatal: true,
-		description: "Syntax Error \'%s\'.",
+		description: "Syntax Error '{}'.",
 	},
 	ErrorDefinition {
 		errorType: AsmErrorEquates::ExpressionTableOverflow,
@@ -78,17 +80,17 @@ pub static ErrorDefinitions: [ErrorDefinition; 39] = [
 	ErrorDefinition {
 		errorType: AsmErrorEquates::UnknownMnemonic,
 		fatal: true,
-		description: "Unknown Mnemonic \'%s\'.",
+		description: "Unknown Mnemonic '{}'.",
 	},
 	ErrorDefinition {
 		errorType: AsmErrorEquates::IllegalAddressingMode,
 		fatal: false,
-		description: "Illegal Addressing mode \'%s\'.",
+		description: "Illegal Addressing mode '{}'.",
 	},
 	ErrorDefinition {
 		errorType: AsmErrorEquates::IllegalForcedAddressingMode,
 		fatal: true,
-		description: "Illegal forced Addressing mode on \'%s\'.",
+		description: "Illegal forced Addressing mode on '{}'.",
 	},
 	ErrorDefinition {
 		errorType: AsmErrorEquates::NotEnoughArgumentsPassedToMacro,
@@ -103,12 +105,12 @@ pub static ErrorDefinitions: [ErrorDefinition; 39] = [
 	ErrorDefinition {
 		errorType: AsmErrorEquates::IllegalCharacter,
 		fatal: true,
-		description: "Illegal character \'%s\'.",
+		description: "Illegal character '{}'.",
 	},
 	ErrorDefinition {
 		errorType: AsmErrorEquates::BranchOutOfRange,
 		fatal: false,
-		description: "Branch out of range (%s bytes).",
+		description: "Branch out of range ({} bytes).",
 	},
 	ErrorDefinition {
 		errorType: AsmErrorEquates::ErrPseudoOpEncountered,
@@ -128,12 +130,12 @@ pub static ErrorDefinitions: [ErrorDefinition; 39] = [
 	ErrorDefinition {
 		errorType: AsmErrorEquates::AddressMustBeLowerThan100,
 		fatal: true,
-		description: "Value in \'%s\' must be <$100.",
+		description: "Value in '{}' must be <$100.",
 	},
 	ErrorDefinition {
 		errorType: AsmErrorEquates::AddressMustBeLowerThan10000,
 		fatal: true,
-		description: "Value in \'%s\' must be <$10000.",
+		description: "Value in '{}' must be <$10000.",
 	},
 	ErrorDefinition {
 		errorType: AsmErrorEquates::IllegalBitSpecification,
@@ -148,12 +150,12 @@ pub static ErrorDefinitions: [ErrorDefinition; 39] = [
 	ErrorDefinition {
 		errorType: AsmErrorEquates::LabelMismatch,
 		fatal: false,
-		description: "Label mismatch...\n --> %s",
+		description: "Label mismatch...\n --> {}",
 	},
 	ErrorDefinition {
 		errorType: AsmErrorEquates::MacroRepeated,
 		fatal: true,
-		description: "Macro \"%s\" definition is repeated.",
+		description: "Macro \"{}\" definition is repeated.",
 	},
 	ErrorDefinition {
 		errorType: AsmErrorEquates::ValueUndefined,
@@ -163,7 +165,7 @@ pub static ErrorDefinitions: [ErrorDefinition; 39] = [
 	ErrorDefinition {
 		errorType: AsmErrorEquates::ProcessorNotSupported,
 		fatal: true,
-		description: "Processor \'%s\' not supported.",
+		description: "Processor '{}' not supported.",
 	},
 	ErrorDefinition {
 		errorType: AsmErrorEquates::RepeatNegative,
@@ -188,32 +190,32 @@ pub static ErrorDefinitions: [ErrorDefinition; 39] = [
 	ErrorDefinition {
 		errorType: AsmErrorEquates::ValueMustBeOneOrFour,
 		fatal: true,
-		description: "Value in \'%s\' must be 1 or 4.",
+		description: "Value in '{}' must be 1 or 4.",
 	},
 	ErrorDefinition {
 		errorType: AsmErrorEquates::ValueMustBeLowerThan10,
 		fatal: true,
-		description: "Value in \'%s\' must be <$10.",
+		description: "Value in '{}' must be <$10.",
 	},
 	ErrorDefinition {
 		errorType: AsmErrorEquates::ValueMustBeLowerThan8,
 		fatal: true,
-		description: "Value in \'%s\' must be <$8.",
+		description: "Value in '{}' must be <$8.",
 	},
 	ErrorDefinition {
 		errorType: AsmErrorEquates::ValueMustBeLowerThanF,
 		fatal: true,
-		description: "Value in \'%s\' must be <$f.",
+		description: "Value in '{}' must be <$f.",
 	},
 	ErrorDefinition {
 		errorType: AsmErrorEquates::ValueMustBeLowerThan10000,
 		fatal: true,
-		description: "Value in \'%s\' must be <$10000.",
+		description: "Value in '{}' must be <$10000.",
 	},
 	ErrorDefinition {
 		errorType: AsmErrorEquates::IllegalOperandCombination,
 		fatal: true,
-		description: "Illegal combination of operands \'%s\'",
+		description: "Illegal combination of operands '{}'",
 	},
 	ErrorDefinition {
 		errorType: AsmErrorEquates::EndOfTable, // FIXME: remove? This was added but might not be needed

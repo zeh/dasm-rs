@@ -360,10 +360,6 @@ static mut dasm_id: [libc::c_char; 22] =
 pub static mut passbuffer: [*mut libc::c_char; 2] =
     [0 as *const libc::c_char as *mut libc::c_char,
      0 as *const libc::c_char as *mut libc::c_char];
-static mut erroradd1: [libc::c_char; 500] = [0; 500];
-// temp error holders
-static mut erroradd2: [libc::c_char; 500] = [0; 500];
-static mut erroradd3: [libc::c_char; 500] = [0; 500];
 #[no_mangle]
 pub static mut Extstr: *mut libc::c_char =
     0 as *const libc::c_char as *mut libc::c_char;
@@ -400,19 +396,23 @@ unsafe extern "C" fn ShowUnresolvedSymbols() -> libc::c_int {
             sym = *SHash.as_mut_ptr().offset(i as isize);
             while !sym.is_null() {
                 if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
-                    printf(b"%-24s %s\n\x00" as *const u8 as
-                               *const libc::c_char, (*sym).name,
-                           sftos((*sym).value, (*sym).flags as libc::c_int));
+                    println!("{:24} {}",
+                        transient::str_pointer_to_string((*sym).name),
+                        transient::str_pointer_to_string(sftos((*sym).value, (*sym).flags as libc::c_int)),
+                    );
                 }
                 sym = (*sym).next
             }
             i += 1
         }
-        printf(b"--- %d Unresolved Symbol%c\n\n\x00" as *const u8 as
-                   *const libc::c_char, nUnresolved,
-               if nUnresolved == 1 as libc::c_int {
-                   ' ' as i32
-               } else { 's' as i32 });
+        println!("--- {} Unresolved Symbol{}\n",
+            nUnresolved,
+            if nUnresolved == 1 as libc::c_int {
+                " "
+            } else {
+                "s"
+            }
+        );
     }
     return nUnresolved;
 }
@@ -1961,9 +1961,8 @@ pub unsafe extern "C" fn pushinclude(mut str: *mut libc::c_char) {
     println!("Warning: Unable to open '{}'", transient::str_pointer_to_string(str));
 }
 #[no_mangle]
-pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool,
-                                mut sText: *const libc::c_char)
- -> AsmErrorEquates {
+pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool, mut sText: *const libc::c_char) -> AsmErrorEquates {
+    let mut errorOutput: String = String::new();
     let mut str: *const libc::c_char = 0 as *const libc::c_char;
     let mut pincfile: *mut _INCFILE = 0 as *mut _INCFILE;
     /* file pointer we print error messages to */
@@ -1994,20 +1993,15 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool,
                 Error format for MS VisualStudio and relatives:
                 "file (line): error: string"
             */
-            if errorToFile {
-                filesystem::write_to_file_maybe(errorFile, format!(
-                    "{} ({}): error: ",
-                    transient::str_pointer_to_string((*pincfile).name),
-                    (*pincfile).lineno
-                ).as_str());
-            }
-            // FIXME: add to erroradd1 and then output
-            sprintf(
-                erroradd1.as_mut_ptr(),
-                b"%s (%lu): error: \x00" as *const u8 as *const libc::c_char,
-                (*pincfile).name,
+            let mut errorMessage = format!(
+                "{} ({}): error: ",
+                transient::str_pointer_to_string((*pincfile).name),
                 (*pincfile).lineno
             );
+            if errorToFile {
+                filesystem::write_to_file_maybe(errorFile, errorMessage.as_str());
+            }
+            errorOutput.push_str(errorMessage.as_str());
         }
         ErrorFormat::Dillon => {
             /*
@@ -2019,73 +2013,47 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool,
                     "*line %4ld %-10s %s\n" (list file)
                     "line %4ld %-10s %s\n" (terminal)
             */
-            // FIXME: proper alignment
-            if errorToFile {
-                filesystem::write_to_file_maybe(errorFile, format!(
-                    "line {} {} ",
-                    (*pincfile).lineno,
-                    transient::str_pointer_to_string((*pincfile).name),
-                ).as_str());
-            }
-            // FIXME: add to erroradd1 and then output
-            sprintf(
-                erroradd1.as_mut_ptr(),
-                b"line %7ld %-10s \x00" as *const u8 as *const libc::c_char,
+            let mut errorMessage = format!(
+                "line {:>7} {:10} ",
                 (*pincfile).lineno,
-                (*pincfile).name,
+                transient::str_pointer_to_string((*pincfile).name),
             );
+            if errorToFile {
+                filesystem::write_to_file_maybe(errorFile, errorMessage.as_str());
+            }
+            errorOutput.push_str(errorMessage.as_str());
         }
         ErrorFormat::GNU => {
             /*
                 GNU format error messages, from their coding
                 standards.
             */
-            if errorToFile {
-                filesystem::write_to_file_maybe(errorFile, format!(
-                    "{}:{}: error: ",
-                    transient::str_pointer_to_string((*pincfile).name),
-                    (*pincfile).lineno,
-                ).as_str());
-            }
-            // FIXME: add to erroradd1 and then output
-            sprintf(
-                erroradd1.as_mut_ptr(),
-                b"%s:%lu: error: \x00" as *const u8 as
-                *const libc::c_char,
-                (*pincfile).name,
-                (*pincfile).lineno
+            let mut errorMessage = format!(
+                "{}:{}: error: ",
+                transient::str_pointer_to_string((*pincfile).name),
+                (*pincfile).lineno,
             );
+            if errorToFile {
+                filesystem::write_to_file_maybe(errorFile, errorMessage.as_str());
+            }
+            errorOutput.push_str(errorMessage.as_str());
         }
+    }
+    let mut errorMessage = transient::str_pointer_to_string(str);
+    // This is a bit of a hack: since we can't use variables as the template in format!(),
+    // we simply replace "{}" in the template with the expected string. This works well,
+    // but it means the template only supports a single {}, and no other formatting directive.
+    if !sText.is_null() {
+        errorMessage = errorMessage.replace("{}", transient::str_pointer_to_string(sText).as_str());
     }
     if errorToFile {
         /* print second part of message, always the same for now */
-        let mut errorMessage = transient::str_pointer_to_string(str);
-        // This is a bit of a hack: since we can't use variables as the template in format!(),
-        // we simply replace "{}" in the template with the expected string. This works well,
-        // but it means the template only supports a single {}, and no other formatting directive.
-        if !sText.is_null() {
-            errorMessage = errorMessage.replace("{}", transient::str_pointer_to_string(sText).as_str());
-        }
         filesystem::write_to_file_maybe(errorFile, errorMessage.as_str());
     }
-    // FIXME: add to erroradd1 and then output
-    // (also, the printf is wrong since template parameters have changed from "%s" to "{})
-    sprintf(
-        erroradd2.as_mut_ptr(), str,
-        if !sText.is_null() {
-            sText
-        } else {
-            b"\x00" as *const u8 as *const libc::c_char
-        }
-    );
-    // FIXME: add to erroradd1 and then output
-    sprintf(
-        erroradd3.as_mut_ptr(),
-        b"\n\x00" as *const u8 as *const libc::c_char
-    );
-    passbuffer_update(0 as libc::c_int, erroradd1.as_mut_ptr());
-    passbuffer_update(0 as libc::c_int, erroradd2.as_mut_ptr());
-    passbuffer_update(0 as libc::c_int, erroradd3.as_mut_ptr());
+    errorOutput.push_str(errorMessage.as_str());
+    // FIXME: this is just temporary, for passbuffer. Remove later.
+    errorOutput.push_str("\x00");
+    passbuffer_update(0, errorOutput.as_mut_ptr() as *mut i8);
     if bAbort {
         passbuffer_output(1 as libc::c_int);
         filesystem::writeln_to_file_maybe(
@@ -2246,12 +2214,9 @@ pub unsafe extern "C" fn passbuffer_output(mut mbindex: libc::c_int) {
     // ensure the buffer is initialized before we attempt to clear it,
     // just in case no messages have been stored yet.
     if passbuffer[mbindex as usize].is_null() {
-        passbuffer_update(mbindex,
-                          b"\x00" as *const u8 as *const libc::c_char as
-                              *mut libc::c_char);
+        passbuffer_update(mbindex, b"\x00" as *const u8 as *const libc::c_char as *mut libc::c_char);
     }
-    printf(b"%s\n\x00" as *const u8 as *const libc::c_char,
-           passbuffer[mbindex as usize]);
+    println!("{}", transient::str_pointer_to_string(passbuffer[mbindex as usize]));
     // ...do we really still need to put this through stdout, instead stderr?
 }
 #[no_mangle]
