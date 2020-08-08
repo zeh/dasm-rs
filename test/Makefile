@@ -5,9 +5,7 @@ DASM=../bin/dasm
 FTOHEX=../bin/ftohex
 
 test:
-	(cd atari2600; $(MAKE) test; cd ..)
-	(cd atari7800; $(MAKE) test; cd ..)
-	./run_tests.sh
+	./run_tests.sh $(DASM)
 
 %.bin: %.asm
 	$(DASM) $< -o$@ -f1 -DINEEPROM
@@ -16,6 +14,7 @@ test:
 	$(FTOHEX) 1 $< $@
 
 clean:
-	(cd atari2600; $(MAKE) clean; cd ..)
-	(cd atari7800; $(MAKE) clean; cd ..)
-	rm -rf *.bin *.hex *.list.txt
+	rm -rf *.bin *.hex *.txt
+	rm -rf ./atari2600/*.bin ./atari2600/*.hex ./atari2600/*.txt
+	rm -rf ./atari7800/*.bin ./atari7800/*.hex ./atari7800/*.txt
+	rm -rf ./channel-f/*.bin ./channel-f/*.hex ./channel-f/*.txt
