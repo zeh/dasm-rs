@@ -42,8 +42,6 @@ extern "C" {
     #[no_mangle]
     fn strlen(_: *const libc::c_char) -> libc::c_ulong;
     #[no_mangle]
-    static mut Mnext: libc::c_int;
-    #[no_mangle]
     fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const libc::c_char)
      -> libc::c_int;
     #[no_mangle]
@@ -499,27 +497,27 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                     (*cur).addrmode = AddressModes::ZeroX as u8;
                     str = str.offset(1);
                     //FIX: OPCODE.FORCE needs to be adjusted for x indexing...
-                    if Mnext == AddressModes::WordAdr as i32 {
-                        Mnext = AddressModes::WordAdrX as i32
+                    if state.execution.modeNext == AddressModes::WordAdr {
+                        state.execution.modeNext = AddressModes::WordAdrX
                     }
-                    if Mnext == AddressModes::ByteAdr as i32 {
-                        Mnext = AddressModes::ByteAdrX as i32
+                    if state.execution.modeNext == AddressModes::ByteAdr {
+                        state.execution.modeNext = AddressModes::ByteAdrX
                     }
-                    if Mnext == AddressModes::IndWord as i32 {
-                        Mnext = AddressModes::ZeroX as i32
+                    if state.execution.modeNext == AddressModes::IndWord {
+                        state.execution.modeNext = AddressModes::ZeroX
                     }
                 } else if scr == 'y' as i32 && !is_alpha_num(*str.offset(2) as u8 as char) {
                     (*cur).addrmode = AddressModes::ZeroY as u8;
                     str = str.offset(1);
                     //FIX: OPCODE.FORCE needs to be adjusted for x indexing...
-                    if Mnext == AddressModes::WordAdr as i32 {
-                        Mnext = AddressModes::WordAdrY as i32
+                    if state.execution.modeNext == AddressModes::WordAdr {
+                        state.execution.modeNext = AddressModes::WordAdrY
                     }
-                    if Mnext == AddressModes::ByteAdr as i32 {
-                        Mnext = AddressModes::ByteAdrY as i32
+                    if state.execution.modeNext == AddressModes::ByteAdr {
+                        state.execution.modeNext = AddressModes::ByteAdrY
                     }
-                    if Mnext == AddressModes::IndWord as i32 {
-                        Mnext = AddressModes::ZeroY as i32
+                    if state.execution.modeNext == AddressModes::IndWord {
+                        state.execution.modeNext = AddressModes::ZeroY
                     }
                 } else {
                     let mut pNewSymbol: *mut _SYMBOL = allocsymbol();

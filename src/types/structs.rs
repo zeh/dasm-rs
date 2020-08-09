@@ -6,6 +6,7 @@ use std::fs::File;
 
 use crate::expressions;
 use crate::types::enums::{
+	AddressModes,
 	AsmErrorEquates,
 	BitOrder,
 	Format,
@@ -36,7 +37,7 @@ pub struct GlobalState {
 	// Set by ::expressions during execution
 	pub expressions: ExpressionsState,
 
-	// Written by
+	// Written to
 	pub output: OutputState,
 }
 
@@ -61,6 +62,7 @@ pub struct ExecutionState {
 	pub bitOrder: BitOrder,
 	pub isClear: bool,
 	pub listMode: ListMode,
+	pub modeNext: AddressModes,
 	pub redoEval: i32,
 	pub redoIf: u64,
 	pub redoIndex: i32,

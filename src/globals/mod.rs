@@ -1,5 +1,6 @@
 use crate::expressions;
 use crate::types::enums::{
+    AddressModes,
     BitOrder,
 	Format,
     ErrorFormat,
@@ -42,6 +43,7 @@ pub static mut state: GlobalState = GlobalState {
         bitOrder: BitOrder::MostLeast,
         isClear: false,
         listMode: ListMode::List,
+        modeNext: AddressModes::Imp,
         redoEval: 0,
         redoIf: 0,
         redoIndex: 0,

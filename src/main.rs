@@ -148,8 +148,6 @@ extern "C" {
     #[no_mangle]
     static mut Ops: [_MNE; 0];
     #[no_mangle]
-    static mut Mnext: libc::c_int;
-    #[no_mangle]
     static mut Localindex: libc::c_ulong;
     #[no_mangle]
     static mut Lastlocalindex: libc::c_ulong;
@@ -1504,7 +1502,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
 */
 #[no_mangle]
 pub unsafe extern "C" fn findext(mut str: *mut libc::c_char) {
-    Mnext = -(1 as libc::c_int);
+    state.execution.modeNext = AddressModes::None;
     Extstr = 0 as *mut libc::c_char;
     if *str.offset(0 as libc::c_int as isize) as libc::c_int == '.' as i32 {
         /* Allow .OP for OP */
@@ -1520,39 +1518,36 @@ pub unsafe extern "C" fn findext(mut str: *mut libc::c_char) {
         match *str.offset(0 as libc::c_int as isize) as libc::c_int |
                   0x20 as libc::c_int {
             48 | 105 => {
-                Mnext = AddressModes::Imp as i32;
-                match *str.offset(1 as libc::c_int as isize) as libc::c_int |
-                          0x20 as libc::c_int {
-                    120 => { Mnext = AddressModes::ZeroX as i32 }
-                    121 => { Mnext = AddressModes::ZeroY as i32 }
-                    110 => { Mnext = AddressModes::IndWord as i32 }
+                state.execution.modeNext = AddressModes::Imp;
+                match *str.offset(1 as libc::c_int as isize) as libc::c_int | 0x20 as libc::c_int {
+                    120 => { state.execution.modeNext = AddressModes::ZeroX }
+                    121 => { state.execution.modeNext = AddressModes::ZeroY }
+                    110 => { state.execution.modeNext = AddressModes::IndWord }
                     _ => { }
                 }
                 return
             }
             100 | 98 | 122 => {
-                match *str.offset(1 as libc::c_int as isize) as libc::c_int |
-                          0x20 as libc::c_int {
-                    120 => { Mnext = AddressModes::ByteAdrX as i32 }
-                    121 => { Mnext = AddressModes::ByteAdrY as i32 }
-                    105 => { Mnext = AddressModes::BitMod as i32 }
-                    98 => { Mnext = AddressModes::BitBraMod as i32 }
-                    _ => { Mnext = AddressModes::ByteAdr as i32 }
+                match *str.offset(1 as libc::c_int as isize) as libc::c_int | 0x20 as libc::c_int {
+                    120 => { state.execution.modeNext = AddressModes::ByteAdrX }
+                    121 => { state.execution.modeNext = AddressModes::ByteAdrY }
+                    105 => { state.execution.modeNext = AddressModes::BitMod }
+                    98 => { state.execution.modeNext = AddressModes::BitBraMod }
+                    _ => { state.execution.modeNext = AddressModes::ByteAdr }
                 }
                 return
             }
             101 | 119 | 97 => {
-                match *str.offset(1 as libc::c_int as isize) as libc::c_int |
-                          0x20 as libc::c_int {
-                    120 => { Mnext = AddressModes::WordAdrX as i32 }
-                    121 => { Mnext = AddressModes::WordAdrY as i32 }
-                    _ => { Mnext = AddressModes::WordAdr as i32 }
+                match *str.offset(1 as libc::c_int as isize) as libc::c_int | 0x20 as libc::c_int {
+                    120 => { state.execution.modeNext = AddressModes::WordAdrX }
+                    121 => { state.execution.modeNext = AddressModes::WordAdrY }
+                    _ => { state.execution.modeNext = AddressModes::WordAdr }
                 }
                 return
             }
-            108 => { Mnext = AddressModes::Long as i32; return }
-            114 => { Mnext = AddressModes::Rel as i32; return }
-            117 => { Mnext = AddressModes::BSS as i32; return }
+            108 => { state.execution.modeNext = AddressModes::Long; return }
+            114 => { state.execution.modeNext = AddressModes::Rel; return }
+            117 => { state.execution.modeNext = AddressModes::BSS; return }
             _ => { }
         }
     };

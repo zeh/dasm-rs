@@ -99,8 +99,6 @@ extern "C" {
     #[no_mangle]
     static mut Opsize: [libc::c_uint; 0];
     #[no_mangle]
-    static mut Mnext: libc::c_int;
-    #[no_mangle]
     static mut Mlevel: libc::c_uint;
     #[no_mangle]
     static mut Processor: libc::c_ulong;
@@ -435,9 +433,9 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
         state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved;
         return
     }
-    if Mnext >= 0 as libc::c_int && Mnext < AddressModes::length() as libc::c_int {
+    if state.execution.modeNext != AddressModes::None {
         /*	Force	*/
-        addrmode = Mnext;
+        addrmode = state.execution.modeNext as u8 as i32;
         if (*mne).okmask & ((1 as libc::c_long) << addrmode) as libc::c_ulong
                == 0 {
             asmerr(AsmErrorEquates::IllegalForcedAddressingMode,
@@ -789,7 +787,7 @@ pub unsafe extern "C" fn v_seg(mut str: *mut libc::c_char,
     (*seg).rflags = (*seg).initflags;
     (*seg).flags = (*seg).rflags;
     Seglist = seg;
-    if Mnext == AddressModes::BSS as i32 {
+    if state.execution.modeNext == AddressModes::BSS {
         (*seg).flags =
             ((*seg).flags as libc::c_int | 0x10 as libc::c_int) as
                 libc::c_uchar
@@ -935,8 +933,8 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
                     }
                     FreeSymbolList(tmp);
                 }
-                match Mnext {
-                    6 => {
+                match state.execution.modeNext {
+                    AddressModes::WordAdr => {
                         if state.execution.bitOrder != BitOrder::LeastMost {
                             let fresh7 = Glen;
                             Glen = Glen + 1;
@@ -963,7 +961,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
                                     libc::c_uchar
                         }
                     }
-                    19 => {
+                    AddressModes::Long => {
                         if state.execution.bitOrder != BitOrder::LeastMost {
                             let fresh11 = Glen;
                             Glen = Glen + 1;
@@ -1014,7 +1012,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
                                     libc::c_uchar
                         }
                     }
-                    3 | _ => {
+                    AddressModes::ByteAdr | _ => {
                         let fresh6 = Glen;
                         Glen = Glen + 1;
                         Gen[fresh6 as usize] =
@@ -1035,8 +1033,8 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
                 }
                 FreeSymbolList(tmp);
             }
-            match Mnext {
-                6 => {
+            match state.execution.modeNext {
+                AddressModes::WordAdr => {
                     //any value outside two's complement +ve and +ve word representation is invalid...
                     if state.parameters.strictMode &&
                            (value < -(0xffff as libc::c_int) as libc::c_long
@@ -1076,7 +1074,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
                                 libc::c_uchar
                     }
                 }
-                19 => {
+                AddressModes::Long => {
                     if state.execution.bitOrder != BitOrder::LeastMost {
                         let fresh24 = Glen;
                         Glen = Glen + 1;
@@ -1127,7 +1125,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
                                 libc::c_uchar
                     }
                 }
-                3 | _ => {
+                AddressModes::ByteAdr | _ => {
                     //any value outside two's complement +ve and +ve byte representation is invalid...
                     if value < -(0xff as libc::c_int) as libc::c_long ||
                            value > 0xff as libc::c_int as libc::c_long {
@@ -1157,8 +1155,8 @@ pub unsafe extern "C" fn v_ds(mut str: *mut libc::c_char,
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut mult: libc::c_int = 1 as libc::c_int;
     let mut filler: libc::c_long = 0 as libc::c_int as libc::c_long;
-    if Mnext == AddressModes::WordAdr as i32 { mult = 2 as libc::c_int }
-    if Mnext == AddressModes::Long as i32 { mult = 4 as libc::c_int }
+    if state.execution.modeNext == AddressModes::WordAdr { mult = 2 as libc::c_int }
+    if state.execution.modeNext == AddressModes::Long { mult = 4 as libc::c_int }
     programlabel();
     sym = eval(str, 0 as libc::c_int);
     if !sym.is_null() {

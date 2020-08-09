@@ -117,29 +117,32 @@ pub enum ListMode {
 }
 
 // In original C code, "ADDRESS_MODES"
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, TryFromPrimitive)]
+#[repr(u8)]
 pub enum AddressModes {
-	Imp,						// Implied
-	Imm8,						// Immediate 8 bits
-	Imm16,		        		// Immediate 16 bits
-	ByteAdr,					// Address 8 bits
-	ByteAdrX,					// Address 16 bits
-	ByteAdrY,					// Relative 8 bits
-	WordAdr,					// Index x 0 bits
-	WordAdrX,					// Index x 8 bits
-	WordAdrY,					// Index x 16 bits
-	Rel,						// Bit inst. special
-	IndByteX,					// Bit-bra inst. spec.
-	IndByteY,					// Index y 0 bits
-	IndWord,					// Index y 8 bits
-	ZeroX,						// Index x 0 bits
-	ZeroY,						// Index y 0 bits
-	BitMod,						// Ind addr 8 bits
-	BitBraMod,					// Ind addr 16 bits
-	Symbol,
-	ExpList,
-	Long,
-	BSS,
+	Imp,						// 0  Implied
+	Imm8,						// 1  Immediate 8 bits
+	Imm16,		        		// 2  Immediate 16 bits
+	ByteAdr,					// 3  Address 8 bits
+	ByteAdrX,					// 4  Address 16 bits
+	ByteAdrY,					// 5  Relative 8 bits
+	WordAdr,					// 6  Index x 0 bits
+	WordAdrX,					// 7  Index x 8 bits
+	WordAdrY,					// 8  Index x 16 bits
+	Rel,						// 9  Bit inst. special
+	IndByteX,					// 10 Bit-bra inst. spec.
+	IndByteY,					// 11 Index y 0 bits
+	IndWord,					// 12 Index y 8 bits
+	ZeroX,						// 13 Index x 0 bits
+	ZeroY,						// 14 Index y 0 bits
+	BitMod,						// 15 Ind addr 8 bits
+	BitBraMod,					// 16 Ind addr 16 bits
+	Symbol,						// 17
+	ExpList,					// 18
+	Long,						// 19
+	BSS,						// 20
+
+	None,						// 21 Made to simulate reset of -1 in findext()
 }
 
 // Made to replace "NUMOC" in the original type
