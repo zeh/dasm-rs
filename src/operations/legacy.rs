@@ -81,8 +81,6 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn exit(_: libc::c_int) -> !;
-    #[no_mangle]
     static mut pIncfile: *mut _INCFILE;
     #[no_mangle]
     static mut Reploop: *mut _REPLOOP;
@@ -845,7 +843,7 @@ pub unsafe extern "C" fn v_err(mut _str: *mut libc::c_char,
     programlabel();
     asmerr(AsmErrorEquates::ErrPseudoOpEncountered,
            1 as libc::c_int != 0, 0 as *const libc::c_char);
-    exit(1 as libc::c_int);
+    std::process::exit(1);
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
@@ -1968,7 +1966,7 @@ pub unsafe extern "C" fn generate() {
                         asmerr(AsmErrorEquates::OriginReverseIndexed,
                                1 as libc::c_int != 0,
                                0 as *const libc::c_char);
-                        exit(1 as libc::c_int);
+                        std::process::exit(1);
                     }
                     while (*Csegment).org != org {
                         putc(OrgFill as libc::c_int, FI_temp);

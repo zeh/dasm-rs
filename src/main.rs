@@ -123,8 +123,6 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn exit(_: libc::c_int) -> !;
-    #[no_mangle]
     fn qsort(__base: *mut libc::c_void, __nmemb: size_t, __size: size_t,
              __compar: __compar_fn_t);
     #[no_mangle]
@@ -2057,7 +2055,7 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool, mut 
             "Aborting assembly"
         );
         passbuffer_output(0 as libc::c_int);
-        exit(1 as libc::c_int);
+        std::process::exit(1);
     }
     return err;
 }
@@ -2234,7 +2232,7 @@ pub fn main() {
     };
     args.push(::std::ptr::null_mut());
     unsafe {
-        ::std::process::exit(main_0((args.len() - 1) as libc::c_int,
+        std::process::exit(main_0((args.len() - 1) as libc::c_int,
                                     args.as_mut_ptr() as
                                         *mut *mut libc::c_char) as i32)
     }

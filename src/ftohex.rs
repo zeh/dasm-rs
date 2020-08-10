@@ -49,8 +49,6 @@ extern "C" {
     fn feof(__stream: *mut FILE) -> libc::c_int;
     #[no_mangle]
     fn atoi(__nptr: *const libc::c_char) -> libc::c_int;
-    #[no_mangle]
-    fn exit(_: libc::c_int) -> !;
 }
 pub type size_t = libc::c_ulong;
 pub type __off_t = libc::c_long;
@@ -99,7 +97,7 @@ unsafe fn main_0(mut ac: libc::c_int, mut av: *mut *mut libc::c_char)
         println!("FTOHEX format infile [outfile]");
         println!("format 1 = DEFAULT, 2 = RAS, or 3 = RAW");
         println!("Copyright (c) 1988-2008 by various authors (see file AUTHORS).");
-        exit(1 as libc::c_int);
+        std::process::exit(1);
     }
     format = atoi(*av.offset(1 as libc::c_int as isize));
     if format < 1 as libc::c_int || format > 3 as libc::c_int {
@@ -131,7 +129,7 @@ unsafe fn main_0(mut ac: libc::c_int, mut av: *mut *mut libc::c_char)
 pub unsafe extern "C" fn exiterr(mut str: *const libc::c_char) {
     fputs(str, stderr);
     fputs(b"\n\x00" as *const u8 as *const libc::c_char, stderr);
-    exit(1 as libc::c_int);
+    std::process::exit(1);
 }
 /*
  *  Formats:
@@ -234,8 +232,11 @@ pub fn main() {
     };
     args.push(::std::ptr::null_mut());
     unsafe {
-        ::std::process::exit(main_0((args.len() - 1) as libc::c_int,
-                                    args.as_mut_ptr() as
-                                        *mut *mut libc::c_char) as i32)
+        std::process::exit(
+            main_0(
+                (args.len() - 1) as libc::c_int,
+                args.as_mut_ptr() as *mut *mut libc::c_char
+            ) as i32
+        );
     }
 }
