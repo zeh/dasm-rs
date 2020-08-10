@@ -1,0 +1,9 @@
+--- Symbol List (sorted by symbol)
+EXTERNAL_D_DEFAULT       0000 ????         (R )
+EXTERNAL_D_VALUE         0000 ????         (R )
+EXTERNAL_M_DEFAULT       0000 ????         (R )
+EXTERNAL_M_VALUE         0000 ????         (R )
+IMPROPER_SYMBOL          0000 ????         (R )
+INEEPROM                 0000                  
+SOURCE_SYMBOL            00ff              (R )
+--- End of Symbol List.

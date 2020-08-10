@@ -1,0 +1,6 @@
+--- Symbol List (sorted by symbol)
+0.error                  0000 ????         (R )
+INEEPROM                 0000                  
+Start                    f800              (R )
+vcs.h                    0000 ????         (R )
+--- End of Symbol List.

@@ -38,7 +38,7 @@ for i in *.asm; do
   NAME=$(basename "$i" .asm)
 
   # Compile .asm into .bin and .list.txt
-  $DASM "$i" -f1 -o"$NAME.bin$SUFFIX" -l"$NAME.list.txt$SUFFIX" -DINEEPROM 2>&1 | \
+  $DASM "$i" -f1 -o"$NAME.bin$SUFFIX" -l"$NAME.list.txt$SUFFIX" -s"$NAME.symbols.txt$SUFFIX" -DINEEPROM 2>&1 | \
     tee "$NAME.stdout.txt$SUFFIX" >/dev/null
     # | \grep -vE 'error|Complete|Fatal|Warning^?'
 
@@ -71,6 +71,14 @@ for i in *.asm; do
       echo -n "list pass; "
     else
       echo -n "list FAIL; "
+      errors=$((errors + 1))
+    fi
+    cmp -s "$NAME.symbols.txt" "$NAME.symbols.txt.ref"
+    if [ $? == 0 ]
+    then
+      echo -n "symbols pass; "
+    else
+      echo -n "symbols FAIL; "
       errors=$((errors + 1))
     fi
     cmp -s "$NAME.stdout.txt" "$NAME.stdout.txt.ref"
@@ -107,7 +115,7 @@ for i in *.fail; do
   NAME=$(basename "$i" .asm)
 
   # Compile .asm into .bin and .list.txt
-  $DASM "$i" -S -f1 -o"$NAME.strict.bin$SUFFIX" -l"$NAME.list.strict.txt$SUFFIX" -DINEEPROM 2>&1 | \
+  $DASM "$i" -S -f1 -o"$NAME.strict.bin$SUFFIX" -l"$NAME.list.strict.txt$SUFFIX" -s"$NAME.symbols.strict.txt$SUFFIX" -DINEEPROM 2>&1 | \
     tee "$NAME.stdout.strict.txt$SUFFIX" >/dev/null
     # | \grep -vE 'error|Complete|Fatal|Warning^?'
 
@@ -129,6 +137,14 @@ for i in *.fail; do
       echo -n "list pass; "
     else
       echo -n "list FAIL; "
+      errors=$((errors + 1))
+    fi
+    cmp -s "$NAME.symbols.strict.txt" "$NAME.symbols.strict.txt.ref"
+    if [ $? == 0 ]
+    then
+      echo -n "symbols pass; "
+    else
+      echo -n "symbols FAIL; "
       errors=$((errors + 1))
     fi
     cmp -s "$NAME.stdout.strict.txt" "$NAME.stdout.strict.txt.ref"
@@ -178,7 +194,7 @@ for ((i = 0; i < ${#custom_files[@]}; i++)); do
   NAME="${FILE//.asm/}"
 
   # Compile .asm into .bin and .list.txt
-  $DASM "$NAME.asm" ${custom_params[i]} -o"$NAME.bin$SUFFIX" -l"$NAME.list.txt$SUFFIX" -DINEEPROM 2>&1 | \
+  $DASM "$NAME.asm" ${custom_params[i]} -o"$NAME.bin$SUFFIX" -l"$NAME.list.txt$SUFFIX" -s"$NAME.symbols.txt$SUFFIX" -DINEEPROM 2>&1 | \
     tee "$NAME.stdout.txt$SUFFIX" >/dev/null
     # | \grep -vE 'error|Complete|Fatal|Warning^?'
 
@@ -211,6 +227,14 @@ for ((i = 0; i < ${#custom_files[@]}; i++)); do
       echo -n "list pass; "
     else
       echo -n "list FAIL; "
+      errors=$((errors + 1))
+    fi
+    cmp -s "$NAME.symbols.txt" "$NAME.symbols.txt.ref"
+    if [ $? == 0 ]
+    then
+      echo -n "symbols pass; "
+    else
+      echo -n "symbols FAIL; "
       errors=$((errors + 1))
     fi
     cmp -s "$NAME.stdout.txt" "$NAME.stdout.txt.ref"

@@ -1,0 +1,17 @@
+--- Symbol List (sorted by symbol)
+0.end                    0015                  
+1$test$                  0001                  
+1.end                    0009              (R )
+2$test$                  0001                  
+2.end                    0008              (R )
+3$test$                  0001                  
+3.end                    0007              (R )
+4$test$                  0001                  
+4.end                    0010              (R )
+5$test$                  0001                  
+5.end                    000f              (R )
+6$test$                  0001                  
+6.end                    0014              (R )
+INEEPROM                 0000                  
+loop                     0000                  
+--- End of Symbol List.
