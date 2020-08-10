@@ -7,8 +7,10 @@
 # Ran with parameters, this generates reference files, e.g.:
 #   ./run_tests.sh ../bin-original/dasm .ref
 
-DASM=${1:-../bin/dasm}
+ORIGIN=${1:-../bin}
 SUFFIX=$2
+DASM="${ORIGIN}/dasm"
+FTOHEX="${ORIGIN}/ftohex"
 
 # 1. General cleanup
 
@@ -43,7 +45,7 @@ for i in *.asm; do
     # | \grep -vE 'error|Complete|Fatal|Warning^?'
 
   # Generate .hex file from .bin
-  ../bin/ftohex 1 "$NAME.bin$SUFFIX" "$NAME.hex$SUFFIX"
+  $FTOHEX 1 "$NAME.bin$SUFFIX" "$NAME.hex$SUFFIX"
 
   # Display results
   echo -n "  * ${NAME}: "
@@ -199,7 +201,7 @@ for ((i = 0; i < ${#custom_files[@]}; i++)); do
     # | \grep -vE 'error|Complete|Fatal|Warning^?'
 
   # Generate .hex file from .bin
-  ../bin/ftohex 1 "$NAME.bin$SUFFIX" "$NAME.hex$SUFFIX"
+  $FTOHEX 1 "$NAME.bin$SUFFIX" "$NAME.hex$SUFFIX"
 
   # Display results
   echo -n "  * ${NAME}: "
