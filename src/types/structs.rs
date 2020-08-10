@@ -50,6 +50,7 @@ pub struct ParametersState {
 	pub maxPasses: u16,
 	pub sortMode: SortMode,
 	pub strictMode: bool,
+	pub symbolsFile: String,
 	pub verbosity: Verbosity,
 }
 

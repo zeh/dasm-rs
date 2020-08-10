@@ -31,6 +31,7 @@ pub static mut state: GlobalState = GlobalState {
         maxPasses: 10,
         sortMode: SortMode::Alpha,
         strictMode: false,
+        symbolsFile: String::new(),
         verbosity: Verbosity::None,
     },
 

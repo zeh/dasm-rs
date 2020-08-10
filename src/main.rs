@@ -158,8 +158,6 @@ extern "C" {
     #[no_mangle]
     static mut F_outfile: *const libc::c_char;
     #[no_mangle]
-    static mut F_symfile: *mut libc::c_char;
-    #[no_mangle]
     static mut FI_temp: *mut FILE;
     #[no_mangle]
     static mut Plab: libc::c_ulong;
@@ -634,15 +632,16 @@ unsafe extern "C" fn ShowSegments() {
     println!();
 }
 unsafe extern "C" fn DumpSymbolTable(sorted: bool) {
-    if !F_symfile.is_null() {
-        let mut fi: *mut FILE =
-            fopen(F_symfile, b"w\x00" as *const u8 as *const libc::c_char);
+    if !state.parameters.symbolsFile.is_empty() {
+        // FIXME: replace this with correct file reference
+        let mut symfile = state.parameters.symbolsFile.clone();
+        symfile.push_str("\x00");
+        let mut fi: *mut FILE = fopen(symfile.as_ptr() as *const i8, b"w\x00" as *const u8 as *const libc::c_char);
         if !fi.is_null() {
             ShowSymbols(fi, sorted);
             fclose(fi);
         } else {
-            printf(b"Warning: Unable to open Symbol Dump file \'%s\'\n\x00" as
-                       *const u8 as *const libc::c_char, F_symfile);
+            println!("Warning: Unable to open Symbol Dump file '{}'", state.parameters.symbolsFile);
         }
     };
 }
@@ -781,9 +780,9 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     // handled by the current_block craziness.
                     current_block = 3124391281584211484; // FIXME: remove this
                 }
-                115 => {
+                115 => { // 's' - FIXME: convert back to original char
                     /*  F_symfile   */
-                    F_symfile = str;
+                    state.parameters.symbolsFile = transient::str_pointer_to_string(str);
                     current_block = 15042310719884093888; // FIXME: remove this
                 }
                 118 => { // 'v' - FIXME: convert back to original char
