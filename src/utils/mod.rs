@@ -54,7 +54,7 @@ pub fn panic(message: &str) {
  * lesser, equal, or greater in alphabetic order.
  * In original C code, "CompareAlpha()" in main.c
  */
- pub fn compare_alpha(arg1: &str, arg2: &str) -> Ordering {
+pub fn compare_alpha(arg1: &str, arg2: &str) -> Ordering {
     // FIXME: there might be smarter/faster/shorter ways of doing this in Rust
     let s1 = arg1.to_lowercase();
     let s2 = arg2.to_lowercase();
@@ -72,6 +72,25 @@ pub fn panic(message: &str) {
         }
     }
     Ordering::Equal
+}
+
+/**
+ * Extract a typical filename from a string, removing wrapping quotes when neeeded.
+ * In original C code, "getfilename()" in ops.c
+ */
+pub fn get_filename(string: &str) -> &str {
+    if string.len() > 0 && &string[0..1] == "\"" {
+        match &string[1..].find("\"") {
+            Some(pos) => {
+                return &string[1..pos + 1];
+            },
+            _ => {
+                return &string[1..];
+            }
+        }
+    }
+
+    &string
 }
 
 
@@ -129,5 +148,18 @@ mod tests {
         assert_eq!(compare_alpha("z", "1"), Ordering::Greater); // but we might want to revisit
         assert_eq!(compare_alpha("1", "a"), Ordering::Less); // this depending on what the
         assert_eq!(compare_alpha("1", "z"), Ordering::Less); // original actually does
-	}
+    }
+
+    #[test]
+    fn test_get_filename() {
+        assert_eq!(get_filename("a"), "a");
+        assert_eq!(get_filename("another"), "another");
+        assert_eq!(get_filename("some word or another"), "some word or another");
+        assert_eq!(get_filename("../a/name\\a.txt"), "../a/name\\a.txt");
+        assert_eq!(get_filename("\"quoted\""), "quoted");
+        assert_eq!(get_filename("\"quoted_but.with.chars\""), "quoted_but.with.chars");
+        assert_eq!(get_filename("\"../a/name\\a.txt\""), "../a/name\\a.txt");
+        assert_eq!(get_filename("\"interrupted"), "interrupted");
+    }
+
 }
