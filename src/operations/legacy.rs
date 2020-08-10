@@ -1,4 +1,5 @@
 use libc;
+use std::cmp::Ordering;
 
 use crate::constants::{
     DEF_ORG_FILL,
@@ -18,6 +19,7 @@ use crate::types::enums::{
 };
 use crate::utils::{
     filesystem,
+    get_filename,
     transient,
 };
 
@@ -1852,11 +1854,16 @@ pub unsafe extern "C" fn v_repend(mut _str: *mut libc::c_char,
 pub static mut incdirlist: *mut _STRLIST =
     0 as *const _STRLIST as *mut _STRLIST;
 #[no_mangle]
-pub unsafe extern "C" fn v_incdir(mut str: *mut libc::c_char,
-                                  mut _dummy: *mut _MNE) {
+pub unsafe extern "C" fn v_incdir(mut str: *mut libc::c_char, mut _dummy: *mut _MNE) {
     let mut tail: *mut *mut _STRLIST = 0 as *mut *mut _STRLIST;
     let mut buf: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut found: libc::c_int = 0 as libc::c_int;
+    // FIXME: new, start
+    let filename = get_filename(transient::str_pointer_to_string(str).as_str()).to_owned();
+    if state.execution.includeDirList.iter().find(|dir| dir.cmp(&&filename) == Ordering::Equal).is_none() {
+        state.execution.includeDirList.push(filename);
+    }
+    // FIXME: new, end
     buf = getfilename(str);
     tail = &mut incdirlist;
     while !(*tail).is_null() {

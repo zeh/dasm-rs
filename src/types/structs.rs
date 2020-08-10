@@ -62,6 +62,7 @@ pub struct OtherMainState {
 pub struct ExecutionState {
 	pub bitOrder: BitOrder,
 	pub isClear: bool,
+	pub includeDirList: Vec::<String>,
 	pub listMode: ListMode,
 	pub modeNext: AddressModes,
 	pub redoEval: i32,
