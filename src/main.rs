@@ -1963,22 +1963,19 @@ pub unsafe extern "C" fn pushinclude(mut str: *mut libc::c_char) {
 #[no_mangle]
 pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool, mut sText: *const libc::c_char) -> AsmErrorEquates {
     let mut errorOutput: String = String::new();
-    let mut str: *const libc::c_char = 0 as *const libc::c_char;
     let mut pincfile: *mut _INCFILE = 0 as *mut _INCFILE;
     /* file pointer we print error messages to */
     let errorToFile = !state.parameters.listFile.is_empty();
     let mut errorFile = &mut state.output.listFile;
     if find_error_definition(err).fatal {
-        state.other.stopAtEnd = 1 as libc::c_int != 0
+        state.other.stopAtEnd = true
     }
     pincfile = pIncfile;
     while (*pincfile).flags as libc::c_int & 0x1 as libc::c_int != 0 {
         pincfile = (*pincfile).next
     }
-    // FIXME: use real strings; this is a bit messy
-    let mut desc = find_error_definition(err).description.clone().to_owned();
-    desc.push_str("\n\x00");
-    str = desc.as_ptr() as *const i8;
+    let mut errorDescription = find_error_definition(err).description.clone().to_owned();
+    errorDescription.push_str("\n");
     /*
         New error format selection for 2.20.11 since some
         people *don't* use MS products. For historical
@@ -2039,18 +2036,17 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool, mut 
             errorOutput.push_str(errorMessage.as_str());
         }
     }
-    let mut errorMessage = transient::str_pointer_to_string(str);
     // This is a bit of a hack: since we can't use variables as the template in format!(),
     // we simply replace "{}" in the template with the expected string. This works well,
     // but it means the template only supports a single {}, and no other formatting directive.
     if !sText.is_null() {
-        errorMessage = errorMessage.replace("{}", transient::str_pointer_to_string(sText).as_str());
+        errorDescription = errorDescription.replace("{}", transient::str_pointer_to_string(sText).as_str());
     }
     if errorToFile {
         /* print second part of message, always the same for now */
-        filesystem::write_to_file_maybe(errorFile, errorMessage.as_str());
+        filesystem::write_to_file_maybe(errorFile, errorDescription.as_str());
     }
-    errorOutput.push_str(errorMessage.as_str());
+    errorOutput.push_str(errorDescription.as_str());
     // FIXME: this is just temporary, for passbuffer. Remove later.
     errorOutput.push_str("\x00");
     passbuffer_update(0, errorOutput.as_mut_ptr() as *mut i8);
