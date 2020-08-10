@@ -441,7 +441,7 @@ unsafe extern "C" fn CompareAddress(mut arg1: *const libc::c_void,
     return ((*sym1).value - (*sym2).value) as libc::c_int;
 }
 /* bTableSort true -> by address, false -> by name [phf] */
-unsafe extern "C" fn ShowSymbols(mut file: *mut FILE, mut bTableSort: bool) {
+unsafe extern "C" fn ShowSymbols(mut file: *mut FILE, sorted: bool) {
     /* Display sorted (!) symbol table - if it runs out of memory, table will be displayed unsorted */
     let mut symArray: *mut *mut _SYMBOL = 0 as *mut *mut _SYMBOL;
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
@@ -493,28 +493,34 @@ unsafe extern "C" fn ShowSymbols(mut file: *mut FILE, mut bTableSort: bool) {
             }
             i += 1
         }
-        if bTableSort {
-            fprintf(file,
-                    b" (sorted by address)\n\x00" as *const u8 as
-                        *const libc::c_char);
-            qsort(symArray as *mut libc::c_void, nPtr as size_t,
-                  ::std::mem::size_of::<*mut _SYMBOL>() as libc::c_ulong,
-                  Some(CompareAddress as
-                           unsafe extern "C" fn(_: *const libc::c_void,
-                                                _: *const libc::c_void)
-                               -> libc::c_int));
-            /* Sort via address */
+        if sorted {
+            // Sort via address
+            fprintf(file, b" (sorted by address)\n\x00" as *const u8 as *const libc::c_char);
+            qsort(
+                symArray as *mut libc::c_void,
+                nPtr as size_t,
+                ::std::mem::size_of::<*mut _SYMBOL>() as libc::c_ulong,
+                Some(
+                    CompareAddress as unsafe extern "C" fn(
+                        _: *const libc::c_void,
+                        _: *const libc::c_void
+                    ) -> libc::c_int
+                )
+            );
         } else {
-            fprintf(file,
-                    b" (sorted by symbol)\n\x00" as *const u8 as
-                        *const libc::c_char);
-            qsort(symArray as *mut libc::c_void, nPtr as size_t,
-                  ::std::mem::size_of::<*mut _SYMBOL>() as libc::c_ulong,
-                  Some(CompareAlpha as
-                           unsafe extern "C" fn(_: *const libc::c_void,
-                                                _: *const libc::c_void)
-                               -> libc::c_int));
-            /* Sort via name */
+            // Sort via name
+            fprintf(file, b" (sorted by symbol)\n\x00" as *const u8 as *const libc::c_char);
+            qsort(
+                symArray as *mut libc::c_void,
+                nPtr as size_t,
+                ::std::mem::size_of::<*mut _SYMBOL>() as libc::c_ulong,
+                Some(
+                    CompareAlpha as unsafe extern "C" fn(
+                        _: *const libc::c_void,
+                        _: *const libc::c_void
+                    ) -> libc::c_int
+                )
+            );
         }
         /* now display sorted list */
         i = 0 as libc::c_int; /* If a string, display actual string */
@@ -627,12 +633,12 @@ unsafe extern "C" fn ShowSegments() {
     }
     println!();
 }
-unsafe extern "C" fn DumpSymbolTable(mut bTableSort: bool) {
+unsafe extern "C" fn DumpSymbolTable(sorted: bool) {
     if !F_symfile.is_null() {
         let mut fi: *mut FILE =
             fopen(F_symfile, b"w\x00" as *const u8 as *const libc::c_char);
         if !fi.is_null() {
-            ShowSymbols(fi, bTableSort);
+            ShowSymbols(fi, sorted);
             fclose(fi);
         } else {
             printf(b"Warning: Unable to open Symbol Dump file \'%s\'\n\x00" as
