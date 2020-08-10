@@ -675,9 +675,8 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
             // FIXME: use better strings for parsing chars. These are temporary.
             let str_rs_1 = &[*str as u8];
             let str_rs = std::str::from_utf8(str_rs_1).unwrap();
-            match *(*av.offset(i as isize)).offset(1 as libc::c_int as isize)
-                      as libc::c_int {
-                69 => { // 'E' - FIXME: convert back to original char
+            match *(*av.offset(i as isize)).offset(1) as u8 as char {
+                'E' => {
                     /* TODO: need to improve option parsing and errors for it */
                     // FIXME: simplify this double match
                     match str_rs.parse::<u8>() {
@@ -691,7 +690,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     }
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
-                84 => { // 'T' - FIXME: convert back to original char
+                'T' => {
                     // FIXME: simplify this double match
                     match str_rs.parse::<u8>() {
                         Ok(digit) => {
@@ -705,16 +704,16 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     *pbTableSort = state.parameters.sortMode != SortMode::default();
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
-                100 => { // 'd' - FIXME: convert back to original char
-                    state.parameters.debug =
-                        strtol(str,
-                               0 as *mut libc::c_void as
-                                   *mut *mut libc::c_char, 10 as libc::c_int)
-                            as libc::c_int != 0 as libc::c_int;
+                'd' => {
+                    state.parameters.debug = strtol(
+                        str,
+                        0 as *mut libc::c_void as *mut *mut libc::c_char,
+                        10 as libc::c_int
+                    ) as libc::c_int != 0 as libc::c_int;
                     println!("Debug trace {}", if state.parameters.debug { "ON" } else { "OFF" });
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
-                77 | 68 => { // 'M' | 'D' - FIXME: convert back to original char
+                'M' | 'D' => {
                     while *str as libc::c_int != 0 &&
                               *str as libc::c_int != '=' as i32 {
                         str = str.offset(1)
@@ -741,7 +740,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     } else { v_set(str, 0 as *mut _MNE); }
                     current_block = 17788412896529399552;
                 }
-                102 => { // 'f' - FIXME: convert back to original char
+                'f' => {
                     // FIXME: simplify this double match
                     match str_rs.parse::<u8>() {
                         Ok(digit) => {
@@ -754,37 +753,33 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     }
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
-                111 => { // 'o' - FIXME: convert back to original char
-                    /*  F_outfile   */
+                'o' => {
                     F_outfile = str;
                     current_block = 15042310719884093888; // FIXME: remove this
                 }
-                76 => { // 'L' - FIXME: convert back to original char
+                'L' => {
                     state.parameters.listAllPasses = true;
                     current_block = 14976246946730902058; // FIXME: remove this
                 }
-                108 => { // 'l' - FIXME: convert back to original char
+                'l' => {
                     // FIXME: this is supposed to be `F_listfile = str;` but is
                     // handled by the current_block craziness.
                     current_block = 14976246946730902058; // FIXME: remove this
                 }
-                80 => { // 'P' - FIXME: convert back to original char
-                    /*  F_Passes   */
+                'P' => {
                     doAllPasses = true;
                     current_block = 3124391281584211484; // FIXME: remove this
                 }
-                112 => { // 'p' - FIXME: convert back to original char
+                'p' => {
                     // FIXME: this is supposed to be `nMaxPasses = atoi(str);` but is
                     // handled by the current_block craziness.
                     current_block = 3124391281584211484; // FIXME: remove this
                 }
-                115 => { // 's' - FIXME: convert back to original char
-                    /*  F_symfile   */
+                's' => {
                     state.parameters.symbolsFile = transient::str_pointer_to_string(str);
                     current_block = 15042310719884093888; // FIXME: remove this
                 }
-                118 => { // 'v' - FIXME: convert back to original char
-                    /*  F_verbose   */
+                'v' => {
                     // FIXME: simplify this double match
                     match str_rs.parse::<u8>() {
                         Ok(digit) => {
@@ -797,11 +792,11 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     }
                     current_block = 17788412896529399552;
                 }
-                73 => { // 'I' - FIXME: convert back to original char
+                'I' => {
                     v_incdir(str, 0 as *mut _MNE);
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
-                83 => { // 'S' - FIXME: convert back to original char
+                'S' => {
                     state.parameters.strictMode = true;
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
