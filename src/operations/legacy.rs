@@ -17,6 +17,7 @@ use crate::types::enums::{
 };
 use crate::utils::{
     filesystem,
+    formatting,
     get_filename,
     transient,
 };
@@ -107,8 +108,6 @@ extern "C" {
     #[no_mangle]
     fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const libc::c_char)
      -> libc::c_int;
-    #[no_mangle]
-    fn sftos(val: libc::c_long, flags: libc::c_int) -> *mut libc::c_char;
     #[no_mangle]
     fn rmnode(base: *mut *mut libc::c_void, bytes: libc::c_int);
     #[no_mangle]
@@ -1826,11 +1825,12 @@ pub unsafe extern "C" fn generate() {
             match state.parameters.format {
                 Format::Raw | Format::Default => {
                     if (*Csegment).org < org {
-                        printf(b"segment: %s %s  vs current org: %04lx\n\x00"
-                                   as *const u8 as *const libc::c_char,
-                               (*Csegment).name,
-                               sftos((*Csegment).org as libc::c_long,
-                                     (*Csegment).flags as libc::c_int), org);
+                        println!(
+                            "segment: {} {}  vs current org: {:04x}",
+                            transient::str_pointer_to_string((*Csegment).name).as_str(),
+                            formatting::segment_address_to_string((*Csegment).org, (*Csegment).flags),
+                            org
+                        );
                         asmerr(AsmErrorEquates::OriginReverseIndexed,
                                true,
                                0 as *const libc::c_char);

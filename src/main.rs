@@ -38,6 +38,7 @@ use constants::{
 use globals::state;
 use types::flags:: {
     ReasonCodes,
+    SegmentTypes,
 };
 use types::enums::{
     AddressModes,
@@ -51,6 +52,7 @@ use types::enums::{
 use utils::{
     filesystem,
     find_error_definition,
+    formatting,
     hash_string,
     panic,
     transient,
@@ -384,7 +386,7 @@ unsafe extern "C" fn ShowUnresolvedSymbols() -> libc::c_int {
                 if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
                     println!("{:24} {}",
                         transient::str_pointer_to_string((*sym).name),
-                        transient::str_pointer_to_string(sftos((*sym).value, (*sym).flags as libc::c_int)),
+                        formatting::segment_address_to_string((*sym).value as u64, (*sym).flags),
                     );
                 }
                 sym = (*sym).next
@@ -535,31 +537,29 @@ unsafe extern "C" fn ShowSymbols(mut file: *mut FILE, sorted: bool) {
 }
 unsafe extern "C" fn ShowSegments() {
     let mut seg: *mut _SEGMENT = 0 as *mut _SEGMENT;
-    let mut bss: *const libc::c_char = 0 as *const libc::c_char;
-    let mut sFormat: *const libc::c_char =
-        b"%-24s %-3s %-8s %-8s %-8s %-8s\n\x00\x00" as *const u8 as
-            *const libc::c_char;
     println!("\n----------------------------------------------------------------------");
-    printf(sFormat, b"SEGMENT NAME\x00" as *const u8 as *const libc::c_char,
-           b"\x00" as *const u8 as *const libc::c_char,
-           b"INIT PC\x00" as *const u8 as *const libc::c_char,
-           b"INIT RPC\x00" as *const u8 as *const libc::c_char,
-           b"FINAL PC\x00" as *const u8 as *const libc::c_char,
-           b"FINAL RPC\x00" as *const u8 as *const libc::c_char);
+    println!(
+        "{:24} {:3} {:8} {:8} {:8} {:8}",
+        "SEGMENT NAME", "", "INIT PC", "INIT RPC", "FINAL PC", "FINAL RPC",
+    );
     seg = Seglist;
     while !seg.is_null() {
-        bss =
-            if (*seg).flags as libc::c_int & 0x10 as libc::c_int != 0 {
-                b"[u]\x00" as *const u8 as *const libc::c_char
-            } else { b"   \x00" as *const u8 as *const libc::c_char };
-        printf(sFormat, (*seg).name, bss,
-               sftos((*seg).initorg as libc::c_long,
-                     (*seg).initflags as libc::c_int),
-               sftos((*seg).initrorg as libc::c_long,
-                     (*seg).initrflags as libc::c_int),
-               sftos((*seg).org as libc::c_long, (*seg).flags as libc::c_int),
-               sftos((*seg).rorg as libc::c_long,
-                     (*seg).rflags as libc::c_int));
+        let bss = if (*seg).flags & SegmentTypes::BSS != 0 {
+            "[u]"
+        } else {
+            "   "
+        };
+        // Originally, "%-24s %-3s %-8s %-8s %-8s %-8s"
+        // FIXME: this is rendering different from the reference version
+        println!(
+            "{:24} {:3} {:8} {:8} {:8} {:8}",
+            transient::str_pointer_to_string((*seg).name).as_str(),
+            bss,
+            formatting::segment_address_to_string((*seg).initorg, (*seg).initflags),
+            formatting::segment_address_to_string((*seg).initrorg, (*seg).initrflags),
+            formatting::segment_address_to_string((*seg).org, (*seg).flags),
+            formatting::segment_address_to_string((*seg).rorg, (*seg).rflags),
+        );
         seg = (*seg).next
     }
     println!("----------------------------------------------------------------------");
@@ -1918,10 +1918,15 @@ pub unsafe extern "C" fn pushinclude(mut str: *mut libc::c_char) {
     fi = pfopen(str, b"rb\x00" as *const u8 as *const libc::c_char);
     if !fi.is_null() {
         if state.parameters.verbosity as u8 > Verbosity::Two as u8 {
-            printf(b"%.*s Including file \"%s\"\n\x00" as *const u8 as
-                       *const libc::c_char,
-                    (state.other.incLevel * 4) as libc::c_int,
-                   b"\x00" as *const u8 as *const libc::c_char, str);
+            // Originally this had a strange formatting using
+            // "state.other.incLevel * 4" as padding ("%.*s"),
+            // but with no discernible effect since an empty
+            // string was passed anyway. This drops all flexible
+            // padding in favor of a single space.
+            println!(
+                " Including file \"{}\"",
+                transient::str_pointer_to_string(str).as_str()
+            );
         }
         state.other.incLevel += 1;
         filesystem::writeln_to_file_maybe(

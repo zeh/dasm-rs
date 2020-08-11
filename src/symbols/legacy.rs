@@ -11,6 +11,9 @@ use crate::types::flags::{
 use crate::types::enums::{
     AsmErrorEquates,
 };
+use crate::utils::{
+    transient,
+};
 
 extern "C" {
     #[no_mangle]
@@ -267,9 +270,12 @@ pub unsafe extern "C" fn programlabel() {
             state.execution.redoIndex += 1;
             state.execution.redoWhy |= ReasonCodes::ForwardReference;
             if state.parameters.debug {
-                printf(b"redo 13: \'%s\' %04x %04x\n\x00" as *const u8 as
-                           *const libc::c_char, (*sym).name,
-                       (*sym).flags as libc::c_int, cflags as libc::c_int);
+                println!(
+                    "redo 13: '{}' {:04x} {:04x}",
+                    transient::str_pointer_to_string((*sym).name).as_str(),
+                    (*sym).flags,
+                    cflags,
+                );
             }
         } else if cflags as libc::c_int & 0x1 as libc::c_int != 0 &&
                       (*sym).flags as libc::c_int & 0x4 as libc::c_int != 0 {
