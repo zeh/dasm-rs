@@ -248,7 +248,7 @@ unsafe extern "C" fn parse_value(mut str: *mut libc::c_char,
     sym = eval(str, 0 as libc::c_int);
     if !(*sym).next.is_null() ||
            AddressModes::ByteAdr as i32 != (*sym).addrmode as libc::c_int {
-        asmerr(AsmErrorEquates::SyntaxError, 1 as libc::c_int != 0, str);
+        asmerr(AsmErrorEquates::SyntaxError, true, str);
     } else if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
         state.execution.redoIndex += 1;
         state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved;
@@ -324,7 +324,7 @@ unsafe extern "C" fn parse_scratchpad_register(mut str: *mut libc::c_char,
     } else {
         if regnum > 14 as libc::c_int as libc::c_ulong {
             asmerr(AsmErrorEquates::ValueMustBeLowerThanF,
-                   1 as libc::c_int != 0, str);
+                   true, str);
         }
         *reg = regnum as libc::c_uchar;
         return 0 as libc::c_int
@@ -390,7 +390,7 @@ unsafe extern "C" fn v_ins_outs(mut str: *mut libc::c_char,
     parse_value(str, &mut operand);
     if operand > 15 as libc::c_int as libc::c_ulong {
         f8err(AsmErrorEquates::ValueMustBeLowerThan10, (*mne).name, str,
-              0 as libc::c_int != 0);
+              false);
     }
     emit_opcode1(((*mne).opcode[0 as libc::c_int as usize] as libc::c_ulong |
                       operand & 15 as libc::c_int as libc::c_ulong) as
@@ -418,7 +418,7 @@ unsafe extern "C" fn v_sl_sr(mut str: *mut libc::c_char, mut mne: *mut _MNE) {
             }
             _ => {
                 f8err(AsmErrorEquates::ValueMustBeOneOrFour, (*mne).name,
-                      str, 0 as libc::c_int != 0);
+                      str, false);
                 emit_opcode1(0 as libc::c_int as libc::c_uchar);
             }
         }
@@ -430,7 +430,7 @@ unsafe extern "C" fn v_lis(mut str: *mut libc::c_char, mut mne: *mut _MNE) {
     parse_value(str, &mut operand);
     if operand > 15 as libc::c_int as libc::c_ulong {
         f8err(AsmErrorEquates::ValueMustBeLowerThan10, (*mne).name, str,
-              0 as libc::c_int != 0);
+              false);
     }
     emit_opcode1((0x70 as libc::c_int as libc::c_ulong |
                       operand & 15 as libc::c_int as libc::c_ulong) as
@@ -443,7 +443,7 @@ unsafe extern "C" fn v_lisu_lisl(mut str: *mut libc::c_char,
     parse_value(str, &mut operand);
     if operand > 7 as libc::c_int as libc::c_ulong {
         f8err(AsmErrorEquates::ValueMustBeLowerThan8, (*mne).name, str,
-              0 as libc::c_int != 0);
+              false);
     }
     emit_opcode1(((*mne).opcode[0 as libc::c_int as usize] as libc::c_ulong |
                       operand & 7 as libc::c_int as libc::c_ulong) as
@@ -484,7 +484,7 @@ unsafe extern "C" fn v_lr(mut str: *mut libc::c_char, mut mne: *mut _MNE) {
     }
     if 1 as libc::c_int != ncommas {
         f8err(AsmErrorEquates::SyntaxError, (*mne).name, str,
-              0 as libc::c_int != 0);
+              false);
         return
     }
     /* extract operand strings  */
@@ -626,7 +626,7 @@ unsafe extern "C" fn v_lr(mut str: *mut libc::c_char, mut mne: *mut _MNE) {
     }
     if opcode < 0 as libc::c_int {
         f8err(AsmErrorEquates::IllegalOperandCombination, (*mne).name,
-              str, 1 as libc::c_int != 0);
+              str, true);
     } else { emit_opcode1(opcode as libc::c_uchar); };
 }
 /*
@@ -663,7 +663,7 @@ unsafe extern "C" fn generate_branch(mut opcode: libc::c_uchar,
                     b"%d\x00" as *const u8 as *const libc::c_char,
                     disp as libc::c_int);
             asmerr(AsmErrorEquates::BranchOutOfRange,
-                   0 as libc::c_int != 0, buf.as_mut_ptr());
+                   false, buf.as_mut_ptr());
         }
     } else {
         /* unknown pc, will be (hopefully) resolved in future passes */
@@ -702,7 +702,7 @@ unsafe extern "C" fn v_bf_bt(mut str: *mut libc::c_char, mut mne: *mut _MNE) {
     }
     if 1 as libc::c_int != ncommas {
         f8err(AsmErrorEquates::SyntaxError, (*mne).name, str,
-              0 as libc::c_int != 0);
+              false);
         return
     }
     /* extract operands */
@@ -726,12 +726,12 @@ unsafe extern "C" fn v_bf_bt(mut str: *mut libc::c_char, mut mne: *mut _MNE) {
         /* bf */
         if value > 15 as libc::c_int as libc::c_ulong {
             f8err(AsmErrorEquates::ValueMustBeLowerThan10, (*mne).name, str,
-                  0 as libc::c_int != 0);
+                  false);
             value &= 15 as libc::c_int as libc::c_ulong
         }
     } else if value > 7 as libc::c_int as libc::c_ulong {
         f8err(AsmErrorEquates::ValueMustBeLowerThan8, (*mne).name, str,
-              0 as libc::c_int != 0);
+              false);
         value &= 7 as libc::c_int as libc::c_ulong
     }
     generate_branch(((*mne).opcode[0 as libc::c_int as usize] as libc::c_ulong
@@ -749,7 +749,7 @@ unsafe extern "C" fn v_wordop(mut str: *mut libc::c_char,
     parse_value(str, &mut value);
     if value > 0xffff as libc::c_int as libc::c_ulong {
         f8err(AsmErrorEquates::ValueMustBeLowerThan10000, (*mne).name, str,
-              0 as libc::c_int != 0);
+              false);
     }
     emit_opcode3((*mne).opcode[0 as libc::c_int as usize] as libc::c_uchar,
                  (value >> 8 as libc::c_int &
@@ -768,7 +768,7 @@ unsafe extern "C" fn v_byteop(mut str: *mut libc::c_char,
     parse_value(str, &mut value);
     if value > 0xff as libc::c_int as libc::c_ulong {
         f8err(AsmErrorEquates::AddressMustBeLowerThan100, (*mne).name, str,
-              0 as libc::c_int != 0);
+              false);
     }
     emit_opcode2((*mne).opcode[0 as libc::c_int as usize] as libc::c_uchar,
                  (value & 0xff as libc::c_int as libc::c_ulong) as

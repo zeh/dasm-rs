@@ -295,7 +295,7 @@ pub unsafe extern "C" fn programlabel() {
                             (*sym).name,
                             sftos((*sym).value, 0 as libc::c_int));
                     asmerr(AsmErrorEquates::LabelMismatch,
-                           0 as libc::c_int != 0, sBuffer.as_mut_ptr());
+                           false, sBuffer.as_mut_ptr());
                 }
                 state.execution.redoIndex += 1;
                 state.execution.redoWhy |= ReasonCodes::PhaseError

@@ -295,7 +295,7 @@ pub struct _SYMBOL {
 #[no_mangle]
 pub unsafe extern "C" fn v_processor(mut str: *mut libc::c_char,
                                      mut _dummy: *mut _MNE) {
-    static mut bCalled: bool = 0 as libc::c_int != 0;
+    static mut bCalled: bool = false;
     let mut PreviousProcessor: libc::c_ulong = Processor;
     Processor = 0 as libc::c_int as libc::c_ulong;
     if strcmp(str, b"6502\x00" as *const u8 as *const libc::c_char) ==
@@ -345,14 +345,14 @@ pub unsafe extern "C" fn v_processor(mut str: *mut libc::c_char,
         state.execution.bitOrder = BitOrder::MostLeast;
         Processor = 0xf8 as libc::c_int as libc::c_ulong
     }
-    bCalled = 1 as libc::c_int != 0;
+    bCalled = true;
     if Processor == 0 {
         asmerr(AsmErrorEquates::ProcessorNotSupported,
-               1 as libc::c_int != 0, str);
+               true, str);
     }
     if PreviousProcessor != 0 && Processor != PreviousProcessor {
         asmerr(AsmErrorEquates::OnlyOneProcessorSupported,
-               1 as libc::c_int != 0, str);
+               true, str);
     };
 }
 #[no_mangle]
@@ -417,7 +417,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
                 b"%s %s\x00" as *const u8 as *const libc::c_char, (*mne).name,
                 str);
         asmerr(AsmErrorEquates::IllegalAddressingMode,
-               0 as libc::c_int != 0, sBuffer.as_mut_ptr());
+               false, sBuffer.as_mut_ptr());
         FreeSymbolList(symbase);
         //FIX
         state.execution.redoIndex += 1;
@@ -430,7 +430,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
         if (*mne).okmask & ((1 as libc::c_long) << addrmode) as libc::c_ulong
                == 0 {
             asmerr(AsmErrorEquates::IllegalForcedAddressingMode,
-                   0 as libc::c_int != 0, (*mne).name);
+                   false, (*mne).name);
             FreeSymbolList(symbase);
             //FIX: Cause assembly to fail when an invalid mode is used for an opcode...
             state.execution.redoIndex += 1;
@@ -467,7 +467,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
                         b"%s %s\x00" as *const u8 as *const libc::c_char,
                         (*mne).name, str);
                 asmerr(AsmErrorEquates::AddressMustBeLowerThan100,
-                       0 as libc::c_int != 0, sBuffer_0.as_mut_ptr());
+                       false, sBuffer_0.as_mut_ptr());
                 break ;
             }
         } else {
@@ -489,7 +489,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             if (*sym).flags as libc::c_int & 0x1 as libc::c_int == 0 &&
                    (*sym).value >= 0x100 as libc::c_int as libc::c_long {
                 asmerr(AsmErrorEquates::AddressMustBeLowerThan100,
-                       0 as libc::c_int != 0, 0 as *const libc::c_char);
+                       false, 0 as *const libc::c_char);
             }
             let fresh0 = opidx;
             opidx = opidx + 1;
@@ -497,7 +497,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             if (*symbase).flags as libc::c_int & 0x1 as libc::c_int == 0 {
                 if (*symbase).value > 7 as libc::c_int as libc::c_long {
                     asmerr(AsmErrorEquates::IllegalBitSpecification,
-                           0 as libc::c_int != 0, str);
+                           false, str);
                 } else {
                     state.output.generated[0] = (
                         state.output.generated[0] as libc::c_long +
@@ -510,7 +510,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             if (*symbase).flags as libc::c_int & 0x1 as libc::c_int == 0 {
                 if (*symbase).value > 7 as libc::c_int as libc::c_long {
                     asmerr(AsmErrorEquates::IllegalBitSpecification,
-                           0 as libc::c_int != 0, str);
+                           false, str);
                 } else {
                     state.output.generated[0] = (
                         state.output.generated[0] as libc::c_long +
@@ -522,7 +522,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             if (*sym).flags as libc::c_int & 0x1 as libc::c_int == 0 &&
                    (*sym).value >= 0x100 as libc::c_int as libc::c_long {
                 asmerr(AsmErrorEquates::AddressMustBeLowerThan100,
-                       0 as libc::c_int != 0, 0 as *const libc::c_char);
+                       false, 0 as *const libc::c_char);
             }
             state.output.generated[opidx] = (*sym).value as u8;
             opidx = opidx + 1;
@@ -552,13 +552,13 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             if (*sym).flags as libc::c_int & 0x1 as libc::c_int == 0 &&
                    (*sym).value >= 0x100 as libc::c_int as libc::c_long {
                 asmerr(AsmErrorEquates::AddressMustBeLowerThan100,
-                       0 as libc::c_int != 0, 0 as *const libc::c_char);
+                       false, 0 as *const libc::c_char);
             }
             state.output.generated[opidx as usize] = (*sym).value as u8;
             sym = (*sym).next
         } else {
             asmerr(AsmErrorEquates::NotEnoughArgs,
-                   1 as libc::c_int != 0, 0 as *const libc::c_char);
+                   true, 0 as *const libc::c_char);
         }
         opidx += 1
     }
@@ -567,7 +567,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
         opidx += 1;
         if sym.is_null() {
             asmerr(AsmErrorEquates::NotEnoughArgs,
-                   1 as libc::c_int != 0, 0 as *const libc::c_char);
+                   true, 0 as *const libc::c_char);
         } else if (*sym).flags as libc::c_int & 0x1 as libc::c_int == 0 {
             let mut pc: libc::c_long = 0;
             let mut pcf: libc::c_uchar = 0;
@@ -597,7 +597,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
                             b"%ld\x00" as *const u8 as *const libc::c_char,
                             dest);
                     asmerr(AsmErrorEquates::BranchOutOfRange,
-                           0 as libc::c_int != 0, sBuffer_1.as_mut_ptr());
+                           false, sBuffer_1.as_mut_ptr());
                     state.execution.redoIndex += 1;
                     state.execution.redoWhy |= ReasonCodes::BranchOutOfRange;
                     (*sym).flags =
@@ -812,7 +812,7 @@ pub unsafe extern "C" fn gethexdig(mut c: libc::c_int) -> libc::c_int {
     }
     sprintf(sBuffer.as_mut_ptr(),
             b"Bad Hex Digit %c\x00" as *const u8 as *const libc::c_char, c);
-    asmerr(AsmErrorEquates::SyntaxError, 0 as libc::c_int != 0,
+    asmerr(AsmErrorEquates::SyntaxError, false,
            sBuffer.as_mut_ptr());
     println!("(Must be a valid hex digit)");
     filesystem::writeln_to_file_maybe(&mut state.output.listFile, "(Must be a valid hex digit)");
@@ -823,7 +823,7 @@ pub unsafe extern "C" fn v_err(mut _str: *mut libc::c_char,
                                mut _dummy: *mut _MNE) {
     programlabel();
     asmerr(AsmErrorEquates::ErrPseudoOpEncountered,
-           1 as libc::c_int != 0, 0 as *const libc::c_char);
+           true, 0 as *const libc::c_char);
     std::process::exit(1);
 }
 #[no_mangle]
@@ -978,7 +978,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
                         sprintf(sBuffer_0.as_mut_ptr(),
                                 b"%s %ld\x00" as *const u8 as *const libc::c_char, (*mne).name, value);
                         asmerr(AsmErrorEquates::AddressMustBeLowerThan10000,
-                               0 as libc::c_int != 0, sBuffer_0.as_mut_ptr());
+                               false, sBuffer_0.as_mut_ptr());
                     }
                     if state.execution.bitOrder != BitOrder::LeastMost {
                         state.output.generated[state.output.generatedLength] = (value >> 8 & 0xff) as u8;
@@ -1022,7 +1022,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
                                 b"%s %ld\x00" as *const u8 as
                                     *const libc::c_char, (*mne).name, value);
                         asmerr(AsmErrorEquates::AddressMustBeLowerThan100,
-                               0 as libc::c_int != 0, sBuffer.as_mut_ptr());
+                               false, sBuffer.as_mut_ptr());
                     }
                     state.output.generated[state.output.generatedLength] = (value & 0xff) as u8;
                     state.output.generatedLength += 1;
@@ -1082,7 +1082,7 @@ pub unsafe extern "C" fn v_org(mut str: *mut libc::c_char,
         state.output.orgFill = (*(*sym).next).value as u8;
         if (*(*sym).next).flags as libc::c_int & 0x1 as libc::c_int != 0 {
             asmerr(AsmErrorEquates::ValueUndefined,
-                   1 as libc::c_int != 0, 0 as *const libc::c_char);
+                   true, 0 as *const libc::c_char);
         }
     }
     programlabel();
@@ -1211,7 +1211,7 @@ pub unsafe extern "C" fn v_equ(mut str: *mut libc::c_char,
                                                                              isize);
                         *fresh32 = '.' as i32 as libc::c_char;
                         (*fresh32 as libc::c_int) != 0
-                    } && 1 as libc::c_int != 0) {
+                    } && true) {
         /* Av[0][0] = '\0'; */
         if (*Csegment).flags as libc::c_int & 0x20 as libc::c_int != 0 {
             v_rorg(str, dummy);
@@ -1235,7 +1235,7 @@ pub unsafe extern "C" fn v_equ(mut str: *mut libc::c_char,
             state.execution.redoWhy |= ReasonCodes::EquNotResolved
         } else if (*lab).value != (*sym).value {
             asmerr(AsmErrorEquates::EquValueMismatch,
-                   0 as libc::c_int != 0, 0 as *const libc::c_char);
+                   false, 0 as *const libc::c_char);
             printf(b"INFO: Label \'%s\' changed from $%04lx to $%04lx\n\x00"
                        as *const u8 as *const libc::c_char,
                    *Av.as_mut_ptr().offset(0 as libc::c_int as isize),
@@ -1603,7 +1603,7 @@ pub unsafe extern "C" fn v_if(mut str: *mut libc::c_char,
                               mut _dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     if (*Ifstack).xtrue == 0 || (*Ifstack).acctrue == 0 {
-        pushif(0 as libc::c_int != 0);
+        pushif(false);
         return
     }
     programlabel();
@@ -1611,7 +1611,7 @@ pub unsafe extern "C" fn v_if(mut str: *mut libc::c_char,
     if (*sym).flags != 0 {
         state.execution.redoIndex += 1;
         state.execution.redoWhy |= ReasonCodes::IfNotResolved;
-        pushif(0 as libc::c_int != 0);
+        pushif(false);
         (*Ifstack).acctrue = 0 as libc::c_int as libc::c_uchar;
         state.execution.redoIf |= 1 as libc::c_int as libc::c_ulong
     } else { pushif((*sym).value != 0); }
@@ -1644,21 +1644,21 @@ pub unsafe extern "C" fn v_repeat(mut str: *mut libc::c_char,
     let mut rp: *mut _REPLOOP = 0 as *mut _REPLOOP;
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     if (*Ifstack).xtrue == 0 || (*Ifstack).acctrue == 0 {
-        pushif(0 as libc::c_int != 0);
+        pushif(false);
         return
     }
     programlabel();
     sym = eval(str, 0 as libc::c_int);
     if (*sym).value == 0 as libc::c_int as libc::c_long {
-        pushif(0 as libc::c_int != 0);
+        pushif(false);
         FreeSymbolList(sym);
         return
     }
     /* Don't allow negative values for REPEAT loops */
     if (*sym).value < 0 as libc::c_int as libc::c_long {
-        pushif(0 as libc::c_int != 0);
+        pushif(false);
         FreeSymbolList(sym);
-        asmerr(AsmErrorEquates::RepeatNegative, 0 as libc::c_int != 0,
+        asmerr(AsmErrorEquates::RepeatNegative, false,
                0 as *const libc::c_char);
         return
     }
@@ -1679,7 +1679,7 @@ pub unsafe extern "C" fn v_repeat(mut str: *mut libc::c_char,
     }
     Reploop = rp;
     FreeSymbolList(sym);
-    pushif(1 as libc::c_int != 0);
+    pushif(true);
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_repend(mut _str: *mut libc::c_char,
@@ -1832,7 +1832,7 @@ pub unsafe extern "C" fn generate() {
                                sftos((*Csegment).org as libc::c_long,
                                      (*Csegment).flags as libc::c_int), org);
                         asmerr(AsmErrorEquates::OriginReverseIndexed,
-                               1 as libc::c_int != 0,
+                               true,
                                0 as *const libc::c_char);
                         std::process::exit(1);
                     }

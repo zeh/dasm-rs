@@ -929,7 +929,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                             }
                             comment =
                                 cleanup(buf.as_mut_ptr(),
-                                        0 as libc::c_int != 0);
+                                        false);
                             (*pIncfile).lineno =
                                 (*pIncfile).lineno.wrapping_add(1);
                             mne = parse(buf.as_mut_ptr());
@@ -959,7 +959,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                                               (*Ifstack).acctrue as
                                                   libc::c_int != 0 {
                                     asmerr(AsmErrorEquates::UnknownMnemonic,
-                                           0 as libc::c_int != 0,
+                                           false,
                                            *Av.as_mut_ptr().offset(1 as
                                                                        libc::c_int
                                                                        as
@@ -1042,7 +1042,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                                     b"%d\x00" as *const u8 as
                                         *const libc::c_char, pass);
                             return asmerr(AsmErrorEquates::TooManyPasses,
-                                          0 as libc::c_int != 0,
+                                          false,
                                           sBuffer.as_mut_ptr())
                         } else {
                             passbuffer_clear(0 as libc::c_int);
@@ -1366,7 +1366,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
                 }
                 if *str as libc::c_int != '\"' as i32 {
                     asmerr(AsmErrorEquates::SyntaxError,
-                           0 as libc::c_int != 0, buf);
+                           false, buf);
                     str = str.offset(-1)
                 }
             }
@@ -1461,7 +1461,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
                             /*  for loop increments string    */
                         } else {
                             asmerr(AsmErrorEquates::NotEnoughArgumentsPassedToMacro,
-                                   0 as libc::c_int != 0,
+                                   false,
                                    0 as *const libc::c_char);
                             break ;
                         }
@@ -1625,7 +1625,7 @@ pub unsafe extern "C" fn parse(mut buf: *mut libc::c_char) -> *mut _MNE {
                 } else {
                     labelundefined += 1;
                     asmerr(AsmErrorEquates::SyntaxError,
-                           0 as libc::c_int != 0, buf);
+                           false, buf);
                 }
             } else {
                 // or else it's a symbol to be evaluated, and added to the label
@@ -1847,7 +1847,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
         mac = mne as *mut _MACRO;
         if state.parameters.strictMode && !mac.is_null() &&
                (*mac).defpass == pass {
-            asmerr(AsmErrorEquates::MacroRepeated, 1 as libc::c_int != 0,
+            asmerr(AsmErrorEquates::MacroRepeated, true,
                    str);
         }
     }
@@ -1859,7 +1859,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
                    pIncfile as libc::c_ulong, buf.as_mut_ptr());
         }
         (*pIncfile).lineno = (*pIncfile).lineno.wrapping_add(1);
-        comment = cleanup(buf.as_mut_ptr(), 1 as libc::c_int != 0);
+        comment = cleanup(buf.as_mut_ptr(), true);
         mne = parse(buf.as_mut_ptr());
         if *(*Av.as_mut_ptr().offset(1 as libc::c_int as
                                          isize)).offset(0 as libc::c_int as
@@ -1884,7 +1884,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
             slp = &mut (*sl).next
         }
     }
-    asmerr(AsmErrorEquates::PrematureEOF, 1 as libc::c_int != 0,
+    asmerr(AsmErrorEquates::PrematureEOF, true,
            0 as *const libc::c_char);
 }
 #[no_mangle]
@@ -2129,7 +2129,7 @@ pub unsafe extern "C" fn strlower(mut str: *mut libc::c_char)
 }
 unsafe fn main_0(mut ac: libc::c_int, mut av: *mut *mut libc::c_char)
  -> u8 {
-    let mut bTableSort: bool = 0 as libc::c_int != 0;
+    let mut bTableSort: bool = false;
     let mut nError: AsmErrorEquates = MainShadow(ac, av, &mut bTableSort);
     if nError != AsmErrorEquates::None && nError != AsmErrorEquates::NonAbort {
         // dump messages when aborting due to errors

@@ -157,7 +157,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                     );
                 } else {
                     asmerr(AsmErrorEquates::SyntaxError,
-                           0 as libc::c_int != 0, pLine);
+                           false, pLine);
                 }
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
@@ -441,7 +441,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                                 b"%s\x00" as *const u8 as *const libc::c_char,
                                 str);
                         asmerr(AsmErrorEquates::IllegalAddressingMode,
-                               0 as libc::c_int != 0, pLine);
+                               false, pLine);
                         state.execution.redoIndex += 1;
                         state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved
                         //we treat the opcode as valid to allow passes to continue, which should
@@ -484,7 +484,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                             b"%s\x00" as *const u8 as *const libc::c_char,
                             str);
                     asmerr(AsmErrorEquates::IllegalAddressingMode,
-                           0 as libc::c_int != 0, pLine);
+                           false, pLine);
                     state.execution.redoIndex += 1;
                     state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved;
                     //FIX: detect illegal opc (zp,y) syntax...
@@ -525,11 +525,11 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                     state.expressions.argIndex -= 1;
                     if state.expressions.argIndex < state.expressions.argIndexBase {
                         asmerr(AsmErrorEquates::SyntaxError,
-                               0 as libc::c_int != 0, pLine);
+                               false, pLine);
                     }
                     if state.expressions.argIndex > state.expressions.argIndexBase {
                         asmerr(AsmErrorEquates::SyntaxError,
-                               0 as libc::c_int != 0, pLine);
+                               false, pLine);
                     }
                     (*cur).value = state.expressions.argStack[state.expressions.argIndex];
                     (*cur).flags = state.expressions.argFlags[state.expressions.argIndex];
@@ -650,7 +650,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
         }
     }
     if state.expressions.argIndex != state.expressions.argIndexBase || state.expressions.opIndex != state.expressions.opIndexBase {
-        asmerr(AsmErrorEquates::SyntaxError, 0 as libc::c_int != 0,
+        asmerr(AsmErrorEquates::SyntaxError, false,
                pLine);
     }
     state.expressions.argIndex = state.expressions.argIndexBase;
@@ -666,7 +666,7 @@ pub unsafe extern "C" fn evaltop() {
                    *const libc::c_char, state.expressions.argIndex, state.expressions.opIndex);
     }
     if state.expressions.opIndex <= state.expressions.opIndexBase {
-        asmerr(AsmErrorEquates::SyntaxError, 0 as libc::c_int != 0,
+        asmerr(AsmErrorEquates::SyntaxError, false,
                0 as *const libc::c_char);
         state.expressions.opIndex = state.expressions.opIndexBase;
         return
@@ -674,7 +674,7 @@ pub unsafe extern "C" fn evaltop() {
     state.expressions.opIndex -= 1;
     if state.expressions.opPri[state.expressions.opIndex] == 128 {
         if state.expressions.argIndex < state.expressions.argIndexBase + 1 {
-            asmerr(AsmErrorEquates::SyntaxError, 0 as libc::c_int != 0,
+            asmerr(AsmErrorEquates::SyntaxError, false,
                    0 as *const libc::c_char);
             state.expressions.argIndex = state.expressions.argIndexBase;
             return
@@ -692,7 +692,7 @@ pub unsafe extern "C" fn evaltop() {
             );
     } else {
         if state.expressions.argIndex < state.expressions.argIndexBase + 2 {
-            asmerr(AsmErrorEquates::SyntaxError, 0 as libc::c_int != 0,
+            asmerr(AsmErrorEquates::SyntaxError, false,
                    0 as *const libc::c_char);
             state.expressions.argIndex = state.expressions.argIndexBase;
             return
@@ -825,7 +825,7 @@ pub unsafe extern "C" fn op_div(mut v1: libc::c_long, mut v2: libc::c_long,
         return
     }
     if v2 == 0 as libc::c_int as libc::c_long {
-        asmerr(AsmErrorEquates::DivisionByZero, 1 as libc::c_int != 0,
+        asmerr(AsmErrorEquates::DivisionByZero, true,
                0 as *const libc::c_char);
         stackarg(0 as libc::c_long, 0 as libc::c_int,
                  0 as *const libc::c_char);
@@ -1070,7 +1070,7 @@ pub unsafe extern "C" fn pushsymbol(mut str: *const libc::c_char) -> *const libc
         ptr = ptr.offset(1)
     }
     if ptr == str {
-        asmerr(AsmErrorEquates::IllegalCharacter, 0 as libc::c_int != 0, str);
+        asmerr(AsmErrorEquates::IllegalCharacter, false, str);
         println!("char = '{}' {} (-1: {})",
             transient::str_pointer_to_string(str),
             transient::str_pointer_to_string(str).as_bytes()[0],
