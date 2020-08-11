@@ -43,10 +43,11 @@ for i in *.asm; do
   i="${i//.bin.ref/.asm}"
   NAME=$(basename "$i" .asm)
 
-  # Compile .asm into .bin and .list.txt
+  # Compile .asm into .bin, .list.txt, and symbols.txt
   $DASM "$i" -f1 -o"$NAME.bin$SUFFIX" -l"$NAME.list.txt$SUFFIX" -s"$NAME.symbols.txt$SUFFIX" -DINEEPROM 2>&1 | \
     tee "$NAME.stdout.txt$SUFFIX" >/dev/null
     # | \grep -vE 'error|Complete|Fatal|Warning^?'
+  $DASM "$i" -f1 -d -v4 -o/dev/null -DINEEPROM > "$NAME.stdout-verbose.txt$SUFFIX" 2>&1
 
   # Generate .hex file from .bin
   $FTOHEX 1 "$NAME.bin$SUFFIX" "$NAME.hex$SUFFIX"
@@ -85,9 +86,16 @@ for i in *.asm; do
     fi
     cmp -s "$NAME.stdout.txt" "$NAME.stdout.txt.ref"
     if [ $? == 0 ]; then
-      echo -ne "stdout pass. "
+      echo -ne "stdout pass; "
     else
-      echo -ne "stdout $FAIL_LABEL. "
+      echo -ne "stdout $FAIL_LABEL; "
+      errors=$((errors + 1))
+    fi
+    cmp -s "$NAME.stdout-verbose.txt" "$NAME.stdout-verbose.txt.ref"
+    if [ $? == 0 ]; then
+      echo -ne "stdout-verbose pass. "
+    else
+      echo -ne "stdout-verbose $FAIL_LABEL. "
       errors=$((errors + 1))
     fi
   else
@@ -115,10 +123,11 @@ for i in *.fail; do
   i="${i//.fail/.asm}"
   NAME=$(basename "$i" .asm)
 
-  # Compile .asm into .bin and .list.txt
+  # Compile .asm into .bin, .list.txt, and symbols.txt
   $DASM "$i" -S -f1 -o"$NAME.strict.bin$SUFFIX" -l"$NAME.list.strict.txt$SUFFIX" -s"$NAME.symbols.strict.txt$SUFFIX" -DINEEPROM 2>&1 | \
     tee "$NAME.stdout.strict.txt$SUFFIX" >/dev/null
     # | \grep -vE 'error|Complete|Fatal|Warning^?'
+  $DASM "$i" -S -f1 -d -v4 -o/dev/null -DINEEPROM > "$NAME.stdout-verbose.strict.txt$SUFFIX" 2>&1
 
   # Display results
   echo -ne "  * ${NAME}: "
@@ -161,6 +170,13 @@ for i in *.fail; do
       echo -ne "stdout $FAIL_LABEL; "
       errors=$((errors + 1))
     fi
+    cmp -s "$NAME.stdout-verbose.strict.txt" "$NAME.stdout-verbose.strict.txt.ref"
+    if [ $? == 0 ]; then
+      echo -ne "stdout-verbose pass. "
+    else
+      echo -ne "stdout-verbose $FAIL_LABEL. "
+      errors=$((errors + 1))
+    fi
   else
     echo -ne " generated with suffix $SUFFIX"
   fi
@@ -199,10 +215,11 @@ for ((i = 0; i < ${#custom_files[@]}; i++)); do
   FILE="${custom_files[i]}"
   NAME="${FILE//.asm/}"
 
-  # Compile .asm into .bin and .list.txt
+  # Compile .asm into .bin, .list.txt, and symbols.txt
   $DASM "$NAME.asm" ${custom_params[i]} -o"$NAME.bin$SUFFIX" -l"$NAME.list.txt$SUFFIX" -s"$NAME.symbols.txt$SUFFIX" -DINEEPROM 2>&1 | \
     tee "$NAME.stdout.txt$SUFFIX" >/dev/null
     # | \grep -vE 'error|Complete|Fatal|Warning^?'
+  $DASM "$NAME.asm" -d -v4 ${custom_params[i]} -o/dev/null -DINEEPROM > "$NAME.stdout-verbose.txt$SUFFIX" 2>&1
 
   # Generate .hex file from .bin
   $FTOHEX 1 "$NAME.bin$SUFFIX" "$NAME.hex$SUFFIX"
@@ -241,9 +258,16 @@ for ((i = 0; i < ${#custom_files[@]}; i++)); do
     fi
     cmp -s "$NAME.stdout.txt" "$NAME.stdout.txt.ref"
     if [ $? == 0 ]; then
-      echo -ne "stdout pass. "
+      echo -ne "stdout pass; "
     else
-      echo -ne "stdout $FAIL_LABEL. "
+      echo -ne "stdout $FAIL_LABEL; "
+      errors=$((errors + 1))
+    fi
+    cmp -s "$NAME.stdout-verbose.txt" "$NAME.stdout-verbose.txt.ref"
+    if [ $? == 0 ]; then
+      echo -ne "stdout-verbose pass. "
+    else
+      echo -ne "stdout-verbose $FAIL_LABEL. "
       errors=$((errors + 1))
     fi
   else
