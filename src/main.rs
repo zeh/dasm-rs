@@ -176,10 +176,6 @@ extern "C" {
     #[no_mangle]
     fn programlabel();
     #[no_mangle]
-    static mut Gen: [libc::c_uchar; 0];
-    #[no_mangle]
-    static mut Glen: libc::c_int;
-    #[no_mangle]
     fn v_set(str: *mut libc::c_char, _: *mut _MNE);
     #[no_mangle]
     fn v_mexit(str: *mut libc::c_char, _: *mut _MNE);
@@ -1172,8 +1168,8 @@ unsafe extern "C" fn outlistfile(mut comment: *const libc::c_char) {
     static mut buf2: [libc::c_char; MAX_LINES + 32] = [0; MAX_LINES + 32];
     let mut ptr: *const libc::c_char = 0 as *const libc::c_char;
     let mut dot: *const libc::c_char = 0 as *const libc::c_char;
-    let mut i: libc::c_int = 0;
-    let mut j: libc::c_int = 0;
+    let mut i: usize = 0;
+    let mut j: usize = 0;
     if (*pIncfile).flags as libc::c_int & 0x2 as libc::c_int != 0 { return }
     xtrue =
         if (*Ifstack).xtrue as libc::c_int != 0 &&
@@ -1187,50 +1183,55 @@ unsafe extern "C" fn outlistfile(mut comment: *const libc::c_char) {
     ptr = Extstr;
     dot = b"\x00" as *const u8 as *const libc::c_char;
     if !ptr.is_null() {
-        dot = b".\x00" as *const u8 as *const libc::c_char
-    } else { ptr = b"\x00" as *const u8 as *const libc::c_char }
-    sprintf(buf1.as_mut_ptr(),
-            b"%7ld %c%s\x00" as *const u8 as *const libc::c_char,
-            (*pIncfile).lineno, c as libc::c_int,
-            sftos(Plab as libc::c_long,
-                  (Pflags & 7 as libc::c_int as libc::c_ulong) as
-                      libc::c_int));
-    j = strlen(buf1.as_mut_ptr()) as libc::c_int;
-    i = 0 as libc::c_int;
-    while i < Glen && i < 4 as libc::c_int {
+        dot = b".\x00" as *const u8 as *const libc::c_char;
+    } else {
+        ptr = b"\x00" as *const u8 as *const libc::c_char;
+    }
+    sprintf(
+        buf1.as_mut_ptr(),
+        b"%7ld %c%s\x00" as *const u8 as *const libc::c_char,
+        (*pIncfile).lineno,
+        c as libc::c_int,
+        sftos(Plab as libc::c_long, (Pflags & 7 as libc::c_int as libc::c_ulong) as libc::c_int)
+    );
+    j = strlen(buf1.as_mut_ptr()) as usize;
+    i = 0;
+    while i < state.output.generatedLength && i < 4 {
         sprintf(buf1.as_mut_ptr().offset(j as isize),
                 b"%02x \x00" as *const u8 as *const libc::c_char,
-                *Gen.as_mut_ptr().offset(i as isize) as libc::c_int);
+                state.output.generated[i] as libc::c_int);
         i += 1;
-        j += 3 as libc::c_int
+        j += 3;
     }
-    if i < Glen && i == 4 as libc::c_int {
+    if i < state.output.generatedLength && i == 4 {
         xtrue = '*' as i32 as libc::c_char
     }
-    while i < 4 as libc::c_int {
-        buf1[(j + 2 as libc::c_int) as usize] = ' ' as i32 as libc::c_char;
-        buf1[(j + 1 as libc::c_int) as usize] =
-            buf1[(j + 2 as libc::c_int) as usize];
-        buf1[j as usize] = buf1[(j + 1 as libc::c_int) as usize];
-        j += 3 as libc::c_int;
+    while i < 4 {
+        buf1[(j + 2) as usize] = ' ' as i32 as libc::c_char;
+        buf1[(j + 1) as usize] =
+            buf1[(j + 2) as usize];
+        buf1[j as usize] = buf1[(j + 1) as usize];
+        j += 3;
         i += 1
     }
-    sprintf(buf1.as_mut_ptr().offset(j as
-                                         isize).offset(-(1 as libc::c_int as
-                                                             isize)),
-            b"%c%-10s %s%s%s\t%s\n\x00" as *const u8 as *const libc::c_char,
-            xtrue as libc::c_int,
-            *Av.as_mut_ptr().offset(0 as libc::c_int as isize),
-            *Av.as_mut_ptr().offset(1 as libc::c_int as isize), dot, ptr,
-            *Av.as_mut_ptr().offset(2 as libc::c_int as isize));
+    sprintf(
+        buf1.as_mut_ptr().offset(j as isize).offset(-(1 as libc::c_int as isize)),
+        b"%c%-10s %s%s%s\t%s\n\x00" as *const u8 as *const libc::c_char,
+        xtrue as libc::c_int,
+        *Av.as_mut_ptr().offset(0),
+        *Av.as_mut_ptr().offset(1),
+        dot,
+        ptr,
+        *Av.as_mut_ptr().offset(2)
+    );
     if *comment.offset(0 as libc::c_int as isize) != 0 {
         /*  tab and comment */
-        j =
-            strlen(buf1.as_mut_ptr()).wrapping_sub(1 as libc::c_int as
-                                                       libc::c_ulong) as
-                libc::c_int;
-        sprintf(buf1.as_mut_ptr().offset(j as isize),
-                b"\t;%s\x00" as *const u8 as *const libc::c_char, comment);
+        j = strlen(buf1.as_mut_ptr()).wrapping_sub(1) as usize;
+        sprintf(
+            buf1.as_mut_ptr().offset(j as isize),
+            b"\t;%s\x00" as *const u8 as *const libc::c_char,
+            comment
+        );
     }
     // FIXME: convoluted conversion of max-length &[i8] to flexible-length &[u8]
     let len = tabit(buf1.as_mut_ptr(), buf2.as_mut_ptr()) as usize;
@@ -1239,7 +1240,7 @@ unsafe extern "C" fn outlistfile(mut comment: *const libc::c_char) {
         &mut state.output.listFile,
         &vec,
     );
-    Glen = 0 as libc::c_int;
+    state.output.generatedLength = 0;
     Extstr = 0 as *mut libc::c_char;
 }
 #[no_mangle]
@@ -1888,26 +1889,26 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
 }
 #[no_mangle]
 pub unsafe extern "C" fn addhashtable(mut mne: *mut _MNE) {
-    let mut i: libc::c_int = 0;
-    let mut j: libc::c_int = 0;
+    let mut i: usize;
+    let mut j: usize;
     let mut opcode: [libc::c_uint; 21] = [0; 21];
     while (*mne).vect.is_some() {
         memcpy(opcode.as_mut_ptr() as *mut libc::c_void,
                (*mne).opcode.as_mut_ptr() as *const libc::c_void,
                ::std::mem::size_of::<[libc::c_uint; 21]>() as libc::c_ulong);
-        j = 0 as libc::c_int;
+        j = 0;
         i = j;
-        while i < AddressModes::length() as libc::c_int {
+        while i < AddressModes::length() as usize {
             (*mne).opcode[i as usize] = 0 as libc::c_int as libc::c_uint;
             if (*mne).okmask & ((1 as libc::c_long) << i) as libc::c_ulong !=
                    0 {
                 let fresh23 = j;
                 j = j + 1;
-                (*mne).opcode[i as usize] = opcode[fresh23 as usize]
+                (*mne).opcode[i as usize] = opcode[fresh23]
             }
             i += 1
         }
-        i = hash_string(transient::str_pointer_to_string((*mne).name)) as libc::c_int;
+        i = hash_string(transient::str_pointer_to_string((*mne).name)) as usize;
         (*mne).next = *MHash.as_mut_ptr().offset(i as isize);
         let ref mut fresh24 = *MHash.as_mut_ptr().offset(i as isize);
         *fresh24 = mne;

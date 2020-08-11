@@ -4,6 +4,7 @@
 
 use std::fs::File;
 
+use crate::constants;
 use crate::expressions;
 use crate::types::enums::{
 	AddressModes,
@@ -84,5 +85,8 @@ pub struct ExpressionsState {
 }
 
 pub struct OutputState {
+	pub generated: [u8; constants::MAX_LINES],
+	pub generatedLength: usize,
 	pub listFile: Option<File>,
+	pub orgFill: u8, // ? where?
 }

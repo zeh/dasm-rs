@@ -1,3 +1,4 @@
+use crate::constants;
 use crate::expressions;
 use crate::types::enums::{
     AddressModes,
@@ -65,6 +66,9 @@ pub static mut state: GlobalState = GlobalState {
     },
 
     output: OutputState {
+        generated: [0; constants::MAX_LINES],
+        generatedLength: 0,
         listFile: None,
+        orgFill: constants::DEF_ORG_FILL,
     },
 };

@@ -41,10 +41,6 @@ extern "C" {
     fn programlabel();
     /* ops.c */
     #[no_mangle]
-    static mut Gen: [libc::c_uchar; 0];
-    #[no_mangle]
-    static mut Glen: libc::c_int;
-    #[no_mangle]
     fn generate();
     #[no_mangle]
     fn v_dc(_: *mut libc::c_char, _: *mut _MNE);
@@ -176,8 +172,8 @@ unsafe extern "C" fn f8err(mut err: AsmErrorEquates,
  * emits a one byte opcode.
  */
 unsafe extern "C" fn emit_opcode1(mut opcode: libc::c_uchar) {
-    Glen = 1 as libc::c_int;
-    *Gen.as_mut_ptr().offset(0 as libc::c_int as isize) = opcode;
+    state.output.generatedLength = 1;
+    state.output.generated[0] = opcode;
     generate();
 }
 /*
@@ -188,9 +184,9 @@ unsafe extern "C" fn emit_opcode1(mut opcode: libc::c_uchar) {
  */
 unsafe extern "C" fn emit_opcode2(mut byte0: libc::c_uchar,
                                   mut byte1: libc::c_uchar) {
-    Glen = 2 as libc::c_int;
-    *Gen.as_mut_ptr().offset(0 as libc::c_int as isize) = byte0;
-    *Gen.as_mut_ptr().offset(1 as libc::c_int as isize) = byte1;
+    state.output.generatedLength = 2;
+    state.output.generated[0] = byte0;
+    state.output.generated[1] = byte1;
     generate();
 }
 /*
@@ -203,10 +199,10 @@ unsafe extern "C" fn emit_opcode2(mut byte0: libc::c_uchar,
 unsafe extern "C" fn emit_opcode3(mut byte0: libc::c_uchar,
                                   mut byte1: libc::c_uchar,
                                   mut byte2: libc::c_uchar) {
-    Glen = 3 as libc::c_int;
-    *Gen.as_mut_ptr().offset(0 as libc::c_int as isize) = byte0;
-    *Gen.as_mut_ptr().offset(1 as libc::c_int as isize) = byte1;
-    *Gen.as_mut_ptr().offset(2 as libc::c_int as isize) = byte2;
+    state.output.generatedLength = 3;
+    state.output.generated[0] = byte0;
+    state.output.generated[1] = byte1;
+    state.output.generated[2] = byte2;
     generate();
 }
 /*

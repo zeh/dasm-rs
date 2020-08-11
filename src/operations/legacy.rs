@@ -2,8 +2,6 @@ use libc;
 use std::cmp::Ordering;
 
 use crate::constants::{
-    DEF_ORG_FILL,
-    MAX_LINES,
     MAX_MACRO_LEVEL,
 };
 use crate::globals::state;
@@ -291,12 +289,6 @@ pub struct _SYMBOL {
  *
  *  Handle mnemonics and pseudo ops
  */
-#[no_mangle]
-pub static mut Gen: [libc::c_uchar; MAX_LINES] = [0; MAX_LINES];
-#[no_mangle]
-pub static mut OrgFill: libc::c_uchar = DEF_ORG_FILL as libc::c_uchar;
-#[no_mangle]
-pub static mut Glen: libc::c_int = 0;
 /*
 *  An opcode modifies the SEGMENT flags in the following ways:
 */
@@ -369,12 +361,11 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
     let mut addrmode: libc::c_int = 0;
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut opcode: libc::c_uint = 0;
-    let mut opidx: libc::c_short = 0;
+    let mut opidx: usize = 0;
     let mut symbase: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut opsize: libc::c_int = 0;
     (*Csegment).flags =
-        ((*Csegment).flags as libc::c_int | 0x4 as libc::c_int) as
-            libc::c_uchar;
+        ((*Csegment).flags as libc::c_int | 0x4 as libc::c_int) as u8;
     programlabel();
     symbase = eval(str, 1 as libc::c_int);
     if state.execution.trace {
@@ -485,15 +476,13 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
         }
     }
     opcode = (*mne).opcode[addrmode as usize];
-    opidx =
-        (1 as libc::c_int +
-             (opcode > 0xff as libc::c_int as libc::c_uint) as libc::c_int) as
-            libc::c_short;
-    if opidx as libc::c_int == 2 as libc::c_int {
-        Gen[0 as libc::c_int as usize] =
-            (opcode >> 8 as libc::c_int) as libc::c_uchar;
-        Gen[1 as libc::c_int as usize] = opcode as libc::c_uchar
-    } else { Gen[0 as libc::c_int as usize] = opcode as libc::c_uchar }
+    opidx = (1 + (opcode > 0xff) as libc::c_int) as usize;
+    if opidx == 2 {
+        state.output.generated[0] = (opcode >> 8) as u8;
+        state.output.generated[1] = opcode as libc::c_uchar;
+    } else {
+        state.output.generated[0] = opcode as libc::c_uchar;
+    }
     match addrmode {
         15 => {
             sym = (*symbase).next;
@@ -504,16 +493,16 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             }
             let fresh0 = opidx;
             opidx = opidx + 1;
-            Gen[fresh0 as usize] = (*sym).value as libc::c_uchar;
+            state.output.generated[fresh0] = (*sym).value as u8;
             if (*symbase).flags as libc::c_int & 0x1 as libc::c_int == 0 {
                 if (*symbase).value > 7 as libc::c_int as libc::c_long {
                     asmerr(AsmErrorEquates::IllegalBitSpecification,
                            0 as libc::c_int != 0, str);
                 } else {
-                    Gen[0 as libc::c_int as usize] =
-                        (Gen[0 as libc::c_int as usize] as libc::c_long +
-                             ((*symbase).value << 1 as libc::c_int)) as
-                            libc::c_uchar
+                    state.output.generated[0] = (
+                        state.output.generated[0] as libc::c_long +
+                        ((*symbase).value << 1)
+                    ) as u8
                 }
             }
         }
@@ -523,10 +512,10 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
                     asmerr(AsmErrorEquates::IllegalBitSpecification,
                            0 as libc::c_int != 0, str);
                 } else {
-                    Gen[0 as libc::c_int as usize] =
-                        (Gen[0 as libc::c_int as usize] as libc::c_long +
-                             ((*symbase).value << 1 as libc::c_int)) as
-                            libc::c_uchar
+                    state.output.generated[0] = (
+                        state.output.generated[0] as libc::c_long +
+                        ((*symbase).value << 1 as libc::c_int)
+                    ) as u8
                 }
             }
             sym = (*symbase).next;
@@ -535,32 +524,24 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
                 asmerr(AsmErrorEquates::AddressMustBeLowerThan100,
                        0 as libc::c_int != 0, 0 as *const libc::c_char);
             }
-            let fresh1 = opidx;
+            state.output.generated[opidx] = (*sym).value as u8;
             opidx = opidx + 1;
-            Gen[fresh1 as usize] = (*sym).value as libc::c_uchar;
             sym = (*sym).next
         }
         9 => { }
         _ => {
-            if *Opsize.as_mut_ptr().offset(addrmode as isize) >
-                   0 as libc::c_int as libc::c_uint {
-                let fresh2 = opidx;
+            if *Opsize.as_mut_ptr().offset(addrmode as isize) > 0 {
+                state.output.generated[opidx] = (*sym).value as u8;
                 opidx = opidx + 1;
-                Gen[fresh2 as usize] = (*sym).value as libc::c_uchar
             }
-            if *Opsize.as_mut_ptr().offset(addrmode as isize) ==
-                   2 as libc::c_int as libc::c_uint {
+            if *Opsize.as_mut_ptr().offset(addrmode as isize) == 2 as libc::c_uint {
                 if state.execution.bitOrder != BitOrder::LeastMost {
-                    Gen[(opidx as libc::c_int - 1 as libc::c_int) as usize] =
-                        ((*sym).value >> 8 as libc::c_int) as libc::c_uchar;
-                    let fresh3 = opidx;
+                    state.output.generated[(opidx - 1) as usize] = ((*sym).value >> 8) as u8;
+                    state.output.generated[opidx] = (*sym).value as u8;
                     opidx = opidx + 1;
-                    Gen[fresh3 as usize] = (*sym).value as libc::c_uchar
                 } else {
-                    let fresh4 = opidx;
+                    state.output.generated[opidx] = ((*sym).value >> 8) as u8;
                     opidx = opidx + 1;
-                    Gen[fresh4 as usize] =
-                        ((*sym).value >> 8 as libc::c_int) as libc::c_uchar
                 }
             }
             sym = (*sym).next
@@ -573,7 +554,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
                 asmerr(AsmErrorEquates::AddressMustBeLowerThan100,
                        0 as libc::c_int != 0, 0 as *const libc::c_char);
             }
-            Gen[opidx as usize] = (*sym).value as libc::c_uchar;
+            state.output.generated[opidx as usize] = (*sym).value as u8;
             sym = (*sym).next
         } else {
             asmerr(AsmErrorEquates::NotEnoughArgs,
@@ -620,19 +601,17 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
                     state.execution.redoIndex += 1;
                     state.execution.redoWhy |= ReasonCodes::BranchOutOfRange;
                     (*sym).flags =
-                        ((*sym).flags as libc::c_int | 0x1 as libc::c_int) as
-                            libc::c_uchar;
+                        ((*sym).flags as libc::c_int | 0x1 as libc::c_int) as u8;
                     dest = 0 as libc::c_int as libc::c_long
                 }
             } else {
                 /* Don't bother - we'll take another pass */
                 dest = 0 as libc::c_int as libc::c_long
             } /*  Only so outlist() works */
-            Gen[(opidx as libc::c_int - 1 as libc::c_int) as usize] =
-                (dest & 0xff as libc::c_int as libc::c_long) as libc::c_uchar
+            state.output.generated[(opidx - 1) as usize] = (dest & 0xff) as u8;
         }
     }
-    Glen = opidx as libc::c_int;
+    state.output.generatedLength = opidx;
     generate();
     FreeSymbolList(symbase);
 }
@@ -646,14 +625,13 @@ pub unsafe extern "C" fn v_trace(mut str: *mut libc::c_char,
 pub unsafe extern "C" fn v_list(mut str: *mut libc::c_char,
                                 mut _dummy: *mut _MNE) {
     programlabel();
-    Glen = 0 as libc::c_int;
+    state.output.generatedLength = 0;
     if strncmp(str, b"localoff\x00" as *const u8 as *const libc::c_char,
                7 as libc::c_int as libc::c_ulong) == 0 as libc::c_int ||
            strncmp(str, b"LOCALOFF\x00" as *const u8 as *const libc::c_char,
                    7 as libc::c_int as libc::c_ulong) == 0 as libc::c_int {
         (*pIncfile).flags =
-            ((*pIncfile).flags as libc::c_int | 0x2 as libc::c_int) as
-                libc::c_uchar
+            ((*pIncfile).flags as libc::c_int | 0x2 as libc::c_int) as u8;
     } else if strncmp(str, b"localon\x00" as *const u8 as *const libc::c_char,
                       7 as libc::c_int as libc::c_ulong) == 0 as libc::c_int
                   ||
@@ -662,8 +640,7 @@ pub unsafe extern "C" fn v_list(mut str: *mut libc::c_char,
                           7 as libc::c_int as libc::c_ulong) ==
                       0 as libc::c_int {
         (*pIncfile).flags =
-            ((*pIncfile).flags as libc::c_int & !(0x2 as libc::c_int)) as
-                libc::c_uchar
+            ((*pIncfile).flags as libc::c_int & !(0x2 as libc::c_int)) as u8;
     } else if strncmp(str, b"off\x00" as *const u8 as *const libc::c_char,
                       2 as libc::c_int as libc::c_ulong) == 0 as libc::c_int
                   ||
@@ -736,17 +713,21 @@ pub unsafe extern "C" fn v_incbin(mut str: *mut libc::c_char,
             /* optimize: don't actually read the file if not needed */
             fseek(binfile, 0 as libc::c_int as libc::c_long,
                   2 as libc::c_int);
-            Glen = ftell(binfile) as libc::c_int;
+            state.output.generatedLength = ftell(binfile) as usize;
             generate();
-            /* does not access Gen[] if Redo is set */
+            /* does not access state.output.generated[] if Redo is set */
         } else {
             loop  {
-                Glen =
-                    fread(Gen.as_mut_ptr() as *mut libc::c_void,
-                          1 as libc::c_int as size_t,
-                          ::std::mem::size_of::<[libc::c_uchar; 1024]>() as
-                              libc::c_ulong, binfile) as libc::c_int;
-                if Glen <= 0 as libc::c_int { break ; }
+                state.output.generatedLength =
+                    fread(
+                        state.output.generated.as_mut_ptr() as *mut libc::c_void,
+                        1,
+                        ::std::mem::size_of::<[libc::c_uchar; 1024]>() as libc::c_ulong,
+                        binfile
+                    ) as usize;
+                if state.output.generatedLength <= 0 {
+                    break;
+                }
                 generate();
             }
         }
@@ -756,7 +737,7 @@ pub unsafe extern "C" fn v_incbin(mut str: *mut libc::c_char,
                buf);
     }
     if buf != str { free(buf as *mut libc::c_void); }
-    Glen = 0 as libc::c_int;
+    state.output.generatedLength = 0;
     /* don't list hexdump */
 }
 #[no_mangle]
@@ -789,33 +770,31 @@ pub unsafe extern "C" fn v_seg(mut str: *mut libc::c_char,
     Seglist = seg;
     if state.execution.modeNext == AddressModes::BSS {
         (*seg).flags =
-            ((*seg).flags as libc::c_int | 0x10 as libc::c_int) as
-                libc::c_uchar
+            ((*seg).flags as libc::c_int | 0x10 as libc::c_int) as u8;
     }
     programlabel();
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_hex(mut str: *mut libc::c_char,
                                mut _dummy: *mut _MNE) {
-    let mut i: libc::c_int = 0;
-    let mut result: libc::c_int = 0;
+    let mut i: u8 = 0;
+    let mut result: u8 = 0;
     programlabel();
-    Glen = 0 as libc::c_int;
-    i = 0 as libc::c_int;
+    state.output.generatedLength = 0;
+    i = 0;
     while *str.offset(i as isize) != 0 {
         if !(*str.offset(i as isize) as libc::c_int == ' ' as i32) {
-            result =
-                (gethexdig(*str.offset(i as isize) as libc::c_int) <<
-                     4 as libc::c_int) +
-                    gethexdig(*str.offset((i + 1 as libc::c_int) as isize) as
-                                  libc::c_int);
+            result = (
+                (gethexdig(*str.offset(i as isize) as libc::c_int) << 4)
+                +
+                gethexdig(*str.offset((i + 1) as isize) as libc::c_int)
+            ) as u8;
             i += 1;
-            if *str.offset(i as isize) as libc::c_int == 0 as libc::c_int {
-                break ;
+            if *str.offset(i as isize) == 0 {
+                break;
             }
-            let fresh5 = Glen;
-            Glen = Glen + 1;
-            Gen[fresh5 as usize] = result as libc::c_uchar
+            state.output.generated[state.output.generatedLength] = result;
+            state.output.generatedLength += 1;
         }
         i += 1
     }
@@ -855,7 +834,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
     let mut value: libc::c_long = 0;
     let mut macstr: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut vmode: libc::c_char = 0 as libc::c_int as libc::c_char;
-    Glen = 0 as libc::c_int;
+    state.output.generatedLength = 0;
     programlabel();
     /* for byte, .byte, word, .word, long, .long */
     if *(*mne).name.offset(0 as libc::c_int as isize) as libc::c_int !=
@@ -936,88 +915,41 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
                 match state.execution.modeNext {
                     AddressModes::WordAdr => {
                         if state.execution.bitOrder != BitOrder::LeastMost {
-                            let fresh7 = Glen;
-                            Glen = Glen + 1;
-                            Gen[fresh7 as usize] =
-                                (value >> 8 as libc::c_int &
-                                     0xff as libc::c_int as libc::c_long) as
-                                    libc::c_uchar;
-                            let fresh8 = Glen;
-                            Glen = Glen + 1;
-                            Gen[fresh8 as usize] =
-                                (value & 0xff as libc::c_int as libc::c_long)
-                                    as libc::c_uchar
+                            state.output.generated[state.output.generatedLength] = (value >> 8 & 0xff) as u8;
+                            state.output.generatedLength += 1;
+                            state.output.generated[state.output.generatedLength] = (value & 0xff) as u8;
+                            state.output.generatedLength += 1;
                         } else {
-                            let fresh9 = Glen;
-                            Glen = Glen + 1;
-                            Gen[fresh9 as usize] =
-                                (value & 0xff as libc::c_int as libc::c_long)
-                                    as libc::c_uchar;
-                            let fresh10 = Glen;
-                            Glen = Glen + 1;
-                            Gen[fresh10 as usize] =
-                                (value >> 8 as libc::c_int &
-                                     0xff as libc::c_int as libc::c_long) as
-                                    libc::c_uchar
+                            state.output.generated[state.output.generatedLength] = (value & 0xff) as u8;
+                            state.output.generatedLength += 1;
+                            state.output.generated[state.output.generatedLength] = (value >> 8 & 0xff) as u8;
+                            state.output.generatedLength += 1;
                         }
                     }
                     AddressModes::Long => {
                         if state.execution.bitOrder != BitOrder::LeastMost {
-                            let fresh11 = Glen;
-                            Glen = Glen + 1;
-                            Gen[fresh11 as usize] =
-                                (value >> 24 as libc::c_int &
-                                     0xff as libc::c_int as libc::c_long) as
-                                    libc::c_uchar;
-                            let fresh12 = Glen;
-                            Glen = Glen + 1;
-                            Gen[fresh12 as usize] =
-                                (value >> 16 as libc::c_int &
-                                     0xff as libc::c_int as libc::c_long) as
-                                    libc::c_uchar;
-                            let fresh13 = Glen;
-                            Glen = Glen + 1;
-                            Gen[fresh13 as usize] =
-                                (value >> 8 as libc::c_int &
-                                     0xff as libc::c_int as libc::c_long) as
-                                    libc::c_uchar;
-                            let fresh14 = Glen;
-                            Glen = Glen + 1;
-                            Gen[fresh14 as usize] =
-                                (value & 0xff as libc::c_int as libc::c_long)
-                                    as libc::c_uchar
+                            state.output.generated[state.output.generatedLength] = (value >> 24 & 0xff) as u8;
+                            state.output.generatedLength += 1;
+                            state.output.generated[state.output.generatedLength] = (value >> 16 & 0xff) as u8;
+                            state.output.generatedLength += 1;
+                            state.output.generated[state.output.generatedLength] = (value >> 8 & 0xff) as u8;
+                            state.output.generatedLength += 1;
+                            state.output.generated[state.output.generatedLength] = (value & 0xff) as u8;
+                            state.output.generatedLength += 1;
                         } else {
-                            let fresh15 = Glen;
-                            Glen = Glen + 1;
-                            Gen[fresh15 as usize] =
-                                (value & 0xff as libc::c_int as libc::c_long)
-                                    as libc::c_uchar;
-                            let fresh16 = Glen;
-                            Glen = Glen + 1;
-                            Gen[fresh16 as usize] =
-                                (value >> 8 as libc::c_int &
-                                     0xff as libc::c_int as libc::c_long) as
-                                    libc::c_uchar;
-                            let fresh17 = Glen;
-                            Glen = Glen + 1;
-                            Gen[fresh17 as usize] =
-                                (value >> 16 as libc::c_int &
-                                     0xff as libc::c_int as libc::c_long) as
-                                    libc::c_uchar;
-                            let fresh18 = Glen;
-                            Glen = Glen + 1;
-                            Gen[fresh18 as usize] =
-                                (value >> 24 as libc::c_int &
-                                     0xff as libc::c_int as libc::c_long) as
-                                    libc::c_uchar
+                            state.output.generated[state.output.generatedLength] = (value & 0xff) as u8;
+                            state.output.generatedLength += 1;
+                            state.output.generated[state.output.generatedLength] = (value >> 8 & 0xff) as u8;
+                            state.output.generatedLength += 1;
+                            state.output.generated[state.output.generatedLength] = (value >> 16 & 0xff) as u8;
+                            state.output.generatedLength += 1;
+                            state.output.generated[state.output.generatedLength] = (value >> 24 & 0xff) as u8;
+                            state.output.generatedLength += 1;
                         }
                     }
                     AddressModes::ByteAdr | _ => {
-                        let fresh6 = Glen;
-                        Glen = Glen + 1;
-                        Gen[fresh6 as usize] =
-                            (value & 0xff as libc::c_int as libc::c_long) as
-                                libc::c_uchar
+                        state.output.generated[state.output.generatedLength] = (value & 0xff) as u8;
+                        state.output.generatedLength += 1;
                     }
                 }
                 ptr = ptr.offset(1)
@@ -1036,93 +968,49 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
             match state.execution.modeNext {
                 AddressModes::WordAdr => {
                     //any value outside two's complement +ve and +ve word representation is invalid...
-                    if state.parameters.strictMode &&
-                           (value < -(0xffff as libc::c_int) as libc::c_long
-                                ||
-                                value > 0xffff as libc::c_int as libc::c_long)
+                    if state.parameters.strictMode && (
+                        value < -(0xffff as libc::c_int) as libc::c_long
+                        ||
+                        value > 0xffff as libc::c_int as libc::c_long
+                    )
                        {
                         let mut sBuffer_0: [libc::c_char; 128] = [0; 128];
                         sprintf(sBuffer_0.as_mut_ptr(),
-                                b"%s %ld\x00" as *const u8 as
-                                    *const libc::c_char, (*mne).name, value);
+                                b"%s %ld\x00" as *const u8 as *const libc::c_char, (*mne).name, value);
                         asmerr(AsmErrorEquates::AddressMustBeLowerThan10000,
                                0 as libc::c_int != 0, sBuffer_0.as_mut_ptr());
                     }
                     if state.execution.bitOrder != BitOrder::LeastMost {
-                        let fresh20 = Glen;
-                        Glen = Glen + 1;
-                        Gen[fresh20 as usize] =
-                            (value >> 8 as libc::c_int &
-                                 0xff as libc::c_int as libc::c_long) as
-                                libc::c_uchar;
-                        let fresh21 = Glen;
-                        Glen = Glen + 1;
-                        Gen[fresh21 as usize] =
-                            (value & 0xff as libc::c_int as libc::c_long) as
-                                libc::c_uchar
+                        state.output.generated[state.output.generatedLength] = (value >> 8 & 0xff) as u8;
+                        state.output.generatedLength += 1;
+                        state.output.generated[state.output.generatedLength] = (value & 0xff) as u8;
+                        state.output.generatedLength += 1;
                     } else {
-                        let fresh22 = Glen;
-                        Glen = Glen + 1;
-                        Gen[fresh22 as usize] =
-                            (value & 0xff as libc::c_int as libc::c_long) as
-                                libc::c_uchar;
-                        let fresh23 = Glen;
-                        Glen = Glen + 1;
-                        Gen[fresh23 as usize] =
-                            (value >> 8 as libc::c_int &
-                                 0xff as libc::c_int as libc::c_long) as
-                                libc::c_uchar
+                        state.output.generated[state.output.generatedLength] = (value & 0xff) as u8;
+                        state.output.generatedLength += 1;
+                        state.output.generated[state.output.generatedLength] = (value >> 8 & 0xff) as u8;
+                        state.output.generatedLength += 1;
                     }
                 }
                 AddressModes::Long => {
                     if state.execution.bitOrder != BitOrder::LeastMost {
-                        let fresh24 = Glen;
-                        Glen = Glen + 1;
-                        Gen[fresh24 as usize] =
-                            (value >> 24 as libc::c_int &
-                                 0xff as libc::c_int as libc::c_long) as
-                                libc::c_uchar;
-                        let fresh25 = Glen;
-                        Glen = Glen + 1;
-                        Gen[fresh25 as usize] =
-                            (value >> 16 as libc::c_int &
-                                 0xff as libc::c_int as libc::c_long) as
-                                libc::c_uchar;
-                        let fresh26 = Glen;
-                        Glen = Glen + 1;
-                        Gen[fresh26 as usize] =
-                            (value >> 8 as libc::c_int &
-                                 0xff as libc::c_int as libc::c_long) as
-                                libc::c_uchar;
-                        let fresh27 = Glen;
-                        Glen = Glen + 1;
-                        Gen[fresh27 as usize] =
-                            (value & 0xff as libc::c_int as libc::c_long) as
-                                libc::c_uchar
+                        state.output.generated[state.output.generatedLength] = (value >> 24 & 0xff) as u8;
+                        state.output.generatedLength += 1;
+                        state.output.generated[state.output.generatedLength] = (value >> 16 & 0xff) as u8;
+                        state.output.generatedLength += 1;
+                        state.output.generated[state.output.generatedLength] = (value >> 8 & 0xff) as u8;
+                        state.output.generatedLength += 1;
+                        state.output.generated[state.output.generatedLength] = (value & 0xff) as u8;
+                        state.output.generatedLength += 1;
                     } else {
-                        let fresh28 = Glen;
-                        Glen = Glen + 1;
-                        Gen[fresh28 as usize] =
-                            (value & 0xff as libc::c_int as libc::c_long) as
-                                libc::c_uchar;
-                        let fresh29 = Glen;
-                        Glen = Glen + 1;
-                        Gen[fresh29 as usize] =
-                            (value >> 8 as libc::c_int &
-                                 0xff as libc::c_int as libc::c_long) as
-                                libc::c_uchar;
-                        let fresh30 = Glen;
-                        Glen = Glen + 1;
-                        Gen[fresh30 as usize] =
-                            (value >> 16 as libc::c_int &
-                                 0xff as libc::c_int as libc::c_long) as
-                                libc::c_uchar;
-                        let fresh31 = Glen;
-                        Glen = Glen + 1;
-                        Gen[fresh31 as usize] =
-                            (value >> 24 as libc::c_int &
-                                 0xff as libc::c_int as libc::c_long) as
-                                libc::c_uchar
+                        state.output.generated[state.output.generatedLength] = (value & 0xff) as u8;
+                        state.output.generatedLength += 1;
+                        state.output.generated[state.output.generatedLength] = (value >> 8 & 0xff) as u8;
+                        state.output.generatedLength += 1;
+                        state.output.generated[state.output.generatedLength] = (value >> 16 & 0xff) as u8;
+                        state.output.generatedLength += 1;
+                        state.output.generated[state.output.generatedLength] = (value >> 24 & 0xff) as u8;
+                        state.output.generatedLength += 1;
                     }
                 }
                 AddressModes::ByteAdr | _ => {
@@ -1136,11 +1024,8 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
                         asmerr(AsmErrorEquates::AddressMustBeLowerThan100,
                                0 as libc::c_int != 0, sBuffer.as_mut_ptr());
                     }
-                    let fresh19 = Glen;
-                    Glen = Glen + 1;
-                    Gen[fresh19 as usize] =
-                        (value & 0xff as libc::c_int as libc::c_long) as
-                            libc::c_uchar
+                    state.output.generated[state.output.generatedLength] = (value & 0xff) as u8;
+                    state.output.generatedLength += 1;
                 }
             }
         }
@@ -1184,19 +1069,17 @@ pub unsafe extern "C" fn v_org(mut str: *mut libc::c_char,
     (*Csegment).org = (*sym).value as libc::c_ulong;
     if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
         (*Csegment).flags =
-            ((*Csegment).flags as libc::c_int | 0x1 as libc::c_int) as
-                libc::c_uchar
+            ((*Csegment).flags as libc::c_int | 0x1 as libc::c_int) as u8;
     } else {
         (*Csegment).flags =
-            ((*Csegment).flags as libc::c_int & !(0x1 as libc::c_int)) as
-                libc::c_uchar
+            ((*Csegment).flags as libc::c_int & !(0x1 as libc::c_int)) as u8;
     }
     if (*Csegment).initflags as libc::c_int & 0x1 as libc::c_int != 0 {
         (*Csegment).initorg = (*sym).value as libc::c_ulong;
         (*Csegment).initflags = (*sym).flags
     }
     if !(*sym).next.is_null() {
-        OrgFill = (*(*sym).next).value as libc::c_uchar;
+        state.output.orgFill = (*(*sym).next).value as u8;
         if (*(*sym).next).flags as libc::c_int & 0x1 as libc::c_int != 0 {
             asmerr(AsmErrorEquates::ValueUndefined,
                    1 as libc::c_int != 0, 0 as *const libc::c_char);
@@ -1210,18 +1093,15 @@ pub unsafe extern "C" fn v_rorg(mut str: *mut libc::c_char,
                                 mut _dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = eval(str, 0 as libc::c_int);
     (*Csegment).flags =
-        ((*Csegment).flags as libc::c_int | 0x20 as libc::c_int) as
-            libc::c_uchar;
+        ((*Csegment).flags as libc::c_int | 0x20 as libc::c_int) as u8;
     if (*sym).addrmode as libc::c_int != AddressModes::Imp as i32 {
         (*Csegment).rorg = (*sym).value as libc::c_ulong;
         if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
             (*Csegment).rflags =
-                ((*Csegment).rflags as libc::c_int | 0x1 as libc::c_int) as
-                    libc::c_uchar
+                ((*Csegment).rflags as libc::c_int | 0x1 as libc::c_int) as u8;
         } else {
             (*Csegment).rflags =
-                ((*Csegment).rflags as libc::c_int & !(0x1 as libc::c_int)) as
-                    libc::c_uchar
+                ((*Csegment).rflags as libc::c_int & !(0x1 as libc::c_int)) as u8;
         }
         if (*Csegment).initrflags as libc::c_int & 0x1 as libc::c_int != 0 {
             (*Csegment).initrorg = (*sym).value as libc::c_ulong;
@@ -1236,8 +1116,7 @@ pub unsafe extern "C" fn v_rend(mut _str: *mut libc::c_char,
                                 mut _dummy: *mut _MNE) {
     programlabel();
     (*Csegment).flags =
-        ((*Csegment).flags as libc::c_int & !(0x20 as libc::c_int)) as
-            libc::c_uchar;
+        ((*Csegment).flags as libc::c_int & !(0x20 as libc::c_int)) as u8;
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_align(mut str: *mut libc::c_char,
@@ -1245,16 +1124,13 @@ pub unsafe extern "C" fn v_align(mut str: *mut libc::c_char,
     let mut sym: *mut _SYMBOL = eval(str, 0 as libc::c_int);
     let mut fill: libc::c_uchar = 0 as libc::c_int as libc::c_uchar;
     let mut rorg: libc::c_uchar =
-        ((*Csegment).flags as libc::c_int & 0x20 as libc::c_int) as
-            libc::c_uchar;
+        ((*Csegment).flags as libc::c_int & 0x20 as libc::c_int) as u8;
     if rorg != 0 {
         (*Csegment).rflags =
-            ((*Csegment).rflags as libc::c_int | 0x4 as libc::c_int) as
-                libc::c_uchar
+            ((*Csegment).rflags as libc::c_int | 0x4 as libc::c_int) as u8;
     } else {
         (*Csegment).flags =
-            ((*Csegment).flags as libc::c_int | 0x4 as libc::c_int) as
-                libc::c_uchar
+            ((*Csegment).flags as libc::c_int | 0x4 as libc::c_int) as u8;
     }
     if !(*sym).next.is_null() {
         if (*(*sym).next).flags as libc::c_int & 0x1 as libc::c_int != 0 {
@@ -1378,21 +1254,17 @@ pub unsafe extern "C" fn v_equ(mut str: *mut libc::c_char,
              !(0x8 as libc::c_int | 0x20 as libc::c_int)) as libc::c_uchar;
     /* List the value */
     let mut v: libc::c_ulong = (*lab).value as libc::c_ulong;
-    Glen = 0 as libc::c_int;
+    state.output.generatedLength = 0;
     if v > 0xffff as libc::c_int as libc::c_ulong {
-        let fresh33 = Glen;
-        Glen = Glen + 1;
-        Gen[fresh33 as usize] = (v >> 24 as libc::c_int) as libc::c_uchar;
-        let fresh34 = Glen;
-        Glen = Glen + 1;
-        Gen[fresh34 as usize] = (v >> 16 as libc::c_int) as libc::c_uchar
+        state.output.generated[state.output.generatedLength] = (v >> 24) as u8;
+        state.output.generatedLength += 1;
+        state.output.generated[state.output.generatedLength] = (v >> 16) as u8;
+        state.output.generatedLength += 1;
     }
-    let fresh35 = Glen;
-    Glen = Glen + 1;
-    Gen[fresh35 as usize] = (v >> 8 as libc::c_int) as libc::c_uchar;
-    let fresh36 = Glen;
-    Glen = Glen + 1;
-    Gen[fresh36 as usize] = v as libc::c_uchar;
+    state.output.generated[state.output.generatedLength] = (v >> 8) as u8;
+    state.output.generatedLength += 1;
+    state.output.generated[state.output.generatedLength] = v as u8;
+    state.output.generatedLength += 1;
     FreeSymbolList(sym);
 }
 #[no_mangle]
@@ -1414,8 +1286,7 @@ pub unsafe extern "C" fn v_eqm(mut str: *mut libc::c_char,
     }
     (*lab).value = 0 as libc::c_int as libc::c_long;
     (*lab).flags =
-        (0x8 as libc::c_int | 0x10 as libc::c_int | 0x20 as libc::c_int) as
-            libc::c_uchar;
+        (0x8 as libc::c_int | 0x10 as libc::c_int | 0x20 as libc::c_int) as u8;
     (*lab).string =
         strcpy(ckmalloc(strlen(str).wrapping_add(1 as libc::c_int as
                                                      libc::c_ulong) as
@@ -1461,8 +1332,8 @@ pub unsafe extern "C" fn v_set(mut str: *mut libc::c_char,
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut lab: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut dynamicname: [libc::c_char; 257] = [0; 257];
-    let mut i: libc::c_int = 0 as libc::c_int;
-    let mut j: libc::c_int = 0;
+    let mut i: usize = 0;
+    let mut j: usize = 0;
     let mut setundefined: libc::c_int = 0 as libc::c_int;
     while *str.offset(i as isize) as libc::c_int != 0 &&
               *str.offset(i as isize) as libc::c_int != '\"' as i32 &&
@@ -1473,14 +1344,12 @@ pub unsafe extern "C" fn v_set(mut str: *mut libc::c_char,
     if *str.offset(i as isize) as libc::c_int != 0 &&
            *str.offset(i as isize) as libc::c_int == ',' as i32 {
         // is this SET is using the "," eval-concat operator?
-        strncpy(dynamicname.as_mut_ptr(), str,
-                256 as libc::c_int as libc::c_ulong);
-        if i < 256 as libc::c_int {
-            dynamicname[i as usize] = 0 as libc::c_int as libc::c_char
+        strncpy(dynamicname.as_mut_ptr(), str, 256);
+        if i < 256 {
+            dynamicname[i] = 0;
         }
-        dynamicname[256 as libc::c_int as usize] =
-            0 as libc::c_int as libc::c_char;
-        j = strlen(dynamicname.as_mut_ptr()) as libc::c_int;
+        dynamicname[256] = 0;
+        j = strlen(dynamicname.as_mut_ptr()) as usize;
         // eval-concat argument processing loop...
         while *str.offset(i as isize) as libc::c_int != 0 &&
                   *str.offset(i as isize) as libc::c_int != '\"' as i32 &&
@@ -1490,10 +1359,9 @@ pub unsafe extern "C" fn v_set(mut str: *mut libc::c_char,
                 break ;
                 // process any remaining arguments
             } // argument was symbol
-            if *str.offset((i + 1 as libc::c_int) as isize) as libc::c_int ==
-                   '\"' as i32 {
+            if *str.offset((i + 1) as isize) as libc::c_int == '\"' as i32 {
                 // is this a string constant?
-                i = i + 2 as libc::c_int; // argument was string constant
+                i = i + 2; // argument was string constant
                 while *str.offset(i as isize) as libc::c_int != 0 &&
                           *str.offset(i as isize) as libc::c_int !=
                               '\"' as i32 &&
@@ -1505,17 +1373,14 @@ pub unsafe extern "C" fn v_set(mut str: *mut libc::c_char,
                     i = i + 1;
                     let fresh38 = j;
                     j = j + 1;
-                    dynamicname[fresh38 as usize] =
-                        *str.offset(fresh37 as isize)
+                    dynamicname[fresh38] = *str.offset(fresh37 as isize)
                 }
                 if *str.offset(i as isize) as libc::c_int != 0 &&
                        *str.offset(i as isize) as libc::c_int == '\"' as i32 {
-                    dynamicname[j as usize] =
-                        0 as libc::c_int as libc::c_char;
+                    dynamicname[j as usize] = 0;
                     i += 1
                 } else {
-                    asmerr(AsmErrorEquates::SyntaxError,
-                           0 as libc::c_int != 0, str);
+                    asmerr(AsmErrorEquates::SyntaxError, false, str);
                 }
             } else {
                 // this argument is a symbol to be evaluated
@@ -1552,10 +1417,7 @@ pub unsafe extern "C" fn v_set(mut str: *mut libc::c_char,
                                      libc::c_uint); // ensure the set doesn't actually happen
                         strcpy(dynamicname.as_mut_ptr().offset(j as isize),
                                tempval.as_mut_ptr());
-                        j =
-                            (j as
-                                 libc::c_ulong).wrapping_add(strlen(tempval.as_mut_ptr()))
-                                as libc::c_int
+                        j = (j).wrapping_add(strlen(tempval.as_mut_ptr()) as usize);
                     }
                 }
                 i += 1;
@@ -1570,7 +1432,7 @@ pub unsafe extern "C" fn v_set(mut str: *mut libc::c_char,
         }
         let fresh39 = i;
         i = i + 1;
-        dynamicname[fresh39 as usize] = 0 as libc::c_int as libc::c_char;
+        dynamicname[fresh39] = 0 as libc::c_int as libc::c_char;
         if setundefined != 0 {
             // not all of the arguments are defined yet, so skip this SET
             return
@@ -1924,20 +1786,19 @@ pub unsafe extern "C" fn pfopen(mut name: *const libc::c_char,
     free(buf as *mut libc::c_void);
     return f;
 }
-static mut Seglen: libc::c_long = 0;
+static mut Seglen: usize = 0;
 static mut Seekback: libc::c_long = 0;
 #[no_mangle]
 pub unsafe extern "C" fn generate() {
     let mut seekpos: libc::c_long = 0;
     static mut org: libc::c_ulong = 0;
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     if state.execution.redoIndex == 0 {
         if (*Csegment).flags as libc::c_int & 0x10 as libc::c_int == 0 {
-            i = Glen - 1 as libc::c_int;
-            while i >= 0 as libc::c_int {
-                CheckSum =
-                    CheckSum.wrapping_add(Gen[i as usize] as libc::c_ulong);
-                i -= 1
+            i = state.output.generatedLength as i32 - 1;
+            while i >= 0 {
+                CheckSum = CheckSum.wrapping_add(state.output.generated[i as usize] as libc::c_ulong);
+                i -= 1;
             }
             if state.execution.isClear {
                 state.execution.isClear = false;
@@ -1956,7 +1817,7 @@ pub unsafe extern "C" fn generate() {
                              libc::c_int, FI_temp);
                     if state.parameters.format == Format::Ras {
                         Seekback = ftell(FI_temp);
-                        Seglen = 0 as libc::c_int as libc::c_long;
+                        Seglen = 0;
                         putc(0 as libc::c_int, FI_temp);
                         putc(0 as libc::c_int, FI_temp);
                     }
@@ -1976,11 +1837,11 @@ pub unsafe extern "C" fn generate() {
                         std::process::exit(1);
                     }
                     while (*Csegment).org != org {
-                        putc(OrgFill as libc::c_int, FI_temp);
+                        putc(state.output.orgFill as libc::c_int, FI_temp);
                         org = org.wrapping_add(1)
                     }
-                    fwrite(Gen.as_mut_ptr() as *const libc::c_void,
-                           Glen as size_t, 1 as libc::c_int as size_t,
+                    fwrite(state.output.generated.as_mut_ptr() as *const libc::c_void,
+                           state.output.generatedLength as size_t, 1 as libc::c_int as size_t,
                            FI_temp);
                 }
                 Format::Ras => {
@@ -1988,35 +1849,29 @@ pub unsafe extern "C" fn generate() {
                         org = (*Csegment).org;
                         seekpos = ftell(FI_temp);
                         fseek(FI_temp, Seekback, 0 as libc::c_int);
-                        putc((Seglen & 0xff as libc::c_int as libc::c_long) as
-                                 libc::c_int, FI_temp);
-                        putc((Seglen >> 8 as libc::c_int &
-                                  0xff as libc::c_int as libc::c_long) as
-                                 libc::c_int, FI_temp);
+                        putc((Seglen & 0xff) as libc::c_int, FI_temp);
+                        putc((Seglen >> 8 & 0xff) as libc::c_int, FI_temp);
                         fseek(FI_temp, seekpos, 0 as libc::c_int);
-                        putc((org & 0xff as libc::c_int as libc::c_ulong) as
-                                 libc::c_int, FI_temp);
-                        putc((org >> 8 as libc::c_int &
-                                  0xff as libc::c_int as libc::c_ulong) as
-                                 libc::c_int, FI_temp);
+                        putc((org & 0xff) as libc::c_int, FI_temp);
+                        putc((org >> 8 & 0xff) as libc::c_int, FI_temp);
                         Seekback = ftell(FI_temp);
-                        Seglen = 0 as libc::c_int as libc::c_long;
+                        Seglen = 0;
                         putc(0 as libc::c_int, FI_temp);
                         putc(0 as libc::c_int, FI_temp);
                     }
-                    fwrite(Gen.as_mut_ptr() as *const libc::c_void,
-                           Glen as size_t, 1 as libc::c_int as size_t,
+                    fwrite(state.output.generated.as_mut_ptr() as *const libc::c_void,
+                           state.output.generatedLength as size_t, 1 as libc::c_int as size_t,
                            FI_temp);
-                    Seglen += Glen as libc::c_long
+                    Seglen += state.output.generatedLength;
                 }
             }
-            org = org.wrapping_add(Glen as libc::c_ulong)
+            org = org.wrapping_add(state.output.generatedLength as u64)
         }
     }
-    (*Csegment).org = (*Csegment).org.wrapping_add(Glen as libc::c_ulong);
+    (*Csegment).org = (*Csegment).org.wrapping_add(state.output.generatedLength as u64);
     if (*Csegment).flags as libc::c_int & 0x20 as libc::c_int != 0 {
         (*Csegment).rorg =
-            (*Csegment).rorg.wrapping_add(Glen as libc::c_ulong)
+            (*Csegment).rorg.wrapping_add(state.output.generatedLength as u64)
     };
 }
 #[no_mangle]
@@ -2024,11 +1879,8 @@ pub unsafe extern "C" fn closegenerate() {
     if state.execution.redoIndex == 0 {
         if state.parameters.format == Format::Ras {
             fseek(FI_temp, Seekback, 0 as libc::c_int);
-            putc((Seglen & 0xff as libc::c_int as libc::c_long) as
-                     libc::c_int, FI_temp);
-            putc((Seglen >> 8 as libc::c_int &
-                      0xff as libc::c_int as libc::c_long) as libc::c_int,
-                 FI_temp);
+            putc((Seglen & 0xff) as libc::c_int, FI_temp);
+            putc((Seglen >> 8 & 0xff) as libc::c_int, FI_temp);
             fseek(FI_temp, 0 as libc::c_long, 2 as libc::c_int);
         }
     };
@@ -2050,7 +1902,7 @@ pub unsafe extern "C" fn genfill(mut fill: libc::c_long,
     c0 = fill as libc::c_uchar;
     match size {
         1 => {
-            memset(Gen.as_mut_ptr() as *mut libc::c_void, c0 as libc::c_int,
+            memset(state.output.generated.as_mut_ptr() as *mut libc::c_void, c0 as libc::c_int,
                    ::std::mem::size_of::<[libc::c_uchar; 1024]>() as
                        libc::c_ulong);
         }
@@ -2061,11 +1913,11 @@ pub unsafe extern "C" fn genfill(mut fill: libc::c_long,
                       ::std::mem::size_of::<[libc::c_uchar; 1024]>() as
                           libc::c_ulong {
                 if state.execution.bitOrder != BitOrder::LeastMost {
-                    Gen[(i + 0 as libc::c_int) as usize] = c1;
-                    Gen[(i + 1 as libc::c_int) as usize] = c0
+                    state.output.generated[(i + 0) as usize] = c1;
+                    state.output.generated[(i + 1) as usize] = c0
                 } else {
-                    Gen[(i + 0 as libc::c_int) as usize] = c0;
-                    Gen[(i + 1 as libc::c_int) as usize] = c1
+                    state.output.generated[(i + 0) as usize] = c0;
+                    state.output.generated[(i + 1) as usize] = c1
                 }
                 i += 2 as libc::c_int
             }
@@ -2077,35 +1929,28 @@ pub unsafe extern "C" fn genfill(mut fill: libc::c_long,
                       ::std::mem::size_of::<[libc::c_uchar; 1024]>() as
                           libc::c_ulong {
                 if state.execution.bitOrder != BitOrder::LeastMost {
-                    Gen[(i + 0 as libc::c_int) as usize] = c3;
-                    Gen[(i + 1 as libc::c_int) as usize] = c2;
-                    Gen[(i + 2 as libc::c_int) as usize] = c1;
-                    Gen[(i + 3 as libc::c_int) as usize] = c0
+                    state.output.generated[(i + 0) as usize] = c3;
+                    state.output.generated[(i + 1) as usize] = c2;
+                    state.output.generated[(i + 2) as usize] = c1;
+                    state.output.generated[(i + 3) as usize] = c0
                 } else {
-                    Gen[(i + 0 as libc::c_int) as usize] = c0;
-                    Gen[(i + 1 as libc::c_int) as usize] = c1;
-                    Gen[(i + 2 as libc::c_int) as usize] = c2;
-                    Gen[(i + 3 as libc::c_int) as usize] = c3
+                    state.output.generated[(i + 0) as usize] = c0;
+                    state.output.generated[(i + 1) as usize] = c1;
+                    state.output.generated[(i + 2) as usize] = c2;
+                    state.output.generated[(i + 3) as usize] = c3
                 }
                 i += 4 as libc::c_int
             }
         }
         _ => { }
     }
-    Glen =
-        ::std::mem::size_of::<[libc::c_uchar; 1024]>() as libc::c_ulong as
-            libc::c_int;
-    while bytes as libc::c_ulong >
-              ::std::mem::size_of::<[libc::c_uchar; 1024]>() as libc::c_ulong
-          {
+    state.output.generatedLength = ::std::mem::size_of::<[libc::c_uchar; 1024]>();
+    while bytes as libc::c_ulong > ::std::mem::size_of::<[libc::c_uchar; 1024]>() as libc::c_ulong {
         generate();
-        bytes =
-            (bytes as
-                 libc::c_ulong).wrapping_sub(::std::mem::size_of::<[libc::c_uchar; 1024]>()
-                                                 as libc::c_ulong) as
-                libc::c_long as libc::c_long
+        bytes = (bytes as libc::c_ulong)
+            .wrapping_sub(::std::mem::size_of::<[libc::c_uchar; 1024]>() as libc::c_ulong) as libc::c_long as libc::c_long
     }
-    Glen = bytes as libc::c_int;
+    state.output.generatedLength = bytes as usize;
     generate();
 }
 #[no_mangle]
@@ -2119,7 +1964,6 @@ pub unsafe extern "C" fn pushif(mut xbool: bool) {
     (*ifs).xtrue = xbool as libc::c_uchar;
     (*ifs).acctrue =
         ((*Ifstack).acctrue as libc::c_int != 0 &&
-             (*Ifstack).xtrue as libc::c_int != 0) as libc::c_int as
-            libc::c_uchar;
+             (*Ifstack).xtrue as libc::c_int != 0) as libc::c_int as u8;
     Ifstack = ifs;
 }
