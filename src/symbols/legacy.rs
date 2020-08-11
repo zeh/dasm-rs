@@ -119,8 +119,8 @@ pub unsafe extern "C" fn findsymbol(mut str: *const libc::c_char,
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut buf: [libc::c_char; MAX_SYMBOLS + 14] = [0; MAX_SYMBOLS + 14];
     if len > MAX_SYMBOLS as libc::c_int { len = MAX_SYMBOLS as libc::c_int }
-    if *str.offset(0 as libc::c_int as isize) as libc::c_int == '.' as i32 {
-        if len == 1 as libc::c_int {
+    if *str.offset(0 as isize) as libc::c_int == '.' as i32 {
+        if len == 1 {
             if (*Csegment).flags as libc::c_int & 0x20 as libc::c_int != 0 {
                 org.flags =
                     ((*Csegment).rflags as libc::c_int & 0x1 as libc::c_int)
@@ -134,17 +134,17 @@ pub unsafe extern "C" fn findsymbol(mut str: *const libc::c_char,
             }
             return &mut org
         }
-        if len == 2 as libc::c_int &&
-               *str.offset(1 as libc::c_int as isize) as libc::c_int ==
+        if len == 2 &&
+               *str.offset(1 as isize) as libc::c_int ==
                    '.' as i32 {
             return &mut special
         }
-        if len == 3 as libc::c_int &&
-               *str.offset(1 as libc::c_int as isize) as libc::c_int ==
+        if len == 3 &&
+               *str.offset(1 as isize) as libc::c_int ==
                    '.' as i32 &&
-               *str.offset(2 as libc::c_int as isize) as libc::c_int ==
+               *str.offset(2 as isize) as libc::c_int ==
                    '.' as i32 {
-            specchk.flags = 0 as libc::c_int as libc::c_uchar;
+            specchk.flags = 0;
             specchk.value = CheckSum as libc::c_long;
             return &mut specchk
         }
@@ -153,7 +153,7 @@ pub unsafe extern "C" fn findsymbol(mut str: *const libc::c_char,
                 Localindex, len, str);
         len = strlen(buf.as_mut_ptr()) as libc::c_int;
         str = buf.as_mut_ptr()
-    } else if *str.offset((len - 1 as libc::c_int) as isize) as libc::c_int ==
+    } else if *str.offset((len - 1) as isize) as libc::c_int ==
                   '$' as i32 {
         sprintf(buf.as_mut_ptr(),
                 b"%ld$%.*s\x00" as *const u8 as *const libc::c_char,
@@ -180,13 +180,13 @@ pub unsafe extern "C" fn CreateSymbol(mut str: *const libc::c_char,
     let mut h1: libc::c_uint = 0;
     let mut buf: [libc::c_char; MAX_SYMBOLS + 14] = [0; MAX_SYMBOLS + 14];
     if len > MAX_SYMBOLS as libc::c_int { len = MAX_SYMBOLS as libc::c_int }
-    if *str.offset(0 as libc::c_int as isize) as libc::c_int == '.' as i32 {
+    if *str.offset(0 as isize) as libc::c_int == '.' as i32 {
         sprintf(buf.as_mut_ptr(),
                 b"%ld%.*s\x00" as *const u8 as *const libc::c_char,
                 Localindex, len, str);
         len = strlen(buf.as_mut_ptr()) as libc::c_int;
         str = buf.as_mut_ptr()
-    } else if *str.offset((len - 1 as libc::c_int) as isize) as libc::c_int ==
+    } else if *str.offset((len - 1) as isize) as libc::c_int ==
                   '$' as i32 {
         sprintf(buf.as_mut_ptr(),
                 b"%ld$%.*s\x00" as *const u8 as *const libc::c_char,
@@ -195,7 +195,7 @@ pub unsafe extern "C" fn CreateSymbol(mut str: *const libc::c_char,
         str = buf.as_mut_ptr()
     }
     sym = allocsymbol();
-    (*sym).name = permalloc(len + 1 as libc::c_int);
+    (*sym).name = permalloc(len + 1);
     memcpy((*sym).name as *mut libc::c_void, str as *const libc::c_void,
            len as libc::c_ulong);
     (*sym).namelen = len as libc::c_uint;
@@ -211,14 +211,14 @@ pub unsafe extern "C" fn CreateSymbol(mut str: *const libc::c_char,
  */
 unsafe extern "C" fn hash1(mut str: *const libc::c_char, mut len: libc::c_int)
  -> libc::c_uint {
-    let mut result: libc::c_uint = 0 as libc::c_int as libc::c_uint;
+    let mut result: libc::c_uint = 0;
     loop  {
         let fresh1 = len;
         len = len - 1;
         if !(fresh1 != 0) { break ; }
         let fresh2 = str;
         str = str.offset(1);
-        result = result << 2 as libc::c_int ^ *fresh2 as libc::c_uint
+        result = result << 2 ^ *fresh2 as libc::c_uint
     }
     return result & S_HASH_AND as libc::c_int as libc::c_uint;
 }
@@ -241,15 +241,15 @@ pub unsafe extern "C" fn programlabel() {
         if rorg as libc::c_int != 0 { (*cseg).rorg } else { (*cseg).org };
     Plab = (*cseg).org;
     Pflags = (*cseg).flags as libc::c_ulong;
-    str = *Av.as_mut_ptr().offset(0 as libc::c_int as isize);
-    if *str as libc::c_int == 0 as libc::c_int { return }
+    str = *Av.as_mut_ptr().offset(0 as isize);
+    if *str as libc::c_int == 0 { return }
     len = strlen(str) as libc::c_int;
-    if *str.offset((len - 1 as libc::c_int) as isize) as libc::c_int ==
+    if *str.offset((len - 1) as isize) as libc::c_int ==
            ':' as i32 {
         len -= 1
     }
-    if *str.offset(0 as libc::c_int as isize) as libc::c_int != '.' as i32 &&
-           *str.offset((len - 1 as libc::c_int) as isize) as libc::c_int !=
+    if *str.offset(0 as isize) as libc::c_int != '.' as i32 &&
+           *str.offset((len - 1) as isize) as libc::c_int !=
                '$' as i32 {
         Lastlocaldollarindex = Lastlocaldollarindex.wrapping_add(1);
         Localdollarindex = Lastlocaldollarindex
@@ -293,7 +293,7 @@ pub unsafe extern "C" fn programlabel() {
                     sprintf(sBuffer.as_mut_ptr(),
                             b"%s %s\x00" as *const u8 as *const libc::c_char,
                             (*sym).name,
-                            sftos((*sym).value, 0 as libc::c_int));
+                            sftos((*sym).value, 0));
                     asmerr(AsmErrorEquates::LabelMismatch,
                            false, sBuffer.as_mut_ptr());
                 }
@@ -315,7 +315,7 @@ pub unsafe extern "C" fn allocsymbol() -> *mut _SYMBOL {
     if !SymAlloc.is_null() {
         sym = SymAlloc;
         SymAlloc = (*SymAlloc).next;
-        memset(sym as *mut libc::c_void, 0 as libc::c_int,
+        memset(sym as *mut libc::c_void, 0,
                ::std::mem::size_of::<_SYMBOL>() as libc::c_ulong);
     } else {
         sym =

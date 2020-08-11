@@ -233,7 +233,7 @@ pub static mut Localdollarindex: libc::c_ulong = 0;
 #[no_mangle]
 pub static mut Lastlocaldollarindex: libc::c_ulong = 0;
 #[no_mangle]
-pub static mut Processor: libc::c_ulong = 0 as libc::c_int as libc::c_ulong;
+pub static mut Processor: libc::c_ulong = 0;
 #[no_mangle]
 pub static mut CheckSum: libc::c_ulong = 0;
 /*	output data checksum		*/
@@ -249,26 +249,26 @@ pub static mut Pflags: libc::c_ulong = 0;
 /*unsigned int	Adrbytes[]  = { 1, 2, 3, 2, 2, 2, 3, 3, 3, 2, 2, 2, 3, 1, 1, 2, 3 };*/
 #[no_mangle]
 pub static mut Cvt: [libc::c_uint; 17] =
-    [0 as libc::c_int as libc::c_uint, 2 as libc::c_int as libc::c_uint,
-     0 as libc::c_int as libc::c_uint, 6 as libc::c_int as libc::c_uint,
-     7 as libc::c_int as libc::c_uint, 8 as libc::c_int as libc::c_uint,
-     9 as libc::c_int as libc::c_uint, 0 as libc::c_int as libc::c_uint,
-     0 as libc::c_int as libc::c_uint, 0 as libc::c_int as libc::c_uint,
-     0 as libc::c_int as libc::c_uint, 0 as libc::c_int as libc::c_uint,
-     0 as libc::c_int as libc::c_uint, 4 as libc::c_int as libc::c_uint,
-     5 as libc::c_int as libc::c_uint, 0 as libc::c_int as libc::c_uint,
-     0 as libc::c_int as libc::c_uint];
+    [0, 2,
+     0, 6,
+     7, 8,
+     9, 0,
+     0, 0,
+     0, 0,
+     0, 4,
+     5, 0,
+     0];
 #[no_mangle]
 pub static mut Opsize: [libc::c_uint; 17] =
-    [0 as libc::c_int as libc::c_uint, 1 as libc::c_int as libc::c_uint,
-     2 as libc::c_int as libc::c_uint, 1 as libc::c_int as libc::c_uint,
-     1 as libc::c_int as libc::c_uint, 1 as libc::c_int as libc::c_uint,
-     2 as libc::c_int as libc::c_uint, 2 as libc::c_int as libc::c_uint,
-     2 as libc::c_int as libc::c_uint, 2 as libc::c_int as libc::c_uint,
-     1 as libc::c_int as libc::c_uint, 1 as libc::c_int as libc::c_uint,
-     2 as libc::c_int as libc::c_uint, 0 as libc::c_int as libc::c_uint,
-     0 as libc::c_int as libc::c_uint, 1 as libc::c_int as libc::c_uint,
-     1 as libc::c_int as libc::c_uint];
+    [0, 1,
+     2, 1,
+     1, 1,
+     2, 2,
+     2, 2,
+     1, 1,
+     2, 0,
+     0, 1,
+     1];
 #[no_mangle]
 pub static mut Ops: [_MNE; 39] =
         [{
@@ -279,10 +279,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"list\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -295,10 +295,10 @@ pub static mut Ops: [_MNE; 39] =
                                                         _: *mut _MNE) -> ()),
                       name:
                           b"include\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -310,10 +310,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"seg\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -325,10 +325,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"hex\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -340,10 +340,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"err\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -355,10 +355,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"dc\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -370,10 +370,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"byte\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -385,10 +385,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"word\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -400,10 +400,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"long\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -415,10 +415,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"ds\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -430,10 +430,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"dv\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -445,10 +445,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"end\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -460,10 +460,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"trace\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -475,10 +475,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"org\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -490,10 +490,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"rorg\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -505,10 +505,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"rend\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -520,10 +520,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"align\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -537,10 +537,10 @@ pub static mut Ops: [_MNE; 39] =
                       name:
                           b"subroutine\x00" as *const u8 as
                               *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -552,10 +552,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"equ\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -567,10 +567,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"=\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -582,10 +582,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"eqm\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -597,10 +597,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"set\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -612,10 +612,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"setstr\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -628,9 +628,9 @@ pub static mut Ops: [_MNE; 39] =
                                                         _: *mut _MNE) -> ()),
                       name: b"mac\x00" as *const u8 as *const libc::c_char,
                       flags: 0x4 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -643,9 +643,9 @@ pub static mut Ops: [_MNE; 39] =
                                                         _: *mut _MNE) -> ()),
                       name: b"endm\x00" as *const u8 as *const libc::c_char,
                       flags: 0x80 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -657,10 +657,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"mexit\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -674,9 +674,9 @@ pub static mut Ops: [_MNE; 39] =
                       name:
                           b"ifconst\x00" as *const u8 as *const libc::c_char,
                       flags: 0x4 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -690,9 +690,9 @@ pub static mut Ops: [_MNE; 39] =
                       name:
                           b"ifnconst\x00" as *const u8 as *const libc::c_char,
                       flags: 0x4 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -705,9 +705,9 @@ pub static mut Ops: [_MNE; 39] =
                                                         _: *mut _MNE) -> ()),
                       name: b"if\x00" as *const u8 as *const libc::c_char,
                       flags: 0x4 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -720,9 +720,9 @@ pub static mut Ops: [_MNE; 39] =
                                                         _: *mut _MNE) -> ()),
                       name: b"else\x00" as *const u8 as *const libc::c_char,
                       flags: 0x4 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -735,9 +735,9 @@ pub static mut Ops: [_MNE; 39] =
                                                         _: *mut _MNE) -> ()),
                       name: b"endif\x00" as *const u8 as *const libc::c_char,
                       flags: 0x4 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -750,9 +750,9 @@ pub static mut Ops: [_MNE; 39] =
                                                         _: *mut _MNE) -> ()),
                       name: b"eif\x00" as *const u8 as *const libc::c_char,
                       flags: 0x4 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -765,9 +765,9 @@ pub static mut Ops: [_MNE; 39] =
                                                         _: *mut _MNE) -> ()),
                       name: b"repeat\x00" as *const u8 as *const libc::c_char,
                       flags: 0x4 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -780,9 +780,9 @@ pub static mut Ops: [_MNE; 39] =
                                                         _: *mut _MNE) -> ()),
                       name: b"repend\x00" as *const u8 as *const libc::c_char,
                       flags: 0x4 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -794,10 +794,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"echo\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -811,10 +811,10 @@ pub static mut Ops: [_MNE; 39] =
                       name:
                           b"processor\x00" as *const u8 as
                               *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -826,10 +826,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"incbin\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -841,10 +841,10 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"incdir\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -853,10 +853,10 @@ pub static mut Ops: [_MNE; 39] =
                  _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect: None,
                       name: 0 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          }]

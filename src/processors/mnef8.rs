@@ -217,10 +217,10 @@ unsafe extern "C" fn isPCKnown() -> libc::c_int {
         if (*Csegment).flags as libc::c_int & 0x20 as libc::c_int != 0 {
             (*Csegment).rflags as libc::c_int
         } else { (*Csegment).flags as libc::c_int } as libc::c_uchar;
-    return if pcf as libc::c_int & (0x1 as libc::c_int | 2 as libc::c_int) ==
-                  0 as libc::c_int {
-               1 as libc::c_int
-           } else { 0 as libc::c_int };
+    return if pcf as libc::c_int & (0x1 as libc::c_int | 2) ==
+                  0 {
+               1
+           } else { 0 };
 }
 /*
  * returns the current program counter
@@ -243,16 +243,16 @@ unsafe extern "C" fn parse_value(mut str: *mut libc::c_char,
                                  mut value: *mut libc::c_ulong)
  -> libc::c_int {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut result: libc::c_int = 0 as libc::c_int;
-    *value = 0 as libc::c_int as libc::c_ulong;
-    sym = eval(str, 0 as libc::c_int);
+    let mut result: libc::c_int = 0;
+    *value = 0;
+    sym = eval(str, 0);
     if !(*sym).next.is_null() ||
            AddressModes::ByteAdr as i32 != (*sym).addrmode as libc::c_int {
         asmerr(AsmErrorEquates::SyntaxError, true, str);
     } else if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
         state.execution.redoIndex += 1;
         state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved;
-        result = 1 as libc::c_int
+        result = 1
     } else { *value = (*sym).value as libc::c_ulong }
     FreeSymbolList(sym);
     return result;
@@ -290,44 +290,44 @@ unsafe extern "C" fn parse_scratchpad_register(mut str: *mut libc::c_char,
            strcasecmp(b"(is)\x00" as *const u8 as *const libc::c_char, str) ==
                0 {
         *reg = 0xc as libc::c_int as libc::c_uchar;
-        return 0 as libc::c_int
+        return 0
     }
     if strcasecmp(b"i\x00" as *const u8 as *const libc::c_char, str) == 0 ||
            strcasecmp(b"(is)+\x00" as *const u8 as *const libc::c_char, str)
                == 0 {
         *reg = 0xd as libc::c_int as libc::c_uchar;
-        return 0 as libc::c_int
+        return 0
     }
     if strcasecmp(b"d\x00" as *const u8 as *const libc::c_char, str) == 0 ||
            strcasecmp(b"(is)-\x00" as *const u8 as *const libc::c_char, str)
                == 0 {
         *reg = 0xe as libc::c_int as libc::c_uchar;
-        return 0 as libc::c_int
+        return 0
     }
     /* parse aliases for scratchpad registers */
     if strcasecmp(b"j\x00" as *const u8 as *const libc::c_char, str) == 0 {
         *reg = 0x9 as libc::c_int as libc::c_uchar;
-        return 0 as libc::c_int
+        return 0
     }
     if strcasecmp(b"hu\x00" as *const u8 as *const libc::c_char, str) == 0 {
         *reg = 0xa as libc::c_int as libc::c_uchar;
-        return 0 as libc::c_int
+        return 0
     }
     if strcasecmp(b"hl\x00" as *const u8 as *const libc::c_char, str) == 0 {
         *reg = 0xb as libc::c_int as libc::c_uchar;
-        return 0 as libc::c_int
+        return 0
     }
     /* parse register number */
     if parse_value(str, &mut regnum) != 0 {
-        return 1 as libc::c_int
+        return 1
         /* unresolved expr */
     } else {
-        if regnum > 14 as libc::c_int as libc::c_ulong {
+        if regnum > 14 {
             asmerr(AsmErrorEquates::ValueMustBeLowerThanF,
                    true, str);
         }
         *reg = regnum as libc::c_uchar;
-        return 0 as libc::c_int
+        return 0
     };
 }
 /*
@@ -388,12 +388,12 @@ unsafe extern "C" fn v_ins_outs(mut str: *mut libc::c_char,
     let mut operand: libc::c_ulong = 0;
     programlabel();
     parse_value(str, &mut operand);
-    if operand > 15 as libc::c_int as libc::c_ulong {
+    if operand > 15 {
         f8err(AsmErrorEquates::ValueMustBeLowerThan10, (*mne).name, str,
               false);
     }
-    emit_opcode1(((*mne).opcode[0 as libc::c_int as usize] as libc::c_ulong |
-                      operand & 15 as libc::c_int as libc::c_ulong) as
+    emit_opcode1(((*mne).opcode[0 as usize] as libc::c_ulong |
+                      operand & 15) as
                      libc::c_uchar);
 }
 unsafe extern "C" fn v_sl_sr(mut str: *mut libc::c_char, mut mne: *mut _MNE) {
@@ -401,15 +401,15 @@ unsafe extern "C" fn v_sl_sr(mut str: *mut libc::c_char, mut mne: *mut _MNE) {
     programlabel();
     if parse_value(str, &mut operand) != 0 {
         /* unresolved expression, reserve space */
-        emit_opcode1(0 as libc::c_int as libc::c_uchar);
+        emit_opcode1(0);
     } else {
         match operand {
             1 => {
-                emit_opcode1((*mne).opcode[0 as libc::c_int as usize] as
+                emit_opcode1((*mne).opcode[0 as usize] as
                                  libc::c_uchar);
             }
             4 => {
-                emit_opcode1((*mne).opcode[0 as libc::c_int as
+                emit_opcode1((*mne).opcode[0 as
                                                usize].wrapping_add(2 as
                                                                        libc::c_int
                                                                        as
@@ -419,7 +419,7 @@ unsafe extern "C" fn v_sl_sr(mut str: *mut libc::c_char, mut mne: *mut _MNE) {
             _ => {
                 f8err(AsmErrorEquates::ValueMustBeOneOrFour, (*mne).name,
                       str, false);
-                emit_opcode1(0 as libc::c_int as libc::c_uchar);
+                emit_opcode1(0);
             }
         }
     };
@@ -428,12 +428,12 @@ unsafe extern "C" fn v_lis(mut str: *mut libc::c_char, mut mne: *mut _MNE) {
     let mut operand: libc::c_ulong = 0;
     programlabel();
     parse_value(str, &mut operand);
-    if operand > 15 as libc::c_int as libc::c_ulong {
+    if operand > 15 {
         f8err(AsmErrorEquates::ValueMustBeLowerThan10, (*mne).name, str,
               false);
     }
     emit_opcode1((0x70 as libc::c_int as libc::c_ulong |
-                      operand & 15 as libc::c_int as libc::c_ulong) as
+                      operand & 15) as
                      libc::c_uchar);
 }
 unsafe extern "C" fn v_lisu_lisl(mut str: *mut libc::c_char,
@@ -441,12 +441,12 @@ unsafe extern "C" fn v_lisu_lisl(mut str: *mut libc::c_char,
     let mut operand: libc::c_ulong = 0;
     programlabel();
     parse_value(str, &mut operand);
-    if operand > 7 as libc::c_int as libc::c_ulong {
+    if operand > 7 {
         f8err(AsmErrorEquates::ValueMustBeLowerThan8, (*mne).name, str,
               false);
     }
-    emit_opcode1(((*mne).opcode[0 as libc::c_int as usize] as libc::c_ulong |
-                      operand & 7 as libc::c_int as libc::c_ulong) as
+    emit_opcode1(((*mne).opcode[0 as usize] as libc::c_ulong |
+                      operand & 7) as
                      libc::c_uchar);
 }
 /*
@@ -458,7 +458,7 @@ unsafe extern "C" fn v_sreg_op(mut str: *mut libc::c_char,
     let mut reg: libc::c_uchar = 0;
     programlabel();
     parse_scratchpad_register(str, &mut reg);
-    emit_opcode1(((*mne).opcode[0 as libc::c_int as usize] |
+    emit_opcode1(((*mne).opcode[0 as usize] |
                       reg as libc::c_uint) as libc::c_uchar);
 }
 unsafe extern "C" fn v_lr(mut str: *mut libc::c_char, mut mne: *mut _MNE) {
@@ -472,9 +472,9 @@ unsafe extern "C" fn v_lr(mut str: *mut libc::c_char, mut mne: *mut _MNE) {
     let mut opcode: libc::c_int = 0;
     programlabel();
     /* a valid operand string must contain exactly one comma. find it. */
-    ncommas = 0 as libc::c_int;
-    cindex = 0 as libc::c_int;
-    i = 0 as libc::c_int;
+    ncommas = 0;
+    cindex = 0;
+    i = 0;
     while *str.offset(i as isize) != 0 {
         if ',' as i32 == *str.offset(i as isize) as libc::c_int {
             ncommas += 1;
@@ -482,24 +482,24 @@ unsafe extern "C" fn v_lr(mut str: *mut libc::c_char, mut mne: *mut _MNE) {
         }
         i += 1
     }
-    if 1 as libc::c_int != ncommas {
+    if 1 != ncommas {
         f8err(AsmErrorEquates::SyntaxError, (*mne).name, str,
               false);
         return
     }
     /* extract operand strings  */
-    *str.offset(cindex as isize) = 0 as libc::c_int as libc::c_char;
+    *str.offset(cindex as isize) = 0;
     op1 = str;
     op2 =
-        &mut *str.offset((cindex + 1 as libc::c_int) as isize) as
+        &mut *str.offset((cindex + 1) as isize) as
             *mut libc::c_char;
-    if 0 as libc::c_int != cindex &&
-           *(*__ctype_b_loc()).offset(*str.offset((cindex - 1 as libc::c_int)
+    if 0 != cindex &&
+           *(*__ctype_b_loc()).offset(*str.offset((cindex - 1)
                                                       as isize) as libc::c_int
                                           as isize) as libc::c_int &
                _ISspace as libc::c_int as libc::c_ushort as libc::c_int != 0 {
-        *str.offset((cindex - 1 as libc::c_int) as isize) =
-            0 as libc::c_int as libc::c_char
+        *str.offset((cindex - 1) as isize) =
+            0
     }
     if *(*__ctype_b_loc()).offset(*op2 as libc::c_int as isize) as libc::c_int
            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int != 0 {
@@ -510,7 +510,7 @@ unsafe extern "C" fn v_lr(mut str: *mut libc::c_char, mut mne: *mut _MNE) {
     if REG_NONE as libc::c_int == reg_dst as libc::c_int {
         if parse_scratchpad_register(op1, &mut reg_dst) != 0 {
             /* unresolved expression, reserve space */
-            emit_opcode1(0 as libc::c_int as libc::c_uchar);
+            emit_opcode1(0);
             return
         }
     }
@@ -518,32 +518,32 @@ unsafe extern "C" fn v_lr(mut str: *mut libc::c_char, mut mne: *mut _MNE) {
     if REG_NONE as libc::c_int == reg_src as libc::c_int {
         if parse_scratchpad_register(op2, &mut reg_src) != 0 {
             /* unresolved expression, reserve space */
-            emit_opcode1(0 as libc::c_int as libc::c_uchar);
+            emit_opcode1(0);
             return
         }
     }
     /* restore operand string */
     *str.offset(cindex as isize) = ',' as i32 as libc::c_char;
-    if 0 as libc::c_int != cindex &&
-           0 as libc::c_int ==
-               *str.offset((cindex - 1 as libc::c_int) as isize) as
+    if 0 != cindex &&
+           0 ==
+               *str.offset((cindex - 1) as isize) as
                    libc::c_int {
-        *str.offset((cindex - 1 as libc::c_int) as isize) =
+        *str.offset((cindex - 1) as isize) =
             ' ' as i32 as libc::c_char
     }
     /* generate opcode */
-    opcode = -(1 as libc::c_int);
+    opcode = -(1);
     match reg_dst as libc::c_int {
         16 => {
             /* lr a,xxx */
             match reg_src as libc::c_int {
                 19 => { opcode = 0xa as libc::c_int }
                 22 => { opcode = 0x1 as libc::c_int }
-                21 => { opcode = 0 as libc::c_int }
+                21 => { opcode = 0 }
                 27 => { opcode = 0x3 as libc::c_int }
                 26 => { opcode = 0x2 as libc::c_int }
                 _ => {
-                    if (reg_src as libc::c_int) < 15 as libc::c_int {
+                    if (reg_src as libc::c_int) < 15 {
                         opcode = 0x40 as libc::c_int | reg_src as libc::c_int
                     }
                 }
@@ -613,18 +613,18 @@ unsafe extern "C" fn v_lr(mut str: *mut libc::c_char, mut mne: *mut _MNE) {
         }
         _ => {
             /* lr sreg,xxx*/
-            if 15 as libc::c_int > reg_dst as libc::c_int &&
+            if 15 > reg_dst as libc::c_int &&
                    REG_A as libc::c_int == reg_src as libc::c_int {
                 /* lr sreg,a */
                 opcode = 0x50 as libc::c_int | reg_dst as libc::c_int
-            } else if 9 as libc::c_int == reg_dst as libc::c_int &&
+            } else if 9 == reg_dst as libc::c_int &&
                           REG_W as libc::c_int == reg_src as libc::c_int {
                 /* special case : lr j,w */
                 opcode = 0x1e as libc::c_int
             }
         }
     }
-    if opcode < 0 as libc::c_int {
+    if opcode < 0 {
         f8err(AsmErrorEquates::IllegalOperandCombination, (*mne).name,
               str, true);
     } else { emit_opcode1(opcode as libc::c_uchar); };
@@ -643,8 +643,8 @@ unsafe extern "C" fn generate_branch(mut opcode: libc::c_uchar,
     /* get target address */
     if parse_value(str, &mut target_adr) != 0 {
         /* unresolved target address, reserve space */
-        emit_opcode2(0 as libc::c_int as libc::c_uchar,
-                     0 as libc::c_int as libc::c_uchar);
+        emit_opcode2(0,
+                     0);
         return
     }
     /* calculate displacement */
@@ -667,7 +667,7 @@ unsafe extern "C" fn generate_branch(mut opcode: libc::c_uchar,
         }
     } else {
         /* unknown pc, will be (hopefully) resolved in future passes */
-        disp = 0 as libc::c_int as libc::c_long
+        disp = 0
     }
     emit_opcode2(opcode,
                  (disp & 255 as libc::c_int as libc::c_long) as
@@ -679,7 +679,7 @@ unsafe extern "C" fn generate_branch(mut opcode: libc::c_uchar,
  */
 unsafe extern "C" fn v_branch(mut str: *mut libc::c_char,
                               mut mne: *mut _MNE) {
-    generate_branch((*mne).opcode[0 as libc::c_int as usize] as libc::c_uchar,
+    generate_branch((*mne).opcode[0 as usize] as libc::c_uchar,
                     str);
 }
 unsafe extern "C" fn v_bf_bt(mut str: *mut libc::c_char, mut mne: *mut _MNE) {
@@ -690,9 +690,9 @@ unsafe extern "C" fn v_bf_bt(mut str: *mut libc::c_char, mut mne: *mut _MNE) {
     let mut op2: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut value: libc::c_ulong = 0;
     /* a valid operand string must contain exactly one comma. find it. */
-    ncommas = 0 as libc::c_int;
-    cindex = 0 as libc::c_int;
-    i = 0 as libc::c_int;
+    ncommas = 0;
+    cindex = 0;
+    i = 0;
     while *str.offset(i as isize) != 0 {
         if ',' as i32 == *str.offset(i as isize) as libc::c_int {
             ncommas += 1;
@@ -700,41 +700,41 @@ unsafe extern "C" fn v_bf_bt(mut str: *mut libc::c_char, mut mne: *mut _MNE) {
         }
         i += 1
     }
-    if 1 as libc::c_int != ncommas {
+    if 1 != ncommas {
         f8err(AsmErrorEquates::SyntaxError, (*mne).name, str,
               false);
         return
     }
     /* extract operands */
-    *str.offset(cindex as isize) = 0 as libc::c_int as libc::c_char;
+    *str.offset(cindex as isize) = 0;
     op1 = str;
     op2 =
-        &mut *str.offset((cindex + 1 as libc::c_int) as isize) as
+        &mut *str.offset((cindex + 1) as isize) as
             *mut libc::c_char;
     /* parse first operand*/
     if parse_value(op1, &mut value) != 0 {
         /* unresolved expression, reserve space */
-        emit_opcode2(0 as libc::c_int as libc::c_uchar,
-                     0 as libc::c_int as libc::c_uchar);
+        emit_opcode2(0,
+                     0);
         return
     }
     /* check first operand */
     *str.offset(cindex as isize) =
         ',' as i32 as libc::c_char; /* restore operand string */
     if 'f' as i32 ==
-           *(*mne).name.offset(1 as libc::c_int as isize) as libc::c_int {
+           *(*mne).name.offset(1 as isize) as libc::c_int {
         /* bf */
-        if value > 15 as libc::c_int as libc::c_ulong {
+        if value > 15 {
             f8err(AsmErrorEquates::ValueMustBeLowerThan10, (*mne).name, str,
                   false);
-            value &= 15 as libc::c_int as libc::c_ulong
+            value &= 15
         }
-    } else if value > 7 as libc::c_int as libc::c_ulong {
+    } else if value > 7 {
         f8err(AsmErrorEquates::ValueMustBeLowerThan8, (*mne).name, str,
               false);
-        value &= 7 as libc::c_int as libc::c_ulong
+        value &= 7
     }
-    generate_branch(((*mne).opcode[0 as libc::c_int as usize] as libc::c_ulong
+    generate_branch(((*mne).opcode[0 as usize] as libc::c_ulong
                          | value) as libc::c_uchar, op2);
 }
 /* bt */
@@ -751,8 +751,8 @@ unsafe extern "C" fn v_wordop(mut str: *mut libc::c_char,
         f8err(AsmErrorEquates::ValueMustBeLowerThan10000, (*mne).name, str,
               false);
     }
-    emit_opcode3((*mne).opcode[0 as libc::c_int as usize] as libc::c_uchar,
-                 (value >> 8 as libc::c_int &
+    emit_opcode3((*mne).opcode[0 as usize] as libc::c_uchar,
+                 (value >> 8 &
                       0xff as libc::c_int as libc::c_ulong) as libc::c_uchar,
                  (value & 0xff as libc::c_int as libc::c_ulong) as
                      libc::c_uchar);
@@ -770,7 +770,7 @@ unsafe extern "C" fn v_byteop(mut str: *mut libc::c_char,
         f8err(AsmErrorEquates::AddressMustBeLowerThan100, (*mne).name, str,
               false);
     }
-    emit_opcode2((*mne).opcode[0 as libc::c_int as usize] as libc::c_uchar,
+    emit_opcode2((*mne).opcode[0 as usize] as libc::c_uchar,
                  (value & 0xff as libc::c_int as libc::c_ulong) as
                      libc::c_uchar);
 }
@@ -784,10 +784,10 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"res\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -799,10 +799,10 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"db\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -814,10 +814,10 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"dw\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -829,10 +829,10 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"dd\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -844,9 +844,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"adc\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x8e as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -861,9 +861,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"ai\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x24 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -878,9 +878,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"am\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x88 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -895,9 +895,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"amd\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x89 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -912,9 +912,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"as\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xc0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -929,9 +929,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"asd\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xd0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -946,9 +946,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"bc\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x82 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -963,9 +963,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"bf\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x90 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -980,9 +980,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"bm\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x91 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -997,9 +997,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"bnc\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x92 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1014,9 +1014,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"bno\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x98 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1031,9 +1031,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"bnz\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x94 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1048,9 +1048,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"bp\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x81 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1065,9 +1065,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"br\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x90 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1082,9 +1082,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"br7\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x8f as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1099,9 +1099,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"bt\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x80 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1116,9 +1116,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"bz\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x84 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1133,9 +1133,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"ci\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x25 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1150,9 +1150,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"clr\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x70 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1167,9 +1167,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"cm\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x8d as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1184,9 +1184,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"com\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x18 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1201,9 +1201,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"dci\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x2a as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1218,9 +1218,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"di\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x1a as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1235,9 +1235,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"ds\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x30 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1252,9 +1252,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"ei\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x1b as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1269,9 +1269,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"in\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x26 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1286,9 +1286,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"inc\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x1f as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1303,9 +1303,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"ins\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xa0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1320,9 +1320,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"jmp\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x29 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1337,9 +1337,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"li\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x20 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1354,10 +1354,10 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"lis\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1369,9 +1369,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"lisl\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x68 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1386,9 +1386,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"lisu\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x60 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1403,9 +1403,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"lm\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x16 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1420,9 +1420,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"lnk\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x19 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1437,10 +1437,10 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"lr\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1452,9 +1452,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"ni\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x21 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1469,9 +1469,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"nm\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x8a as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1486,9 +1486,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"nop\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x2b as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1503,9 +1503,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"ns\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xf0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1520,9 +1520,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"oi\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x22 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1537,9 +1537,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"om\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x8b as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1554,9 +1554,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"out\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x27 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1571,9 +1571,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"outs\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xb0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1588,9 +1588,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"pi\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x28 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1605,9 +1605,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"pk\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xc as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1622,9 +1622,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"pop\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x1c as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1639,9 +1639,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"sl\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x13 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1656,9 +1656,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"sr\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x12 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1673,9 +1673,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"st\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x17 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1690,9 +1690,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"xdc\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x2c as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1707,9 +1707,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"xi\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x23 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1724,9 +1724,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"xm\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0x8c as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1741,9 +1741,9 @@ pub static mut MneF8: [_MNE; 59] =
                                    unsafe extern "C" fn(_: *mut libc::c_char,
                                                         _: *mut _MNE) -> ()),
                       name: b"xs\x00" as *const u8 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
+                      flags: 0,
                       okmask:
-                          ((1 as libc::c_long) << AddressModes::Imp as i32) as
+                          ((1) << AddressModes::Imp as i32) as
                               libc::c_ulong,
                       opcode:
                           [0xe0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0,
@@ -1755,10 +1755,10 @@ pub static mut MneF8: [_MNE; 59] =
                  _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect: None,
                       name: 0 as *const libc::c_char,
-                      flags: 0 as libc::c_int as libc::c_uchar,
-                      okmask: 0 as libc::c_int as libc::c_ulong,
+                      flags: 0,
+                      okmask: 0,
                       opcode:
-                          [0 as libc::c_int as libc::c_uint, 0, 0, 0, 0, 0, 0,
+                          [0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          }]

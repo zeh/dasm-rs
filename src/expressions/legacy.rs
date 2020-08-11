@@ -188,7 +188,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             }
             37 => {
                 if state.expressions.lastWasOp {
-                    str = pushbin(str.offset(1 as libc::c_int as isize))
+                    str = pushbin(str.offset(1 as isize))
                 } else {
                     doop(
                         ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
@@ -253,7 +253,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                     );
                     str = str.offset(1)
                 } else {
-                    if *str.offset(1 as libc::c_int as isize) as libc::c_int == '>' as i32 {
+                    if *str.offset(1 as isize) as libc::c_int == '>' as i32 {
                         doop(
                             ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
                                 Some(op_shiftright as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
@@ -261,7 +261,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                             18
                         );
                         str = str.offset(1)
-                    } else if *str.offset(1 as libc::c_int as isize) as libc::c_int == '=' as i32 {
+                    } else if *str.offset(1 as isize) as libc::c_int == '=' as i32 {
                         doop(
                             ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
                                 Some(op_greatereq as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
@@ -291,14 +291,14 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                     );
                     str = str.offset(1)
                 } else {
-                    if *str.offset(1 as libc::c_int as isize) as libc::c_int == '<' as i32 {
+                    if *str.offset(1 as isize) as libc::c_int == '<' as i32 {
                         doop(
                             ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
                                 Some(op_shiftleft as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())),
                             18
                         );
                         str = str.offset(1)
-                    } else if *str.offset(1 as libc::c_int as isize) as libc::c_int == '=' as i32 {
+                    } else if *str.offset(1 as isize) as libc::c_int == '=' as i32 {
                         doop(
                             ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
                                 Some(op_smallereq as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
@@ -320,7 +320,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             }
             61 => {
                 /*  16: ==  (= same as ==)      */
-                if *str.offset(1 as libc::c_int as isize) as libc::c_int == '=' as i32 {
+                if *str.offset(1 as isize) as libc::c_int == '=' as i32 {
                     str = str.offset(1)
                 }
                 doop(
@@ -355,7 +355,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             }
             38 => {
                 /*  15: &   12: &&              */
-                if *str.offset(1 as libc::c_int as isize) as libc::c_int == '&' as i32 {
+                if *str.offset(1 as isize) as libc::c_int == '&' as i32 {
                     doop(
                         ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
                             Some(op_andand as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
@@ -387,7 +387,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             }
             124 => {
                 /*  13: |   11: ||              */
-                if *str.offset(1 as libc::c_int as isize) as libc::c_int == '|' as i32 {
+                if *str.offset(1 as isize) as libc::c_int == '|' as i32 {
                     doop(
                         ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int)-> ()>, opfunc_t>(
                             Some(op_oror as unsafe extern "C" fn(_: libc::c_long, _: libc::c_long, _: libc::c_int, _: libc::c_int) -> ())
@@ -419,21 +419,21 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 if wantmode != 0 {
                     if (*cur).addrmode as libc::c_int ==
                         AddressModes::IndWord as i32 &&
-                           *str.offset(1 as libc::c_int as isize) as
+                           *str.offset(1 as isize) as
                                libc::c_int == ',' as i32 &&
-                           *str.offset(2 as libc::c_int as isize) as
+                           *str.offset(2 as isize) as
                                libc::c_int | 0x20 as libc::c_int == 'y' as i32
                        {
                         (*cur).addrmode =
                             AddressModes::IndByteY as u8;
-                        str = str.offset(2 as libc::c_int as isize)
+                        str = str.offset(2 as isize)
                     }
                     //FIX: detect illegal opc (zp),x syntax...
                     if (*cur).addrmode as libc::c_int ==
                             AddressModes::IndByteY as i32 &&
-                           *str.offset(1 as libc::c_int as isize) as
+                           *str.offset(1 as isize) as
                                libc::c_int == ',' as i32 &&
-                           *str.offset(2 as libc::c_int as isize) as
+                           *str.offset(2 as isize) as
                                libc::c_int | 0x20 as libc::c_int == 'x' as i32
                        {
                         let mut sBuffer: [libc::c_char; 128] = [0; 128];
@@ -460,14 +460,14 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             * No other addressing mode is possible from now on
             * so we might as well allow () instead of [].
             */
-                wantmode = 0 as libc::c_int; /* to lower case */
+                wantmode = 0; /* to lower case */
                 current_block_184 = 3166194604430448652;
             }
             44 => { // ',' - FIXME: convert back to original char
                 while state.expressions.opIndex != state.expressions.opIndexBase { evaltop(); }
                 state.expressions.lastWasOp = true;
                 scr =
-                    *str.offset(1 as libc::c_int as isize) as libc::c_int |
+                    *str.offset(1 as isize) as libc::c_int |
                         0x20 as libc::c_int;
                 if (*cur).addrmode as libc::c_int == AddressModes::IndWord as i32
                        && scr == 'x' as i32 && !is_alpha_num(*str.offset(2) as u8 as char) {
@@ -477,7 +477,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 } else if (*cur).addrmode as libc::c_int ==
                               AddressModes::IndWord as i32 && scr == 'y' as i32
                               &&
-                              *str.offset(2 as libc::c_int as isize) as
+                              *str.offset(2 as isize) as
                                   libc::c_int == ')' as i32 && wantmode != 0 {
                     let mut sBuffer_0: [libc::c_char; 128] = [0; 128];
                     sprintf(sBuffer_0.as_mut_ptr(),
@@ -551,15 +551,15 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 current_block_184 = 3166194604430448652;
             }
             36 => {
-                str = pushhex(str.offset(1 as libc::c_int as isize));
+                str = pushhex(str.offset(1 as isize));
                 current_block_184 = 3166194604430448652;
             }
             39 => {
-                str = pushchar(str.offset(1 as libc::c_int as isize));
+                str = pushchar(str.offset(1 as isize));
                 current_block_184 = 3166194604430448652;
             }
             34 => {
-                str = pushstr(str.offset(1 as libc::c_int as isize));
+                str = pushstr(str.offset(1 as isize));
                 current_block_184 = 3166194604430448652;
             }
             _ => {
@@ -645,7 +645,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 println!("STRING: {}", transient::str_pointer_to_string((*cur).string));
             }
         }
-        if (*base).addrmode as libc::c_int == 0 as libc::c_int {
+        if (*base).addrmode as libc::c_int == 0 {
             (*base).addrmode = AddressModes::ByteAdr as libc::c_int as libc::c_uchar
         }
     }
@@ -728,17 +728,17 @@ unsafe extern "C" fn stackarg(mut val: libc::c_long, mut flags: libc::c_int,
         let mut ptr: *const libc::c_uchar = ptr1 as *const libc::c_uchar;
         let mut new: *mut libc::c_char = 0 as *mut libc::c_char;
         let mut len: libc::c_int = 0;
-        len = 0 as libc::c_int;
+        len = 0;
         val = len as libc::c_long;
         while *ptr as libc::c_int != 0 && *ptr as libc::c_int != '\"' as i32 {
-            val = val << 8 as libc::c_int | *ptr as libc::c_long;
+            val = val << 8 | *ptr as libc::c_long;
             ptr = ptr.offset(1);
             len += 1
         }
-        new = ckmalloc(len + 1 as libc::c_int);
+        new = ckmalloc(len + 1);
         memcpy(new as *mut libc::c_void, ptr1 as *const libc::c_void,
                len as libc::c_ulong);
-        *new.offset(len as isize) = 0 as libc::c_int as libc::c_char;
+        *new.offset(len as isize) = 0;
         flags &= !(0x8 as libc::c_int);
         str = new
     }
@@ -792,7 +792,7 @@ pub unsafe extern "C" fn op_takelsb(mut v1: libc::c_long,
 #[no_mangle]
 pub unsafe extern "C" fn op_takemsb(mut v1: libc::c_long,
                                     mut f1: libc::c_int) {
-    stackarg(v1 >> 8 as libc::c_int & 0xff as libc::c_int as libc::c_long, f1,
+    stackarg(v1 >> 8 & 0xff as libc::c_int as libc::c_long, f1,
              0 as *const libc::c_char);
 }
 #[no_mangle]
@@ -821,26 +821,26 @@ pub unsafe extern "C" fn op_div(mut v1: libc::c_long, mut v2: libc::c_long,
                                 mut f1: libc::c_int, mut f2: libc::c_int) {
     state.expressions.lastWasOp = true;
     if f1 | f2 != 0 {
-        stackarg(0 as libc::c_long, f1 | f2, 0 as *const libc::c_char);
+        stackarg(0, f1 | f2, 0 as *const libc::c_char);
         return
     }
-    if v2 == 0 as libc::c_int as libc::c_long {
+    if v2 == 0 {
         asmerr(AsmErrorEquates::DivisionByZero, true,
                0 as *const libc::c_char);
-        stackarg(0 as libc::c_long, 0 as libc::c_int,
+        stackarg(0, 0,
                  0 as *const libc::c_char);
-    } else { stackarg(v1 / v2, 0 as libc::c_int, 0 as *const libc::c_char); };
+    } else { stackarg(v1 / v2, 0, 0 as *const libc::c_char); };
 }
 #[no_mangle]
 pub unsafe extern "C" fn op_mod(mut v1: libc::c_long, mut v2: libc::c_long,
                                 mut f1: libc::c_int, mut f2: libc::c_int) {
     if f1 | f2 != 0 {
-        stackarg(0 as libc::c_long, f1 | f2, 0 as *const libc::c_char);
+        stackarg(0, f1 | f2, 0 as *const libc::c_char);
         return
     }
-    if v2 == 0 as libc::c_int as libc::c_long {
-        stackarg(v1, 0 as libc::c_int, 0 as *const libc::c_char);
-    } else { stackarg(v1 % v2, 0 as libc::c_int, 0 as *const libc::c_char); }
+    if v2 == 0 {
+        stackarg(v1, 0, 0 as *const libc::c_char);
+    } else { stackarg(v1 % v2, 0, 0 as *const libc::c_char); }
     state.expressions.lastWasOp = true;
 }
 #[no_mangle]
@@ -849,10 +849,10 @@ pub unsafe extern "C" fn op_question(mut v1: libc::c_long,
                                      mut f1: libc::c_int,
                                      mut f2: libc::c_int) {
     if f1 != 0 {
-        stackarg(0 as libc::c_long, f1, 0 as *const libc::c_char);
+        stackarg(0, f1, 0 as *const libc::c_char);
     } else {
-        stackarg(if v1 != 0 { v2 } else { 0 as libc::c_int as libc::c_long },
-                 if v1 != 0 { f2 } else { 0 as libc::c_int },
+        stackarg(if v1 != 0 { v2 } else { 0 },
+                 if v1 != 0 { f2 } else { 0 },
                  0 as *const libc::c_char);
     };
 }
@@ -874,9 +874,9 @@ pub unsafe extern "C" fn op_shiftright(mut v1: libc::c_long,
                                        mut f1: libc::c_int,
                                        mut f2: libc::c_int) {
     if f1 | f2 != 0 {
-        stackarg(0 as libc::c_long, f1 | f2, 0 as *const libc::c_char);
+        stackarg(0, f1 | f2, 0 as *const libc::c_char);
     } else {
-        stackarg(v1 >> v2, 0 as libc::c_int, 0 as *const libc::c_char);
+        stackarg(v1 >> v2, 0, 0 as *const libc::c_char);
     };
 }
 #[no_mangle]
@@ -885,9 +885,9 @@ pub unsafe extern "C" fn op_shiftleft(mut v1: libc::c_long,
                                       mut f1: libc::c_int,
                                       mut f2: libc::c_int) {
     if f1 | f2 != 0 {
-        stackarg(0 as libc::c_long, f1 | f2, 0 as *const libc::c_char);
+        stackarg(0, f1 | f2, 0 as *const libc::c_char);
     } else {
-        stackarg(v1 << v2, 0 as libc::c_int, 0 as *const libc::c_char);
+        stackarg(v1 << v2, 0, 0 as *const libc::c_char);
     };
 }
 #[no_mangle]
@@ -936,21 +936,21 @@ pub unsafe extern "C" fn op_noteq(mut v1: libc::c_long, mut v2: libc::c_long,
 pub unsafe extern "C" fn op_andand(mut v1: libc::c_long, mut v2: libc::c_long,
                                    mut f1: libc::c_int, mut f2: libc::c_int) {
     if f1 == 0 && v1 == 0 || f2 == 0 && v2 == 0 {
-        stackarg(0 as libc::c_long, 0 as libc::c_int,
+        stackarg(0, 0,
                  0 as *const libc::c_char);
         return
     }
-    stackarg(1 as libc::c_long, f1 | f2, 0 as *const libc::c_char);
+    stackarg(1, f1 | f2, 0 as *const libc::c_char);
 }
 #[no_mangle]
 pub unsafe extern "C" fn op_oror(mut v1: libc::c_long, mut v2: libc::c_long,
                                  mut f1: libc::c_int, mut f2: libc::c_int) {
     if f1 == 0 && v1 != 0 || f2 == 0 && v2 != 0 {
-        stackarg(1 as libc::c_long, 0 as libc::c_int,
+        stackarg(1, 0,
                  0 as *const libc::c_char);
         return
     }
-    stackarg(0 as libc::c_long, f1 | f2, 0 as *const libc::c_char);
+    stackarg(0, f1 | f2, 0 as *const libc::c_char);
 }
 #[no_mangle]
 pub unsafe extern "C" fn op_xor(mut v1: libc::c_long, mut v2: libc::c_long,
@@ -970,23 +970,23 @@ pub unsafe extern "C" fn op_or(mut v1: libc::c_long, mut v2: libc::c_long,
 #[no_mangle]
 pub unsafe extern "C" fn pushchar(mut str: *const libc::c_char) -> *const libc::c_char {
     if *str != 0 {
-        stackarg(*str as libc::c_long, 0 as libc::c_int,
+        stackarg(*str as libc::c_long, 0,
                  0 as *const libc::c_char);
         str = str.offset(1)
     } else {
-        stackarg(' ' as i32 as libc::c_long, 0 as libc::c_int,
+        stackarg(' ' as i32 as libc::c_long, 0,
                  0 as *const libc::c_char);
     }
     return str;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pushhex(mut str: *const libc::c_char) -> *const libc::c_char {
-    let mut val: libc::c_long = 0 as libc::c_int as libc::c_long;
+    let mut val: libc::c_long = 0;
     loop  {
         if *str as libc::c_int >= '0' as i32 &&
                *str as libc::c_int <= '9' as i32 {
             val =
-                (val << 4 as libc::c_int) +
+                (val << 4) +
                     (*str as libc::c_int - '0' as i32) as libc::c_long
         } else {
             if !(*str as libc::c_int >= 'a' as i32 &&
@@ -996,57 +996,57 @@ pub unsafe extern "C" fn pushhex(mut str: *const libc::c_char) -> *const libc::c
                 break ;
             }
             val =
-                (val << 4 as libc::c_int) +
+                (val << 4) +
                     ((*str as libc::c_int & 0x1f as libc::c_int) +
-                         9 as libc::c_int) as libc::c_long
+                         9) as libc::c_long
         }
         str = str.offset(1)
     }
-    stackarg(val, 0 as libc::c_int, 0 as *const libc::c_char);
+    stackarg(val, 0, 0 as *const libc::c_char);
     return str;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pushoct(mut str: *const libc::c_char) -> *const libc::c_char {
-    let mut val: libc::c_long = 0 as libc::c_int as libc::c_long;
+    let mut val: libc::c_long = 0;
     while *str as libc::c_int >= '0' as i32 &&
               *str as libc::c_int <= '7' as i32 {
         val =
-            (val << 3 as libc::c_int) +
+            (val << 3) +
                 (*str as libc::c_int - '0' as i32) as libc::c_long;
         str = str.offset(1)
     }
-    stackarg(val, 0 as libc::c_int, 0 as *const libc::c_char);
+    stackarg(val, 0, 0 as *const libc::c_char);
     return str;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pushdec(mut str: *const libc::c_char) -> *const libc::c_char {
-    let mut val: libc::c_long = 0 as libc::c_int as libc::c_long;
+    let mut val: libc::c_long = 0;
     while *str as libc::c_int >= '0' as i32 &&
               *str as libc::c_int <= '9' as i32 {
         val =
-            val * 10 as libc::c_int as libc::c_long +
+            val * 10 +
                 (*str as libc::c_int - '0' as i32) as libc::c_long;
         str = str.offset(1)
     }
-    stackarg(val, 0 as libc::c_int, 0 as *const libc::c_char);
+    stackarg(val, 0, 0 as *const libc::c_char);
     return str;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pushbin(mut str: *const libc::c_char) -> *const libc::c_char {
-    let mut val: libc::c_long = 0 as libc::c_int as libc::c_long;
+    let mut val: libc::c_long = 0;
     while *str as libc::c_int == '0' as i32 ||
               *str as libc::c_int == '1' as i32 {
         val =
-            val << 1 as libc::c_int |
+            val << 1 |
                 (*str as libc::c_int - '0' as i32) as libc::c_long;
         str = str.offset(1)
     }
-    stackarg(val, 0 as libc::c_int, 0 as *const libc::c_char);
+    stackarg(val, 0, 0 as *const libc::c_char);
     return str;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pushstr(mut str: *const libc::c_char) -> *const libc::c_char {
-    stackarg(0 as libc::c_int as libc::c_long, 0x8 as libc::c_int, str);
+    stackarg(0, 0x8 as libc::c_int, str);
     while *str as libc::c_int != 0 && *str as libc::c_int != '\"' as i32 {
         str = str.offset(1)
     }
@@ -1057,7 +1057,7 @@ pub unsafe extern "C" fn pushstr(mut str: *const libc::c_char) -> *const libc::c
 pub unsafe extern "C" fn pushsymbol(mut str: *const libc::c_char) -> *const libc::c_char {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut ptr: *const libc::c_char = 0 as *const libc::c_char;
-    let mut macro_0: libc::c_uchar = 0 as libc::c_int as libc::c_uchar;
+    let mut macro_0: libc::c_uchar = 0;
     ptr = str;
     while *ptr as libc::c_int == '_' as i32 ||
               *ptr as libc::c_int == '.' as i32 ||
@@ -1097,11 +1097,11 @@ pub unsafe extern "C" fn pushsymbol(mut str: *const libc::c_char) -> *const libc
             state.execution.redoEval += 1
         }
         if (*sym).flags as libc::c_int & 0x20 as libc::c_int != 0 {
-            macro_0 = 1 as libc::c_int as libc::c_uchar;
-            sym = eval((*sym).string, 0 as libc::c_int)
+            macro_0 = 1;
+            sym = eval((*sym).string, 0)
         }
         if (*sym).flags as libc::c_int & 0x8 as libc::c_int != 0 {
-            stackarg(0 as libc::c_int as libc::c_long, 0x8 as libc::c_int,
+            stackarg(0, 0x8 as libc::c_int,
                      (*sym).string);
         } else {
             stackarg((*sym).value,
@@ -1113,7 +1113,7 @@ pub unsafe extern "C" fn pushsymbol(mut str: *const libc::c_char) -> *const libc
                  (0x4 as libc::c_int | 0x40 as libc::c_int)) as libc::c_uchar;
         if macro_0 != 0 { FreeSymbolList(sym); }
     } else {
-        stackarg(0 as libc::c_long, 0x1 as libc::c_int,
+        stackarg(0, 0x1 as libc::c_int,
                  0 as *const libc::c_char);
         sym =
             CreateSymbol(str,

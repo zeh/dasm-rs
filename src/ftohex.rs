@@ -93,27 +93,27 @@ unsafe fn main_0(mut ac: libc::c_int, mut av: *mut *mut libc::c_char)
     let mut format: libc::c_int = 0;
     let mut infile: *mut FILE = 0 as *mut FILE;
     let mut outfile: *mut FILE = 0 as *mut FILE;
-    if ac < 3 as libc::c_int {
+    if ac < 3 {
         println!("FTOHEX format infile [outfile]");
         println!("format 1 = DEFAULT, 2 = RAS, or 3 = RAW");
         println!("Copyright (c) 1988-2008 by various authors (see file AUTHORS).");
         std::process::exit(1);
     }
-    format = atoi(*av.offset(1 as libc::c_int as isize));
-    if format < 1 as libc::c_int || format > 3 as libc::c_int {
+    format = atoi(*av.offset(1 as isize));
+    if format < 1 || format > 3 {
         exiterr(b"specify infile format 1, 2, or 3\x00" as *const u8 as
                     *const libc::c_char);
     }
     infile =
-        fopen(*av.offset(2 as libc::c_int as isize),
+        fopen(*av.offset(2 as isize),
               b"r\x00" as *const u8 as *const libc::c_char);
     if infile.is_null() {
         exiterr(b"unable to open input file\x00" as *const u8 as
                     *const libc::c_char);
     }
     outfile =
-        if !(*av.offset(3 as libc::c_int as isize)).is_null() {
-            fopen(*av.offset(3 as libc::c_int as isize),
+        if !(*av.offset(3 as isize)).is_null() {
+            fopen(*av.offset(3 as isize),
                   b"w\x00" as *const u8 as *const libc::c_char)
         } else { stdout };
     if outfile.is_null() {
@@ -123,7 +123,7 @@ unsafe fn main_0(mut ac: libc::c_int, mut av: *mut *mut libc::c_char)
     convert(format, infile, outfile);
     fclose(infile);
     fclose(outfile);
-    return 0 as libc::c_int;
+    return 0;
 }
 #[no_mangle]
 pub unsafe extern "C" fn exiterr(mut str: *const libc::c_char) {
@@ -147,32 +147,32 @@ pub unsafe extern "C" fn exiterr(mut str: *const libc::c_char) {
 #[no_mangle]
 pub unsafe extern "C" fn convert(mut format: libc::c_int, mut in_0: *mut FILE,
                                  mut out: *mut FILE) {
-    let mut org: libc::c_uint = 0 as libc::c_int as libc::c_uint;
+    let mut org: libc::c_uint = 0;
     let mut idx: libc::c_uint = 0;
     let mut len: libc::c_long = 0;
     let mut buf: [libc::c_uchar; 256] = [0; 256];
-    if format < 3 as libc::c_int { org = getwlh(in_0) }
-    if format == 2 as libc::c_int {
+    if format < 3 { org = getwlh(in_0) }
+    if format == 2 {
         len = getwlh(in_0) as libc::c_long
     } else {
         let mut begin: libc::c_long = ftell(in_0);
-        fseek(in_0, 0 as libc::c_int as libc::c_long, 2 as libc::c_int);
+        fseek(in_0, 0, 2);
         len = ftell(in_0) - begin;
-        fseek(in_0, begin, 0 as libc::c_int);
+        fseek(in_0, begin, 0);
     }
     loop  {
-        while len > 0 as libc::c_int as libc::c_long {
+        while len > 0 {
             let mut chk: libc::c_uchar = 0;
             let mut i: libc::c_uint = 0;
             idx =
-                if len > 16 as libc::c_int as libc::c_long {
-                    16 as libc::c_int as libc::c_long
+                if len > 16 {
+                    16
                 } else { len } as libc::c_uint;
             fread(buf.as_mut_ptr() as *mut libc::c_void, idx as size_t,
-                  1 as libc::c_int as size_t, in_0);
+                  1 as size_t, in_0);
             putc(':' as i32, out);
             puth(idx as libc::c_uchar, out);
-            puth((org >> 8 as libc::c_int) as libc::c_uchar, out);
+            puth((org >> 8) as libc::c_uchar, out);
             puth((org & 0xff as libc::c_int as libc::c_uint) as libc::c_uchar,
                  out);
             putc('0' as i32, out);
@@ -186,7 +186,7 @@ pub unsafe extern "C" fn convert(mut format: libc::c_int, mut in_0: *mut FILE,
                                                                            as
                                                                            libc::c_uint)
                     as libc::c_uchar;
-            i = 0 as libc::c_int as libc::c_uint;
+            i = 0;
             while i < idx {
                 chk =
                     (chk as libc::c_int + buf[i as usize] as libc::c_int) as
@@ -200,7 +200,7 @@ pub unsafe extern "C" fn convert(mut format: libc::c_int, mut in_0: *mut FILE,
             len -= idx as libc::c_long;
             org = org.wrapping_add(idx)
         }
-        if !(format == 2 as libc::c_int) { break ; }
+        if !(format == 2) { break ; }
         org = getwlh(in_0);
         if feof(in_0) != 0 { break ; }
         len = getwlh(in_0) as libc::c_long
@@ -212,16 +212,16 @@ pub unsafe extern "C" fn getwlh(mut in_0: *mut FILE) -> libc::c_uint {
     let mut result: libc::c_uint = 0;
     result = getc(in_0) as libc::c_uint;
     result =
-        result.wrapping_add((getc(in_0) << 8 as libc::c_int) as libc::c_uint);
+        result.wrapping_add((getc(in_0) << 8) as libc::c_uint);
     return result;
 }
 #[no_mangle]
 pub unsafe extern "C" fn puth(mut c: libc::c_uchar, mut out: *mut FILE) {
     static mut dig: [libc::c_char; 17] =
         [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70, 0];
-    putc(dig[(c as libc::c_int >> 4 as libc::c_int) as usize] as libc::c_int,
+    putc(dig[(c as libc::c_int >> 4) as usize] as libc::c_int,
          out);
-    putc(dig[(c as libc::c_int & 15 as libc::c_int) as usize] as libc::c_int,
+    putc(dig[(c as libc::c_int & 15) as usize] as libc::c_int,
          out);
 }
 #[main]
