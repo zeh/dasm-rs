@@ -11,6 +11,9 @@ ORIGIN=${1:-../bin}
 SUFFIX=$2
 DASM="${ORIGIN}/dasm"
 FTOHEX="${ORIGIN}/ftohex"
+COLOR_RED="\033[1;31m"
+COLOR_RESET="\033[0m"
+FAIL_LABEL="${COLOR_RED}FAIL${COLOR_RESET}"
 
 # 1. General cleanup
 
@@ -48,51 +51,46 @@ for i in *.asm; do
   $FTOHEX 1 "$NAME.bin$SUFFIX" "$NAME.hex$SUFFIX"
 
   # Display results
-  echo -n "  * ${NAME}: "
+  echo -ne "  * ${NAME}: "
 
   if [[ -z "$SUFFIX" ]]; then
     cmp -s "$NAME.bin" "$NAME.bin.ref"
-    if [ $? == 0 ]
-    then
-      echo -n "bin pass; "
+    if [ $? == 0 ]; then
+      echo -ne "bin pass; "
     else
-      echo -n "bin FAIL; "
+      echo -ne "bin $FAIL_LABEL; "
       errors=$((errors + 1))
     fi
     cmp -s "$NAME.hex" "$NAME.hex.ref"
-    if [ $? == 0 ]
-    then
-      echo -n "hex pass; "
+    if [ $? == 0 ]; then
+      echo -ne "hex pass; "
     else
-      echo -n "hex FAIL; "
+      echo -ne "hex $FAIL_LABEL; "
       errors=$((errors + 1))
     fi
     cmp -s "$NAME.list.txt" "$NAME.list.txt.ref"
-    if [ $? == 0 ]
-    then
-      echo -n "list pass; "
+    if [ $? == 0 ]; then
+      echo -ne "list pass; "
     else
-      echo -n "list FAIL; "
+      echo -ne "list $FAIL_LABEL; "
       errors=$((errors + 1))
     fi
     cmp -s "$NAME.symbols.txt" "$NAME.symbols.txt.ref"
-    if [ $? == 0 ]
-    then
-      echo -n "symbols pass; "
+    if [ $? == 0 ]; then
+      echo -ne "symbols pass; "
     else
-      echo -n "symbols FAIL; "
+      echo -ne "symbols $FAIL_LABEL; "
       errors=$((errors + 1))
     fi
     cmp -s "$NAME.stdout.txt" "$NAME.stdout.txt.ref"
-    if [ $? == 0 ]
-    then
-      echo -n "stdout pass. "
+    if [ $? == 0 ]; then
+      echo -ne "stdout pass. "
     else
-      echo -n "stdout FAIL. "
+      echo -ne "stdout $FAIL_LABEL. "
       errors=$((errors + 1))
     fi
   else
-    echo -n "generated with suffix $SUFFIX"
+    echo -ne "generated with suffix $SUFFIX"
   fi
   echo
 done
@@ -122,43 +120,48 @@ for i in *.fail; do
     # | \grep -vE 'error|Complete|Fatal|Warning^?'
 
   # Display results
-  echo -n "  * ${NAME}: "
+  echo -ne "  * ${NAME}: "
 
   if [[ -z "$SUFFIX" ]]; then
     grep error "$NAME.list.strict.txt" 2>&1 >/dev/null
-    if [ $? == 0 ]
-    then
-      echo -n "error trigger pass; "
+    if [ $? == 0 ]; then
+      echo -ne "error trigger pass; "
     else
-      echo -n "error trigger FAIL; "
+      echo -ne "error trigger $FAIL_LABEL; "
       errors=$((errors + 1))
     fi
     cmp -s "$NAME.list.strict.txt" "$NAME.list.strict.txt.ref"
-    if [ $? == 0 ]
-    then
-      echo -n "list pass; "
+    if [ $? == 0 ]; then
+      echo -ne "list pass; "
     else
-      echo -n "list FAIL; "
+      echo -ne "list $FAIL_LABEL; "
       errors=$((errors + 1))
     fi
-    cmp -s "$NAME.symbols.strict.txt" "$NAME.symbols.strict.txt.ref"
-    if [ $? == 0 ]
-    then
-      echo -n "symbols pass; "
+    if [ -f "$NAME.symbols.strict.txt.ref" ]; then
+      cmp -s "$NAME.symbols.strict.txt" "$NAME.symbols.strict.txt.ref"
+      if [ $? == 0 ]; then
+        echo -ne "symbols pass; "
+      else
+        echo -ne "symbols $FAIL_LABEL; "
+        errors=$((errors + 1))
+      fi
     else
-      echo -n "symbols FAIL; "
-      errors=$((errors + 1))
+      if [ -f "$NAME.symbols.strict.txt" ]; then
+        echo -ne "symbols $FAIL_LABEL (new); "
+        errors=$((errors + 1))
+      else
+        echo -ne "symbols skip; "
+      fi
     fi
     cmp -s "$NAME.stdout.strict.txt" "$NAME.stdout.strict.txt.ref"
-    if [ $? == 0 ]
-    then
-      echo -n "stdout pass; "
+    if [ $? == 0 ]; then
+      echo -ne "stdout pass; "
     else
-      echo -n "stdout FAIL; "
+      echo -ne "stdout $FAIL_LABEL; "
       errors=$((errors + 1))
     fi
   else
-    echo -n " generated with suffix $SUFFIX"
+    echo -ne " generated with suffix $SUFFIX"
   fi
   echo
 done
@@ -204,51 +207,46 @@ for ((i = 0; i < ${#custom_files[@]}; i++)); do
   $FTOHEX 1 "$NAME.bin$SUFFIX" "$NAME.hex$SUFFIX"
 
   # Display results
-  echo -n "  * ${NAME}: "
+  echo -ne "  * ${NAME}: "
 
   if [[ -z "$SUFFIX" ]]; then
     cmp -s "$NAME.bin" "$NAME.bin.ref"
-    if [ $? == 0 ]
-    then
-      echo -n "bin pass; "
+    if [ $? == 0 ]; then
+      echo -ne "bin pass; "
     else
-      echo -n "bin FAIL; "
+      echo -ne "bin $FAIL_LABEL; "
       errors=$((errors + 1))
     fi
     cmp -s "$NAME.hex" "$NAME.hex.ref"
-    if [ $? == 0 ]
-    then
-      echo -n "hex pass; "
+    if [ $? == 0 ]; then
+      echo -ne "hex pass; "
     else
-      echo -n "hex FAIL; "
+      echo -ne "hex $FAIL_LABEL; "
       errors=$((errors + 1))
     fi
     cmp -s "$NAME.list.txt" "$NAME.list.txt.ref"
-    if [ $? == 0 ]
-    then
-      echo -n "list pass; "
+    if [ $? == 0 ]; then
+      echo -ne "list pass; "
     else
-      echo -n "list FAIL; "
+      echo -ne "list $FAIL_LABEL; "
       errors=$((errors + 1))
     fi
     cmp -s "$NAME.symbols.txt" "$NAME.symbols.txt.ref"
-    if [ $? == 0 ]
-    then
-      echo -n "symbols pass; "
+    if [ $? == 0 ]; then
+      echo -ne "symbols pass; "
     else
-      echo -n "symbols FAIL; "
+      echo -ne "symbols $FAIL_LABEL; "
       errors=$((errors + 1))
     fi
     cmp -s "$NAME.stdout.txt" "$NAME.stdout.txt.ref"
-    if [ $? == 0 ]
-    then
-      echo -n "stdout pass. "
+    if [ $? == 0 ]; then
+      echo -ne "stdout pass. "
     else
-      echo -n "stdout FAIL. "
+      echo -ne "stdout $FAIL_LABEL. "
       errors=$((errors + 1))
     fi
   else
-    echo -n "generated with suffix $SUFFIX"
+    echo -ne "generated with suffix $SUFFIX"
   fi
   echo
 done
