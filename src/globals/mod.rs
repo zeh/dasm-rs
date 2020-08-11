@@ -47,6 +47,7 @@ pub static mut state: GlobalState = GlobalState {
         includeDirList: Vec::<String>::new(),
         listMode: ListMode::List,
         modeNext: AddressModes::Imp,
+        pass: 0,
         redoEval: 0,
         redoIf: 0,
         redoIndex: 0,

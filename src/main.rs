@@ -352,8 +352,6 @@ pub static mut passbuffer: [*mut libc::c_char; 2] =
 pub static mut Extstr: *mut libc::c_char =
     0 as *const libc::c_char as *mut libc::c_char;
 /*unsigned char     Listing = 1;*/
-#[no_mangle]
-pub static mut pass: libc::c_int = 0;
 unsafe extern "C" fn CountUnresolvedSymbols() -> libc::c_int {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut nUnresolved: libc::c_int = 0;
@@ -565,10 +563,8 @@ unsafe extern "C" fn ShowSegments() {
         seg = (*seg).next
     }
     println!("----------------------------------------------------------------------");
-    printf(b"%d references to unknown symbols.\n\x00" as *const u8 as
-               *const libc::c_char, state.execution.redoEval);
-    printf(b"%d events requiring another assembler pass.\n\x00" as *const u8
-               as *const libc::c_char, state.execution.redoIndex);
+    println!("{} references to unknown symbols.", state.execution.redoEval);
+    println!("{} events requiring another assembler pass.", state.execution.redoIndex);
 
     // FIXME: rewrite more succinctly
     if state.execution.redoWhy != 0 {
@@ -650,7 +646,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
     let mut oldRedoWhy: u64 = 0;
     let mut oldRedoEval: i32 = 0;
     addhashtable(Ops.as_mut_ptr());
-    pass = 1;
+    state.execution.pass = 1;
     if !(ac < 2) {
         i = 2;
         loop  {
@@ -809,10 +805,11 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                 /*  F_passes   */
                 {
                     state.parameters.maxPasses =
-                        strtol(str,
-                               0 as *mut libc::c_void as
-                                   *mut *mut libc::c_char, 10)
-                            as u16;
+                        strtol(
+                            str,
+                            0 as *mut libc::c_void as *mut *mut libc::c_char,
+                            10
+                        ) as u8;
                     current_block = 17788412896529399552;
                 }
                 _ => { }
@@ -861,8 +858,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                 loop  {
                     if state.parameters.verbosity != Verbosity::None {
                         println!();
-                        printf(b"START OF PASS: %d\n\x00" as *const u8 as
-                                   *const libc::c_char, pass);
+                        println!("START OF PASS: {}", state.execution.pass);
                     }
                     Lastlocalindex = 0;
                     Localindex = Lastlocalindex;
@@ -1035,15 +1031,15 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                         state.execution.redoWhy = 0;
                         state.execution.redoEval = 0;
                         state.execution.redoIf <<= 1;
-                        pass += 1;
-                        if pass > state.parameters.maxPasses as i32 {
+                        state.execution.pass += 1;
+                        if state.execution.pass > state.parameters.maxPasses {
                             let mut sBuffer: [libc::c_char; 64] = [0; 64];
-                            sprintf(sBuffer.as_mut_ptr(),
-                                    b"%d\x00" as *const u8 as
-                                        *const libc::c_char, pass);
-                            return asmerr(AsmErrorEquates::TooManyPasses,
-                                          false,
-                                          sBuffer.as_mut_ptr())
+                            sprintf(
+                                sBuffer.as_mut_ptr(),
+                                b"%d\x00" as *const u8 as *const libc::c_char,
+                                state.execution.pass as i32
+                            );
+                            return asmerr(AsmErrorEquates::TooManyPasses, false, sBuffer.as_mut_ptr());
                         } else {
                             passbuffer_clear(0);
                             passbuffer_clear(1);
@@ -1840,13 +1836,13 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
                                                           libc::c_ulong) as
                                  libc::c_int), str);
         (*mac).flags = 0x8 as libc::c_int as libc::c_uchar;
-        (*mac).defpass = pass;
+        (*mac).defpass = state.execution.pass as i32;
         let ref mut fresh22 = *MHash.as_mut_ptr().offset(i as isize);
         *fresh22 = mac as *mut _MNE
     } else {
         mac = mne as *mut _MACRO;
         if state.parameters.strictMode && !mac.is_null() &&
-               (*mac).defpass == pass {
+               (*mac).defpass == state.execution.pass as i32 {
             asmerr(AsmErrorEquates::MacroRepeated, true,
                    str);
         }
@@ -1934,7 +1930,7 @@ pub unsafe extern "C" fn pushinclude(mut str: *mut libc::c_char) {
                 "------- FILE {} LEVEL {} PASS {}",
                 transient::str_pointer_to_string(str),
                 state.other.incLevel,
-                pass,
+                state.execution.pass,
             ).as_str(),
         );
         inf =

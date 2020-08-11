@@ -479,9 +479,9 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
     opidx = (1 + (opcode > 0xff) as libc::c_int) as usize;
     if opidx == 2 {
         state.output.generated[0] = (opcode >> 8) as u8;
-        state.output.generated[1] = opcode as libc::c_uchar;
+        state.output.generated[1] = opcode as u8;
     } else {
-        state.output.generated[0] = opcode as libc::c_uchar;
+        state.output.generated[0] = opcode as u8;
     }
     match addrmode {
         15 => {
