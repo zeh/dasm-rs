@@ -17,6 +17,7 @@ FAIL_LABEL="${COLOR_RED}FAIL${COLOR_RESET}"
 
 # 1. General cleanup
 
+echo
 echo "Cleaning up"
 echo
 
@@ -257,4 +258,42 @@ if (( errors > 0 )); then
 else
   echo "...no errors detected."
 fi
+echo
+
+# 5. Other
+
+echo "Other cases"
+echo
+
+errors=0
+
+NAME="dasm-no-args"
+
+# Compile .asm into .bin and .list.txt
+$DASM 2>&1 | \
+  tee "$NAME.stdout.txt$SUFFIX" >/dev/null
+
+# Display results
+echo -ne "  * ${NAME}: "
+
+if [[ -z "$SUFFIX" ]]; then
+  cmp -s "$NAME.stdout.txt" "$NAME.stdout.txt.ref"
+  if [ $? == 0 ]; then
+    echo -ne "stdout pass. "
+  else
+    echo -ne "stdout $FAIL_LABEL. "
+    errors=$((errors + 1))
+  fi
+else
+  echo -ne "generated with suffix $SUFFIX"
+fi
+echo
+
+echo
+if (( errors > 0 )); then
+  echo "...$errors errors detected."
+else
+  echo "...no errors detected."
+fi
+echo
 echo

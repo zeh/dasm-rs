@@ -1,0 +1,29 @@
+DASM 2.20.14-SNAPSHOT
+Copyright (c) 1988-2020 by the DASM team.
+License GPLv2+: GNU GPL version 2 or later (see file LICENSE).
+DASM is free software: you are free to change and redistribute it.
+There is ABSOLUTELY NO WARRANTY, to the extent permitted by law.
+
+Usage: dasm sourcefile [options]
+
+-f#      output format 1-3 (default 1)
+-oname   output file name (else a.out)
+-lname   list file name (else none generated)
+-Lname   list file, containing all passes
+-sname   symbol dump file name (else none generated)
+-v#      verboseness 0-4 (default 0)
+-d       debug mode (for developers)
+-Dsymbol              define symbol, set to 0
+-Dsymbol=expression   define symbol, set to expression
+-Msymbol=expression   define symbol using EQM (same as -D)
+-Idir    search directory for INCLUDE and INCBIN
+-p#      maximum number of passes
+-P#      maximum number of passes, with fewer checks
+-T#      symbol table sorting (default 0 = alphabetical, 1 = address/value)
+-E#      error format (default 0 = MS, 1 = Dillon, 2 = GNU)
+-S       strict syntax checking
+
+Report bugs on https://github.com/dasm-assembler/dasm please!
+
+
+Fatal assembly error: Check command-line format.
