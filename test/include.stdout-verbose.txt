@@ -1,0 +1,63 @@
+Debug trace OFF
+
+START OF PASS: 1
+ Including file "include.asm"
+ Including file "include-a.inc"
+ Including file "include-a.inc"
+ Including file "include-a.inc"
+ Including file "11include.inc"
+ Including file "11include.inc"
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         0000                   0000 ????              0007                   0000 ????             
+----------------------------------------------------------------------
+4 references to unknown symbols.
+1 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+
+--- Unresolved Symbol List
+a.inc                    0000 ????         (R )
+include                  0000 ????         (R )
+PASSFORCEA               0000 ????         (R )
+--- 3 Unresolved Symbols
+
+
+START OF PASS: 2
+ Including file "include.asm"
+ Including file "include-a.inc"
+ Including file "include-a.inc"
+ Including file "include-a.inc"
+ Including file "11include.inc"
+ Including file "11include.inc"
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         0000                   0000 ????              0007                   0000 ????             
+----------------------------------------------------------------------
+2 references to unknown symbols.
+0 events requiring another assembler pass.
+
+--- Unresolved Symbol List
+a.inc                    0000 ????         (R )
+include                  0000 ????         (R )
+--- 2 Unresolved Symbols
+
+
+--- Symbol List (sorted by symbol)
+a.inc                    0000 ????         (R )
+include                  0000 ????         (R )
+INEEPROM                 0000                  
+PASSFORCEA               0000 ????         (R )
+PASSFORCEB               0001                  
+TESTINCA                 64652d612e696e63      str     (R ) "include-a.inc"
+--- End of Symbol List.
+--- Symbol List (sorted by symbol)
+a.inc                    0000 ????         (R )
+include                  0000 ????         (R )
+INEEPROM                 0000                  
+PASSFORCEA               0001              (R )
+PASSFORCEB               0001                  
+TESTINCA                 64652d612e696e63      str     (R ) "include-a.inc"
+--- End of Symbol List.
+Complete.

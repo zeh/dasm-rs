@@ -1,0 +1,17 @@
+Debug trace OFF
+
+START OF PASS: 1
+ Including file "suite6303.asm"
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         0000                   0000 ????              01c3                   0000 ????             
+----------------------------------------------------------------------
+0 references to unknown symbols.
+0 events requiring another assembler pass.
+
+
+--- Symbol List (sorted by symbol)
+INEEPROM                 0000                  
+--- End of Symbol List.
+Complete.

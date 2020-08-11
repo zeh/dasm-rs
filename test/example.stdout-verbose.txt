@@ -1,0 +1,333 @@
+Debug trace OFF
+
+START OF PASS: 1
+ Including file "example.asm"
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+vector                       fffa                   0000 ????              10000                   0000 ????             
+code                         f000                   0000 ????              f076                   0000 ????             
+data                     [u] 0000                   0000 ????              0100              ( S) 0000 ????             
+bss                      [u] 0000                   0000 ????              c010              ( S) 0000 ????             
+INITIAL CODE SEGMENT         0000 ????              0000 ????              0000 ????              0000 ????             
+----------------------------------------------------------------------
+4 references to unknown symbols.
+8 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+ - Label defined after it has been referenced (forward reference).
+
+--- Symbol List (sorted by symbol)
+1.1                      f036              (R )
+2.1                      f041              (R )
+3.2                      f04b              (R )
+4.1                      f066              (R )
+4.2                      f075              (R )
+B100                     0002                  
+B1200                    0009                  
+B12800                   000f                  
+B150                     0003                  
+B1600                    000a                  
+B200                     0004                  
+B2400                    000b                  
+B300                     0005                  
+B3200                    000c                  
+B400                     0006                  
+B4800                    000d                  
+B600                     0007                  
+B6400                    000e                  
+B75                      0001                  
+B76800                   0000                  
+B800                     0008                  
+C1CMD                    6002              (R )
+C1CTL                    6003              (R )
+C1DATA                   6000              (R )
+C1STAT                   6001              (R )
+C2CMD                    8002              (R )
+C2CTL                    8003              (R )
+C2DATA                   8000              (R )
+C2STAT                   8001              (R )
+CA1_THI                  0001                  
+CA1_TLO                  0000                  
+CA2_I_NEG                0000                  
+CA2_I_NEGI               0020                  
+CA2_I_POS                0040                  
+CA2_I_POSI               0060                  
+CA2_O_HSHAK              0080                  
+CA2_O_MANHI              00e0                  
+CA2_O_MANLO              00c0                  
+CA2_O_PULSE              00a0                  
+CB1_THI                  0010                  
+CB1_TLO                  0000                  
+CB2_I_NEG                0000                  
+CB2_I_NEGI               0020                  
+CB2_I_POS                0040                  
+CB2_I_POSI               0060                  
+CB2_O_HSHAK              0080                  
+CB2_O_MANHI              00e0                  
+CB2_O_MANLO              00c0                  
+CB2_O_PULSE              00a0                  
+DTRRDY                   0001                  
+H_ACR                    a00b                  
+H_DDRA                   a003              (R )
+H_DDRB                   a002                  
+H_IER                    a00e              (R )
+H_IFR                    a00d                  
+H_ORA                    a00f              (R )
+H_ORAHS                  a001                  
+H_ORB                    a000                  
+H_PCR                    a00c                  
+H_SR                     a00a                  
+H_T1CH                   a005                  
+H_T1CHL                  a007                  
+H_T1CL                   a004                  
+H_T1CLL                  a006                  
+H_T2CH                   a009                  
+H_T2CL                   a008                  
+I_ACR                    c00b                  
+I_DDRA                   c003                  
+I_DDRB                   c002                  
+I_IER                    c00e              (R )
+I_IFR                    c00d                  
+I_ORA                    c00f                  
+I_ORAHS                  c001                  
+I_ORB                    c000                  
+I_PCR                    c00c                  
+I_SR                     c00a                  
+I_T1CH                   c005                  
+I_T1CHL                  c007                  
+I_T1CL                   c004                  
+I_T1CLL                  c006                  
+I_T2CH                   c009                  
+I_T2CL                   c008                  
+INEEPROM                 0000                  
+IRCA1                    0002                  
+IRCA2                    0001
+START OF PASS: 2
+ Including file "example.asm"
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+vector                       fffa                   0000 ????              10000                   0000 ????             
+code                         f000                   0000 ????              f076                   0000 ????             
+data                     [u] 0000                   0000 ????              0100              ( S) 0000 ????             
+bss                      [u] 0000                   0000 ????              c010              ( S) 0000 ????             
+INITIAL CODE SEGMENT         0000 ????              0000 ????              0000 ????              0000 ????             
+----------------------------------------------------------------------
+0 references to unknown symbols.
+0 events requiring another assembler pass.
+
+                  
+IRCB1                    0010                  
+IRCB2                    0008                  
+IRDISABLE                0000                  
+IRENABLE                 0080                  
+IRQ                      f056              (R )
+IRSR                     0004                  
+IRT1                     0040                  
+IRT2                     0020                  
+LABEL1                   0001                  
+LABEL2                   0002                  
+LABEL3                   0003                  
+LABEL4                   0004                  
+LOAD                     f03f              (R )
+NMI                      f055              (R )
+PALE                     0001                  
+PAREVEN                  0060                  
+PARMARK                  00a0                  
+PARODD                   0020                  
+PAROFF                   0000                  
+PARSPACE                 00e0                  
+PBLE                     0002                  
+PROMBEG                  f000                  
+PROMEND                  10000                  
+RAMEND                   2000                  
+RCS                      0010                  
+RECECHO                  0010                  
+RESET                    f000              (R )
+SAVE                     f049              (R )
+SR_DCD                   0020                  
+SR_DSR                   0040                  
+SR_FE                    0002                  
+SR_INTPEND               0080                  
+SR_OVRUN                 0004                  
+SR_PE                    0001                  
+SR_RDRFULL               0008                  
+SR_TDREMPTY              0010                  
+SRC_INEXT                000c                  
+SRC_INPH2                0008                  
+SRC_INT2                 0004                  
+SRC_OFF                  0000                  
+SRC_OUTEXT               001c                  
+SRC_OUTFR                0010                  
+SRC_OUTPH2               0018                  
+SRC_OUTT2                0014                  
+STOP1                    0000                  
+STOP2                    0080                  
+T1_FREERUN               0040                  
+T1_OEPB7                 0080                  
+T1_ONESHOT               0000                  
+T2_ICPB6                 0020                  
+T2_ONESHOT               0000                  
+TBREAK                   000c                  
+TDISABLE                 0000                  
+TDISABLER                0008                  
+TENABLE                  0004                  
+TMASK                    000c                  
+UA_IRQDSBL               0002                  
+VIRPEND                  0080                  
+WL5                      0060                  
+WL6                      0040                  
+WL7                      0020                  
+WL8                      0000                  
+--- End of Symbol List.
+--- Symbol List (sorted by symbol)
+1.1                      f036              (R )
+2.1                      f041              (R )
+3.2                      f04b              (R )
+4.1                      f066              (R )
+4.2                      f075              (R )
+B100                     0002                  
+B1200                    0009                  
+B12800                   000f                  
+B150                     0003                  
+B1600                    000a                  
+B200                     0004                  
+B2400                    000b                  
+B300                     0005                  
+B3200                    000c                  
+B400                     0006                  
+B4800                    000d                  
+B600                     0007                  
+B6400                    000e                  
+B75                      0001                  
+B76800                   0000                  
+B800                     0008                  
+C1CMD                    6002              (R )
+C1CTL                    6003              (R )
+C1DATA                   6000              (R )
+C1STAT                   6001              (R )
+C2CMD                    8002              (R )
+C2CTL                    8003              (R )
+C2DATA                   8000              (R )
+C2STAT                   8001              (R )
+CA1_THI                  0001                  
+CA1_TLO                  0000                  
+CA2_I_NEG                0000                  
+CA2_I_NEGI               0020                  
+CA2_I_POS                0040                  
+CA2_I_POSI               0060                  
+CA2_O_HSHAK              0080                  
+CA2_O_MANHI              00e0                  
+CA2_O_MANLO              00c0                  
+CA2_O_PULSE              00a0                  
+CB1_THI                  0010                  
+CB1_TLO                  0000                  
+CB2_I_NEG                0000                  
+CB2_I_NEGI               0020                  
+CB2_I_POS                0040                  
+CB2_I_POSI               0060                  
+CB2_O_HSHAK              0080                  
+CB2_O_MANHI              00e0                  
+CB2_O_MANLO              00c0                  
+CB2_O_PULSE              00a0                  
+DTRRDY                   0001                  
+H_ACR                    a00b                  
+H_DDRA                   a003              (R )
+H_DDRB                   a002                  
+H_IER                    a00e              (R )
+H_IFR                    a00d                  
+H_ORA                    a00f              (R )
+H_ORAHS                  a001                  
+H_ORB                    a000                  
+H_PCR                    a00c                  
+H_SR                     a00a                  
+H_T1CH                   a005                  
+H_T1CHL                  a007                  
+H_T1CL                   a004                  
+H_T1CLL                  a006                  
+H_T2CH                   a009                  
+H_T2CL                   a008                  
+I_ACR                    c00b                  
+I_DDRA                   c003                  
+I_DDRB                   c002                  
+I_IER                    c00e              (R )
+I_IFR                    c00d                  
+I_ORA                    c00f                  
+I_ORAHS                  c001                  
+I_ORB                    c000                  
+I_PCR                    c00c                  
+I_SR                     c00a                  
+I_T1CH                   c005                  
+I_T1CHL                  c007                  
+I_T1CL                   c004                  
+I_T1CLL                  c006                  
+I_T2CH                   c009                  
+I_T2CL                   c008                  
+INEEPROM                 0000                  
+IRCA1                    0002                  
+IRCA2                    0001                  
+IRCB1                    0010                  
+IRCB2                    0008                  
+IRDISABLE                0000                  
+IRENABLE                 0080                  
+IRQ                      f056              (R )
+IRSR                     0004                  
+IRT1                     0040                  
+IRT2                     0020                  
+LABEL1                   0001                  
+LABEL2                   0002                  
+LABEL3                   0003                  
+LABEL4                   0004                  
+LOAD                     f03f              (R )
+NMI                      f055              (R )
+PALE                     0001                  
+PAREVEN                  0060                  
+PARMARK                  00a0                  
+PARODD                   0020                  
+PAROFF                   0000                  
+PARSPACE                 00e0                  
+PBLE                     0002                  
+PROMBEG                  f000                  
+P
+ROMEND                  10000                  
+RAMEND                   2000                  
+RCS                      0010                  
+RECECHO                  0010                  
+RESET                    f000              (R )
+SAVE                     f049              (R )
+SR_DCD                   0020                  
+SR_DSR                   0040                  
+SR_FE                    0002                  
+SR_INTPEND               0080                  
+SR_OVRUN                 0004                  
+SR_PE                    0001                  
+SR_RDRFULL               0008                  
+SR_TDREMPTY              0010                  
+SRC_INEXT                000c                  
+SRC_INPH2                0008                  
+SRC_INT2                 0004                  
+SRC_OFF                  0000                  
+SRC_OUTEXT               001c                  
+SRC_OUTFR                0010                  
+SRC_OUTPH2               0018                  
+SRC_OUTT2                0014                  
+STOP1                    0000                  
+STOP2                    0080                  
+T1_FREERUN               0040                  
+T1_OEPB7                 0080                  
+T1_ONESHOT               0000                  
+T2_ICPB6                 0020                  
+T2_ONESHOT               0000                  
+TBREAK                   000c                  
+TDISABLE                 0000                  
+TDISABLER                0008                  
+TENABLE                  0004                  
+TMASK                    000c                  
+UA_IRQDSBL               0002                  
+VIRPEND                  0080                  
+WL5                      0060                  
+WL6                      0040                  
+WL7                      0020                  
+WL8                      0000                  
+--- End of Symbol List.
+Complete.

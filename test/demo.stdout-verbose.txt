@@ -1,0 +1,5 @@
+Debug trace OFF
+
+START OF PASS: 1
+ Including file "demo.asm"
+malloc(): corrupted top size

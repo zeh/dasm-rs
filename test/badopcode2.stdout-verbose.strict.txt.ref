@@ -1,0 +1,35 @@
+Debug trace OFF
+
+START OF PASS: 1
+ Including file "badopcode2.asm"
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         f800                            f800                           
+----------------------------------------------------------------------
+0 references to unknown symbols.
+1 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+
+--- Symbol List (sorted by symbol)
+INEEPROM                 0000                  
+--- End of Symbol List.
+
+START OF PASS: 2
+ Including file "badopcode2.asm"
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         f800                            f800                           
+----------------------------------------------------------------------
+0 references to unknown symbols.
+1 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+
+--- Symbol List (sorted by symbol)
+INEEPROM                 0000                  
+--- End of Symbol List.
+
+badopcode2.asm (6): error: Illegal Addressing mode 'jsr ($1000)'.
+
+Fatal assembly error: Source is not resolvable.
