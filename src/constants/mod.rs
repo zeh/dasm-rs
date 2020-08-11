@@ -22,6 +22,10 @@ pub const S_HASH_SIZE: usize = 1024; // In original C code, "SHASHSIZE"
 // FIXME: expand this or use a proper char table
 pub const CHAR_TAB: i32 = 9;         // In original C code, "TAB"
 
+// FIXME: a bit of a hack since we can't concatenate consts, and I wanted to still keep DASM_RELEASE separate
+macro_rules! DASM_RELEASE {() => {"2.20.14-SNAPSHOT"}}
+pub const DASM_ID: &'static str = concat!("DASM ", DASM_RELEASE!());
+
 // Table encapsulates errors, descriptions, and fatality flags.
 // Notice that the "{}" inside the descriptions are used for simple
 // string substitution; it doesn't use println!()/sformat!(), so

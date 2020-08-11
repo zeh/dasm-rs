@@ -30,6 +30,7 @@ pub mod utils;
 use constants::{
     ALLOC_SIZE,
     CHAR_TAB,
+    DASM_ID,
     MAX_LINES,
     MAX_SYMBOLS,
     S_HASH_SIZE,
@@ -346,9 +347,6 @@ pub union align {
  *  DASM   sourcefile
  *  NOTE: must handle mnemonic extensions and expression decode/compare.
  */
-static mut dasm_id: [libc::c_char; 22] =
-    [68, 65, 83, 77, 32, 50, 46, 50, 48, 46, 49, 52, 45, 83, 78, 65, 80, 83,
-     72, 79, 84, 0];
 // buffers to supress errors and messages until last pass
 #[no_mangle]
 pub static mut passbuffer: [*mut libc::c_char; 2] =
@@ -1077,7 +1075,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
             }
         }
     }
-    puts(dasm_id.as_ptr());
+    println!("{}", DASM_ID);
     println!("Copyright (c) 1988-2020 by the DASM team.");
     println!("License GPLv2+: GNU GPL version 2 or later (see file LICENSE).");
     println!("DASM is free software: you are free to change and redistribute it.");

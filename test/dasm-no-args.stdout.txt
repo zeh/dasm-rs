@@ -1,3 +1,4 @@
+DASM 2.20.14-SNAPSHOT
 Copyright (c) 1988-2020 by the DASM team.
 License GPLv2+: GNU GPL version 2 or later (see file LICENSE).
 DASM is free software: you are free to change and redistribute it.
@@ -26,4 +27,3 @@ Report bugs on https://github.com/dasm-assembler/dasm please!
 
 
 Fatal assembly error: Check command-line format.
-DASM 2.20.14-SNAPSHOT
