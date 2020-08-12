@@ -7,6 +7,8 @@ use crate::constants::{
 use crate::globals::state;
 use crate::types::flags::{
     ReasonCodes,
+    SegmentTypes,
+    SymbolTypes,
 };
 use crate::types::enums::{
     AsmErrorEquates,
@@ -36,8 +38,6 @@ extern "C" {
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     static mut SHash: [*mut _SYMBOL; 0];
-    #[no_mangle]
-    static mut Csegment: *mut _SEGMENT;
     #[no_mangle]
     static mut Av: [*mut libc::c_char; 0];
     #[no_mangle]
@@ -124,16 +124,13 @@ pub unsafe extern "C" fn findsymbol(mut str: *const libc::c_char,
     if len > MAX_SYMBOLS as libc::c_int { len = MAX_SYMBOLS as libc::c_int }
     if *str.offset(0 as isize) as libc::c_int == '.' as i32 {
         if len == 1 {
-            if (*Csegment).flags as libc::c_int & 0x20 as libc::c_int != 0 {
-                org.flags =
-                    ((*Csegment).rflags as libc::c_int & 0x1 as libc::c_int)
-                        as libc::c_uchar;
-                org.value = (*Csegment).rorg as libc::c_long
+            let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
+            if currentSegment.flags & SegmentTypes::RelocatableOrigin != 0 {
+                org.flags = currentSegment.rflags & SymbolTypes::Unknown;
+                org.value = currentSegment.rorg as i64;
             } else {
-                org.flags =
-                    ((*Csegment).flags as libc::c_int & 0x1 as libc::c_int) as
-                        libc::c_uchar;
-                org.value = (*Csegment).org as libc::c_long
+                org.flags = currentSegment.flags & SymbolTypes::Unknown;
+                org.value = currentSegment.org as i64;
             }
             return &mut org
         }
@@ -232,18 +229,21 @@ unsafe extern "C" fn hash1(mut str: *const libc::c_char, mut len: libc::c_int)
 pub unsafe extern "C" fn programlabel() {
     let mut len: libc::c_int = 0;
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut cseg: *mut _SEGMENT = Csegment;
+    let currentSegment = &state.other.segments[state.other.currentSegment];
     let mut str: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut rorg: libc::c_uchar =
-        ((*cseg).flags as libc::c_int & 0x20 as libc::c_int) as libc::c_uchar;
-    let mut cflags: libc::c_uchar =
-        if rorg as libc::c_int != 0 {
-            (*cseg).rflags as libc::c_int
-        } else { (*cseg).flags as libc::c_int } as libc::c_uchar;
-    let mut pc: libc::c_ulong =
-        if rorg as libc::c_int != 0 { (*cseg).rorg } else { (*cseg).org };
-    Plab = (*cseg).org;
-    Pflags = (*cseg).flags as libc::c_ulong;
+    let mut rorg: u8 = currentSegment.flags & SegmentTypes::RelocatableOrigin;
+    let mut cflags: u8 = if rorg != 0 {
+        currentSegment.rflags
+    } else {
+        currentSegment.flags
+    };
+    let mut pc: libc::c_ulong = if rorg != 0 {
+        currentSegment.rorg
+    } else {
+        currentSegment.org
+    };
+    Plab =currentSegment.org;
+    Pflags = currentSegment.flags as libc::c_ulong;
     str = *Av.as_mut_ptr().offset(0 as isize);
     if *str as libc::c_int == 0 { return }
     len = strlen(str) as libc::c_int;

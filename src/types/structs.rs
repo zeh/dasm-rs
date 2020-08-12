@@ -56,8 +56,10 @@ pub struct ParametersState {
 }
 
 pub struct OtherMainState {
+	pub currentSegment: usize,
 	pub incLevel: i8,
 	pub stopAtEnd: bool,
+	pub segments: Vec::<Segment>,
 }
 
 pub struct ExecutionState {
@@ -90,4 +92,17 @@ pub struct OutputState {
 	pub generatedLength: usize,
 	pub listFile: Option<File>,
 	pub orgFill: u8, // ? where?
+}
+
+// In original C code, "_SEGMENT" and used as a linked list
+pub struct Segment {
+	pub name: String,
+    pub flags: u8,
+    pub rflags: u8,
+    pub org: u64,
+    pub rorg: u64,
+    pub initorg: u64,
+    pub initrorg: u64,
+    pub initflags: u8,
+    pub initrflags: u8,
 }

@@ -7,6 +7,8 @@ use crate::constants::{
 use crate::globals::state;
 use crate::types::flags::{
     ReasonCodes,
+    SegmentTypes,
+    SymbolTypes,
 };
 use crate::types::enums::{
     AddressModes,
@@ -14,6 +16,9 @@ use crate::types::enums::{
     BitOrder,
     Format,
     ListMode,
+};
+use crate::types::structs::{
+    Segment,
 };
 use crate::utils::{
     filesystem,
@@ -86,11 +91,7 @@ extern "C" {
     #[no_mangle]
     static mut Reploop: *mut _REPLOOP;
     #[no_mangle]
-    static mut Seglist: *mut _SEGMENT;
-    #[no_mangle]
     static mut Ifstack: *mut _IFSTACK;
-    #[no_mangle]
-    static mut Csegment: *mut _SEGMENT;
     #[no_mangle]
     static mut Av: [*mut libc::c_char; 0];
     #[no_mangle]
@@ -363,14 +364,17 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
     let mut opidx: usize = 0;
     let mut symbase: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut opsize: libc::c_int = 0;
-    (*Csegment).flags =
-        ((*Csegment).flags as libc::c_int | 0x4 as libc::c_int) as u8;
+    let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
+    currentSegment.flags = currentSegment.flags | SegmentTypes::Referenced;
     programlabel();
     symbase = eval(str, 1);
     if state.execution.trace {
-        printf(b"PC: %04lx  MNEMONIC: %s  addrmode: %d  \x00" as *const u8 as
-                   *const libc::c_char, (*Csegment).org, (*mne).name,
-               (*symbase).addrmode as libc::c_int);
+        println!(
+            "PC: {:04x}  MNEMONIC: {}  addrmode: {}  ",
+            currentSegment.org,
+            transient::str_pointer_to_string((*mne).name).as_str(),
+            (*symbase).addrmode
+        );
     }
     sym = symbase;
     while !sym.is_null() {
@@ -568,22 +572,22 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             asmerr(AsmErrorEquates::NotEnoughArgs,
                    true, 0 as *const libc::c_char);
         } else if (*sym).flags as libc::c_int & 0x1 as libc::c_int == 0 {
-            let mut pc: libc::c_long = 0;
-            let mut pcf: libc::c_uchar = 0;
+            let mut pc: u64 = 0;
+            let mut pcf: u8 = 0;
             let mut dest: libc::c_long = 0;
-            pc =
-                if (*Csegment).flags as libc::c_int & 0x20 as libc::c_int != 0
-                   {
-                    (*Csegment).rorg
-                } else { (*Csegment).org } as libc::c_long;
-            pcf =
-                if (*Csegment).flags as libc::c_int & 0x20 as libc::c_int != 0
-                   {
-                    (*Csegment).rflags as libc::c_int
-                } else { (*Csegment).flags as libc::c_int } as libc::c_uchar;
-            if pcf as libc::c_int & (0x1 as libc::c_int | 2) ==
-                   0 {
-                dest = (*sym).value - pc - opidx as libc::c_long;
+            pc = if currentSegment.flags & SegmentTypes::RelocatableOrigin != 0 {
+                currentSegment.rorg
+            } else {
+                currentSegment.org
+            };
+            pcf = if currentSegment.flags & SegmentTypes::RelocatableOrigin != 0 {
+                currentSegment.rflags
+            } else {
+                currentSegment.flags
+            };
+            // FIXME: weird comparison, "2" is like a ghost flag
+            if pcf & (SegmentTypes::Unknown | 2) == 0 {
+                dest = (*sym).value - (pc as i64) - (opidx as i64);
                 if dest >= 128 as libc::c_int as libc::c_long ||
                        dest < -(128 as libc::c_int) as libc::c_long {
                     /*	byte before end of inst.    */
@@ -740,37 +744,31 @@ pub unsafe extern "C" fn v_incbin(mut str: *mut libc::c_char,
     /* don't list hexdump */
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_seg(mut str: *mut libc::c_char,
-                               mut _dummy: *mut _MNE) {
-    let mut seg: *mut _SEGMENT =
-        0 as *mut _SEGMENT; /* "might be used uninitialised" */
-    seg = Seglist;
-    while !seg.is_null() {
-        if strcmp(str, (*seg).name) == 0 {
-            Csegment = seg;
+pub unsafe extern "C" fn v_seg(mut str: *mut libc::c_char, mut _dummy: *mut _MNE) {
+    let strNew = transient::str_pointer_to_string(str);
+    for (index, seg) in &mut state.other.segments.iter().enumerate() {
+        if strNew.eq(&seg.name) {
+            state.other.currentSegment = index;
             programlabel();
-            return
+            return;
         }
-        seg = (*seg).next
     }
-    seg =
-        zmalloc(::std::mem::size_of::<_SEGMENT>() as libc::c_ulong as
-                    libc::c_int) as *mut _SEGMENT;
-    Csegment = seg;
-    (*seg).next = Seglist;
-    (*seg).name =
-        strcpy(ckmalloc(strlen(str).wrapping_add(1 as
-                                                     libc::c_ulong) as
-                            libc::c_int), str);
-    (*seg).initrflags = 0x1 as libc::c_int as libc::c_uchar;
-    (*seg).initflags = (*seg).initrflags;
-    (*seg).rflags = (*seg).initflags;
-    (*seg).flags = (*seg).rflags;
-    Seglist = seg;
+    let mut seg = Segment {
+        name: strNew,
+        flags: SegmentTypes::Unknown,
+        rflags: SegmentTypes::Unknown,
+        initflags: SegmentTypes::Unknown,
+        initrflags: SegmentTypes::Unknown,
+        org: 0,
+        rorg: 0,
+        initorg: 0,
+        initrorg: 0,
+    };
     if state.execution.modeNext == AddressModes::BSS {
-        (*seg).flags =
-            ((*seg).flags as libc::c_int | 0x10 as libc::c_int) as u8;
+        seg.flags = seg.flags | SegmentTypes::BSS;
     }
+    state.other.segments.insert(0, seg);
+    state.other.currentSegment = 0;
     programlabel();
 }
 #[no_mangle]
@@ -1065,23 +1063,21 @@ pub unsafe extern "C" fn v_org(mut str: *mut libc::c_char,
                                mut _dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     sym = eval(str, 0);
-    (*Csegment).org = (*sym).value as libc::c_ulong;
-    if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
-        (*Csegment).flags =
-            ((*Csegment).flags as libc::c_int | 0x1 as libc::c_int) as u8;
+    let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
+    currentSegment.org = (*sym).value as u64;
+    if (*sym).flags & SegmentTypes::Unknown != 0 {
+        currentSegment.flags = currentSegment.flags | SegmentTypes::Unknown;
     } else {
-        (*Csegment).flags =
-            ((*Csegment).flags as libc::c_int & !(0x1 as libc::c_int)) as u8;
+        currentSegment.flags = currentSegment.flags & !SegmentTypes::Unknown;
     }
-    if (*Csegment).initflags as libc::c_int & 0x1 as libc::c_int != 0 {
-        (*Csegment).initorg = (*sym).value as libc::c_ulong;
-        (*Csegment).initflags = (*sym).flags
+    if currentSegment.initflags & SegmentTypes::Unknown != 0 {
+        currentSegment.initorg = (*sym).value as u64;
+        currentSegment.initflags = (*sym).flags;
     }
     if !(*sym).next.is_null() {
         state.output.orgFill = (*(*sym).next).value as u8;
-        if (*(*sym).next).flags as libc::c_int & 0x1 as libc::c_int != 0 {
-            asmerr(AsmErrorEquates::ValueUndefined,
-                   true, 0 as *const libc::c_char);
+        if (*(*sym).next).flags & SegmentTypes::Unknown != 0 {
+            asmerr(AsmErrorEquates::ValueUndefined, true, 0 as *const libc::c_char);
         }
     }
     programlabel();
@@ -1091,20 +1087,18 @@ pub unsafe extern "C" fn v_org(mut str: *mut libc::c_char,
 pub unsafe extern "C" fn v_rorg(mut str: *mut libc::c_char,
                                 mut _dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = eval(str, 0);
-    (*Csegment).flags =
-        ((*Csegment).flags as libc::c_int | 0x20 as libc::c_int) as u8;
-    if (*sym).addrmode as libc::c_int != AddressModes::Imp as i32 {
-        (*Csegment).rorg = (*sym).value as libc::c_ulong;
-        if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
-            (*Csegment).rflags =
-                ((*Csegment).rflags as libc::c_int | 0x1 as libc::c_int) as u8;
+    let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
+    currentSegment.flags = currentSegment.flags | SegmentTypes::RelocatableOrigin;
+    if (*sym).addrmode != AddressModes::Imp as u8 {
+        currentSegment.rorg = (*sym).value as u64;
+        if (*sym).flags & SegmentTypes::Unknown != 0 {
+            currentSegment.rflags = currentSegment.rflags | SegmentTypes::Unknown;
         } else {
-            (*Csegment).rflags =
-                ((*Csegment).rflags as libc::c_int & !(0x1 as libc::c_int)) as u8;
+            currentSegment.rflags = currentSegment.rflags & !SegmentTypes::Unknown;
         }
-        if (*Csegment).initrflags as libc::c_int & 0x1 as libc::c_int != 0 {
-            (*Csegment).initrorg = (*sym).value as libc::c_ulong;
-            (*Csegment).initrflags = (*sym).flags
+        if currentSegment.initrflags & SegmentTypes::Unknown != 0 {
+            currentSegment.initrorg = (*sym).value as u64;
+            currentSegment.initrflags = (*sym).flags
         }
     }
     programlabel();
@@ -1114,56 +1108,44 @@ pub unsafe extern "C" fn v_rorg(mut str: *mut libc::c_char,
 pub unsafe extern "C" fn v_rend(mut _str: *mut libc::c_char,
                                 mut _dummy: *mut _MNE) {
     programlabel();
-    (*Csegment).flags =
-        ((*Csegment).flags as libc::c_int & !(0x20 as libc::c_int)) as u8;
+    let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
+    currentSegment.flags = currentSegment.flags & !SegmentTypes::RelocatableOrigin;
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_align(mut str: *mut libc::c_char,
                                  mut _dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = eval(str, 0);
-    let mut fill: libc::c_uchar = 0;
-    let mut rorg: libc::c_uchar =
-        ((*Csegment).flags as libc::c_int & 0x20 as libc::c_int) as u8;
+    let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
+    let mut fill: u8 = 0;
+    let mut rorg: u8 = currentSegment.flags & SegmentTypes::RelocatableOrigin;
     if rorg != 0 {
-        (*Csegment).rflags =
-            ((*Csegment).rflags as libc::c_int | 0x4 as libc::c_int) as u8;
+        currentSegment.rflags = currentSegment.rflags | SegmentTypes::Referenced;
     } else {
-        (*Csegment).flags =
-            ((*Csegment).flags as libc::c_int | 0x4 as libc::c_int) as u8;
+        currentSegment.flags = currentSegment.flags | SegmentTypes::Referenced;
     }
     if !(*sym).next.is_null() {
-        if (*(*sym).next).flags as libc::c_int & 0x1 as libc::c_int != 0 {
+        if (*(*sym).next).flags & SymbolTypes::Unknown != 0 {
             state.execution.redoIndex += 1;
             state.execution.redoWhy |= ReasonCodes::AlignNotResolved
-        } else { fill = (*(*sym).next).value as libc::c_uchar }
+        } else {
+            fill = (*(*sym).next).value as libc::c_uchar
+        }
     }
     if rorg != 0 {
-        if ((*Csegment).rflags as libc::c_int | (*sym).flags as libc::c_int) &
-               0x1 as libc::c_int != 0 {
+        if (currentSegment.rflags | (*sym).flags) & SegmentTypes::Unknown != 0 {
             state.execution.redoIndex += 1;
             state.execution.redoWhy |= ReasonCodes::AlignRelocatableOriginNotKnown
         } else {
-            let mut n: libc::c_long =
-                ((*sym).value as
-                     libc::c_ulong).wrapping_sub((*Csegment).rorg.wrapping_rem((*sym).value
-                                                                                   as
-                                                                                   libc::c_ulong))
-                    as libc::c_long;
+            let mut n: libc::c_long = ((*sym).value as u64).wrapping_sub(currentSegment.rorg.wrapping_rem((*sym).value as u64)) as libc::c_long;
             if n != (*sym).value {
                 genfill(fill as libc::c_long, n, 1);
             }
         }
-    } else if ((*Csegment).flags as libc::c_int | (*sym).flags as libc::c_int)
-                  & 0x1 as libc::c_int != 0 {
+    } else if (currentSegment.flags | (*sym).flags) & SymbolTypes::Unknown != 0 {
         state.execution.redoIndex += 1;
         state.execution.redoWhy |= ReasonCodes::AlignNormalOriginNotKnown
     } else {
-        let mut n_0: libc::c_long =
-            ((*sym).value as
-                 libc::c_ulong).wrapping_sub((*Csegment).org.wrapping_rem((*sym).value
-                                                                              as
-                                                                              libc::c_ulong))
-                as libc::c_long;
+        let mut n_0: libc::c_long = ((*sym).value as u64).wrapping_sub(currentSegment.org.wrapping_rem((*sym).value as u64)) as libc::c_long;
         if n_0 != (*sym).value {
             genfill(fill as libc::c_long, n_0, 1);
         }
@@ -1183,6 +1165,7 @@ pub unsafe extern "C" fn v_equ(mut str: *mut libc::c_char,
                                mut dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = eval(str, 0);
     let mut lab: *mut _SYMBOL = 0 as *mut _SYMBOL;
+    let currentSegment = &state.other.segments[state.other.currentSegment];
     /*
     * If we encounter a line of the form
     *   . = expr	; or . EQU expr
@@ -1191,45 +1174,30 @@ pub unsafe extern "C" fn v_equ(mut str: *mut libc::c_char,
     *     rorg expr
     * depending on whether we have a relocatable origin now or not.
     */
-    if strlen(*Av.as_mut_ptr().offset(0 as isize)) ==
-           1 &&
-           (*(*Av.as_mut_ptr().offset(0 as
-                                          isize)).offset(0 as
-                                                             isize) as
-                libc::c_int == '.' as i32 ||
-                *(*Av.as_mut_ptr().offset(0 as
-                                              isize)).offset(0
-                                                                 as isize) as
-                    libc::c_int == '*' as i32 &&
-                    {
-                        let ref mut fresh32 =
-                            *(*Av.as_mut_ptr().offset(0 as
-                                                          isize)).offset(0 as
-                                                                             libc::c_int
-                                                                             as
-                                                                             isize);
-                        *fresh32 = '.' as i32 as libc::c_char;
-                        (*fresh32 as libc::c_int) != 0
-                    } && true) {
+    if
+        strlen(*Av.as_mut_ptr().offset(0)) == 1 &&
+        (
+            *(*Av.as_mut_ptr().offset(0)).offset(0) as libc::c_int == '.' as i32 ||
+            *(*Av.as_mut_ptr().offset(0)).offset(0) as libc::c_int == '*' as i32 && {
+                let ref mut fresh32 = *(*Av.as_mut_ptr().offset(0)).offset(0);
+                *fresh32 = '.' as i32 as libc::c_char;
+                (*fresh32 as libc::c_int) != 0
+            } && true
+        ) {
         /* Av[0][0] = '\0'; */
-        if (*Csegment).flags as libc::c_int & 0x20 as libc::c_int != 0 {
+        if currentSegment.flags & SegmentTypes::RelocatableOrigin != 0 {
             v_rorg(str, dummy);
-        } else { v_org(str, dummy); }
+        } else {
+            v_org(str, dummy);
+        }
         return
     }
-    lab =
-        findsymbol(*Av.as_mut_ptr().offset(0 as isize),
-                   strlen(*Av.as_mut_ptr().offset(0 as isize))
-                       as libc::c_int);
+    lab = findsymbol(*Av.as_mut_ptr().offset(0), strlen(*Av.as_mut_ptr().offset(0)) as libc::c_int);
     if lab.is_null() {
-        lab =
-            CreateSymbol(*Av.as_mut_ptr().offset(0 as isize),
-                         strlen(*Av.as_mut_ptr().offset(0 as
-                                                            isize)) as
-                             libc::c_int)
+        lab = CreateSymbol(*Av.as_mut_ptr().offset(0), strlen(*Av.as_mut_ptr().offset(0)) as libc::c_int)
     }
-    if (*lab).flags as libc::c_int & 0x1 as libc::c_int == 0 {
-        if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
+    if (*lab).flags as libc::c_int & SymbolTypes::Unknown as libc::c_int == 0 {
+        if (*sym).flags as libc::c_int & SymbolTypes::Unknown as libc::c_int != 0 {
             state.execution.redoIndex += 1;
             state.execution.redoWhy |= ReasonCodes::EquNotResolved
         } else if (*lab).value != (*sym).value {
@@ -1246,7 +1214,7 @@ pub unsafe extern "C" fn v_equ(mut str: *mut libc::c_char,
     (*lab).value = (*sym).value;
     (*lab).flags =
         ((*sym).flags as libc::c_int &
-             (0x1 as libc::c_int | 0x8 as libc::c_int)) as libc::c_uchar;
+             (SegmentTypes::Unknown as libc::c_int | SymbolTypes::StringResult as libc::c_int)) as libc::c_uchar;
     (*lab).string = (*sym).string;
     (*sym).flags =
         ((*sym).flags as libc::c_int &
@@ -1792,8 +1760,9 @@ pub unsafe extern "C" fn generate() {
     let mut seekpos: libc::c_long = 0;
     static mut org: libc::c_ulong = 0;
     let mut i: i32 = 0;
+    let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
     if state.execution.redoIndex == 0 {
-        if (*Csegment).flags as libc::c_int & 0x10 as libc::c_int == 0 {
+        if currentSegment.flags & SegmentTypes::BSS == 0 {
             i = state.output.generatedLength as i32 - 1;
             while i >= 0 {
                 CheckSum = CheckSum.wrapping_add(state.output.generated[i as usize] as libc::c_ulong);
@@ -1801,19 +1770,15 @@ pub unsafe extern "C" fn generate() {
             }
             if state.execution.isClear {
                 state.execution.isClear = false;
-                if (*Csegment).flags as libc::c_int & 0x1 as libc::c_int != 0
-                   {
+                if currentSegment.flags & SegmentTypes::Unknown != 0 {
                     state.execution.redoIndex += 1;
                     state.execution.redoWhy |= ReasonCodes::Obscure;
                     return
                 }
-                org = (*Csegment).org;
+                org = currentSegment.org;
                 if state.parameters.format == Format::Default || state.parameters.format == Format::Ras {
-                    putc((org & 0xff as libc::c_int as libc::c_ulong) as
-                             libc::c_int, FI_temp);
-                    putc((org >> 8 &
-                              0xff as libc::c_int as libc::c_ulong) as
-                             libc::c_int, FI_temp);
+                    putc((org & 0xff as libc::c_int as libc::c_ulong) as libc::c_int, FI_temp);
+                    putc((org >> 8 & 0xff as libc::c_int as libc::c_ulong) as libc::c_int, FI_temp);
                     if state.parameters.format == Format::Ras {
                         Seekback = ftell(FI_temp);
                         Seglen = 0;
@@ -1824,11 +1789,11 @@ pub unsafe extern "C" fn generate() {
             }
             match state.parameters.format {
                 Format::Raw | Format::Default => {
-                    if (*Csegment).org < org {
+                    if currentSegment.org < org {
                         println!(
                             "segment: {} {}  vs current org: {:04x}",
-                            transient::str_pointer_to_string((*Csegment).name).as_str(),
-                            formatting::segment_address_to_string((*Csegment).org, (*Csegment).flags),
+                            currentSegment.name,
+                            formatting::segment_address_to_string(currentSegment.org, currentSegment.flags),
                             org
                         );
                         asmerr(AsmErrorEquates::OriginReverseIndexed,
@@ -1836,7 +1801,7 @@ pub unsafe extern "C" fn generate() {
                                0 as *const libc::c_char);
                         std::process::exit(1);
                     }
-                    while (*Csegment).org != org {
+                    while currentSegment.org != org {
                         putc(state.output.orgFill as libc::c_int, FI_temp);
                         org = org.wrapping_add(1)
                     }
@@ -1845,8 +1810,8 @@ pub unsafe extern "C" fn generate() {
                            FI_temp);
                 }
                 Format::Ras => {
-                    if org != (*Csegment).org {
-                        org = (*Csegment).org;
+                    if org != currentSegment.org {
+                        org = currentSegment.org;
                         seekpos = ftell(FI_temp);
                         fseek(FI_temp, Seekback, 0);
                         putc((Seglen & 0xff) as libc::c_int, FI_temp);
@@ -1868,10 +1833,9 @@ pub unsafe extern "C" fn generate() {
             org = org.wrapping_add(state.output.generatedLength as u64)
         }
     }
-    (*Csegment).org = (*Csegment).org.wrapping_add(state.output.generatedLength as u64);
-    if (*Csegment).flags as libc::c_int & 0x20 as libc::c_int != 0 {
-        (*Csegment).rorg =
-            (*Csegment).rorg.wrapping_add(state.output.generatedLength as u64)
+    currentSegment.org = currentSegment.org.wrapping_add(state.output.generatedLength as u64);
+    if currentSegment.flags & SegmentTypes::RelocatableOrigin != 0 {
+        currentSegment.rorg = currentSegment.rorg.wrapping_add(state.output.generatedLength as u64)
     };
 }
 #[no_mangle]

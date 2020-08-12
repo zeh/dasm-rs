@@ -49,6 +49,9 @@ use types::enums::{
     SortMode,
     Verbosity,
 };
+use types::structs::{
+    Segment,
+};
 use utils::{
     filesystem,
     find_error_definition,
@@ -137,11 +140,7 @@ extern "C" {
     #[no_mangle]
     static mut Reploop: *mut _REPLOOP;
     #[no_mangle]
-    static mut Seglist: *mut _SEGMENT;
-    #[no_mangle]
     static mut Ifstack: *mut _IFSTACK;
-    #[no_mangle]
-    static mut Csegment: *mut _SEGMENT;
     #[no_mangle]
     static mut Av: [*mut libc::c_char; 0];
     #[no_mangle]
@@ -536,15 +535,13 @@ unsafe extern "C" fn ShowSymbols(mut file: *mut FILE, sorted: bool) {
               *const libc::c_char, file);
 }
 unsafe extern "C" fn ShowSegments() {
-    let mut seg: *mut _SEGMENT = 0 as *mut _SEGMENT;
     println!("\n----------------------------------------------------------------------");
     println!(
         "{:24} {:3} {:8} {:8} {:8} {:8}",
         "SEGMENT NAME", "", "INIT PC", "INIT RPC", "FINAL PC", "FINAL RPC",
     );
-    seg = Seglist;
-    while !seg.is_null() {
-        let bss = if (*seg).flags & SegmentTypes::BSS != 0 {
+    for seg in &state.other.segments {
+        let bss = if seg.flags & SegmentTypes::BSS != 0 {
             "[u]"
         } else {
             "   "
@@ -553,14 +550,13 @@ unsafe extern "C" fn ShowSegments() {
         // FIXME: this is rendering different from the reference version
         println!(
             "{:24} {:3} {:8} {:8} {:8} {:8}",
-            transient::str_pointer_to_string((*seg).name).as_str(),
+            seg.name,
             bss,
-            formatting::segment_address_to_string((*seg).initorg, (*seg).initflags),
-            formatting::segment_address_to_string((*seg).initrorg, (*seg).initrflags),
-            formatting::segment_address_to_string((*seg).org, (*seg).flags),
-            formatting::segment_address_to_string((*seg).rorg, (*seg).rflags),
+            formatting::segment_address_to_string(seg.initorg, seg.initflags),
+            formatting::segment_address_to_string(seg.initrorg, seg.initrflags),
+            formatting::segment_address_to_string(seg.org, seg.flags),
+            formatting::segment_address_to_string(seg.rorg, seg.rflags),
         );
-        seg = (*seg).next
     }
     println!("----------------------------------------------------------------------");
     println!("{} references to unknown symbols.", state.execution.redoEval);
@@ -704,30 +700,22 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
                 'M' | 'D' => {
-                    while *str as libc::c_int != 0 &&
-                              *str as libc::c_int != '=' as i32 {
+                    while *str as libc::c_int != 0 && *str as libc::c_int != '=' as i32 {
                         str = str.offset(1)
                     }
                     if *str as libc::c_int == '=' as i32 {
                         *str = 0;
                         str = str.offset(1)
                     } else {
-                        str =
-                            b"0\x00" as *const u8 as *const libc::c_char as
-                                *mut libc::c_char
+                        str = b"0\x00" as *const u8 as *const libc::c_char as *mut libc::c_char
                     }
-                    let ref mut fresh2 =
-                        *Av.as_mut_ptr().offset(0 as isize);
-                    *fresh2 =
-                        (*av.offset(i as
-                                        isize)).offset(2 as
-                                                           isize);
-                    if *(*av.offset(i as
-                                        isize)).offset(1 as
-                                                           isize) as
-                           libc::c_int == 'M' as i32 {
+                    let ref mut fresh2 = *Av.as_mut_ptr().offset(0 as isize);
+                    *fresh2 = (*av.offset(i as isize)).offset(2);
+                    if *(*av.offset(i as isize)).offset(1) as libc::c_int == 'M' as i32 {
                         v_eqm(str, 0 as *mut _MNE);
-                    } else { v_set(str, 0 as *mut _MNE); }
+                    } else {
+                        v_set(str, 0 as *mut _MNE);
+                    }
                     current_block = 17788412896529399552;
                 }
                 'f' => {
@@ -828,21 +816,20 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
             15878785573848117940 => { }
             _ => {
                 /*    INITIAL SEGMENT */
-                let mut seg: *mut _SEGMENT =
-                    permalloc(::std::mem::size_of::<_SEGMENT>() as
-                                  libc::c_ulong as libc::c_int) as
-                        *mut _SEGMENT;
-                (*seg).name =
-                    strcpy(permalloc(::std::mem::size_of::<[libc::c_char; 21]>()
-                                         as libc::c_ulong as libc::c_int),
-                           b"INITIAL CODE SEGMENT\x00" as *const u8 as
-                               *const libc::c_char);
-                (*seg).initrflags = 0x1 as libc::c_int as libc::c_uchar;
-                (*seg).initflags = (*seg).initrflags;
-                (*seg).rflags = (*seg).initflags;
-                (*seg).flags = (*seg).rflags;
-                Seglist = seg;
-                Csegment = Seglist;
+                let mut seg = Segment {
+                    name: String::from("INITIAL CODE SEGMENT"),
+                    flags: SegmentTypes::Unknown,
+                    rflags: SegmentTypes::Unknown,
+                    initrflags: SegmentTypes::Unknown,
+                    initflags: SegmentTypes::Unknown,
+                    org: 0,
+                    rorg: 0,
+                    initorg: 0,
+                    initrorg: 0,
+                };
+                state.other.segments.clear();
+                state.other.segments.push(seg);
+                state.other.currentSegment = 0;
                 /*    TOP LEVEL IF    */
                 let mut ifs: *mut _IFSTACK =
                     zmalloc(::std::mem::size_of::<_IFSTACK>() as libc::c_ulong
@@ -1285,17 +1272,12 @@ pub unsafe extern "C" fn sftos(mut val: libc::c_long, mut flags: libc::c_int)
 }
 #[no_mangle]
 pub unsafe extern "C" fn clearsegs() {
-    let mut seg: *mut _SEGMENT = 0 as *mut _SEGMENT;
-    seg = Seglist;
-    while !seg.is_null() {
-        (*seg).flags =
-            ((*seg).flags as libc::c_int & 0x10 as libc::c_int |
-                 0x1 as libc::c_int) as libc::c_uchar;
-        (*seg).initrflags = 0x1 as libc::c_int as libc::c_uchar;
-        (*seg).initflags = (*seg).initrflags;
-        (*seg).rflags = (*seg).initflags;
-        seg = (*seg).next
-    };
+    for seg in &mut state.other.segments {
+        seg.flags = (seg.flags & SegmentTypes::BSS) | SegmentTypes::Unknown;
+        seg.rflags = SegmentTypes::Unknown;
+        seg.initflags = SegmentTypes::Unknown;
+        seg.initrflags = SegmentTypes::Unknown;
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn clearrefs() {

@@ -3,6 +3,7 @@ use libc;
 use crate::globals::state;
 use crate::types::flags::{
     ReasonCodes,
+    SegmentTypes,
 };
 use crate::types::enums::{
     AddressModes,
@@ -28,8 +29,6 @@ extern "C" {
     fn strlen(_: *const libc::c_char) -> libc::c_ulong;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
-    #[no_mangle]
-    static mut Csegment: *mut _SEGMENT;
     #[no_mangle]
     fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const libc::c_char)
      -> libc::c_int;
@@ -212,23 +211,29 @@ unsafe extern "C" fn emit_opcode3(mut byte0: libc::c_uchar,
  *          nonzero = current program counter is known
  */
 unsafe extern "C" fn isPCKnown() -> libc::c_int {
-    let mut pcf: libc::c_uchar = 0;
-    pcf =
-        if (*Csegment).flags as libc::c_int & 0x20 as libc::c_int != 0 {
-            (*Csegment).rflags as libc::c_int
-        } else { (*Csegment).flags as libc::c_int } as libc::c_uchar;
-    return if pcf as libc::c_int & (0x1 as libc::c_int | 2) ==
-                  0 {
-               1
-           } else { 0 };
+    let mut pcf: u8 = 0;
+    let currentSegment = &state.other.segments[state.other.currentSegment];
+    pcf = if currentSegment.flags & SegmentTypes::RelocatableOrigin != 0 {
+        currentSegment.rflags
+    } else {
+        currentSegment.flags
+    };
+    return if pcf & (SegmentTypes::Unknown | 2) == 0 {
+        1
+    } else {
+        0
+    };
 }
 /*
  * returns the current program counter
  */
 unsafe extern "C" fn getPC() -> libc::c_long {
-    return if (*Csegment).flags as libc::c_int & 0x20 as libc::c_int != 0 {
-               (*Csegment).rorg
-           } else { (*Csegment).org } as libc::c_long;
+    let currentSegment = &state.other.segments[state.other.currentSegment];
+    return if currentSegment.flags & SegmentTypes::RelocatableOrigin != 0 {
+        currentSegment.rorg
+    } else {
+        currentSegment.org
+    } as libc::c_long;
 }
 /*
  * attempts to parse a 32 bit unsigned value from a string.

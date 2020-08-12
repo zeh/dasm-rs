@@ -206,13 +206,6 @@ pub static mut pIncfile: *mut _INCFILE =
 pub static mut Reploop: *mut _REPLOOP = 0 as *const _REPLOOP as *mut _REPLOOP;
 /*	repeat loop stack   */
 #[no_mangle]
-pub static mut Seglist: *mut _SEGMENT = 0 as *const _SEGMENT as *mut _SEGMENT;
-/*	segment list	    */
-#[no_mangle]
-pub static mut Csegment: *mut _SEGMENT =
-    0 as *const _SEGMENT as *mut _SEGMENT;
-/*	current segment     */
-#[no_mangle]
 pub static mut Ifstack: *mut _IFSTACK = 0 as *const _IFSTACK as *mut _IFSTACK;
 /*	IF/ELSE/ENDIF stack */
 #[no_mangle]

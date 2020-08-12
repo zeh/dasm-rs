@@ -16,6 +16,7 @@ use crate::types::structs::{
     OtherMainState,
     OutputState,
     ParametersState,
+    Segment,
 };
 
 // FIXME: remove legacy module once it's all translated or moved somewhere else
@@ -37,8 +38,10 @@ pub static mut state: GlobalState = GlobalState {
     },
 
     other: OtherMainState {
+        currentSegment: 0,
         incLevel: 0,
         stopAtEnd: false,
+        segments: Vec::<Segment>::new(),
     },
 
     execution: ExecutionState {

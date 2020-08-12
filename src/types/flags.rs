@@ -23,7 +23,7 @@ pub mod ReasonCodes {
 }
 
 // In original C code, used for flags as "SYM_*" but without a clear enum
-pub mod SymbolType {
+pub mod SymbolTypes {
     pub const Unknown: u8 = 0b0000_0001;            // 0x01: Value Uknown
     pub const Referenced: u8 = 0b0000_0100;         // 0x04: Referenced
     pub const StringResult: u8 = 0b0000_1000;       // 0x08: Result is a string
