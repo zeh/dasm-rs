@@ -117,7 +117,7 @@ pub enum ListMode {
 }
 
 // In original C code, "ADDRESS_MODES"
-#[derive(Copy, Clone, Debug, PartialEq, TryFromPrimitive)]
+#[derive(Copy, Clone, Debug, PartialEq, IntoPrimitive, TryFromPrimitive)]
 #[repr(u8)]
 pub enum AddressModes {
 	Imp,						// 0  Implied

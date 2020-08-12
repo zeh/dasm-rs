@@ -1,5 +1,6 @@
 use libc;
 use std::cmp::Ordering;
+use std::convert::TryFrom;
 
 use crate::constants::{
     MAX_MACRO_LEVEL,
@@ -356,7 +357,7 @@ pub unsafe extern "C" fn v_processor(mut str: *mut libc::c_char,
 #[no_mangle]
 pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
                                     mut mne: *mut _MNE) {
-    let mut addrmode: libc::c_int = 0;
+    let mut addressMode: AddressModes = AddressModes::Imp;
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut opcode: libc::c_uint = 0;
     let mut opidx: usize = 0;
@@ -376,7 +377,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
     }
     sym = symbase;
     while !sym.is_null() {
-        if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
+        if (*sym).flags & SymbolTypes::Unknown != 0 {
             state.execution.redoIndex += 1;
             state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved
         }
@@ -392,33 +393,33 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             }
         }
     }
-    addrmode = (*sym).addrmode as libc::c_int;
-    if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 ||
-           (*sym).value >= 0x100 as libc::c_int as libc::c_long {
+    addressMode = AddressModes::try_from((*sym).addrmode).unwrap();
+    if (*sym).flags & SymbolTypes::Unknown != 0 || (*sym).value >= 0x100 as libc::c_int as libc::c_long {
         opsize = 2
     } else {
-        opsize =
-            if (*sym).value != 0 {
-                1
-            } else { 0 }
+        opsize = if (*sym).value != 0 {
+            1
+        } else {
+            0
+        }
     }
-    while (*mne).okmask & ((1) << addrmode) as libc::c_ulong
-              == 0 && *Cvt.as_mut_ptr().offset(addrmode as isize) != 0 {
-        addrmode = *Cvt.as_mut_ptr().offset(addrmode as isize) as libc::c_int
+    while (*mne).okmask & ((1) << addressMode as isize) as libc::c_ulong == 0 && *Cvt.as_mut_ptr().offset(addressMode as isize) != 0 {
+        addressMode = AddressModes::try_from(*Cvt.as_mut_ptr().offset(addressMode as isize) as u8).unwrap();
     }
     if state.execution.trace {
-        printf(b"mnemask: %08lx adrmode: %d  Cvt[am]: %d\n\x00" as *const u8
-                   as *const libc::c_char, (*mne).okmask, addrmode,
-               *Cvt.as_mut_ptr().offset(addrmode as isize));
+        println!(
+            "memask: {:08x} adrmode: {}  Cvt[am]: {}",
+            (*mne).okmask,
+            addressMode as u8,
+            *Cvt.as_mut_ptr().offset(addressMode as isize)
+        );
     }
-    if (*mne).okmask & ((1) << addrmode) as libc::c_ulong == 0
-       {
+    if (*mne).okmask & ((1) << addressMode as u8) as libc::c_ulong == 0 {
         let mut sBuffer: [libc::c_char; 128] = [0; 128];
         sprintf(sBuffer.as_mut_ptr(),
                 b"%s %s\x00" as *const u8 as *const libc::c_char, (*mne).name,
                 str);
-        asmerr(AsmErrorEquates::IllegalAddressingMode,
-               false, sBuffer.as_mut_ptr());
+        asmerr(AsmErrorEquates::IllegalAddressingMode, false, sBuffer.as_mut_ptr());
         FreeSymbolList(symbase);
         //FIX
         state.execution.redoIndex += 1;
@@ -427,11 +428,9 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
     }
     if state.execution.modeNext != AddressModes::None {
         /*	Force	*/
-        addrmode = state.execution.modeNext as u8 as i32;
-        if (*mne).okmask & ((1) << addrmode) as libc::c_ulong
-               == 0 {
-            asmerr(AsmErrorEquates::IllegalForcedAddressingMode,
-                   false, (*mne).name);
+        addressMode = state.execution.modeNext;
+        if (*mne).okmask & ((1) << addressMode as u8) as libc::c_ulong == 0 {
+            asmerr(AsmErrorEquates::IllegalForcedAddressingMode, false, (*mne).name);
             FreeSymbolList(symbase);
             //FIX: Cause assembly to fail when an invalid mode is used for an opcode...
             state.execution.redoIndex += 1;
@@ -440,29 +439,20 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
         }
     }
     if state.execution.trace {
-        printf(b"final addrmode = %d\n\x00" as *const u8 as
-                   *const libc::c_char, addrmode);
+        println!("final addrmode = {}", addressMode as u8);
     }
-    while opsize as libc::c_uint >
-              *Opsize.as_mut_ptr().offset(addrmode as isize) {
-        if *Cvt.as_mut_ptr().offset(addrmode as isize) ==
-               0 ||
-               (*mne).okmask &
-                   ((1) <<
-                        *Cvt.as_mut_ptr().offset(addrmode as isize)) as
-                       libc::c_ulong == 0 {
+    while opsize as libc::c_uint > *Opsize.as_mut_ptr().offset(addressMode as isize) {
+        if *Cvt.as_mut_ptr().offset(addressMode as isize) == 0 ||
+            (*mne).okmask & ((1) << *Cvt.as_mut_ptr().offset(addressMode as isize)) as libc::c_ulong == 0 {
             let mut sBuffer_0: [libc::c_char; 128] = [0; 128];
             if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
-                break ;
+                break;
             }
             //FIX: for negative operands...
-            if addrmode == AddressModes::Imm8 as i32 &&
-                   (*sym).value < 0 {
+            if addressMode == AddressModes::Imm8 && (*sym).value < 0 {
                 opsize = 1; /*  to end of instruction   */
-                (*sym).value =
-                    ((*sym).value & 255 as libc::c_int as libc::c_long) as
-                        libc::c_char as libc::c_long;
-                break ;
+                (*sym).value = ((*sym).value & 255 as libc::c_int as libc::c_long) as libc::c_char as libc::c_long;
+                break;
             } else {
                 sprintf(sBuffer_0.as_mut_ptr(),
                         b"%s %s\x00" as *const u8 as *const libc::c_char,
@@ -472,11 +462,10 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
                 break ;
             }
         } else {
-            addrmode =
-                *Cvt.as_mut_ptr().offset(addrmode as isize) as libc::c_int
+            addressMode = AddressModes::try_from(*Cvt.as_mut_ptr().offset(addressMode as isize) as u8).unwrap();
         }
     }
-    opcode = (*mne).opcode[addrmode as usize];
+    opcode = (*mne).opcode[addressMode as usize];
     opidx = (1 + (opcode > 0xff) as libc::c_int) as usize;
     if opidx == 2 {
         state.output.generated[0] = (opcode >> 8) as u8;
@@ -484,21 +473,18 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
     } else {
         state.output.generated[0] = opcode as u8;
     }
-    match addrmode {
-        15 => {
+    match addressMode {
+        AddressModes::BitMod => {
             sym = (*symbase).next;
-            if (*sym).flags as libc::c_int & 0x1 as libc::c_int == 0 &&
-                   (*sym).value >= 0x100 as libc::c_int as libc::c_long {
-                asmerr(AsmErrorEquates::AddressMustBeLowerThan100,
-                       false, 0 as *const libc::c_char);
+            if (*sym).flags as libc::c_int & 0x1 as libc::c_int == 0 && (*sym).value >= 0x100 as libc::c_int as libc::c_long {
+                asmerr(AsmErrorEquates::AddressMustBeLowerThan100, false, 0 as *const i8);
             }
             let fresh0 = opidx;
             opidx = opidx + 1;
             state.output.generated[fresh0] = (*sym).value as u8;
             if (*symbase).flags as libc::c_int & 0x1 as libc::c_int == 0 {
                 if (*symbase).value > 7 {
-                    asmerr(AsmErrorEquates::IllegalBitSpecification,
-                           false, str);
+                    asmerr(AsmErrorEquates::IllegalBitSpecification, false, str);
                 } else {
                     state.output.generated[0] = (
                         state.output.generated[0] as libc::c_long +
@@ -507,7 +493,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
                 }
             }
         }
-        16 => {
+        AddressModes::BitBraMod => {
             if (*symbase).flags as libc::c_int & 0x1 as libc::c_int == 0 {
                 if (*symbase).value > 7 {
                     asmerr(AsmErrorEquates::IllegalBitSpecification,
@@ -529,13 +515,13 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             opidx = opidx + 1;
             sym = (*sym).next
         }
-        9 => { }
+        AddressModes::Rel => { }
         _ => {
-            if *Opsize.as_mut_ptr().offset(addrmode as isize) > 0 {
+            if *Opsize.as_mut_ptr().offset(addressMode as isize) > 0 {
                 state.output.generated[opidx] = (*sym).value as u8;
                 opidx = opidx + 1;
             }
-            if *Opsize.as_mut_ptr().offset(addrmode as isize) == 2 {
+            if *Opsize.as_mut_ptr().offset(addressMode as isize) == 2 {
                 if state.execution.bitOrder != BitOrder::LeastMost {
                     state.output.generated[(opidx - 1) as usize] = ((*sym).value >> 8) as u8;
                     state.output.generated[opidx] = (*sym).value as u8;
@@ -548,28 +534,23 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             sym = (*sym).next
         }
     }
-    if (*mne).flags as libc::c_int & 0x10 as libc::c_int != 0 {
+    if (*mne).flags & 0x10 != 0 {
         if !sym.is_null() {
-            if (*sym).flags as libc::c_int & 0x1 as libc::c_int == 0 &&
-                   (*sym).value >= 0x100 as libc::c_int as libc::c_long {
-                asmerr(AsmErrorEquates::AddressMustBeLowerThan100,
-                       false, 0 as *const libc::c_char);
+            if (*sym).flags & SymbolTypes::Unknown == 0 && (*sym).value >= 0x100 as libc::c_int as libc::c_long {
+                asmerr(AsmErrorEquates::AddressMustBeLowerThan100, false, 0 as *const libc::c_char);
             }
             state.output.generated[opidx as usize] = (*sym).value as u8;
             sym = (*sym).next
         } else {
-            asmerr(AsmErrorEquates::NotEnoughArgs,
-                   true, 0 as *const libc::c_char);
+            asmerr(AsmErrorEquates::NotEnoughArgs, true, 0 as *const libc::c_char);
         }
         opidx += 1
     }
-    if (*mne).flags as libc::c_int & 0x20 as libc::c_int != 0 ||
-           addrmode == AddressModes::Rel as i32 {
+    if (*mne).flags & 0x20 != 0 || addressMode == AddressModes::Rel {
         opidx += 1;
         if sym.is_null() {
-            asmerr(AsmErrorEquates::NotEnoughArgs,
-                   true, 0 as *const libc::c_char);
-        } else if (*sym).flags as libc::c_int & 0x1 as libc::c_int == 0 {
+            asmerr(AsmErrorEquates::NotEnoughArgs, true, 0 as *const libc::c_char);
+        } else if (*sym).flags & SymbolTypes::Unknown == 0 {
             let mut pc: u64 = 0;
             let mut pcf: u8 = 0;
             let mut dest: libc::c_long = 0;
