@@ -15,6 +15,7 @@ use crate::types::structs::{
 pub mod transient;
 
 pub mod filesystem;
+pub mod formatting;
 
 /**
  * Creates a simple hash for a string.
