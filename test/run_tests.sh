@@ -23,9 +23,18 @@ echo
 
 if [[ -z "$SUFFIX" ]]; then
   echo "... Removing all previously generated files"
-  rm ./*.txt
-  rm ./*.bin
-  rm ./*.hex
+  rm -r ./*.txt
+  rm -r ./*.bin
+  rm -r ./*.hex
+  rm -r ./atari2600/*.txt
+  rm -r ./atari2600/*.bin
+  rm -r ./atari2600/*.hex
+  rm -r ./atari7800/*.txt
+  rm -r ./atari7800/*.bin
+  rm -r ./atari7800/*.hex
+  rm -r ./channel-f/*.txt
+  rm -r ./channel-f/*.bin
+  rm -r ./channel-f/*.hex
 else
   echo "... Removing all previously generated files with suffix $SUFFIX"
   rm "./*$SUFFIX"
@@ -293,7 +302,7 @@ errors=0
 
 NAME="dasm-no-args"
 
-# Compile .asm into .bin and .list.txt
+# Run without parameters
 $DASM 2>&1 | \
   tee "$NAME.stdout.txt$SUFFIX" >/dev/null
 
