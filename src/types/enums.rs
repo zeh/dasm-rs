@@ -159,3 +159,16 @@ pub enum BitOrder {
 	#[default]
 	MostLeast, // msb, lsb
 }
+
+// In original C code, used for "Processor" but without a clear enum\
+// The enum values are... creative.
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum Processors {
+	None = 0,
+	MOS_6502 = 6502,
+	MOTOROLA_6803 = 6803,
+	HD_6303 = 6303,
+	MOTOROLA_68705 = 68705,
+	MOTOROLA_68HC11 = 6811,
+	FAIRCHILD_F8 = 0xf8,
+}

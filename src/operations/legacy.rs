@@ -16,6 +16,7 @@ use crate::types::enums::{
     BitOrder,
     Format,
     ListMode,
+    Processors,
 };
 use crate::types::structs::{
     Segment,
@@ -100,8 +101,6 @@ extern "C" {
     static mut Opsize: [libc::c_uint; 0];
     #[no_mangle]
     static mut Mlevel: libc::c_uint;
-    #[no_mangle]
-    static mut Processor: libc::c_ulong;
     #[no_mangle]
     static mut CheckSum: libc::c_ulong;
     #[no_mangle]
@@ -295,64 +294,63 @@ pub struct _SYMBOL {
 #[no_mangle]
 pub unsafe extern "C" fn v_processor(mut str: *mut libc::c_char,
                                      mut _dummy: *mut _MNE) {
-    static mut bCalled: bool = false;
-    let mut PreviousProcessor: libc::c_ulong = Processor;
-    Processor = 0;
-    if strcmp(str, b"6502\x00" as *const u8 as *const libc::c_char) ==
-           0 {
-        if !bCalled {
-            addhashtable(Mne6502.as_mut_ptr());
+    // FIXME: this is a bit dumb and shouldn't be needed. Check if a processor exists only.
+    static mut called: bool = false;
+    let mut previousProcessor: Processors = state.execution.processor;
+    state.execution.processor = Processors::None;
+    let processorName = transient::str_pointer_to_string(str);
+    match processorName.as_str() {
+        "6502" => {
+            if !called {
+                addhashtable(Mne6502.as_mut_ptr());
+            }
+            state.execution.bitOrder = BitOrder::LeastMost;
+            state.execution.processor = Processors::MOS_6502;
+        },
+        "6803" => {
+            if !called {
+                addhashtable(Mne6803.as_mut_ptr());
+            }
+            state.execution.bitOrder = BitOrder::MostLeast;
+            state.execution.processor = Processors::MOTOROLA_6803;
+        },
+        "HD6303" | "hd6303" => {
+            if !called {
+                addhashtable(Mne6803.as_mut_ptr());
+                addhashtable(MneHD6303.as_mut_ptr());
+            }
+            state.execution.bitOrder = BitOrder::MostLeast;
+            state.execution.processor = Processors::HD_6303;
+        },
+        "68705" => {
+            if !called {
+                addhashtable(Mne68705.as_mut_ptr());
+            }
+            state.execution.bitOrder = BitOrder::MostLeast;
+            state.execution.processor = Processors::MOTOROLA_68705;
+        },
+        "68HC11" | "68hc11" => {
+            if !called {
+                addhashtable(Mne68HC11.as_mut_ptr());
+            }
+            state.execution.bitOrder = BitOrder::MostLeast;
+            state.execution.processor = Processors::MOTOROLA_68HC11;
+        },
+        "F8" | "f8" => {
+            if !called {
+                addhashtable(MneF8.as_mut_ptr());
+            }
+            state.execution.bitOrder = BitOrder::MostLeast;
+            state.execution.processor = Processors::FAIRCHILD_F8;
+        },
+        _ => {
+            asmerr(AsmErrorEquates::ProcessorNotSupported, true, str);
         }
-        state.execution.bitOrder = BitOrder::LeastMost;
-        Processor = 6502 as libc::c_int as libc::c_ulong
     }
-    if strcmp(str, b"6803\x00" as *const u8 as *const libc::c_char) ==
-           0 {
-        if !bCalled { addhashtable(Mne6803.as_mut_ptr()); }
-        state.execution.bitOrder = BitOrder::MostLeast;
-        Processor = 6803 as libc::c_int as libc::c_ulong
-    }
-    if strcmp(str, b"HD6303\x00" as *const u8 as *const libc::c_char) ==
-           0 ||
-           strcmp(str, b"hd6303\x00" as *const u8 as *const libc::c_char) ==
-               0 {
-        if !bCalled {
-            addhashtable(Mne6803.as_mut_ptr());
-            addhashtable(MneHD6303.as_mut_ptr());
-        }
-        state.execution.bitOrder = BitOrder::MostLeast;
-        Processor = 6303 as libc::c_int as libc::c_ulong
-    }
-    if strcmp(str, b"68705\x00" as *const u8 as *const libc::c_char) ==
-           0 {
-        if !bCalled { addhashtable(Mne68705.as_mut_ptr()); }
-        state.execution.bitOrder = BitOrder::MostLeast;
-        Processor = 68705 as libc::c_int as libc::c_ulong
-    }
-    if strcmp(str, b"68HC11\x00" as *const u8 as *const libc::c_char) ==
-           0 ||
-           strcmp(str, b"68hc11\x00" as *const u8 as *const libc::c_char) ==
-               0 {
-        if !bCalled { addhashtable(Mne68HC11.as_mut_ptr()); }
-        state.execution.bitOrder = BitOrder::MostLeast;
-        Processor = 6811 as libc::c_int as libc::c_ulong
-    }
-    if strcmp(str, b"F8\x00" as *const u8 as *const libc::c_char) ==
-           0 ||
-           strcmp(str, b"f8\x00" as *const u8 as *const libc::c_char) ==
-               0 {
-        if !bCalled { addhashtable(MneF8.as_mut_ptr()); }
-        state.execution.bitOrder = BitOrder::MostLeast;
-        Processor = 0xf8 as libc::c_int as libc::c_ulong
-    }
-    bCalled = true;
-    if Processor == 0 {
-        asmerr(AsmErrorEquates::ProcessorNotSupported,
-               true, str);
-    }
-    if PreviousProcessor != 0 && Processor != PreviousProcessor {
-        asmerr(AsmErrorEquates::OnlyOneProcessorSupported,
-               true, str);
+
+    called = true;
+    if previousProcessor != Processors::None && state.execution.processor != previousProcessor {
+        asmerr(AsmErrorEquates::OnlyOneProcessorSupported, true, str);
     };
 }
 #[no_mangle]

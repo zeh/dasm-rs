@@ -13,6 +13,7 @@ use crate::types::enums::{
 	Format,
 	ErrorFormat,
 	ListMode,
+	Processors,
 	SortMode,
 	Verbosity,
 };
@@ -69,6 +70,7 @@ pub struct ExecutionState {
 	pub listMode: ListMode,
 	pub modeNext: AddressModes,
 	pub pass: u8,
+	pub processor: Processors,
 	pub redoEval: i32,
 	pub redoIf: u64,
 	pub redoIndex: i32,

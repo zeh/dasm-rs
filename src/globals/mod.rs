@@ -6,6 +6,7 @@ use crate::types::enums::{
 	Format,
     ErrorFormat,
     ListMode,
+    Processors,
     SortMode,
     Verbosity,
 };
@@ -51,6 +52,7 @@ pub static mut state: GlobalState = GlobalState {
         listMode: ListMode::List,
         modeNext: AddressModes::Imp,
         pass: 0,
+        processor: Processors::None,
         redoEval: 0,
         redoIf: 0,
         redoIndex: 0,

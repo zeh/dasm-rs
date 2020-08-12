@@ -226,8 +226,6 @@ pub static mut Localdollarindex: libc::c_ulong = 0;
 #[no_mangle]
 pub static mut Lastlocaldollarindex: libc::c_ulong = 0;
 #[no_mangle]
-pub static mut Processor: libc::c_ulong = 0;
-#[no_mangle]
 pub static mut CheckSum: libc::c_ulong = 0;
 /*	output data checksum		*/
 #[no_mangle]
