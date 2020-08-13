@@ -13,7 +13,9 @@
 #![register_tool(c2rust)]
 
 #[macro_use]
+
 extern crate smart_default;
+extern crate lazy_static;
 
 use libc;
 use std::convert::TryFrom;
@@ -33,12 +35,12 @@ use constants::{
     DASM_ID,
     MAX_LINES,
     MAX_SYMBOLS,
-    S_HASH_SIZE,
 };
 use globals::state;
 use types::flags:: {
     ReasonCodes,
     SegmentTypes,
+    SymbolTypes,
 };
 use types::enums::{
     AddressModes,
@@ -53,12 +55,17 @@ use types::structs::{
     Segment,
 };
 use utils::{
+    comparing,
     filesystem,
     find_error_definition,
     formatting,
     hash_string,
     panic,
     transient,
+};
+use symbols::{
+    clear_references,
+    list_unresolved_symbols,
 };
 
 extern "C" {
@@ -131,8 +138,6 @@ extern "C" {
     #[no_mangle]
     fn qsort(__base: *mut libc::c_void, __nmemb: size_t, __size: size_t,
              __compar: __compar_fn_t);
-    #[no_mangle]
-    static mut SHash: [*mut _SYMBOL; 0];
     #[no_mangle]
     static mut MHash: [*mut _MNE; 0];
     #[no_mangle]
@@ -353,194 +358,60 @@ pub static mut passbuffer: [*mut libc::c_char; 2] =
 pub static mut Extstr: *mut libc::c_char =
     0 as *const libc::c_char as *mut libc::c_char;
 /*unsigned char     Listing = 1;*/
-unsafe extern "C" fn CountUnresolvedSymbols() -> libc::c_int {
-    let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut nUnresolved: libc::c_int = 0;
-    let mut i: libc::c_int = 0;
-    /* Pre-count unresolved symbols */
-    i = 0;
-    while i < S_HASH_SIZE as libc::c_int {
-        sym = *SHash.as_mut_ptr().offset(i as isize);
-        while !sym.is_null() {
-            if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
-                nUnresolved += 1
-            }
-            sym = (*sym).next
-        }
-        i += 1
-    }
-    return nUnresolved;
-}
-unsafe extern "C" fn ShowUnresolvedSymbols() -> libc::c_int {
-    let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut i: libc::c_int = 0;
-    let mut nUnresolved: libc::c_int = CountUnresolvedSymbols();
-    if nUnresolved != 0 {
-        println!("--- Unresolved Symbol List");
-        /* Display unresolved symbols */
-        i = 0;
-        while i < S_HASH_SIZE as libc::c_int {
-            sym = *SHash.as_mut_ptr().offset(i as isize);
-            while !sym.is_null() {
-                if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
-                    println!("{:24} {}",
-                        transient::str_pointer_to_string((*sym).name),
-                        formatting::segment_address_to_string((*sym).value as u64, (*sym).flags),
-                    );
-                }
-                sym = (*sym).next
-            }
-            i += 1
-        }
-        println!("--- {} Unresolved Symbol{}\n",
-            nUnresolved,
-            if nUnresolved == 1 {
-                " "
-            } else {
-                "s"
-            }
-        );
-    }
-    return nUnresolved;
-}
-unsafe extern "C" fn CompareAlpha(mut arg1: *const libc::c_void,
-                                  mut arg2: *const libc::c_void)
- -> libc::c_int {
-    /* Simple alphabetic ordering comparison function for quicksort */
-    let mut sym1: *const _SYMBOL = *(arg1 as *const *mut _SYMBOL);
-    let mut sym2: *const _SYMBOL = *(arg2 as *const *mut _SYMBOL);
-    /*
-       The cast above is wild, thank goodness the Linux man page
-       for qsort(3) has an example explaining it... :-) [phf]
-
-       TODO: Note that we compare labels case-insensitive here which
-       is not quite right; I believe we should be case-sensitive as
-       in other contexts where symbols (labels) are compared. But
-       the old CompareAlpha() was case-insensitive as well, so I
-       didn't want to change that right now... [phf]
-    */
-    return strcasecmp((*sym1).name, (*sym2).name);
-}
-unsafe extern "C" fn CompareAddress(mut arg1: *const libc::c_void,
-                                    mut arg2: *const libc::c_void)
- -> libc::c_int {
-    /* Simple numeric ordering comparison function for quicksort */
-    let mut sym1: *const _SYMBOL = *(arg1 as *const *mut _SYMBOL);
-    let mut sym2: *const _SYMBOL = *(arg2 as *const *mut _SYMBOL);
-    return ((*sym1).value - (*sym2).value) as libc::c_int;
-}
 /* bTableSort true -> by address, false -> by name [phf] */
 unsafe extern "C" fn ShowSymbols(mut file: *mut FILE, sorted: bool) {
+    let st = &mut state.lock().unwrap();
+
     /* Display sorted (!) symbol table - if it runs out of memory, table will be displayed unsorted */
-    let mut symArray: *mut *mut _SYMBOL = 0 as *mut *mut _SYMBOL;
-    let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut i: libc::c_int = 0;
-    let mut nSymbols: libc::c_int = 0;
     fprintf(file, b"--- Symbol List\x00" as *const u8 as *const libc::c_char);
-    /* Sort the symbol list either via name, or by value */
-    /* First count the number of symbols */
-    i = 0;
-    while i < S_HASH_SIZE as libc::c_int {
-        sym = *SHash.as_mut_ptr().offset(i as isize);
-        while !sym.is_null() { nSymbols += 1; sym = (*sym).next }
-        i += 1
-    }
-    /* Malloc an array of pointers to data */
-    symArray =
-        ckmalloc((::std::mem::size_of::<*mut _SYMBOL>() as
-                      libc::c_ulong).wrapping_mul(nSymbols as libc::c_ulong)
-                     as libc::c_int) as *mut *mut _SYMBOL;
-    if symArray.is_null() {
-        fprintf(file,
-                b" (unsorted - not enough memory to sort!)\n\x00" as *const u8
-                    as *const libc::c_char);
-        /* Display complete symbol table */
-        i = 0;
-        while i < S_HASH_SIZE as libc::c_int {
-            sym = *SHash.as_mut_ptr().offset(i as isize);
-            while !sym.is_null() {
-                fprintf(file,
-                        b"%-24s %s\n\x00" as *const u8 as *const libc::c_char,
-                        (*sym).name,
-                        sftos((*sym).value, (*sym).flags as libc::c_int));
-                sym = (*sym).next
-            }
-            i += 1
-        }
+
+    let allSymbols = &mut st.execution.symbols;
+
+    // Create a list of pointers to data
+    let orderedSymbols = &mut allSymbols.iter_mut().enumerate().map(|(i, _)| i).collect::<Vec<usize>>();
+
+    // Sort it as needed
+    if sorted {
+        // Sort via address
+        fprintf(file, b" (sorted by address)\n\x00" as *const u8 as *const libc::c_char);
+        orderedSymbols.sort_by(|a, b| comparing::compare_address(allSymbols[*a].value, allSymbols[*b].value));
     } else {
-        /* Copy the element pointers into the symbol array */
-        let mut nPtr: libc::c_int = 0;
-        i = 0;
-        while i < S_HASH_SIZE as libc::c_int {
-            sym = *SHash.as_mut_ptr().offset(i as isize);
-            while !sym.is_null() {
-                let fresh0 = nPtr;
-                nPtr = nPtr + 1;
-                let ref mut fresh1 = *symArray.offset(fresh0 as isize);
-                *fresh1 = sym;
-                sym = (*sym).next
-            }
-            i += 1
-        }
-        if sorted {
-            // Sort via address
-            fprintf(file, b" (sorted by address)\n\x00" as *const u8 as *const libc::c_char);
-            qsort(
-                symArray as *mut libc::c_void,
-                nPtr as size_t,
-                ::std::mem::size_of::<*mut _SYMBOL>() as libc::c_ulong,
-                Some(
-                    CompareAddress as unsafe extern "C" fn(
-                        _: *const libc::c_void,
-                        _: *const libc::c_void
-                    ) -> libc::c_int
-                )
-            );
-        } else {
-            // Sort via name
-            fprintf(file, b" (sorted by symbol)\n\x00" as *const u8 as *const libc::c_char);
-            qsort(
-                symArray as *mut libc::c_void,
-                nPtr as size_t,
-                ::std::mem::size_of::<*mut _SYMBOL>() as libc::c_ulong,
-                Some(
-                    CompareAlpha as unsafe extern "C" fn(
-                        _: *const libc::c_void,
-                        _: *const libc::c_void
-                    ) -> libc::c_int
-                )
-            );
-        }
-        /* now display sorted list */
-        i = 0; /* If a string, display actual string */
-        while i < nPtr {
-            fprintf(file,
-                    b"%-24s %-12s\x00" as *const u8 as *const libc::c_char,
-                    (**symArray.offset(i as isize)).name,
-                    sftos((**symArray.offset(i as isize)).value,
-                          (**symArray.offset(i as isize)).flags as
-                              libc::c_int));
-            if (**symArray.offset(i as isize)).flags as libc::c_int &
-                   0x8 as libc::c_int != 0 {
-                fprintf(file,
-                        b" \"%s\"\x00" as *const u8 as *const libc::c_char,
-                        (**symArray.offset(i as isize)).string);
-            }
-            fprintf(file, b"\n\x00" as *const u8 as *const libc::c_char);
-            i += 1
-        }
-        free(symArray as *mut libc::c_void);
+        // Sort via name
+        fprintf(file, b" (sorted by symbol)\n\x00" as *const u8 as *const libc::c_char);
+        orderedSymbols.sort_by(|a, b| comparing::compare_alpha(allSymbols[*a].name.as_str(), allSymbols[*b].name.as_str()));
     }
-    fputs(b"--- End of Symbol List.\n\x00" as *const u8 as
-              *const libc::c_char, file);
+
+    // Display sorted list
+    for symbol in allSymbols {
+        fprintf(
+            file,
+            b"%-24s %-12s\x00" as *const u8 as *const libc::c_char,
+            // FIXME: replace, or extract to new function
+            std::ffi::CString::new(symbol.name.as_str()).expect("Failed to convert string into CString.").into_raw(),
+            formatting::segment_address_to_string(symbol.value, symbol.flags)
+        );
+        if symbol.flags & SymbolTypes::StringResult != 0 {
+            fprintf(
+                file,
+                b" \"%s\"\x00" as *const u8 as *const libc::c_char,
+                // FIXME: replace, or extract to new function
+                std::ffi::CString::new(symbol.string.as_str()).expect("Failed to convert string into CString.").into_raw(),
+            );
+        }
+        fprintf(file, b"\n\x00" as *const u8 as *const libc::c_char);
+    }
+
+    fputs(b"--- End of Symbol List.\n\x00" as *const u8 as *const libc::c_char, file);
 }
 unsafe extern "C" fn ShowSegments() {
+    let st = &mut state.lock().unwrap();
+
     println!("\n----------------------------------------------------------------------");
     println!(
         "{:24} {:3} {:8} {:8} {:8} {:8}",
         "SEGMENT NAME", "", "INIT PC", "INIT RPC", "FINAL PC", "FINAL RPC",
     );
-    for seg in &state.other.segments {
+    for seg in &st.other.segments {
         let bss = if seg.flags & SegmentTypes::BSS != 0 {
             "[u]"
         } else {
@@ -559,79 +430,82 @@ unsafe extern "C" fn ShowSegments() {
         );
     }
     println!("----------------------------------------------------------------------");
-    println!("{} references to unknown symbols.", state.execution.redoEval);
-    println!("{} events requiring another assembler pass.", state.execution.redoIndex);
+    println!("{} references to unknown symbols.", st.execution.redoEval);
+    println!("{} events requiring another assembler pass.", st.execution.redoIndex);
 
     // FIXME: rewrite more succinctly
-    if state.execution.redoWhy != 0 {
-        if state.execution.redoWhy & ReasonCodes::MnemonicNotResolved != 0 {
+    if st.execution.redoWhy != 0 {
+        if st.execution.redoWhy & ReasonCodes::MnemonicNotResolved != 0 {
             println!(" - Expression in mnemonic not resolved.");
         }
-        if state.execution.redoWhy & ReasonCodes::Obscure != 0 {
+        if st.execution.redoWhy & ReasonCodes::Obscure != 0 {
             println!(" - Obscure reason - to be documented :)");
         }
-        if state.execution.redoWhy & ReasonCodes::DCNotResolved != 0 {
+        if st.execution.redoWhy & ReasonCodes::DCNotResolved != 0 {
             println!(" - Expression in a DC not resolved.");
         }
-        if state.execution.redoWhy & ReasonCodes::DVNotResolvedProbably != 0 {
+        if st.execution.redoWhy & ReasonCodes::DVNotResolvedProbably != 0 {
             println!(" - Expression in a DV not resolved (probably in DV\'s EQM symbol).");
         }
-        if state.execution.redoWhy & ReasonCodes::DVNotResolvedCould != 0 {
+        if st.execution.redoWhy & ReasonCodes::DVNotResolvedCould != 0 {
             println!(" - Expression in a DV not resolved (could be in DV\'s EQM symbol).");
         }
-        if state.execution.redoWhy & ReasonCodes::DSNotResolved != 0 {
+        if st.execution.redoWhy & ReasonCodes::DSNotResolved != 0 {
             println!(" - Expression in a DS not resolved.");
         }
-        if state.execution.redoWhy & ReasonCodes::AlignNotResolved != 0 {
+        if st.execution.redoWhy & ReasonCodes::AlignNotResolved != 0 {
             println!(" - Expression in an ALIGN not resolved.");
         }
-        if state.execution.redoWhy & ReasonCodes::AlignRelocatableOriginNotKnown != 0 {
+        if st.execution.redoWhy & ReasonCodes::AlignRelocatableOriginNotKnown != 0 {
             println!(" - ALIGN: Relocatable origin not known (if in RORG at the time).");
         }
-        if state.execution.redoWhy & ReasonCodes::AlignNormalOriginNotKnown != 0 {
+        if st.execution.redoWhy & ReasonCodes::AlignNormalOriginNotKnown != 0 {
             println!(" - ALIGN: Normal origin not known (if in ORG at the time).");
         }
-        if state.execution.redoWhy & ReasonCodes::EquNotResolved != 0 {
+        if st.execution.redoWhy & ReasonCodes::EquNotResolved != 0 {
             println!(" - EQU: Expression not resolved.");
         }
-        if state.execution.redoWhy & ReasonCodes::EquValueMismatch != 0 {
+        if st.execution.redoWhy & ReasonCodes::EquValueMismatch != 0 {
             println!(" - EQU: Value mismatch from previous pass (phase error).");
         }
-        if state.execution.redoWhy & ReasonCodes::IfNotResolved != 0 {
+        if st.execution.redoWhy & ReasonCodes::IfNotResolved != 0 {
             println!(" - IF: Expression not resolved.");
         }
-        if state.execution.redoWhy & ReasonCodes::RepeatNotResolved != 0 {
+        if st.execution.redoWhy & ReasonCodes::RepeatNotResolved != 0 {
             println!(" - REPEAT: Expression not resolved.");
         }
-        if state.execution.redoWhy & ReasonCodes::ForwardReference != 0 {
+        if st.execution.redoWhy & ReasonCodes::ForwardReference != 0 {
             println!(" - Label defined after it has been referenced (forward reference).");
         }
-        if state.execution.redoWhy & ReasonCodes::PhaseError != 0 {
+        if st.execution.redoWhy & ReasonCodes::PhaseError != 0 {
             println!(" - Label value is different from that of the previous pass (phase error).");
         }
-        if state.execution.redoWhy & ReasonCodes::BranchOutOfRange != 0 {
+        if st.execution.redoWhy & ReasonCodes::BranchOutOfRange != 0 {
             println!(" - Branch was out of range.");
         }
     }
     println!();
 }
 unsafe extern "C" fn DumpSymbolTable(sorted: bool) {
-    if !state.parameters.symbolsFile.is_empty() {
+    let st = &mut state.lock().unwrap();
+
+    if !st.parameters.symbolsFile.is_empty() {
         // FIXME: replace this with correct file reference
-        let mut symfile = state.parameters.symbolsFile.clone();
+        let mut symfile = st.parameters.symbolsFile.clone();
         symfile.push_str("\x00");
         let mut fi: *mut FILE = fopen(symfile.as_ptr() as *const i8, b"w\x00" as *const u8 as *const libc::c_char);
         if !fi.is_null() {
             ShowSymbols(fi, sorted);
             fclose(fi);
         } else {
-            println!("Warning: Unable to open Symbol Dump file '{}'", state.parameters.symbolsFile);
+            println!("Warning: Unable to open Symbol Dump file '{}'", st.parameters.symbolsFile);
         }
     };
 }
 unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                                 mut av: *mut *mut libc::c_char,
                                 mut pbTableSort: *mut bool) -> AsmErrorEquates {
+    let st = &mut state.lock().unwrap();
     let mut current_block: u64;
     let mut nError: AsmErrorEquates = AsmErrorEquates::None;
     let mut doAllPasses: bool = false;
@@ -642,7 +516,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
     let mut oldRedoWhy: u64 = 0;
     let mut oldRedoEval: i32 = 0;
     addhashtable(Ops.as_mut_ptr());
-    state.execution.pass = 1;
+    st.execution.pass = 1;
     if !(ac < 2) {
         i = 2;
         loop  {
@@ -668,7 +542,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     match str_rs.parse::<u8>() {
                         Ok(digit) => {
                             match ErrorFormat::try_from(digit) {
-                                Ok(result) => { state.parameters.errorFormat = result; }
+                                Ok(result) => { st.parameters.errorFormat = result; }
                                 Err(_) => { panic("Invalid error format for -E, must be 0, 1, 2"); }
                             }
                         }
@@ -681,22 +555,22 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     match str_rs.parse::<u8>() {
                         Ok(digit) => {
                             match SortMode::try_from(digit) {
-                                Ok(result) => { state.parameters.sortMode = result; }
+                                Ok(result) => { st.parameters.sortMode = result; }
                                 Err(_) => { panic("Invalid sorting mode for -T option, must be 0 or 1"); }
                             }
                         }
                         Err(_) => { panic("Invalid sorting mode for -T option, must be 0 or 1"); }
                     }
-                    *pbTableSort = state.parameters.sortMode != SortMode::default();
+                    *pbTableSort = st.parameters.sortMode != SortMode::default();
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
                 'd' => {
-                    state.parameters.debug = strtol(
+                    st.parameters.debug = strtol(
                         str,
                         0 as *mut libc::c_void as *mut *mut libc::c_char,
                         10
                     ) as libc::c_int != 0;
-                    println!("Debug trace {}", if state.parameters.debug { "ON" } else { "OFF" });
+                    println!("Debug trace {}", if st.parameters.debug { "ON" } else { "OFF" });
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
                 'M' | 'D' => {
@@ -723,7 +597,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     match str_rs.parse::<u8>() {
                         Ok(digit) => {
                             match Format::try_from(digit) {
-                                Ok(result) => { state.parameters.format = result; }
+                                Ok(result) => { st.parameters.format = result; }
                                 Err(_) => { panic("Illegal format specification"); }
                             }
                         }
@@ -736,7 +610,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     current_block = 15042310719884093888; // FIXME: remove this
                 }
                 'L' => {
-                    state.parameters.listAllPasses = true;
+                    st.parameters.listAllPasses = true;
                     current_block = 14976246946730902058; // FIXME: remove this
                 }
                 'l' => {
@@ -754,7 +628,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     current_block = 3124391281584211484; // FIXME: remove this
                 }
                 's' => {
-                    state.parameters.symbolsFile = transient::str_pointer_to_string(str);
+                    st.parameters.symbolsFile = transient::str_pointer_to_string(str);
                     current_block = 15042310719884093888; // FIXME: remove this
                 }
                 'v' => {
@@ -762,7 +636,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     match str_rs.parse::<u8>() {
                         Ok(digit) => {
                             match Verbosity::try_from(digit) {
-                                Ok(result) => { state.parameters.verbosity = result; }
+                                Ok(result) => { st.parameters.verbosity = result; }
                                 Err(_) => { panic("Illegal verbosity specification"); }
                             }
                         }
@@ -775,7 +649,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
                 'S' => {
-                    state.parameters.strictMode = true;
+                    st.parameters.strictMode = true;
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
                 _ => { current_block = 15878785573848117940; break ; }
@@ -785,14 +659,14 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                 /* fall through to 'l' */
                 /*  F_listfile  */
                 {
-                    state.parameters.listFile = transient::str_pointer_to_string(str);
+                    st.parameters.listFile = transient::str_pointer_to_string(str);
                     current_block = 15042310719884093888;
                 }
                 3124391281584211484 =>
                 /* fall through to 'p' */
                 /*  F_passes   */
                 {
-                    state.parameters.maxPasses =
+                    st.parameters.maxPasses =
                         strtol(
                             str,
                             0 as *mut libc::c_void as *mut *mut libc::c_char,
@@ -827,9 +701,9 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     initorg: 0,
                     initrorg: 0,
                 };
-                state.other.segments.clear();
-                state.other.segments.push(seg);
-                state.other.currentSegment = 0;
+                st.other.segments.clear();
+                st.other.segments.push(seg);
+                st.other.currentSegment = 0;
                 /*    TOP LEVEL IF    */
                 let mut ifs: *mut _IFSTACK =
                     zmalloc(::std::mem::size_of::<_IFSTACK>() as libc::c_ulong
@@ -843,9 +717,9 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                 passbuffer_clear(0);
                 passbuffer_clear(1);
                 loop  {
-                    if state.parameters.verbosity != Verbosity::None {
+                    if st.parameters.verbosity != Verbosity::None {
                         println!();
-                        println!("START OF PASS: {}", state.execution.pass);
+                        println!("START OF PASS: {}", st.execution.pass);
                     }
                     Lastlocalindex = 0;
                     Localindex = Lastlocalindex;
@@ -856,20 +730,20 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                         fopen(F_outfile,
                               b"wb\x00" as *const u8 as *const libc::c_char);
                     /*_fmode = 0;*/
-                    state.execution.isClear = true;
+                    st.execution.isClear = true;
                     CheckSum = 0;
                     if FI_temp.is_null() {
                         println!("Warning: Unable to [re]open '{}'", transient::str_pointer_to_string(F_outfile));
                         return AsmErrorEquates::FileError
                     }
-                    if !state.parameters.listFile.is_empty() {
-                        let fileOption = filesystem::create_new_file(state.parameters.listFile.as_str());
+                    if !st.parameters.listFile.is_empty() {
+                        let fileOption = filesystem::create_new_file(st.parameters.listFile.as_str());
                         match fileOption {
                             Ok(file) => {
-                                state.output.listFile = Some(file);
+                                st.output.listFile = Some(file);
                             },
                             _ => {
-                                println!("Warning: Unable to [re]open '{}'", state.parameters.listFile);
+                                println!("Warning: Unable to [re]open '{}'", st.parameters.listFile);
                                 return AsmErrorEquates::FileError
                             },
                         }
@@ -904,7 +778,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                                             (*pIncfile).fi).is_null() {
                                 break ;
                             }
-                            if state.parameters.debug {
+                            if st.parameters.debug {
                                 printf(b"%08lx %s\n\x00" as *const u8 as
                                            *const libc::c_char,
                                        pIncfile as libc::c_ulong,
@@ -953,7 +827,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                                               0 {
                                 programlabel();
                             }
-                            if !state.parameters.listFile.is_empty() && state.execution.listMode != ListMode::None {
+                            if !st.parameters.listFile.is_empty() && st.execution.listMode != ListMode::None {
                                 outlistfile(comment);
                             }
                         }
@@ -972,18 +846,18 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                         }
                         fclose((*pIncfile).fi);
                         free((*pIncfile).name as *mut libc::c_void);
-                        state.other.incLevel -= 1;
+                        st.other.incLevel -= 1;
                         rmnode(&mut pIncfile as *mut *mut _INCFILE as
                                    *mut *mut libc::c_void,
                                ::std::mem::size_of::<_INCFILE>() as
                                    libc::c_ulong as libc::c_int);
                         if !pIncfile.is_null() {
                             /*
-        if (state.parameters.verbosity as u8 > 1)
+        if (st.parameters.verbosity as u8 > 1)
         printf("back to: %s\n", Incfile->name);
             */
                             filesystem::writeln_to_file_maybe(
-                                &mut state.output.listFile,
+                                st.output.listFile,
                                 format!(
                                     "------- FILE {}",
                                     transient::str_pointer_to_string((*pIncfile).name),
@@ -991,52 +865,52 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                             );
                         }
                     }
-                    if state.parameters.verbosity as u8 >= Verbosity::One as u8 {
+                    if st.parameters.verbosity as u8 >= Verbosity::One as u8 {
                         ShowSegments();
                     }
-                    if state.parameters.verbosity as u8  >= Verbosity::Three as u8  {
-                        if state.execution.redoIndex == 0 || state.parameters.verbosity as u8  >= Verbosity::Four as u8 {
+                    if st.parameters.verbosity as u8  >= Verbosity::Three as u8  {
+                        if st.execution.redoIndex == 0 || st.parameters.verbosity as u8  >= Verbosity::Four as u8 {
                             ShowSymbols(stdout, *pbTableSort);
                         }
-                        ShowUnresolvedSymbols();
+                        println!("{}", list_unresolved_symbols());
                     }
                     closegenerate();
                     fclose(FI_temp);
-                    filesystem::close_file_maybe(&mut state.output.listFile);
-                    if state.execution.redoIndex != 0 {
+                    filesystem::close_file_maybe(st.output.listFile);
+                    if st.execution.redoIndex != 0 {
                         if !doAllPasses {
-                            if state.execution.redoIndex == oldRedoIndex && state.execution.redoWhy == oldRedoWhy &&
-                                state.execution.redoEval == oldRedoEval {
-                                ShowUnresolvedSymbols();
+                            if st.execution.redoIndex == oldRedoIndex && st.execution.redoWhy == oldRedoWhy &&
+                                st.execution.redoEval == oldRedoEval {
+                                    println!("{}", list_unresolved_symbols());
                                 return AsmErrorEquates::NotResolvable
                             }
                         }
-                        oldRedoIndex = state.execution.redoIndex;
-                        oldRedoWhy = state.execution.redoWhy;
-                        oldRedoEval = state.execution.redoEval;
-                        state.execution.redoIndex = 0;
-                        state.execution.redoWhy = 0;
-                        state.execution.redoEval = 0;
-                        state.execution.redoIf <<= 1;
-                        state.execution.pass += 1;
-                        if state.execution.pass > state.parameters.maxPasses {
+                        oldRedoIndex = st.execution.redoIndex;
+                        oldRedoWhy = st.execution.redoWhy;
+                        oldRedoEval = st.execution.redoEval;
+                        st.execution.redoIndex = 0;
+                        st.execution.redoWhy = 0;
+                        st.execution.redoEval = 0;
+                        st.execution.redoIf <<= 1;
+                        st.execution.pass += 1;
+                        if st.execution.pass > st.parameters.maxPasses {
                             let mut sBuffer: [libc::c_char; 64] = [0; 64];
                             sprintf(
                                 sBuffer.as_mut_ptr(),
                                 b"%d\x00" as *const u8 as *const libc::c_char,
-                                state.execution.pass as i32
+                                st.execution.pass as i32
                             );
                             return asmerr(AsmErrorEquates::TooManyPasses, false, sBuffer.as_mut_ptr());
                         } else {
                             passbuffer_clear(0);
                             passbuffer_clear(1);
-                            clearrefs();
+                            clear_references();
                             clearsegs();
                         }
                     } else {
                         // Do not print any errors if assembly is successful!!!!! -FXQ
     // only print messages from last pass and if there's no errors
-                        if !state.other.stopAtEnd {
+                        if !st.other.stopAtEnd {
                             passbuffer_output(1);
                         } else {
                             // Only print errors if assembly is unsuccessful!!!!!
@@ -1145,6 +1019,7 @@ unsafe extern "C" fn tabit(mut buf1: *mut libc::c_char,
     return bp.wrapping_offset_from(buf2) as libc::c_long as libc::c_int;
 }
 unsafe extern "C" fn outlistfile(mut comment: *const libc::c_char) {
+    let st = &mut state.lock().unwrap();
     let mut xtrue: libc::c_char = 0;
     let mut c: libc::c_char = 0;
     static mut buf1: [libc::c_char; MAX_LINES + 32] = [0; MAX_LINES + 32];
@@ -1179,14 +1054,14 @@ unsafe extern "C" fn outlistfile(mut comment: *const libc::c_char) {
     );
     j = strlen(buf1.as_mut_ptr()) as usize;
     i = 0;
-    while i < state.output.generatedLength && i < 4 {
+    while i < st.output.generatedLength && i < 4 {
         sprintf(buf1.as_mut_ptr().offset(j as isize),
                 b"%02x \x00" as *const u8 as *const libc::c_char,
-                state.output.generated[i] as libc::c_int);
+                st.output.generated[i] as libc::c_int);
         i += 1;
         j += 3;
     }
-    if i < state.output.generatedLength && i == 4 {
+    if i < st.output.generatedLength && i == 4 {
         xtrue = '*' as i32 as libc::c_char
     }
     while i < 4 {
@@ -1220,10 +1095,10 @@ unsafe extern "C" fn outlistfile(mut comment: *const libc::c_char) {
     let len = tabit(buf1.as_mut_ptr(), buf2.as_mut_ptr()) as usize;
     let vec = buf2.to_vec()[0..len].iter().map(|&x| x as u8).collect::<Vec<_>>();
     filesystem::write_buffer_to_file_maybe(
-        &mut state.output.listFile,
+        st.output.listFile,
         &vec,
     );
-    state.output.generatedLength = 0;
+    st.output.generatedLength = 0;
     Extstr = 0 as *mut libc::c_char;
 }
 #[no_mangle]
@@ -1272,29 +1147,15 @@ pub unsafe extern "C" fn sftos(mut val: libc::c_long, mut flags: libc::c_int)
 }
 #[no_mangle]
 pub unsafe extern "C" fn clearsegs() {
-    for seg in &mut state.other.segments {
+    let st = &mut state.lock().unwrap();
+    for seg in &mut st.other.segments {
         seg.flags = (seg.flags & SegmentTypes::BSS) | SegmentTypes::Unknown;
         seg.rflags = SegmentTypes::Unknown;
         seg.initflags = SegmentTypes::Unknown;
         seg.initrflags = SegmentTypes::Unknown;
     }
 }
-#[no_mangle]
-pub unsafe extern "C" fn clearrefs() {
-    let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut i: libc::c_short = 0;
-    i = 0;
-    while (i as libc::c_int) < S_HASH_SIZE as libc::c_int {
-        sym = *SHash.as_mut_ptr().offset(i as isize);
-        while !sym.is_null() {
-            (*sym).flags =
-                ((*sym).flags as libc::c_int & !(0x4 as libc::c_int)) as
-                    libc::c_uchar;
-            sym = (*sym).next
-        }
-        i += 1
-    };
-}
+
 /*
    replace old atoi() calls; I wanted to protect this using
    #ifdef strtol but the C preprocessor doesn't recognize
@@ -1303,6 +1164,7 @@ pub unsafe extern "C" fn clearrefs() {
 */
 unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
  -> *const libc::c_char {
+    let st = &mut state.lock().unwrap();
     let mut str: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut strlist: *mut _STRLIST = 0 as *mut _STRLIST;
     let mut arg: libc::c_int = 0;
@@ -1350,7 +1212,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
             }
             123 => {
                 if !bDisable {
-                    if state.parameters.debug {
+                    if st.parameters.debug {
                         printf(b"macro tail: \'%s\'\n\x00" as *const u8 as
                                    *const libc::c_char, str);
                     }
@@ -1371,7 +1233,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
                     } else {
                         add -= 1;
                         str = str.offset(1);
-                        if state.parameters.debug {
+                        if st.parameters.debug {
                             printf(b"add/str: %d \'%s\'\n\x00" as *const u8 as
                                        *const libc::c_char, add, str);
                         }
@@ -1385,7 +1247,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
                                 (add as
                                      libc::c_ulong).wrapping_add(strlen((*strlist).buf.as_mut_ptr()))
                                     as libc::c_int as libc::c_int;
-                            if state.parameters.debug {
+                            if st.parameters.debug {
                                 printf(b"strlist: \'%s\' %zu\n\x00" as
                                            *const u8 as *const libc::c_char,
                                        (*strlist).buf.as_mut_ptr(),
@@ -1400,7 +1262,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
                                                                                   isize)
                                    > buf.offset(MAX_LINES as isize)
                                {
-                                if state.parameters.debug {
+                                if st.parameters.debug {
                                     printf(b"str %8ld buf %8ld (add/strlen(str)): %d %ld\n\x00"
                                                as *const u8 as
                                                *const libc::c_char,
@@ -1477,7 +1339,8 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
 */
 #[no_mangle]
 pub unsafe extern "C" fn findext(mut str: *mut libc::c_char) {
-    state.execution.modeNext = AddressModes::None;
+    let st = &mut state.lock().unwrap();
+    st.execution.modeNext = AddressModes::None;
     Extstr = 0 as *mut libc::c_char;
     if *str.offset(0 as isize) as libc::c_int == '.' as i32 {
         /* Allow .OP for OP */
@@ -1493,36 +1356,36 @@ pub unsafe extern "C" fn findext(mut str: *mut libc::c_char) {
         match *str.offset(0 as isize) as libc::c_int |
                   0x20 as libc::c_int {
             48 | 105 => {
-                state.execution.modeNext = AddressModes::Imp;
+                st.execution.modeNext = AddressModes::Imp;
                 match *str.offset(1 as isize) as libc::c_int | 0x20 as libc::c_int {
-                    120 => { state.execution.modeNext = AddressModes::ZeroX }
-                    121 => { state.execution.modeNext = AddressModes::ZeroY }
-                    110 => { state.execution.modeNext = AddressModes::IndWord }
+                    120 => { st.execution.modeNext = AddressModes::ZeroX }
+                    121 => { st.execution.modeNext = AddressModes::ZeroY }
+                    110 => { st.execution.modeNext = AddressModes::IndWord }
                     _ => { }
                 }
                 return
             }
             100 | 98 | 122 => {
                 match *str.offset(1 as isize) as libc::c_int | 0x20 as libc::c_int {
-                    120 => { state.execution.modeNext = AddressModes::ByteAdrX }
-                    121 => { state.execution.modeNext = AddressModes::ByteAdrY }
-                    105 => { state.execution.modeNext = AddressModes::BitMod }
-                    98 => { state.execution.modeNext = AddressModes::BitBraMod }
-                    _ => { state.execution.modeNext = AddressModes::ByteAdr }
+                    120 => { st.execution.modeNext = AddressModes::ByteAdrX }
+                    121 => { st.execution.modeNext = AddressModes::ByteAdrY }
+                    105 => { st.execution.modeNext = AddressModes::BitMod }
+                    98 => { st.execution.modeNext = AddressModes::BitBraMod }
+                    _ => { st.execution.modeNext = AddressModes::ByteAdr }
                 }
                 return
             }
             101 | 119 | 97 => {
                 match *str.offset(1 as isize) as libc::c_int | 0x20 as libc::c_int {
-                    120 => { state.execution.modeNext = AddressModes::WordAdrX }
-                    121 => { state.execution.modeNext = AddressModes::WordAdrY }
-                    _ => { state.execution.modeNext = AddressModes::WordAdr }
+                    120 => { st.execution.modeNext = AddressModes::WordAdrX }
+                    121 => { st.execution.modeNext = AddressModes::WordAdrY }
+                    _ => { st.execution.modeNext = AddressModes::WordAdr }
                 }
                 return
             }
-            108 => { state.execution.modeNext = AddressModes::Long; return }
-            114 => { state.execution.modeNext = AddressModes::Rel; return }
-            117 => { state.execution.modeNext = AddressModes::BSS; return }
+            108 => { st.execution.modeNext = AddressModes::Long; return }
+            114 => { st.execution.modeNext = AddressModes::Rel; return }
+            117 => { st.execution.modeNext = AddressModes::BSS; return }
             _ => { }
         }
     };
@@ -1779,6 +1642,7 @@ pub unsafe extern "C" fn findmne(mut str: *mut libc::c_char) -> *mut _MNE {
 #[no_mangle]
 pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
                                  mut _dummy: *mut _MNE) {
+    let st = &mut state.lock().unwrap();
     let mut base: *mut _STRLIST =
         0 as *mut _STRLIST; /* slp, mac: might be used uninitialised */
     let mut defined: libc::c_int = 0; /* not really needed */
@@ -1797,7 +1661,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
         defined = 1
     } else {
         defined = (mne != 0 as *mut libc::c_void as *mut _MNE) as libc::c_int;
-        if !state.parameters.listFile.is_empty() && state.execution.listMode != ListMode::None {
+        if !st.parameters.listFile.is_empty() && st.execution.listMode != ListMode::None {
             outlistfile(b"\x00" as *const u8 as *const libc::c_char);
         }
     }
@@ -1818,13 +1682,13 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
                                                           libc::c_ulong) as
                                  libc::c_int), str);
         (*mac).flags = 0x8 as libc::c_int as libc::c_uchar;
-        (*mac).defpass = state.execution.pass as i32;
+        (*mac).defpass = st.execution.pass as i32;
         let ref mut fresh22 = *MHash.as_mut_ptr().offset(i as isize);
         *fresh22 = mac as *mut _MNE
     } else {
         mac = mne as *mut _MACRO;
-        if state.parameters.strictMode && !mac.is_null() &&
-               (*mac).defpass == state.execution.pass as i32 {
+        if st.parameters.strictMode && !mac.is_null() &&
+               (*mac).defpass == st.execution.pass as i32 {
             asmerr(AsmErrorEquates::MacroRepeated, true,
                    str);
         }
@@ -1832,7 +1696,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
     while !fgets(buf.as_mut_ptr(), MAX_LINES as libc::c_int,
                  (*pIncfile).fi).is_null() {
         let mut comment: *const libc::c_char = 0 as *const libc::c_char;
-        if state.parameters.debug {
+        if st.parameters.debug {
             printf(b"%08lx %s\n\x00" as *const u8 as *const libc::c_char,
                    pIncfile as libc::c_ulong, buf.as_mut_ptr());
         }
@@ -1848,7 +1712,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
                 return
             }
         }
-        if skipit == 0 && !state.parameters.listFile.is_empty() && state.execution.listMode != ListMode::None {
+        if skipit == 0 && !st.parameters.listFile.is_empty() && st.execution.listMode != ListMode::None {
             outlistfile(comment);
         }
         if defined == 0 {
@@ -1895,13 +1759,14 @@ pub unsafe extern "C" fn addhashtable(mut mne: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn pushinclude(mut str: *mut libc::c_char) {
+    let st = &mut state.lock().unwrap();
     let mut inf: *mut _INCFILE = 0 as *mut _INCFILE;
     let mut fi: *mut FILE = 0 as *mut FILE;
     fi = pfopen(str, b"rb\x00" as *const u8 as *const libc::c_char);
     if !fi.is_null() {
-        if state.parameters.verbosity as u8 > Verbosity::Two as u8 {
+        if st.parameters.verbosity as u8 > Verbosity::Two as u8 {
             // Originally this had a strange formatting using
-            // "state.other.incLevel * 4" as padding ("%.*s"),
+            // "st.other.incLevel * 4" as padding ("%.*s"),
             // but with no discernible effect since an empty
             // string was passed anyway. This drops all flexible
             // padding in favor of a single space.
@@ -1910,14 +1775,14 @@ pub unsafe extern "C" fn pushinclude(mut str: *mut libc::c_char) {
                 transient::str_pointer_to_string(str).as_str()
             );
         }
-        state.other.incLevel += 1;
+        st.other.incLevel += 1;
         filesystem::writeln_to_file_maybe(
-            &mut state.output.listFile,
+            st.output.listFile,
             format!(
                 "------- FILE {} LEVEL {} PASS {}",
                 transient::str_pointer_to_string(str),
-                state.other.incLevel,
-                state.execution.pass,
+                st.other.incLevel,
+                st.execution.pass,
             ).as_str(),
         );
         inf =
@@ -1937,13 +1802,14 @@ pub unsafe extern "C" fn pushinclude(mut str: *mut libc::c_char) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool, mut sText: *const libc::c_char) -> AsmErrorEquates {
+    let st = &mut state.lock().unwrap();
     let mut errorOutput: String = String::new();
     let mut pincfile: *mut _INCFILE = 0 as *mut _INCFILE;
     /* file pointer we print error messages to */
-    let errorToFile = !state.parameters.listFile.is_empty();
-    let mut errorFile = &mut state.output.listFile;
+    let errorToFile = !st.parameters.listFile.is_empty();
+    let mut errorFile = st.output.listFile;
     if find_error_definition(err).fatal {
-        state.other.stopAtEnd = true
+        st.other.stopAtEnd = true
     }
     pincfile = pIncfile;
     while (*pincfile).flags as libc::c_int & 0x1 as libc::c_int != 0 {
@@ -1959,7 +1825,7 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool, mut 
         eventually I hope... [phf]
     */
     /* print first part of message, different formats offered */
-    match state.parameters.errorFormat {
+    match st.parameters.errorFormat {
         ErrorFormat::Woe => {
             /*
                 Error format for MS VisualStudio and relatives:

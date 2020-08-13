@@ -2,7 +2,6 @@ use libc;
 
 use crate::constants::{
     M_HASH_SIZE,
-    S_HASH_SIZE,
 };
 
 extern "C" {
@@ -190,10 +189,6 @@ pub struct _SYMBOL {
 /*
  *  GLOBALS.C
  */
-#[no_mangle]
-pub static mut SHash: [*mut _SYMBOL; S_HASH_SIZE] =
-    [0 as *const _SYMBOL as *mut _SYMBOL; S_HASH_SIZE];
-/*	symbol hash table   */
 #[no_mangle]
 pub static mut MHash: [*mut _MNE; M_HASH_SIZE] =
     [0 as *const _MNE as *mut _MNE; M_HASH_SIZE];

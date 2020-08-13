@@ -171,8 +171,9 @@ unsafe extern "C" fn f8err(mut err: AsmErrorEquates,
  * emits a one byte opcode.
  */
 unsafe extern "C" fn emit_opcode1(mut opcode: libc::c_uchar) {
-    state.output.generatedLength = 1;
-    state.output.generated[0] = opcode;
+    let st = &mut state.lock().unwrap();
+    st.output.generatedLength = 1;
+    st.output.generated[0] = opcode;
     generate();
 }
 /*
@@ -183,9 +184,10 @@ unsafe extern "C" fn emit_opcode1(mut opcode: libc::c_uchar) {
  */
 unsafe extern "C" fn emit_opcode2(mut byte0: libc::c_uchar,
                                   mut byte1: libc::c_uchar) {
-    state.output.generatedLength = 2;
-    state.output.generated[0] = byte0;
-    state.output.generated[1] = byte1;
+    let st = &mut state.lock().unwrap();
+    st.output.generatedLength = 2;
+    st.output.generated[0] = byte0;
+    st.output.generated[1] = byte1;
     generate();
 }
 /*
@@ -198,10 +200,11 @@ unsafe extern "C" fn emit_opcode2(mut byte0: libc::c_uchar,
 unsafe extern "C" fn emit_opcode3(mut byte0: libc::c_uchar,
                                   mut byte1: libc::c_uchar,
                                   mut byte2: libc::c_uchar) {
-    state.output.generatedLength = 3;
-    state.output.generated[0] = byte0;
-    state.output.generated[1] = byte1;
-    state.output.generated[2] = byte2;
+    let st = &mut state.lock().unwrap();
+    st.output.generatedLength = 3;
+    st.output.generated[0] = byte0;
+    st.output.generated[1] = byte1;
+    st.output.generated[2] = byte2;
     generate();
 }
 /*
@@ -211,8 +214,9 @@ unsafe extern "C" fn emit_opcode3(mut byte0: libc::c_uchar,
  *          nonzero = current program counter is known
  */
 unsafe extern "C" fn isPCKnown() -> libc::c_int {
+    let st = &mut state.lock().unwrap();
     let mut pcf: u8 = 0;
-    let currentSegment = &state.other.segments[state.other.currentSegment];
+    let currentSegment = &st.other.segments[st.other.currentSegment];
     pcf = if currentSegment.flags & SegmentTypes::RelocatableOrigin != 0 {
         currentSegment.rflags
     } else {
@@ -228,7 +232,8 @@ unsafe extern "C" fn isPCKnown() -> libc::c_int {
  * returns the current program counter
  */
 unsafe extern "C" fn getPC() -> libc::c_long {
-    let currentSegment = &state.other.segments[state.other.currentSegment];
+    let st = &mut state.lock().unwrap();
+    let currentSegment = &st.other.segments[st.other.currentSegment];
     return if currentSegment.flags & SegmentTypes::RelocatableOrigin != 0 {
         currentSegment.rorg
     } else {
@@ -247,6 +252,7 @@ unsafe extern "C" fn getPC() -> libc::c_long {
 unsafe extern "C" fn parse_value(mut str: *mut libc::c_char,
                                  mut value: *mut libc::c_ulong)
  -> libc::c_int {
+    let st = &mut state.lock().unwrap();
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut result: libc::c_int = 0;
     *value = 0;
@@ -255,8 +261,8 @@ unsafe extern "C" fn parse_value(mut str: *mut libc::c_char,
            AddressModes::ByteAdr as i32 != (*sym).addrmode as libc::c_int {
         asmerr(AsmErrorEquates::SyntaxError, true, str);
     } else if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
-        state.execution.redoIndex += 1;
-        state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved;
+        st.execution.redoIndex += 1;
+        st.execution.redoWhy |= ReasonCodes::MnemonicNotResolved;
         result = 1
     } else { *value = (*sym).value as libc::c_ulong }
     FreeSymbolList(sym);

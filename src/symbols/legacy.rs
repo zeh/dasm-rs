@@ -2,13 +2,15 @@ use libc;
 
 use crate::constants::{
     MAX_SYMBOLS,
-    S_HASH_AND,
 };
 use crate::globals::state;
 use crate::types::flags::{
     ReasonCodes,
     SegmentTypes,
     SymbolTypes,
+};
+use crate::types::structs::{
+    Symbol,
 };
 use crate::types::enums::{
     AsmErrorEquates,
@@ -36,8 +38,6 @@ extern "C" {
     fn strlen(_: *const libc::c_char) -> libc::c_ulong;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
-    #[no_mangle]
-    static mut SHash: [*mut _SYMBOL; 0];
     #[no_mangle]
     static mut Av: [*mut libc::c_char; 0];
     #[no_mangle]
@@ -85,233 +85,150 @@ pub struct _SYMBOL {
     pub value: libc::c_long,
     pub namelen: libc::c_uint,
 }
-static mut org: _SYMBOL =
-    _SYMBOL{next: 0 as *const _SYMBOL as *mut _SYMBOL,
-            name: 0 as *const libc::c_char as *mut libc::c_char,
-            string: 0 as *const libc::c_char as *mut libc::c_char,
-            flags: 0,
-            addrmode: 0,
-            value: 0,
-            namelen: 0,};
-static mut special: _SYMBOL =
-    _SYMBOL{next: 0 as *const _SYMBOL as *mut _SYMBOL,
-            name: 0 as *const libc::c_char as *mut libc::c_char,
-            string: 0 as *const libc::c_char as *mut libc::c_char,
-            flags: 0,
-            addrmode: 0,
-            value: 0,
-            namelen: 0,};
-static mut specchk: _SYMBOL =
-    _SYMBOL{next: 0 as *const _SYMBOL as *mut _SYMBOL,
-            name: 0 as *const libc::c_char as *mut libc::c_char,
-            string: 0 as *const libc::c_char as *mut libc::c_char,
-            flags: 0,
-            addrmode: 0,
-            value: 0,
-            namelen: 0,};
+
+// FIXME: move to symbols module
 #[no_mangle]
-pub unsafe extern "C" fn setspecial(mut value: libc::c_int,
-                                    mut flags: libc::c_int) {
-    special.value = value as libc::c_long; /* historical */
-    special.flags = flags as libc::c_uchar; /* historical */
+pub unsafe extern "C" fn set_special_symbol(value: u64, flags: u8) {
+    let st = &mut state.lock().unwrap();
+    st.execution.specialSymbol.value = value;
+    st.execution.specialSymbol.flags = flags;
 }
+
+// FIXME: move to symbols module
 #[no_mangle]
-pub unsafe extern "C" fn findsymbol(mut str: *const libc::c_char,
-                                    mut len: libc::c_int) -> *mut _SYMBOL {
-    let mut h1: libc::c_uint = 0; /*	permalloc zeros the array for us */
-    let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut buf: [libc::c_char; MAX_SYMBOLS + 14] = [0; MAX_SYMBOLS + 14];
-    if len > MAX_SYMBOLS as libc::c_int { len = MAX_SYMBOLS as libc::c_int }
-    if *str.offset(0 as isize) as libc::c_int == '.' as i32 {
-        if len == 1 {
-            let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
+pub unsafe extern "C" fn find_symbol(name: &str) -> Option<&mut Symbol> {
+    let st = &mut state.lock().unwrap();
+    let mut usedName: String = String::from(name);
+    if name.starts_with(".") {
+        if name.len() == 1 {
+            let mut currentSegment = &mut st.other.segments[st.other.currentSegment];
             if currentSegment.flags & SegmentTypes::RelocatableOrigin != 0 {
-                org.flags = currentSegment.rflags & SymbolTypes::Unknown;
-                org.value = currentSegment.rorg as i64;
+                st.execution.orgSymbol.flags = currentSegment.rflags & SymbolTypes::Unknown;
+                st.execution.orgSymbol.value = currentSegment.rorg;
             } else {
-                org.flags = currentSegment.flags & SymbolTypes::Unknown;
-                org.value = currentSegment.org as i64;
+                st.execution.orgSymbol.flags = currentSegment.flags & SymbolTypes::Unknown;
+                st.execution.orgSymbol.value = currentSegment.org;
             }
-            return &mut org
+            return Some(&mut st.execution.orgSymbol);
+        } else if name.len() == 2 && name == ".." {
+            return Some(&mut st.execution.specialSymbol);
+        } else if name.len() == 3 && name == "..." {
+            st.execution.specialCheckSymbol.flags = 0;
+            st.execution.specialCheckSymbol.value = CheckSum;
+            return Some(&mut st.execution.specialCheckSymbol);
         }
-        if len == 2 &&
-               *str.offset(1 as isize) as libc::c_int ==
-                   '.' as i32 {
-            return &mut special
-        }
-        if len == 3 &&
-               *str.offset(1 as isize) as libc::c_int ==
-                   '.' as i32 &&
-               *str.offset(2 as isize) as libc::c_int ==
-                   '.' as i32 {
-            specchk.flags = 0;
-            specchk.value = CheckSum as libc::c_long;
-            return &mut specchk
-        }
-        sprintf(buf.as_mut_ptr(),
-                b"%ld%.*s\x00" as *const u8 as *const libc::c_char,
-                Localindex, len, str);
-        len = strlen(buf.as_mut_ptr()) as libc::c_int;
-        str = buf.as_mut_ptr()
-    } else if *str.offset((len - 1) as isize) as libc::c_int ==
-                  '$' as i32 {
-        sprintf(buf.as_mut_ptr(),
-                b"%ld$%.*s\x00" as *const u8 as *const libc::c_char,
-                Localdollarindex, len, str);
-        len = strlen(buf.as_mut_ptr()) as libc::c_int;
-        str = buf.as_mut_ptr()
+
+        usedName = format!("{}{}", Localindex, name);
+    } else if name.ends_with("$") {
+        usedName = format!("{}${}", Localdollarindex, name);
     }
-    h1 = hash1(str, len);
-    sym = *SHash.as_mut_ptr().offset(h1 as isize);
-    while !sym.is_null() {
-        if (*sym).namelen == len as libc::c_uint &&
-               memcmp((*sym).name as *const libc::c_void,
-                      str as *const libc::c_void, len as libc::c_ulong) == 0 {
-            break ;
-        }
-        sym = (*sym).next
-    }
-    return sym;
+
+    return st.execution.symbols.iter_mut().find(|&symbol| symbol.name == usedName);
 }
+
+// FIXME: move to module
 #[no_mangle]
-pub unsafe extern "C" fn CreateSymbol(mut str: *const libc::c_char,
-                                      mut len: libc::c_int) -> *mut _SYMBOL {
-    let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut h1: libc::c_uint = 0;
-    let mut buf: [libc::c_char; MAX_SYMBOLS + 14] = [0; MAX_SYMBOLS + 14];
-    if len > MAX_SYMBOLS as libc::c_int { len = MAX_SYMBOLS as libc::c_int }
-    if *str.offset(0 as isize) as libc::c_int == '.' as i32 {
-        sprintf(buf.as_mut_ptr(),
-                b"%ld%.*s\x00" as *const u8 as *const libc::c_char,
-                Localindex, len, str);
-        len = strlen(buf.as_mut_ptr()) as libc::c_int;
-        str = buf.as_mut_ptr()
-    } else if *str.offset((len - 1) as isize) as libc::c_int ==
-                  '$' as i32 {
-        sprintf(buf.as_mut_ptr(),
-                b"%ld$%.*s\x00" as *const u8 as *const libc::c_char,
-                Localdollarindex, len, str);
-        len = strlen(buf.as_mut_ptr()) as libc::c_int;
-        str = buf.as_mut_ptr()
+pub unsafe extern "C" fn create_symbol(name: &str) -> Symbol {
+    let st = &mut state.lock().unwrap();
+    // FIXME: this is a bit duplicated from find_symbol(), extract?
+    let usedName = String::from(name);
+    if name.starts_with(".") {
+        usedName = format!("{}{}", Localindex, name);
+    } else if name.ends_with("$") {
+        usedName = format!("{}${}", Localdollarindex, name);
     }
-    sym = allocsymbol();
-    (*sym).name = permalloc(len + 1);
-    memcpy((*sym).name as *mut libc::c_void, str as *const libc::c_void,
-           len as libc::c_ulong);
-    (*sym).namelen = len as libc::c_uint;
-    h1 = hash1(str, len);
-    (*sym).next = *SHash.as_mut_ptr().offset(h1 as isize);
-    (*sym).flags = 0x1 as libc::c_int as libc::c_uchar;
-    let ref mut fresh0 = *SHash.as_mut_ptr().offset(h1 as isize);
-    *fresh0 = sym;
-    return sym;
+
+    let mut symbol = Symbol::new();
+    symbol.name = usedName;
+    symbol.flags = SymbolTypes::Unknown;
+    st.execution.symbols.insert(0, symbol);
+    return symbol;
 }
-/*
- *  SYMBOLS.C
- */
-unsafe extern "C" fn hash1(mut str: *const libc::c_char, mut len: libc::c_int)
- -> libc::c_uint {
-    let mut result: libc::c_uint = 0;
-    loop  {
-        let fresh1 = len;
-        len = len - 1;
-        if !(fresh1 != 0) { break ; }
-        let fresh2 = str;
-        str = str.offset(1);
-        result = result << 2 ^ *fresh2 as libc::c_uint
-    }
-    return result & S_HASH_AND as libc::c_int as libc::c_uint;
-}
+
 /*
 *  Label Support Routines
 */
 #[no_mangle]
 pub unsafe extern "C" fn programlabel() {
-    let mut len: libc::c_int = 0;
-    let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let currentSegment = &state.other.segments[state.other.currentSegment];
-    let mut str: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut rorg: u8 = currentSegment.flags & SegmentTypes::RelocatableOrigin;
-    let mut cflags: u8 = if rorg != 0 {
-        currentSegment.rflags
+    let st = &mut state.lock().unwrap();
+    let currentSegment = &st.other.segments[st.other.currentSegment];
+    let rorg = currentSegment.flags & SegmentTypes::RelocatableOrigin;
+    let (cflags, pc) = if rorg != 0 {
+        (currentSegment.rflags, currentSegment.rorg)
     } else {
-        currentSegment.flags
+        (currentSegment.flags, currentSegment.org)
     };
-    let mut pc: libc::c_ulong = if rorg != 0 {
-        currentSegment.rorg
-    } else {
-        currentSegment.org
-    };
-    Plab =currentSegment.org;
+    Plab = currentSegment.org;
     Pflags = currentSegment.flags as libc::c_ulong;
-    str = *Av.as_mut_ptr().offset(0 as isize);
-    if *str as libc::c_int == 0 { return }
-    len = strlen(str) as libc::c_int;
-    if *str.offset((len - 1) as isize) as libc::c_int ==
-           ':' as i32 {
-        len -= 1
+    let mut name = transient::str_pointer_to_string(*Av.as_mut_ptr());
+    if name.len() == 0 {
+        return;
     }
-    if *str.offset(0 as isize) as libc::c_int != '.' as i32 &&
-           *str.offset((len - 1) as isize) as libc::c_int !=
-               '$' as i32 {
+
+    if name.ends_with(":") {
+        name.truncate(name.len() - 1);
+    }
+    if name.starts_with(".") && name.ends_with("$") {
         Lastlocaldollarindex = Lastlocaldollarindex.wrapping_add(1);
         Localdollarindex = Lastlocaldollarindex
     }
-    /*
-    *	Redo:	unknown and referenced
-    *		referenced and origin not known
-    *		known and phase error	 (origin known)
-    */
-    sym = findsymbol(str, len);
-    if !sym.is_null() {
-        if (*sym).flags as libc::c_int &
-               (0x1 as libc::c_int | 0x4 as libc::c_int) ==
-               0x1 as libc::c_int | 0x4 as libc::c_int {
-            state.execution.redoIndex += 1;
-            state.execution.redoWhy |= ReasonCodes::ForwardReference;
-            if state.parameters.debug {
-                println!(
-                    "redo 13: '{}' {:04x} {:04x}",
-                    transient::str_pointer_to_string((*sym).name).as_str(),
-                    (*sym).flags,
-                    cflags,
-                );
-            }
-        } else if cflags as libc::c_int & 0x1 as libc::c_int != 0 &&
-                      (*sym).flags as libc::c_int & 0x4 as libc::c_int != 0 {
-            state.execution.redoIndex += 1;
-            state.execution.redoWhy |= ReasonCodes::ForwardReference
-        } else if cflags as libc::c_int & 0x1 as libc::c_int == 0 &&
-                      (*sym).flags as libc::c_int & 0x1 as libc::c_int == 0 {
-            if pc != (*sym).value as libc::c_ulong {
-                /*
-            * If we had an unevaluated IF expression in the
-            * previous pass, don't complain about phase errors
-            * too loudly.
-                */
-                //FIX: calling asmerr with ERROR_LABEL_MISMATCH is fatal. The clause
-                //     below was causing aborts if verbosity was up, even when the
-                //     phase errors were the result of unevaluated IF expressions in
-                //     the previous pass.
-                //if (state.verbose >= 1 || !(state.execution.redoIf & (ReasonCodes::Obscure)))
-                if state.execution.redoIf & ReasonCodes::Obscure == 0 {
-                    let mut sBuffer: [libc::c_char; MAX_SYMBOLS * 4] = [0; MAX_SYMBOLS * 4];
-                    sprintf(sBuffer.as_mut_ptr(),
-                            b"%s %s\x00" as *const u8 as *const libc::c_char,
-                            (*sym).name,
-                            sftos((*sym).value, 0));
-                    asmerr(AsmErrorEquates::LabelMismatch,
-                           false, sBuffer.as_mut_ptr());
+
+    // Redo: unknown and referenced
+    //   referenced and origin not known
+    //   known and phase error	 (origin known)
+
+    let symbolSearch = find_symbol(name.as_str());
+    let symbol: &mut Symbol;
+    match symbolSearch {
+        Some(result) => {
+            symbol = result;
+            if symbol.flags & (SymbolTypes::Unknown | SymbolTypes::Referenced) == SymbolTypes::Unknown | SymbolTypes::Referenced {
+                st.execution.redoIndex += 1;
+                st.execution.redoWhy |= ReasonCodes::ForwardReference;
+                if st.parameters.debug {
+                    println!(
+                        "redo 13: '{}' {:04x} {:04x}",
+                        symbol.name,
+                        symbol.flags,
+                        cflags,
+                    );
                 }
-                state.execution.redoIndex += 1;
-                state.execution.redoWhy |= ReasonCodes::PhaseError
+            } else if cflags & SymbolTypes::Unknown != 0 && symbol.flags & SymbolTypes::Referenced != 0 {
+                st.execution.redoIndex += 1;
+                st.execution.redoWhy |= ReasonCodes::ForwardReference;
+            } else if cflags & SymbolTypes::Unknown == 0 && symbol.flags & SymbolTypes::Referenced == 0 {
+                if pc != symbol.value {
+                    // If we had an unevaluated IF expression in the
+                    // previous pass, don't complain about phase errors
+                    // too loudly
+
+                    // FIX: calling asmerr with ERROR_LABEL_MISMATCH is fatal. The clause
+                    //      below was causing aborts if verbosity was up, even when the
+                    //      phase errors were the result of unevaluated IF expressions in
+                    //      the previous pass.
+                    // if (state.verbose >= 1 || !(st.execution.redoIf & (ReasonCodes::Obscure)))
+                    if st.execution.redoIf & ReasonCodes::Obscure == 0 {
+                        let mut sBuffer: [libc::c_char; MAX_SYMBOLS * 4] = [0; MAX_SYMBOLS * 4];
+                        sprintf(
+                            sBuffer.as_mut_ptr(),
+                            b"%s %s\x00" as *const u8 as *const libc::c_char,
+                            symbol.name,
+                            sftos(symbol.value as i64, 0)
+                        );
+                        asmerr(AsmErrorEquates::LabelMismatch, false, sBuffer.as_mut_ptr());
+                    }
+                    st.execution.redoIndex += 1;
+                    st.execution.redoWhy |= ReasonCodes::PhaseError
+                }
             }
-        }
-    } else { sym = CreateSymbol(str, len) }
-    (*sym).value = pc as libc::c_long;
-    (*sym).flags =
-        ((*sym).flags as libc::c_int & !(0x1 as libc::c_int) |
-             cflags as libc::c_int & 0x1 as libc::c_int) as libc::c_uchar;
+        },
+        None => {
+            symbol = &mut create_symbol(name.as_str());
+        },
+    }
+
+    symbol.value = pc;
+    symbol.flags = symbol.flags & !(SymbolTypes::Unknown) | cflags & SymbolTypes::Unknown;
 }
 #[no_mangle]
 pub static mut SymAlloc: *mut _SYMBOL = 0 as *const _SYMBOL as *mut _SYMBOL;

@@ -125,19 +125,20 @@ pub static mut Opdis: [opfunc_t; MAX_OPS] = [None; MAX_OPS];
 #[no_mangle]
 pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                               mut wantmode: libc::c_int) -> *mut _SYMBOL {
+    let st = &mut state.lock().unwrap();
     let mut base: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut cur: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut oldArgIndexBase = state.expressions.argIndexBase;
-    let mut oldOpIndexBase = state.expressions.opIndexBase;
+    let mut oldArgIndexBase = st.expressions.argIndexBase;
+    let mut oldOpIndexBase = st.expressions.opIndexBase;
     let mut scr: libc::c_int = 0;
     let mut pLine: *const libc::c_char = str;
-    state.expressions.argIndexBase = state.expressions.argIndex;
-    state.expressions.opIndexBase = state.expressions.opIndex;
-    state.expressions.lastWasOp = true;
+    st.expressions.argIndexBase = st.expressions.argIndex;
+    st.expressions.opIndexBase = st.expressions.opIndex;
+    st.expressions.lastWasOp = true;
     cur = allocsymbol();
     base = cur;
     while *str != 0 {
-        if state.parameters.debug {
+        if st.parameters.debug {
             printf(b"char \'%c\'\n\x00" as *const u8 as *const libc::c_char,
                    *str as libc::c_int);
         }
@@ -148,7 +149,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 current_block_184 = 3166194604430448652;
             }
             126 => {
-                if state.expressions.lastWasOp {
+                if st.expressions.lastWasOp {
                     doop(
                         ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_int) -> ()>, opfunc_t>(
                             Some(op_invert as unsafe extern "C" fn(_: libc::c_long, _: libc::c_int) -> ())
@@ -163,7 +164,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 current_block_184 = 3166194604430448652;
             }
             42 => {
-                if state.expressions.lastWasOp {
+                if st.expressions.lastWasOp {
                     pushsymbol(b".\x00" as *const u8 as *const libc::c_char);
                 } else {
                     doop(
@@ -187,7 +188,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 current_block_184 = 3166194604430448652;
             }
             37 => {
-                if state.expressions.lastWasOp {
+                if st.expressions.lastWasOp {
                     str = pushbin(str.offset(1 as isize))
                 } else {
                     doop(
@@ -224,7 +225,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             }
             45 => {
                 /*  19: -   (or - unary)        */
-                if state.expressions.lastWasOp {
+                if st.expressions.lastWasOp {
                     doop(
                         ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_int)-> ()>, opfunc_t>(
                             Some(op_negate as unsafe extern "C" fn(_: libc::c_long, _: libc::c_int) -> ())
@@ -244,7 +245,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             }
             62 => {
                 /*  18: >> <<  17: > >= <= <    */
-                if state.expressions.lastWasOp {
+                if st.expressions.lastWasOp {
                     doop(
                         ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_int)-> ()>, opfunc_t>(
                             Some(op_takemsb as unsafe extern "C" fn(_: libc::c_long, _: libc::c_int) -> ())
@@ -282,7 +283,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 current_block_184 = 3166194604430448652;
             }
             60 => {
-                if state.expressions.lastWasOp {
+                if st.expressions.lastWasOp {
                     doop(
                         ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_int)-> ()>, opfunc_t>(
                             Some(op_takelsb as unsafe extern "C" fn(_: libc::c_long, _: libc::c_int) -> ())
@@ -334,7 +335,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             }
             33 => {
                 /*  16: !=                      */
-                if state.expressions.lastWasOp {
+                if st.expressions.lastWasOp {
                     doop(
                         ::std::mem::transmute::<Option<unsafe extern "C" fn(_: libc::c_long, _: libc::c_int)-> ()>, opfunc_t>(
                             Some(op_not as unsafe extern "C" fn(_: libc::c_long, _: libc::c_int) -> ())
@@ -442,8 +443,8 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                                 str);
                         asmerr(AsmErrorEquates::IllegalAddressingMode,
                                false, pLine);
-                        state.execution.redoIndex += 1;
-                        state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved
+                        st.execution.redoIndex += 1;
+                        st.execution.redoWhy |= ReasonCodes::MnemonicNotResolved
                         //we treat the opcode as valid to allow passes to continue, which should
                    //allow other errors (like phase errros) to resolve before our "++Redo"
                    //ultimately forces a failure.
@@ -464,8 +465,8 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 current_block_184 = 3166194604430448652;
             }
             44 => { // ',' - FIXME: convert back to original char
-                while state.expressions.opIndex != state.expressions.opIndexBase { evaltop(); }
-                state.expressions.lastWasOp = true;
+                while st.expressions.opIndex != st.expressions.opIndexBase { evaltop(); }
+                st.expressions.lastWasOp = true;
                 scr =
                     *str.offset(1 as isize) as libc::c_int |
                         0x20 as libc::c_int;
@@ -485,8 +486,8 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                             str);
                     asmerr(AsmErrorEquates::IllegalAddressingMode,
                            false, pLine);
-                    state.execution.redoIndex += 1;
-                    state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved;
+                    st.execution.redoIndex += 1;
+                    st.execution.redoWhy |= ReasonCodes::MnemonicNotResolved;
                     //FIX: detect illegal opc (zp,y) syntax...
                     //we treat the opcode as valid to allow passes to continue, which should
                    //allow other errors (like phase errros) to resolve before our "++Redo"
@@ -497,50 +498,50 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                     (*cur).addrmode = AddressModes::ZeroX as u8;
                     str = str.offset(1);
                     //FIX: OPCODE.FORCE needs to be adjusted for x indexing...
-                    if state.execution.modeNext == AddressModes::WordAdr {
-                        state.execution.modeNext = AddressModes::WordAdrX
+                    if st.execution.modeNext == AddressModes::WordAdr {
+                        st.execution.modeNext = AddressModes::WordAdrX
                     }
-                    if state.execution.modeNext == AddressModes::ByteAdr {
-                        state.execution.modeNext = AddressModes::ByteAdrX
+                    if st.execution.modeNext == AddressModes::ByteAdr {
+                        st.execution.modeNext = AddressModes::ByteAdrX
                     }
-                    if state.execution.modeNext == AddressModes::IndWord {
-                        state.execution.modeNext = AddressModes::ZeroX
+                    if st.execution.modeNext == AddressModes::IndWord {
+                        st.execution.modeNext = AddressModes::ZeroX
                     }
                 } else if scr == 'y' as i32 && !is_alpha_num(*str.offset(2) as u8 as char) {
                     (*cur).addrmode = AddressModes::ZeroY as u8;
                     str = str.offset(1);
                     //FIX: OPCODE.FORCE needs to be adjusted for x indexing...
-                    if state.execution.modeNext == AddressModes::WordAdr {
-                        state.execution.modeNext = AddressModes::WordAdrY
+                    if st.execution.modeNext == AddressModes::WordAdr {
+                        st.execution.modeNext = AddressModes::WordAdrY
                     }
-                    if state.execution.modeNext == AddressModes::ByteAdr {
-                        state.execution.modeNext = AddressModes::ByteAdrY
+                    if st.execution.modeNext == AddressModes::ByteAdr {
+                        st.execution.modeNext = AddressModes::ByteAdrY
                     }
-                    if state.execution.modeNext == AddressModes::IndWord {
-                        state.execution.modeNext = AddressModes::ZeroY
+                    if st.execution.modeNext == AddressModes::IndWord {
+                        st.execution.modeNext = AddressModes::ZeroY
                     }
                 } else {
                     let mut pNewSymbol: *mut _SYMBOL = allocsymbol();
                     (*cur).next = pNewSymbol;
-                    state.expressions.argIndex -= 1;
-                    if state.expressions.argIndex < state.expressions.argIndexBase {
+                    st.expressions.argIndex -= 1;
+                    if st.expressions.argIndex < st.expressions.argIndexBase {
                         asmerr(AsmErrorEquates::SyntaxError,
                                false, pLine);
                     }
-                    if state.expressions.argIndex > state.expressions.argIndexBase {
+                    if st.expressions.argIndex > st.expressions.argIndexBase {
                         asmerr(AsmErrorEquates::SyntaxError,
                                false, pLine);
                     }
-                    (*cur).value = state.expressions.argStack[state.expressions.argIndex];
-                    (*cur).flags = state.expressions.argFlags[state.expressions.argIndex];
+                    (*cur).value = st.expressions.argStack[st.expressions.argIndex];
+                    (*cur).flags = st.expressions.argFlags[st.expressions.argIndex];
                     (*cur).string =
-                        Argstring[state.expressions.argIndex] as *mut libc::c_void as
+                        Argstring[st.expressions.argIndex] as *mut libc::c_void as
                             *mut libc::c_char;
                     if !(*cur).string.is_null() {
                         (*cur).flags =
                             ((*cur).flags as libc::c_int | 0x8 as libc::c_int)
                                 as libc::c_uchar;
-                        if state.parameters.debug {
+                        if st.parameters.debug {
                             printf(b"STRING: %s\n\x00" as *const u8 as
                                        *const libc::c_char, (*cur).string);
                         }
@@ -583,24 +584,24 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             8741107198128373303 =>
             /* fall thru OK */
             {
-                while state.expressions.opIndex != state.expressions.opIndexBase && state.expressions.opPri[state.expressions.opIndex - 1] != 0 {
+                while st.expressions.opIndex != st.expressions.opIndexBase && st.expressions.opPri[st.expressions.opIndex - 1] != 0 {
                     evaltop();
                 }
-                if state.expressions.opIndex != state.expressions.opIndexBase { state.expressions.opIndex -= 1 }
+                if st.expressions.opIndex != st.expressions.opIndexBase { st.expressions.opIndex -= 1 }
                 str = str.offset(1);
-                if state.expressions.argIndex == state.expressions.argIndexBase {
+                if st.expressions.argIndex == st.expressions.argIndexBase {
                     println!("\']\' error, no arg on stack");
                 } else {
                     if *str as libc::c_int == 'd' as i32 {
                         /*  STRING CONVERSION   */
                         let mut buf: [libc::c_char; 32] = [0; 32];
                         str = str.offset(1);
-                        if state.expressions.argFlags[state.expressions.argIndex - 1] == 0 {
+                        if st.expressions.argFlags[st.expressions.argIndex - 1] == 0 {
                             sprintf(buf.as_mut_ptr(),
                                 b"%ld\x00" as *const u8 as *const libc::c_char,
-                                state.expressions.argStack[state.expressions.argIndex - 1]
+                                st.expressions.argStack[st.expressions.argIndex - 1]
                             );
-                            Argstring[state.expressions.argIndex - 1] =
+                            Argstring[st.expressions.argIndex - 1] =
                                 strcpy(ckmalloc(strlen(buf.as_mut_ptr()).wrapping_add(1
                                                                                           as
                                                                                           libc::c_int
@@ -610,38 +611,38 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                                        buf.as_mut_ptr())
                         }
                     }
-                    state.expressions.lastWasOp = false
+                    st.expressions.lastWasOp = false
                 }
             }
             18384894229789369419 =>
             /* fall thru OK */
             /*  eventually an argument      */
             {
-                if state.expressions.opIndex == 32 {
+                if st.expressions.opIndex == 32 {
                     println!("too many ops");
                 } else {
-                    let fresh0 = state.expressions.opIndex;
-                    state.expressions.opIndex = state.expressions.opIndex + 1;
-                    state.expressions.opPri[fresh0] = 0
+                    let fresh0 = st.expressions.opIndex;
+                    st.expressions.opIndex = st.expressions.opIndex + 1;
+                    st.expressions.opPri[fresh0] = 0
                 }
                 str = str.offset(1)
             }
             _ => { }
         }
     }
-    while state.expressions.opIndex != state.expressions.opIndexBase { evaltop(); }
-    if state.expressions.argIndex != state.expressions.argIndexBase {
-        state.expressions.argIndex -= 1;
-        (*cur).value = state.expressions.argStack[state.expressions.argIndex];
-        (*cur).flags = state.expressions.argFlags[state.expressions.argIndex];
+    while st.expressions.opIndex != st.expressions.opIndexBase { evaltop(); }
+    if st.expressions.argIndex != st.expressions.argIndexBase {
+        st.expressions.argIndex -= 1;
+        (*cur).value = st.expressions.argStack[st.expressions.argIndex];
+        (*cur).flags = st.expressions.argFlags[st.expressions.argIndex];
         (*cur).string =
-            Argstring[state.expressions.argIndex] as *mut libc::c_void as
+            Argstring[st.expressions.argIndex] as *mut libc::c_void as
                 *mut libc::c_char;
         if !(*cur).string.is_null() {
             (*cur).flags =
                 ((*cur).flags as libc::c_int | 0x8 as libc::c_int) as
                     libc::c_uchar;
-            if state.parameters.debug {
+            if st.parameters.debug {
                 println!("STRING: {}", transient::str_pointer_to_string((*cur).string));
             }
         }
@@ -649,77 +650,79 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
             (*base).addrmode = AddressModes::ByteAdr as libc::c_int as libc::c_uchar
         }
     }
-    if state.expressions.argIndex != state.expressions.argIndexBase || state.expressions.opIndex != state.expressions.opIndexBase {
+    if st.expressions.argIndex != st.expressions.argIndexBase || st.expressions.opIndex != st.expressions.opIndexBase {
         asmerr(AsmErrorEquates::SyntaxError, false,
                pLine);
     }
-    state.expressions.argIndex = state.expressions.argIndexBase;
-    state.expressions.opIndex = state.expressions.opIndexBase;
-    state.expressions.argIndexBase = oldArgIndexBase;
-    state.expressions.opIndexBase = oldOpIndexBase;
+    st.expressions.argIndex = st.expressions.argIndexBase;
+    st.expressions.opIndex = st.expressions.opIndexBase;
+    st.expressions.argIndexBase = oldArgIndexBase;
+    st.expressions.opIndexBase = oldOpIndexBase;
     return base;
 }
 #[no_mangle]
 pub unsafe extern "C" fn evaltop() {
-    if state.parameters.debug {
+    let st = &mut state.lock().unwrap();
+    if st.parameters.debug {
         printf(b"evaltop @(A,O) %d %d\n\x00" as *const u8 as
-                   *const libc::c_char, state.expressions.argIndex, state.expressions.opIndex);
+                   *const libc::c_char, st.expressions.argIndex, st.expressions.opIndex);
     }
-    if state.expressions.opIndex <= state.expressions.opIndexBase {
+    if st.expressions.opIndex <= st.expressions.opIndexBase {
         asmerr(AsmErrorEquates::SyntaxError, false,
                0 as *const libc::c_char);
-        state.expressions.opIndex = state.expressions.opIndexBase;
+        st.expressions.opIndex = st.expressions.opIndexBase;
         return
     }
-    state.expressions.opIndex -= 1;
-    if state.expressions.opPri[state.expressions.opIndex] == 128 {
-        if state.expressions.argIndex < state.expressions.argIndexBase + 1 {
+    st.expressions.opIndex -= 1;
+    if st.expressions.opPri[st.expressions.opIndex] == 128 {
+        if st.expressions.argIndex < st.expressions.argIndexBase + 1 {
             asmerr(AsmErrorEquates::SyntaxError, false,
                    0 as *const libc::c_char);
-            state.expressions.argIndex = state.expressions.argIndexBase;
+            st.expressions.argIndex = st.expressions.argIndexBase;
             return
         }
-        state.expressions.argIndex -= 1;
+        st.expressions.argIndex -= 1;
         ::std::mem::transmute::<_, fn(_: _, _: _)>(
                 Some(
                     (
-                        *Opdis.as_mut_ptr().offset(state.expressions.opIndex as isize)
+                        *Opdis.as_mut_ptr().offset(st.expressions.opIndex as isize)
                     ).expect("non-null function pointer")
                 ).expect("non-null function pointer")
             )(
-                state.expressions.argStack[state.expressions.argIndex],
-                state.expressions.argFlags[state.expressions.argIndex]
+                st.expressions.argStack[st.expressions.argIndex],
+                st.expressions.argFlags[st.expressions.argIndex]
             );
     } else {
-        if state.expressions.argIndex < state.expressions.argIndexBase + 2 {
+        if st.expressions.argIndex < st.expressions.argIndexBase + 2 {
             asmerr(AsmErrorEquates::SyntaxError, false,
                    0 as *const libc::c_char);
-            state.expressions.argIndex = state.expressions.argIndexBase;
+            st.expressions.argIndex = st.expressions.argIndexBase;
             return
         }
-        state.expressions.argIndex -= 2;
+        st.expressions.argIndex -= 2;
         ::std::mem::transmute::<_, fn(_: _, _: _, _: _, _: _)>(
                 Some(
                     (
-                        *Opdis.as_mut_ptr().offset(state.expressions.opIndex as isize)
+                        *Opdis.as_mut_ptr().offset(st.expressions.opIndex as isize)
                     ).expect("non-null function pointer")
                 ).expect("non-null function pointer")
             )(
-                state.expressions.argStack[state.expressions.argIndex],
-                state.expressions.argStack[state.expressions.argIndex + 1],
-                state.expressions.argFlags[state.expressions.argIndex],
-                state.expressions.argFlags[state.expressions.argIndex + 1]
+                st.expressions.argStack[st.expressions.argIndex],
+                st.expressions.argStack[st.expressions.argIndex + 1],
+                st.expressions.argFlags[st.expressions.argIndex],
+                st.expressions.argFlags[st.expressions.argIndex + 1]
             );
     };
 }
 unsafe extern "C" fn stackarg(mut val: libc::c_long, mut flags: libc::c_int,
                               mut ptr1: *const libc::c_char) {
+    let st = &mut state.lock().unwrap();
     let mut str: *mut libc::c_char = 0 as *mut libc::c_char;
-    if state.parameters.debug {
+    if st.parameters.debug {
         printf(b"stackarg %ld (@%d)\n\x00" as *const u8 as
-                   *const libc::c_char, val, state.expressions.argIndex);
+                   *const libc::c_char, val, st.expressions.argIndex);
     }
-    state.expressions.lastWasOp = false;
+    st.expressions.lastWasOp = false;
     if flags & 0x8 as libc::c_int != 0 {
         /*
            Why unsigned char? Looks like we're converting to
@@ -742,46 +745,50 @@ unsafe extern "C" fn stackarg(mut val: libc::c_long, mut flags: libc::c_int,
         flags &= !(0x8 as libc::c_int);
         str = new
     }
-    state.expressions.argStack[state.expressions.argIndex] = val;
-    Argstring[state.expressions.argIndex] = str;
-    state.expressions.argFlags[state.expressions.argIndex] = flags as u8; // FIXME: truncate, check source flags type...
-    state.expressions.argIndex += 1;
-    if state.expressions.argIndex == 64 {
+    let argIndex = st.expressions.argIndex;
+    st.expressions.argStack[argIndex] = val;
+    Argstring[argIndex] = str;
+    st.expressions.argFlags[argIndex] = flags as u8; // FIXME: truncate, check source flags type...
+    st.expressions.argIndex += 1;
+    if st.expressions.argIndex == 64 {
         println!("stackarg: maxargs stacked");
-        state.expressions.argIndex = state.expressions.argIndexBase
+        st.expressions.argIndex = st.expressions.argIndexBase
     }
-    while state.expressions.opIndex != state.expressions.opIndexBase && state.expressions.opPri[state.expressions.opIndex - 1] == 128 {
+    while st.expressions.opIndex != st.expressions.opIndexBase && st.expressions.opPri[st.expressions.opIndex - 1] == 128 {
         evaltop();
     };
 }
 #[no_mangle]
 pub unsafe extern "C" fn doop(mut func: opfunc_t, mut pri: usize) {
-    if state.parameters.debug {
+    let st = &mut state.lock().unwrap();
+    if st.parameters.debug {
         println!("doop");
     }
-    state.expressions.lastWasOp = true;
-    if state.expressions.opIndex == state.expressions.opIndexBase || pri == 128 {
-        if state.parameters.debug {
+    st.expressions.lastWasOp = true;
+    if st.expressions.opIndex == st.expressions.opIndexBase || pri == 128 {
+        if st.parameters.debug {
             printf(b"doop @ %d unary\n\x00" as *const u8 as
-                       *const libc::c_char, state.expressions.opIndex);
+                       *const libc::c_char, st.expressions.opIndex);
         }
-        Opdis[state.expressions.opIndex] = func;
-        state.expressions.opPri[state.expressions.opIndex] = pri;
-        state.expressions.opIndex += 1;
+        let opIndex = st.expressions.opIndex;
+        Opdis[opIndex] = func;
+        st.expressions.opPri[opIndex] = pri;
+        st.expressions.opIndex += 1;
         return
     }
-    while state.expressions.opIndex != state.expressions.opIndexBase && state.expressions.opPri[state.expressions.opIndex - 1] != 0 && pri <= state.expressions.opPri[state.expressions.opIndex - 1] {
+    while st.expressions.opIndex != st.expressions.opIndexBase && st.expressions.opPri[st.expressions.opIndex - 1] != 0 && pri <= st.expressions.opPri[st.expressions.opIndex - 1] {
         evaltop();
     }
-    if state.parameters.debug {
-        printf(b"doop @ %d\n\x00" as *const u8 as *const libc::c_char, state.expressions.opIndex);
+    if st.parameters.debug {
+        printf(b"doop @ %d\n\x00" as *const u8 as *const libc::c_char, st.expressions.opIndex);
     }
-    Opdis[state.expressions.opIndex] = func;
-    state.expressions.opPri[state.expressions.opIndex] = pri;
-    state.expressions.opIndex += 1;
-    if state.expressions.opIndex == 32 {
+    let opIndex = st.expressions.opIndex;
+    Opdis[opIndex] = func;
+    st.expressions.opPri[opIndex] = pri;
+    st.expressions.opIndex += 1;
+    if st.expressions.opIndex == 32 {
         println!("doop: too many operators");
-        state.expressions.opIndex = state.expressions.opIndexBase
+        st.expressions.opIndex = st.expressions.opIndexBase
     };
 }
 #[no_mangle]
@@ -813,13 +820,15 @@ pub unsafe extern "C" fn op_not(mut v1: libc::c_long, mut f1: libc::c_int) {
 #[no_mangle]
 pub unsafe extern "C" fn op_mult(mut v1: libc::c_long, mut v2: libc::c_long,
                                  mut f1: libc::c_int, mut f2: libc::c_int) {
+    let st = &mut state.lock().unwrap();
     stackarg(v1 * v2, f1 | f2, 0 as *const libc::c_char);
-    state.expressions.lastWasOp = true;
+    st.expressions.lastWasOp = true;
 }
 #[no_mangle]
 pub unsafe extern "C" fn op_div(mut v1: libc::c_long, mut v2: libc::c_long,
                                 mut f1: libc::c_int, mut f2: libc::c_int) {
-    state.expressions.lastWasOp = true;
+    let st = &mut state.lock().unwrap();
+    st.expressions.lastWasOp = true;
     if f1 | f2 != 0 {
         stackarg(0, f1 | f2, 0 as *const libc::c_char);
         return
@@ -834,6 +843,7 @@ pub unsafe extern "C" fn op_div(mut v1: libc::c_long, mut v2: libc::c_long,
 #[no_mangle]
 pub unsafe extern "C" fn op_mod(mut v1: libc::c_long, mut v2: libc::c_long,
                                 mut f1: libc::c_int, mut f2: libc::c_int) {
+    let st = &mut state.lock().unwrap();
     if f1 | f2 != 0 {
         stackarg(0, f1 | f2, 0 as *const libc::c_char);
         return
@@ -841,7 +851,7 @@ pub unsafe extern "C" fn op_mod(mut v1: libc::c_long, mut v2: libc::c_long,
     if v2 == 0 {
         stackarg(v1, 0, 0 as *const libc::c_char);
     } else { stackarg(v1 % v2, 0, 0 as *const libc::c_char); }
-    state.expressions.lastWasOp = true;
+    st.expressions.lastWasOp = true;
 }
 #[no_mangle]
 pub unsafe extern "C" fn op_question(mut v1: libc::c_long,
@@ -859,14 +869,16 @@ pub unsafe extern "C" fn op_question(mut v1: libc::c_long,
 #[no_mangle]
 pub unsafe extern "C" fn op_add(mut v1: libc::c_long, mut v2: libc::c_long,
                                 mut f1: libc::c_int, mut f2: libc::c_int) {
+    let st = &mut state.lock().unwrap();
     stackarg(v1 + v2, f1 | f2, 0 as *const libc::c_char);
-    state.expressions.lastWasOp = true;
+    st.expressions.lastWasOp = true;
 }
 #[no_mangle]
 pub unsafe extern "C" fn op_sub(mut v1: libc::c_long, mut v2: libc::c_long,
                                 mut f1: libc::c_int, mut f2: libc::c_int) {
+    let st = &mut state.lock().unwrap();
     stackarg(v1 - v2, f1 | f2, 0 as *const libc::c_char);
-    state.expressions.lastWasOp = true;
+    st.expressions.lastWasOp = true;
 }
 #[no_mangle]
 pub unsafe extern "C" fn op_shiftright(mut v1: libc::c_long,
@@ -1055,6 +1067,7 @@ pub unsafe extern "C" fn pushstr(mut str: *const libc::c_char) -> *const libc::c
 }
 #[no_mangle]
 pub unsafe extern "C" fn pushsymbol(mut str: *const libc::c_char) -> *const libc::c_char {
+    let st = &mut state.lock().unwrap();
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut ptr: *const libc::c_char = 0 as *const libc::c_char;
     let mut macro_0: libc::c_uchar = 0;
@@ -1077,7 +1090,7 @@ pub unsafe extern "C" fn pushsymbol(mut str: *const libc::c_char) -> *const libc
             transient::str_pointer_to_string(str.offset(-1)).as_bytes()[0],
         );
         filesystem::writeln_to_file_maybe(
-            &mut state.output.listFile,
+            st.output.listFile,
             format!(
                 "char = '{}' code {}",
                 // FIXME: pass correct code
@@ -1094,7 +1107,7 @@ pub unsafe extern "C" fn pushsymbol(mut str: *const libc::c_char) -> *const libc
                        libc::c_int);
     if !sym.is_null() {
         if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
-            state.execution.redoEval += 1
+            st.execution.redoEval += 1
         }
         if (*sym).flags as libc::c_int & 0x20 as libc::c_int != 0 {
             macro_0 = 1;
@@ -1122,7 +1135,7 @@ pub unsafe extern "C" fn pushsymbol(mut str: *const libc::c_char) -> *const libc
         (*sym).flags =
             (0x4 as libc::c_int | 0x40 as libc::c_int | 0x1 as libc::c_int) as
                 libc::c_uchar;
-        state.execution.redoEval += 1
+        st.execution.redoEval += 1
     }
     return ptr;
 }
