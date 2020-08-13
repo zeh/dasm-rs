@@ -101,36 +101,31 @@ unsafe fn main_0(mut ac: libc::c_int, mut av: *mut *mut libc::c_char)
     }
     format = atoi(*av.offset(1 as isize));
     if format < 1 || format > 3 {
-        exiterr(b"specify infile format 1, 2, or 3\x00" as *const u8 as
-                    *const libc::c_char);
+        exit_with_error("specify infile format 1, 2, or 3");
     }
     infile =
-        fopen(*av.offset(2 as isize),
-              b"r\x00" as *const u8 as *const libc::c_char);
+        fopen(*av.offset(2 as isize), b"r\x00" as *const u8 as *const libc::c_char);
     if infile.is_null() {
-        exiterr(b"unable to open input file\x00" as *const u8 as
-                    *const libc::c_char);
+        exit_with_error("unable to open input file");
     }
     outfile =
         if !(*av.offset(3 as isize)).is_null() {
-            fopen(*av.offset(3 as isize),
-                  b"w\x00" as *const u8 as *const libc::c_char)
+            fopen(*av.offset(3 as isize), b"w\x00" as *const u8 as *const libc::c_char)
         } else { stdout };
     if outfile.is_null() {
-        exiterr(b"unable to open output file\x00" as *const u8 as
-                    *const libc::c_char);
+        exit_with_error("unable to open output file");
     }
     convert(format, infile, outfile);
     fclose(infile);
     fclose(outfile);
     return 0;
 }
-#[no_mangle]
-pub unsafe extern "C" fn exiterr(mut str: *const libc::c_char) {
-    fputs(str, stderr);
-    fputs(b"\n\x00" as *const u8 as *const libc::c_char, stderr);
+
+pub fn exit_with_error(message: &str) {
+    eprintln!("{}", message);
     std::process::exit(1);
 }
+
 /*
  *  Formats:
  *
