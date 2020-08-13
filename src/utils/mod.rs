@@ -1,5 +1,3 @@
-use std::cmp::Ordering;
-
 use crate::constants::{
     M_HASH_AND,
     ErrorDefinitions,
@@ -14,6 +12,7 @@ use crate::types::structs::{
 // FIXME: drop this once it's not needed anymore
 pub mod transient;
 
+pub mod comparing;
 pub mod filesystem;
 pub mod formatting;
 
@@ -48,31 +47,6 @@ pub fn find_error_definition(errorType: AsmErrorEquates) -> &'static ErrorDefini
 pub fn panic(message: &str) {
     println!("{}", message);
     std::process::exit(1);
-}
-
-/**
- * Compares two strings, case insensitive, returning whether the first string is
- * lesser, equal, or greater in alphabetic order.
- * In original C code, "CompareAlpha()" in main.c
- */
-pub fn compare_alpha(arg1: &str, arg2: &str) -> Ordering {
-    // FIXME: there might be smarter/faster/shorter ways of doing this in Rust
-    let s1 = arg1.to_lowercase();
-    let s2 = arg2.to_lowercase();
-    let mut iter = s1.chars().zip(s2.chars());
-    for (c1, c2) in iter {
-        let result = &c1.cmp(&c2);
-        match result {
-            Ordering::Less => {
-                return Ordering::Less;
-            },
-            Ordering::Greater => {
-                return Ordering::Greater;
-            },
-            _ => {},
-        }
-    }
-    Ordering::Equal
 }
 
 /**
@@ -126,32 +100,6 @@ mod tests {
     }
 
     #[test]
-    fn test_compare_alpha() {
-        assert_eq!(compare_alpha("b", "a"), Ordering::Greater);
-        assert_eq!(compare_alpha("b", "b"), Ordering::Equal);
-        assert_eq!(compare_alpha("b", "c"), Ordering::Less);
-        assert_eq!(compare_alpha("b", "A"), Ordering::Greater);
-        assert_eq!(compare_alpha("b", "B"), Ordering::Equal);
-        assert_eq!(compare_alpha("b", "C"), Ordering::Less);
-        assert_eq!(compare_alpha("B", "A"), Ordering::Greater);
-        assert_eq!(compare_alpha("B", "B"), Ordering::Equal);
-        assert_eq!(compare_alpha("B", "C"), Ordering::Less);
-        assert_eq!(compare_alpha("B", "a"), Ordering::Greater);
-        assert_eq!(compare_alpha("B", "b"), Ordering::Equal);
-        assert_eq!(compare_alpha("B", "c"), Ordering::Less);
-        assert_eq!(compare_alpha("another", "BANANA"), Ordering::Less);
-        assert_eq!(compare_alpha("Banana", "another"), Ordering::Greater);
-        assert_eq!(compare_alpha("banana", "BANANA"), Ordering::Equal);
-        assert_eq!(compare_alpha("2", "1"), Ordering::Greater);
-        assert_eq!(compare_alpha("2", "2"), Ordering::Equal);
-        assert_eq!(compare_alpha("2", "3"), Ordering::Less);
-        assert_eq!(compare_alpha("a", "1"), Ordering::Greater); // FIXME: technically correct,
-        assert_eq!(compare_alpha("z", "1"), Ordering::Greater); // but we might want to revisit
-        assert_eq!(compare_alpha("1", "a"), Ordering::Less); // this depending on what the
-        assert_eq!(compare_alpha("1", "z"), Ordering::Less); // original actually does
-    }
-
-    #[test]
     fn test_get_filename() {
         assert_eq!(get_filename("a"), "a");
         assert_eq!(get_filename("another"), "another");
@@ -162,5 +110,4 @@ mod tests {
         assert_eq!(get_filename("\"../a/name\\a.txt\""), "../a/name\\a.txt");
         assert_eq!(get_filename("\"interrupted"), "interrupted");
     }
-
 }
