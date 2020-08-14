@@ -473,9 +473,8 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             if (*sym).flags as libc::c_int & 0x1 as libc::c_int == 0 && (*sym).value >= 0x100 as libc::c_int as libc::c_long {
                 asmerr(AsmErrorEquates::AddressMustBeLowerThan100, false, 0 as *const i8);
             }
-            let fresh0 = opidx;
+            state.output.generated[opidx] = (*sym).value as u8;
             opidx = opidx + 1;
-            state.output.generated[fresh0] = (*sym).value as u8;
             if (*symbase).flags as libc::c_int & 0x1 as libc::c_int == 0 {
                 if (*symbase).value > 7 {
                     asmerr(AsmErrorEquates::IllegalBitSpecification, false, str);

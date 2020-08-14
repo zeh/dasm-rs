@@ -556,15 +556,49 @@ unsafe extern "C" fn ShowSegments() {
             "   "
         };
         // Originally, "%-24s %-3s %-8s %-8s %-8s %-8s"
-        // FIXME: this is rendering different from the reference version
+
+        // Strange behavior: the commented-out println!() code below SEEMS to be the correct,
+        // expected code. For example.asm, with -d1 (or higher), it generates this:
+        //
+        //    SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+        //    vector                       fffa     0000 ??? 10000    0000 ???
+        //    code                         f000     0000 ??? f076     0000 ???
+        //    data                     [u] 0000     0000 ??? 0100     0000 ???
+        //    bss                      [u] 0000     0000 ??? c010     0000 ???
+        //    INITIAL CODE SEGMENT         0000 ??? 0000 ??? 0000 ??? 0000 ???
+        //
+        // However.. this is not what the original (C) dasm generates. It outputs this:
+        //
+        //    SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+        //    vector                       fffa                            fffa
+        //    code                         f000                            f000
+        //    data                     [u] 0000                            0000
+        //    bss                      [u] 0000                            0000
+        //    INITIAL CODE SEGMENT         0000 ????                       0000 ????
+        //
+        // Dasm's output make no sense to me, but I've decided to emulate it rather than
+        // try and have a "fixed" version until I'm sure this is the correct version.
+        //
+        // "Probably correct" version
+        // println!(
+        //     "{:24.24} {:3.3} {:8.8} {:8.8} {:8.8} {:8.8}",
+        //     seg.name,
+        //     bss,
+        //     formatting::segment_address_to_string(seg.initorg, seg.initflags),
+        //     formatting::segment_address_to_string(seg.initrorg, seg.initrflags),
+        //     formatting::segment_address_to_string(seg.org, seg.flags),
+        //     formatting::segment_address_to_string(seg.rorg, seg.rflags),
+        // );
+
+        // "Probably incorrect" version that replicates dasm
         println!(
-            "{:24} {:3} {:8} {:8} {:8} {:8}",
+            "{:24} {:3.3} {:8} {:8} {:8} {:8}",
             seg.name,
             bss,
             formatting::segment_address_to_string(seg.initorg, seg.initflags),
-            formatting::segment_address_to_string(seg.initrorg, seg.initrflags),
-            formatting::segment_address_to_string(seg.org, seg.flags),
-            formatting::segment_address_to_string(seg.rorg, seg.rflags),
+            "",
+            formatting::segment_address_to_string(seg.initorg, seg.initflags),
+            "",
         );
     }
     println!("----------------------------------------------------------------------");
@@ -829,8 +863,8 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     name: String::from("INITIAL CODE SEGMENT"),
                     flags: SegmentTypes::Unknown,
                     rflags: SegmentTypes::Unknown,
-                    initrflags: SegmentTypes::Unknown,
                     initflags: SegmentTypes::Unknown,
+                    initrflags: SegmentTypes::Unknown,
                     org: 0,
                     rorg: 0,
                     initorg: 0,
