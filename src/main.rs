@@ -429,14 +429,15 @@ unsafe extern "C" fn CompareAddress(mut arg1: *const libc::c_void,
     let mut sym2: *const _SYMBOL = *(arg2 as *const *mut _SYMBOL);
     return ((*sym1).value - (*sym2).value) as libc::c_int;
 }
-/* bTableSort true -> by address, false -> by name [phf] */
-unsafe extern "C" fn ShowSymbols(mut file: *mut FILE, sorted: bool) {
+// FIXME: update parameters, and move to symbols/mod
+unsafe fn generate_resolved_symbols_list(sorted: bool) -> String {
+    let mut result = String::new();
     /* Display sorted (!) symbol table - if it runs out of memory, table will be displayed unsorted */
     let mut symArray: *mut *mut _SYMBOL = 0 as *mut *mut _SYMBOL;
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut i: libc::c_int = 0;
     let mut nSymbols: libc::c_int = 0;
-    fprintf(file, b"--- Symbol List\x00" as *const u8 as *const libc::c_char);
+    result.push_str("--- Symbol List");
     /* Sort the symbol list either via name, or by value */
     /* First count the number of symbols */
     i = 0;
@@ -451,18 +452,17 @@ unsafe extern "C" fn ShowSymbols(mut file: *mut FILE, sorted: bool) {
                       libc::c_ulong).wrapping_mul(nSymbols as libc::c_ulong)
                      as libc::c_int) as *mut *mut _SYMBOL;
     if symArray.is_null() {
-        fprintf(file,
-                b" (unsorted - not enough memory to sort!)\n\x00" as *const u8
-                    as *const libc::c_char);
+        result.push_str(" (unsorted - not enough memory to sort!)\n");
         /* Display complete symbol table */
         i = 0;
         while i < S_HASH_SIZE as libc::c_int {
             sym = *SHash.as_mut_ptr().offset(i as isize);
             while !sym.is_null() {
-                fprintf(file,
-                        b"%-24s %s\n\x00" as *const u8 as *const libc::c_char,
-                        (*sym).name,
-                        sftos((*sym).value, (*sym).flags as libc::c_int));
+                result.push_str(format!(
+                    "{:24} {}\n",
+                    transient::str_pointer_to_string((*sym).name),
+                    formatting::segment_address_to_string((*sym).value as u64, (*sym).flags)
+                ).as_str());
                 sym = (*sym).next
             }
             i += 1
@@ -484,7 +484,7 @@ unsafe extern "C" fn ShowSymbols(mut file: *mut FILE, sorted: bool) {
         }
         if sorted {
             // Sort via address
-            fprintf(file, b" (sorted by address)\n\x00" as *const u8 as *const libc::c_char);
+            result.push_str(" (sorted by address)\n");
             qsort(
                 symArray as *mut libc::c_void,
                 nPtr as size_t,
@@ -498,7 +498,7 @@ unsafe extern "C" fn ShowSymbols(mut file: *mut FILE, sorted: bool) {
             );
         } else {
             // Sort via name
-            fprintf(file, b" (sorted by symbol)\n\x00" as *const u8 as *const libc::c_char);
+            result.push_str(" (sorted by symbol)\n");
             qsort(
                 symArray as *mut libc::c_void,
                 nPtr as size_t,
@@ -514,26 +514,39 @@ unsafe extern "C" fn ShowSymbols(mut file: *mut FILE, sorted: bool) {
         /* now display sorted list */
         i = 0; /* If a string, display actual string */
         while i < nPtr {
-            fprintf(file,
-                    b"%-24s %-12s\x00" as *const u8 as *const libc::c_char,
-                    (**symArray.offset(i as isize)).name,
-                    sftos((**symArray.offset(i as isize)).value,
-                          (**symArray.offset(i as isize)).flags as
-                              libc::c_int));
-            if (**symArray.offset(i as isize)).flags as libc::c_int &
-                   0x8 as libc::c_int != 0 {
-                fprintf(file,
-                        b" \"%s\"\x00" as *const u8 as *const libc::c_char,
-                        (**symArray.offset(i as isize)).string);
+            result.push_str(format!(
+                "{:24} {:12}",
+                transient::str_pointer_to_string((**symArray.offset(i as isize)).name),
+                formatting::segment_address_to_string((**symArray.offset(i as isize)).value as u64, (**symArray.offset(i as isize)).flags)
+            ).as_str());
+            if (**symArray.offset(i as isize)).flags as libc::c_int & 0x8 as libc::c_int != 0 {
+                result.push_str(format!(
+                    " \"{}\"",
+                    transient::str_pointer_to_string((**symArray.offset(i as isize)).string),
+                ).as_str());
             }
-            fprintf(file, b"\n\x00" as *const u8 as *const libc::c_char);
+            result.push_str("\n");
             i += 1
         }
         free(symArray as *mut libc::c_void);
     }
-    fputs(b"--- End of Symbol List.\n\x00" as *const u8 as
-              *const libc::c_char, file);
+    result.push_str("--- End of Symbol List.\n");
+    result
 }
+/* bTableSort true -> by address, false -> by name [phf] */
+// FIXME: move to symbols/mod
+// Originally sorta like "ShowSymbols" in main.c
+unsafe extern "C" fn write_symbols_to_file(mut file: *mut FILE, sorted: bool) {
+    let result = generate_resolved_symbols_list(sorted);
+    fputs(transient::string_to_str_pointer(result), file);
+}
+
+// Originally sorta like "ShowSymbols" in main.c
+unsafe extern "C" fn write_symbols_to_stdout(sorted: bool) {
+    let result = generate_resolved_symbols_list(sorted);
+    print!("{}", result);
+}
+
 unsafe extern "C" fn ShowSegments() {
     println!("\n----------------------------------------------------------------------");
     println!(
@@ -622,7 +635,7 @@ unsafe extern "C" fn DumpSymbolTable(sorted: bool) {
         symfile.push_str("\x00");
         let mut fi: *mut FILE = fopen(symfile.as_ptr() as *const i8, b"w\x00" as *const u8 as *const libc::c_char);
         if !fi.is_null() {
-            ShowSymbols(fi, sorted);
+            write_symbols_to_file(fi, sorted);
             fclose(fi);
         } else {
             println!("Warning: Unable to open Symbol Dump file '{}'", state.parameters.symbolsFile);
@@ -996,7 +1009,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     }
                     if state.parameters.verbosity as u8  >= Verbosity::Three as u8  {
                         if state.execution.redoIndex == 0 || state.parameters.verbosity as u8  >= Verbosity::Four as u8 {
-                            ShowSymbols(stdout, *pbTableSort);
+                            write_symbols_to_stdout(*pbTableSort);
                         }
                         ShowUnresolvedSymbols();
                     }
