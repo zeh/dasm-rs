@@ -39,8 +39,6 @@ extern "C" {
     fn fopen(__filename: *const libc::c_char, __modes: *const libc::c_char)
      -> *mut FILE;
     #[no_mangle]
-    fn fprintf(_: *mut FILE, _: *const libc::c_char, _: ...) -> libc::c_int;
-    #[no_mangle]
     fn printf(_: *const libc::c_char, _: ...) -> libc::c_int;
     #[no_mangle]
     fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...)
@@ -50,10 +48,6 @@ extern "C" {
                 _: *const libc::c_char, _: ...) -> libc::c_int;
     #[no_mangle]
     fn putc(__c: libc::c_int, __stream: *mut FILE) -> libc::c_int;
-    #[no_mangle]
-    fn fputs(__s: *const libc::c_char, __stream: *mut FILE) -> libc::c_int;
-    #[no_mangle]
-    fn puts(__s: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
     fn fread(__ptr: *mut libc::c_void, __size: size_t, __n: size_t,
              __stream: *mut FILE) -> size_t;
@@ -1268,7 +1262,6 @@ pub unsafe extern "C" fn v_echo(mut str: *mut libc::c_char,
         }
         s = (*s).next
     }
-    //puts("");
     addmsg(b"\n\x00" as *const u8 as *const libc::c_char as *mut libc::c_char);
     filesystem::writeln_to_file_maybe(&mut state.output.listFile, "");
 }

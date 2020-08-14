@@ -76,8 +76,6 @@ extern "C" {
     fn fopen(__filename: *const libc::c_char, __modes: *const libc::c_char)
      -> *mut FILE;
     #[no_mangle]
-    fn fprintf(_: *mut FILE, _: *const libc::c_char, _: ...) -> libc::c_int;
-    #[no_mangle]
     fn printf(_: *const libc::c_char, _: ...) -> libc::c_int;
     #[no_mangle]
     fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...)
@@ -90,8 +88,6 @@ extern "C" {
      -> *mut libc::c_char;
     #[no_mangle]
     fn fputs(__s: *const libc::c_char, __stream: *mut FILE) -> libc::c_int;
-    #[no_mangle]
-    fn puts(__s: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
     fn fwrite(__ptr: *const libc::c_void, __size: size_t, __n: size_t,
               __s: *mut FILE) -> size_t;

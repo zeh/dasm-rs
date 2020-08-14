@@ -25,14 +25,10 @@ extern "C" {
     pub type _IO_codecvt;
     pub type _IO_marker;
     #[no_mangle]
-    fn fprintf(_: *mut FILE, _: *const libc::c_char, _: ...) -> libc::c_int;
-    #[no_mangle]
     fn printf(_: *const libc::c_char, _: ...) -> libc::c_int;
     #[no_mangle]
     fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...)
      -> libc::c_int;
-    #[no_mangle]
-    fn puts(__s: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
      -> *mut libc::c_void;

@@ -34,10 +34,6 @@ extern "C" {
     #[no_mangle]
     fn putc(__c: libc::c_int, __stream: *mut FILE) -> libc::c_int;
     #[no_mangle]
-    fn fputs(__s: *const libc::c_char, __stream: *mut FILE) -> libc::c_int;
-    #[no_mangle]
-    fn puts(__s: *const libc::c_char) -> libc::c_int;
-    #[no_mangle]
     fn fread(__ptr: *mut libc::c_void, __size: size_t, __n: size_t,
              __stream: *mut FILE) -> size_t;
     #[no_mangle]
