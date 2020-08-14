@@ -6,12 +6,18 @@ Warning: Unable to open 'vcs.h'
 
 ----------------------------------------------------------------------
 SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
-INITIAL CODE SEGMENT         f800                   0000 ????              10000                   0000 ????             
+INITIAL CODE SEGMENT         f800                            f800                           
 ----------------------------------------------------------------------
 2 references to unknown symbols.
 1 events requiring another assembler pass.
  - Expression in mnemonic not resolved.
 
+--- Symbol List (sorted by symbol)
+0.error                  0000 ????         (R )
+INEEPROM                 0000                  
+Start                    f800              (R )
+vcs.h                    0000 ????         (R )
+--- End of Symbol List.
 --- Unresolved Symbol List
 vcs.h                    0000 ????         (R )
 0.error                  0000 ????         (R )
@@ -24,12 +30,18 @@ Warning: Unable to open 'vcs.h'
 
 ----------------------------------------------------------------------
 SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
-INITIAL CODE SEGMENT         f800                   0000 ????              10000                   0000 ????             
+INITIAL CODE SEGMENT         f800                            f800                           
 ----------------------------------------------------------------------
 2 references to unknown symbols.
 1 events requiring another assembler pass.
  - Expression in mnemonic not resolved.
 
+--- Symbol List (sorted by symbol)
+0.error                  0000 ????         (R )
+INEEPROM                 0000                  
+Start                    f800              (R )
+vcs.h                    0000 ????         (R )
+--- End of Symbol List.
 --- Unresolved Symbol List
 vcs.h                    0000 ????         (R )
 0.error                  0000 ????         (R )
@@ -44,15 +56,3 @@ vcs.h                    0000 ????         (R )
 jentzsch2.asm (10): error: Unknown Mnemonic 'ldz'.
 
 Fatal assembly error: Source is not resolvable.
---- Symbol List (sorted by symbol)
-0.error                  0000 ????         (R )
-INEEPROM                 0000                  
-Start                    f800              (R )
-vcs.h                    0000 ????         (R )
---- End of Symbol List.
---- Symbol List (sorted by symbol)
-0.error                  0000 ????         (R )
-INEEPROM                 0000                  
-Start                    f800              (R )
-vcs.h                    0000 ????         (R )
---- End of Symbol List.

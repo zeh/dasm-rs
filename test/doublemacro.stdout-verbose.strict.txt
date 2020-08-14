@@ -3,5 +3,6 @@ Debug trace OFF
 START OF PASS: 1
  Including file "doublemacro.asm"
 
+Aborting assembly
 doublemacro.asm (8): error: Macro "testmac" definition is repeated.
 

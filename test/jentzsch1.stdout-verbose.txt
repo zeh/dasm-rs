@@ -6,21 +6,21 @@ Warning: Unable to open 'vcs.h'
 
 ----------------------------------------------------------------------
 SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
-INITIAL CODE SEGMENT         f800                   0000 ????              10000                   0000 ????             
+INITIAL CODE SEGMENT         f800                            f800                           
 ----------------------------------------------------------------------
 1 references to unknown symbols.
 0 events requiring another assembler pass.
-
---- Unresolved Symbol List
-vcs.h                    0000 ????         (R )
---- 1 Unresolved Symbol 
-
-jentzsch1.asm (10): error: Unknown Mnemonic 'ldz'.
 
 --- Symbol List (sorted by symbol)
 INEEPROM                 0000                  
 Start                    f800              (R )
 vcs.h                    0000 ????         (R )
 --- End of Symbol List.
+--- Unresolved Symbol List
+vcs.h                    0000 ????         (R )
+--- 1 Unresolved Symbol 
+
+jentzsch1.asm (10): error: Unknown Mnemonic 'ldz'.
+
 Unrecoverable error(s) in pass, aborting assembly!
 Complete.

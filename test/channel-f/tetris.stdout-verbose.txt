@@ -5,7 +5,7 @@ START OF PASS: 1
 
 ----------------------------------------------------------------------
 SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
-INITIAL CODE SEGMENT         0800                   0000 ????              1800                   0000 ????             
+INITIAL CODE SEGMENT         0800                            0800                           
 ----------------------------------------------------------------------
 143 references to unknown symbols.
 242 events requiring another assembler pass.
@@ -182,18 +182,7 @@ playing1x                0a45              (R )
 playing2                 0ac4              (R )
 playing2a                0ae7              (R )
 playing2b                0ad2              (R )
-playing2c                0b67              (R
-START OF PASS: 2
- Including file "channel-f/tetris.asm"
-
-----------------------------------------------------------------------
-SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
-INITIAL CODE SEGMENT         0800                   0000 ????              1800                   0000 ????             
-----------------------------------------------------------------------
-0 references to unknown symbols.
-0 events requiring another assembler pass.
-
- )
+playing2c                0b67              (R )
 playing2d                0b81              (R )
 playing2e                0b84              (R )
 playing2x                0b0d              (R )
@@ -230,6 +219,17 @@ waste1a                  0a07              (R )
 waste2                   0b89              (R )
 waste2a                  0acf              (R )
 --- End of Symbol List.
+
+START OF PASS: 2
+ Including file "channel-f/tetris.asm"
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         0800                            0800                           
+----------------------------------------------------------------------
+0 references to unknown symbols.
+0 events requiring another assembler pass.
+
 --- Symbol List (sorted by symbol)
 ascii                    125f              (R )
 cfc                      0f57              (R )
@@ -365,8 +365,7 @@ p2blockc1                2a94
 p2blockc2                2a95                  
 p2bonus                  29f5              (R )
 p2borderc1               2a90              (R )
-p2borderc2        
-       2a91                  
+p2borderc2               2a91                  
 p2delay                  29fb              (R )
 p2delay_counter          29fc              (R )
 p2fieldposx              2a93                  
@@ -438,4 +437,5 @@ waste1a                  0a07              (R )
 waste2                   0b89              (R )
 waste2a                  0acf              (R )
 --- End of Symbol List.
+
 Complete.

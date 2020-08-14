@@ -5,7 +5,7 @@ START OF PASS: 1
 
 ----------------------------------------------------------------------
 SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
-INITIAL CODE SEGMENT         0800                   0000 ????              1000                   0000 ????             
+INITIAL CODE SEGMENT         0800                            0800                           
 ----------------------------------------------------------------------
 96 references to unknown symbols.
 167 events requiring another assembler pass.
@@ -97,18 +97,7 @@ redo                     0a8a              (R )
 redsq                    0ca6              (R )
 replay                   085e              (R )
 replay2                  0acc              (R )
-right                    090d
-START OF PASS: 2
- Including file "channel-f/lights.asm"
-
-----------------------------------------------------------------------
-SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
-INITIAL CODE SEGMENT         0800                   0000 ????              1000                   0000 ????             
-----------------------------------------------------------------------
-0 references to unknown symbols.
-0 events requiring another assembler pass.
-
-              (R )
+right                    090d              (R )
 snd2loop                 09fd              (R )
 snd2loopa                0a01              (R )
 snd3loop                 0ab2              (R )
@@ -139,6 +128,17 @@ winsq2                   0cb2              (R )
 xtable                   0d55              (R )
 xtoggle                  0983              (R )
 --- End of Symbol List.
+
+START OF PASS: 2
+ Including file "channel-f/lights.asm"
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         0800                            0800                           
+----------------------------------------------------------------------
+0 references to unknown symbols.
+0 events requiring another assembler pass.
+
 --- Symbol List (sorted by symbol)
 allowpress               094e              (R )
 array                    2800              (R )
@@ -194,8 +194,7 @@ lineexit                 0b6d              (R )
 lt10                     0a6b              (R )
 lt100                    0a50              (R )
 lt1000                   0a35              (R )
-mainloop                 08c5     
-         (R )
+mainloop                 08c5              (R )
 maxrow                   08f5              (R )
 minrow                   08e6              (R )
 nextpat                  082e              (R )
@@ -256,4 +255,5 @@ winsq2                   0cb2              (R )
 xtable                   0d55              (R )
 xtoggle                  0983              (R )
 --- End of Symbol List.
+
 Complete.

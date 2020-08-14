@@ -11,12 +11,21 @@ START OF PASS: 1
 
 ----------------------------------------------------------------------
 SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
-INITIAL CODE SEGMENT         0000                   0000 ????              0008                   0000 ????             
+INITIAL CODE SEGMENT         0000                            0000                           
 ----------------------------------------------------------------------
 6 references to unknown symbols.
 1 events requiring another assembler pass.
  - Expression in mnemonic not resolved.
 
+--- Symbol List (sorted by symbol)
+a.inc                    0000 ????         (R )
+include                  0000 ????         (R )
+INEEPROM                 0000                  
+PASSFORCEA               0000 ????         (R )
+PASSFORCEB               0001                  
+TESTINCA                 64652d612e696e63      str     (R ) "include-a.inc"
+z.inc                    0000 ????         (R )
+--- End of Symbol List.
 --- Unresolved Symbol List
 a.inc                    0000 ????         (R )
 include                  0000 ????         (R )
@@ -36,27 +45,11 @@ START OF PASS: 2
 
 ----------------------------------------------------------------------
 SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
-INITIAL CODE SEGMENT         0000                   0000 ????              0008                   0000 ????             
+INITIAL CODE SEGMENT         0000                            0000                           
 ----------------------------------------------------------------------
 4 references to unknown symbols.
 0 events requiring another assembler pass.
 
---- Unresolved Symbol List
-a.inc                    0000 ????         (R )
-include                  0000 ????         (R )
-z.inc                    0000 ????         (R )
---- 3 Unresolved Symbols
-
-
---- Symbol List (sorted by symbol)
-a.inc                    0000 ????         (R )
-include                  0000 ????         (R )
-INEEPROM                 0000                  
-PASSFORCEA               0000 ????         (R )
-PASSFORCEB               0001                  
-TESTINCA                 64652d612e696e63      str     (R ) "include-a.inc"
-z.inc                    0000 ????         (R )
---- End of Symbol List.
 --- Symbol List (sorted by symbol)
 a.inc                    0000 ????         (R )
 include                  0000 ????         (R )
@@ -66,4 +59,11 @@ PASSFORCEB               0001
 TESTINCA                 64652d612e696e63      str     (R ) "include-a.inc"
 z.inc                    0000 ????         (R )
 --- End of Symbol List.
+--- Unresolved Symbol List
+a.inc                    0000 ????         (R )
+include                  0000 ????         (R )
+z.inc                    0000 ????         (R )
+--- 3 Unresolved Symbols
+
+
 Complete.

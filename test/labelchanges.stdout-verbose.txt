@@ -5,65 +5,13 @@ START OF PASS: 1
 
 ----------------------------------------------------------------------
 SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
-INITIAL CODE SEGMENT         1000                   0000 ????              1286                   0000 ????             
+INITIAL CODE SEGMENT         1000                            1000                           
 ----------------------------------------------------------------------
 7 references to unknown symbols.
 8 events requiring another assembler pass.
  - Expression in mnemonic not resolved.
  - IF: Expression not resolved.
  - Label defined after it has been referenced (forward reference).
-
-
-START OF PASS: 2
- Including file "labelchanges.asm"
-
-----------------------------------------------------------------------
-SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
-INITIAL CODE SEGMENT         1000                   0000 ????              128c                   0000 ????             
-----------------------------------------------------------------------
-0 references to unknown symbols.
-3 events requiring another assembler pass.
- - Label value is different from that of the previous pass (phase error).
-
-
-START OF PASS: 3
- Including file "labelchanges.asm"
-
-----------------------------------------------------------------------
-SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
-INITIAL CODE SEGMENT         1000                   0000 ????              128f                   0000 ????             
-----------------------------------------------------------------------
-1 references to unknown symbols.
-4 events requiring another assembler pass.
- - Expression in mnemonic not resolved.
- - Label defined after it has been referenced (forward reference).
- - Label value is different from that of the previous pass (phase error).
-
-
-START OF PASS: 4
- Including file "labelchanges.asm"
-
-----------------------------------------------------------------------
-SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
-INITIAL CODE SEGMENT         1000                   0000 ????              1292                   0000 ????             
-----------------------------------------------------------------------
-1 references to unknown symbols.
-3 events requiring another assembler pass.
- - Expression in mnemonic not resolved.
- - Label defined after it has been referenced (forward reference).
- - Label value is different from that of the previous pass (phase error).
-
-
-START OF PASS: 5
- Including file "labelchanges.asm"
-
-----------------------------------------------------------------------
-SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
-INITIAL CODE SEGMENT         1000                   0000 ????              1292                   0000 ????             
-----------------------------------------------------------------------
-0 references to unknown symbols.
-0 events requiring another assembler pass.
-
 
 --- Symbol List (sorted by symbol)
 4$skip$                  1104              (R )
@@ -74,6 +22,18 @@ ForwardJmp2              1286              (R )
 ForwardOk                1183              (R )
 INEEPROM                 0000                  
 --- End of Symbol List.
+
+START OF PASS: 2
+ Including file "labelchanges.asm"
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         1000                            1000                           
+----------------------------------------------------------------------
+0 references to unknown symbols.
+3 events requiring another assembler pass.
+ - Label value is different from that of the previous pass (phase error).
+
 --- Symbol List (sorted by symbol)
 4$skip$                  1104              (R )
 BackJmp                  1080              (R )
@@ -83,6 +43,20 @@ ForwardJmp2              128c              (R )
 ForwardOk                1185              (R )
 INEEPROM                 0000                  
 --- End of Symbol List.
+
+START OF PASS: 3
+ Including file "labelchanges.asm"
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         1000                            1000                           
+----------------------------------------------------------------------
+1 references to unknown symbols.
+4 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+ - Label defined after it has been referenced (forward reference).
+ - Label value is different from that of the previous pass (phase error).
+
 --- Symbol List (sorted by symbol)
 4$skip$                  1104              (R )
 7$skip$                  118a              (R )
@@ -93,6 +67,20 @@ ForwardJmp2              128f              (R )
 ForwardOk                1185              (R )
 INEEPROM                 0000                  
 --- End of Symbol List.
+
+START OF PASS: 4
+ Including file "labelchanges.asm"
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         1000                            1000                           
+----------------------------------------------------------------------
+1 references to unknown symbols.
+3 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+ - Label defined after it has been referenced (forward reference).
+ - Label value is different from that of the previous pass (phase error).
+
 --- Symbol List (sorted by symbol)
 4$skip$                  1104              (R )
 7$skip$                  118a              (R )
@@ -104,6 +92,17 @@ ForwardJmp2              1292              (R )
 ForwardOk                1185              (R )
 INEEPROM                 0000                  
 --- End of Symbol List.
+
+START OF PASS: 5
+ Including file "labelchanges.asm"
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         1000                            1000                           
+----------------------------------------------------------------------
+0 references to unknown symbols.
+0 events requiring another assembler pass.
+
 --- Symbol List (sorted by symbol)
 4$skip$                  1104              (R )
 7$skip$                  118a              (R )
@@ -115,4 +114,5 @@ ForwardJmp2              1292              (R )
 ForwardOk                1185              (R )
 INEEPROM                 0000                  
 --- End of Symbol List.
+
 Complete.

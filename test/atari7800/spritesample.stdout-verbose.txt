@@ -6,9 +6,9 @@ START OF PASS: 1
 
 ----------------------------------------------------------------------
 SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
-ROM                          8000                   0000 ????              10000                   0000 ????             
-data                     [u] 0040                   0000 ????              0051              ( S) 0000 ????             
-INITIAL CODE SEGMENT         0000 ????              0000 ????              0000 ????              0000 ????             
+ROM                          8000                            8000                           
+data                     [u] 0040                            0040                           
+INITIAL CODE SEGMENT         0000 ????                       0000 ????                      
 ----------------------------------------------------------------------
 16 references to unknown symbols.
 22 events requiring another assembler pass.
@@ -100,25 +100,7 @@ PAUDF2                   0004
 PAUDF3                   0006                  
 PRANDOM                  000a                  
 PSKCTL                   000f                  
-redraw                   81b5--- Unresolved Symbol List
-A78HEADER                0000 ????         (R )
---- 1 Unresolved Symbol 
-
-
-START OF PASS: 2
- Including file "atari7800/spritesample.asm"
- Including file "7800.h"
-
-----------------------------------------------------------------------
-SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
-ROM                          8000                   0000 ????              10000                   0000 ????             
-data                     [u] 0040                   0000 ????              0051              ( S) 0000 ????             
-INITIAL CODE SEGMENT         0000 ????              0000 ????              0000 ????              0000 ????             
-----------------------------------------------------------------------
-1 references to unknown symbols.
-0 events requiring another assembler pass.
-
-                  
+redraw                   81b5                  
 ROMTOP                   8000                  
 skip1                    80f7              (R )
 skip2                    8103              (R )
@@ -142,6 +124,24 @@ XCTRL                    0470
 xpos                     0040              (R )
 ypos                     0041              (R )
 --- End of Symbol List.
+--- Unresolved Symbol List
+A78HEADER                0000 ????         (R )
+--- 1 Unresolved Symbol 
+
+
+START OF PASS: 2
+ Including file "atari7800/spritesample.asm"
+ Including file "7800.h"
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+ROM                          8000                            8000                           
+data                     [u] 0040                            0040                           
+INITIAL CODE SEGMENT         0000 ????                       0000 ????                      
+----------------------------------------------------------------------
+1 references to unknown symbols.
+0 events requiring another assembler pass.
+
 --- Symbol List (sorted by symbol)
 A78HEADER                0000 ????         (R )
 AUDC0                    0015                  
@@ -204,12 +204,7 @@ P2C3                     002b
 P3C1                     002d                  
 P3C2                     002e                  
 P3C3                     002f                  
-P4C1                     0031     --- Unresolved Symbol List
-A78HEADER                0000 ????         (R )
---- 1 Unresolved Symbol 
-
-
-             
+P4C1                     0031                  
 P4C2                     0032                  
 P4C3                     0033                  
 P5C1                     0035                  
@@ -256,4 +251,9 @@ XCTRL                    0470
 xpos                     0040              (R )
 ypos                     0041              (R )
 --- End of Symbol List.
+--- Unresolved Symbol List
+A78HEADER                0000 ????         (R )
+--- 1 Unresolved Symbol 
+
+
 Complete.
