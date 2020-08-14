@@ -264,9 +264,7 @@ pub unsafe extern "C" fn programlabel() {
     */
     sym = findsymbol(str, len);
     if !sym.is_null() {
-        if (*sym).flags as libc::c_int &
-               (0x1 as libc::c_int | 0x4 as libc::c_int) ==
-               0x1 as libc::c_int | 0x4 as libc::c_int {
+        if (*sym).flags & (SymbolTypes::Unknown | SymbolTypes::Referenced) == SymbolTypes::Unknown | SymbolTypes::Referenced {
             state.execution.redoIndex += 1;
             state.execution.redoWhy |= ReasonCodes::ForwardReference;
             if state.parameters.debug {
@@ -277,12 +275,10 @@ pub unsafe extern "C" fn programlabel() {
                     cflags,
                 );
             }
-        } else if cflags as libc::c_int & 0x1 as libc::c_int != 0 &&
-                      (*sym).flags as libc::c_int & 0x4 as libc::c_int != 0 {
+        } else if cflags & SymbolTypes::Unknown != 0 && (*sym).flags & SymbolTypes::Referenced != 0 {
             state.execution.redoIndex += 1;
             state.execution.redoWhy |= ReasonCodes::ForwardReference
-        } else if cflags as libc::c_int & 0x1 as libc::c_int == 0 &&
-                      (*sym).flags as libc::c_int & 0x1 as libc::c_int == 0 {
+        } else if cflags & SymbolTypes::Unknown == 0 && (*sym).flags & SymbolTypes::Unknown == 0 {
             if pc != (*sym).value as libc::c_ulong {
                 /*
             * If we had an unevaluated IF expression in the
@@ -309,9 +305,7 @@ pub unsafe extern "C" fn programlabel() {
         }
     } else { sym = CreateSymbol(str, len) }
     (*sym).value = pc as libc::c_long;
-    (*sym).flags =
-        ((*sym).flags as libc::c_int & !(0x1 as libc::c_int) |
-             cflags as libc::c_int & 0x1 as libc::c_int) as libc::c_uchar;
+    (*sym).flags = ((*sym).flags & !(SymbolTypes::Unknown) | cflags & SymbolTypes::Unknown) as libc::c_uchar;
 }
 #[no_mangle]
 pub static mut SymAlloc: *mut _SYMBOL = 0 as *const _SYMBOL as *mut _SYMBOL;

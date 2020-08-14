@@ -358,7 +358,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
     let mut symbase: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut opsize: libc::c_int = 0;
     let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
-    currentSegment.flags = currentSegment.flags | SegmentTypes::Referenced;
+    currentSegment.flags |= SegmentTypes::Referenced;
     programlabel();
     symbase = eval(str, 1);
     if state.execution.trace {
@@ -1038,12 +1038,12 @@ pub unsafe extern "C" fn v_org(mut str: *mut libc::c_char,
     sym = eval(str, 0);
     let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
     currentSegment.org = (*sym).value as u64;
-    if (*sym).flags & SegmentTypes::Unknown != 0 {
-        currentSegment.flags = currentSegment.flags | SegmentTypes::Unknown;
+    if (*sym).flags & SymbolTypes::Unknown != 0 {
+        currentSegment.flags |= SymbolTypes::Unknown;
     } else {
-        currentSegment.flags = currentSegment.flags & !SegmentTypes::Unknown;
+        currentSegment.flags &= !SymbolTypes::Unknown;
     }
-    if currentSegment.initflags & SegmentTypes::Unknown != 0 {
+    if currentSegment.initflags & SymbolTypes::Unknown != 0 {
         currentSegment.initorg = (*sym).value as u64;
         currentSegment.initflags = (*sym).flags;
     }
@@ -1061,15 +1061,15 @@ pub unsafe extern "C" fn v_rorg(mut str: *mut libc::c_char,
                                 mut _dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = eval(str, 0);
     let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
-    currentSegment.flags = currentSegment.flags | SegmentTypes::RelocatableOrigin;
+    currentSegment.flags |= SegmentTypes::RelocatableOrigin;
     if (*sym).addrmode != AddressModes::Imp as u8 {
         currentSegment.rorg = (*sym).value as u64;
-        if (*sym).flags & SegmentTypes::Unknown != 0 {
-            currentSegment.rflags = currentSegment.rflags | SegmentTypes::Unknown;
+        if (*sym).flags & SymbolTypes::Unknown != 0 {
+            currentSegment.rflags |= SymbolTypes::Unknown;
         } else {
-            currentSegment.rflags = currentSegment.rflags & !SegmentTypes::Unknown;
+            currentSegment.rflags &= !SymbolTypes::Unknown;
         }
-        if currentSegment.initrflags & SegmentTypes::Unknown != 0 {
+        if currentSegment.initrflags & SymbolTypes::Unknown != 0 {
             currentSegment.initrorg = (*sym).value as u64;
             currentSegment.initrflags = (*sym).flags
         }
@@ -1082,7 +1082,7 @@ pub unsafe extern "C" fn v_rend(mut _str: *mut libc::c_char,
                                 mut _dummy: *mut _MNE) {
     programlabel();
     let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
-    currentSegment.flags = currentSegment.flags & !SegmentTypes::RelocatableOrigin;
+    currentSegment.flags &= !SegmentTypes::RelocatableOrigin;
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_align(mut str: *mut libc::c_char,
@@ -1092,9 +1092,9 @@ pub unsafe extern "C" fn v_align(mut str: *mut libc::c_char,
     let mut fill: u8 = 0;
     let mut rorg: u8 = currentSegment.flags & SegmentTypes::RelocatableOrigin;
     if rorg != 0 {
-        currentSegment.rflags = currentSegment.rflags | SegmentTypes::Referenced;
+        currentSegment.rflags |= SegmentTypes::Referenced;
     } else {
-        currentSegment.flags = currentSegment.flags | SegmentTypes::Referenced;
+        currentSegment.flags |= SegmentTypes::Referenced;
     }
     if !(*sym).next.is_null() {
         if (*(*sym).next).flags & SymbolTypes::Unknown != 0 {
@@ -1105,7 +1105,7 @@ pub unsafe extern "C" fn v_align(mut str: *mut libc::c_char,
         }
     }
     if rorg != 0 {
-        if (currentSegment.rflags | (*sym).flags) & SegmentTypes::Unknown != 0 {
+        if (currentSegment.rflags | (*sym).flags) & SymbolTypes::Unknown != 0 {
             state.execution.redoIndex += 1;
             state.execution.redoWhy |= ReasonCodes::AlignRelocatableOriginNotKnown
         } else {
