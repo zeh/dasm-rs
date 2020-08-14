@@ -1979,7 +1979,7 @@ pub unsafe extern "C" fn pushinclude(mut str: *mut libc::c_char) {
     println!("Warning: Unable to open '{}'", transient::str_pointer_to_string(str));
 }
 #[no_mangle]
-pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool, mut sText: *const libc::c_char) -> AsmErrorEquates {
+pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut abort: bool, mut sText: *const libc::c_char) -> AsmErrorEquates {
     let mut errorOutput: String = String::new();
     let mut pincfile: *mut _INCFILE = 0 as *mut _INCFILE;
     /* file pointer we print error messages to */
@@ -2068,12 +2068,17 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut bAbort: bool, mut 
     // FIXME: this is just temporary, for passbuffer. Remove later.
     errorOutput.push_str("\x00");
     passbuffer_update(0, errorOutput.as_mut_ptr() as *mut i8);
-    if bAbort {
+    if abort {
         passbuffer_output(1);
-        filesystem::writeln_to_file_maybe(
-            errorFile,
-            "Aborting assembly"
-        );
+        if errorToFile {
+            filesystem::writeln_to_file_maybe(
+                errorFile,
+                "Aborting assembly"
+            );
+            filesystem::close_file_maybe(errorFile);
+        } else {
+            println!("Aborting assembly");
+        }
         passbuffer_output(0);
         std::process::exit(1);
     }
