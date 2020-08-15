@@ -23,6 +23,7 @@ pub mod expressions;
 pub mod globals;
 pub mod operations;
 pub mod processors;
+pub mod segments;
 pub mod symbols;
 pub mod types;
 pub mod utils;
@@ -36,6 +37,9 @@ use constants::{
     S_HASH_SIZE,
 };
 use globals::state;
+use segments::{
+    clear_segments,
+};
 use types::flags:: {
     ReasonCodes,
     SegmentTypes,
@@ -1070,7 +1074,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                             passbuffer_clear(0);
                             passbuffer_clear(1);
                             clearrefs();
-                            clearsegs();
+                            clear_segments(&mut state.other.segments);
                         }
                     } else {
                         // Do not print any errors if assembly is successful!!!!! -FXQ
@@ -1309,15 +1313,6 @@ pub unsafe extern "C" fn sftos(mut val: libc::c_long, mut flags: libc::c_int)
         strcat(ptr, b")\x00" as *const u8 as *const libc::c_char);
     } else { strcat(ptr, b" \x00" as *const u8 as *const libc::c_char); }
     return ptr;
-}
-#[no_mangle]
-pub unsafe extern "C" fn clearsegs() {
-    for seg in &mut state.other.segments {
-        seg.flags = (seg.flags & SegmentTypes::BSS) | SegmentTypes::Unknown;
-        seg.rflags = SegmentTypes::Unknown;
-        seg.initflags = SegmentTypes::Unknown;
-        seg.initrflags = SegmentTypes::Unknown;
-    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn clearrefs() {
