@@ -10,8 +10,8 @@ use crate::types::enums::{
 	AddressModes,
 	AsmErrorEquates,
 	BitOrder,
-	Format,
 	ErrorFormat,
+	Format,
 	ListMode,
 	Processors,
 	SortMode,
@@ -33,7 +33,7 @@ pub struct GlobalState {
 	// Set by main, misc stuff
 	pub other: OtherMainState,
 
-	// Set by ::operations during execution
+	// Set by ::operations (and others) during execution
 	pub execution: ExecutionState,
 
 	// Set by ::expressions during execution
@@ -60,13 +60,13 @@ pub struct OtherMainState {
 	pub currentSegment: usize,
 	pub incLevel: i8,
 	pub stopAtEnd: bool,
-	pub segments: Vec::<Segment>,
+	pub segments: Vec<Segment>,
 }
 
 pub struct ExecutionState {
 	pub bitOrder: BitOrder,
 	pub isClear: bool,
-	pub includeDirList: Vec::<String>,
+	pub includeDirList: Vec<String>,
 	pub listMode: ListMode,
 	pub modeNext: AddressModes,
 	pub pass: u8,
@@ -101,12 +101,12 @@ pub struct OutputState {
 // In original C code, "_SEGMENT" and used as a linked list
 pub struct Segment {
 	pub name: String,
-    pub flags: u8,
-    pub rflags: u8,
-    pub org: u64,
-    pub rorg: u64,
-    pub initorg: u64,
-    pub initrorg: u64,
-    pub initflags: u8,
-    pub initrflags: u8,
+	pub flags: u8,
+	pub rflags: u8,
+	pub org: u64,
+	pub rorg: u64,
+	pub initorg: u64,
+	pub initrorg: u64,
+	pub initflags: u8,
+	pub initrflags: u8,
 }
