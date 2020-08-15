@@ -156,10 +156,6 @@ extern "C" {
     #[no_mangle]
     static mut FI_temp: *mut FILE;
     #[no_mangle]
-    static mut Plab: libc::c_ulong;
-    #[no_mangle]
-    static mut Pflags: libc::c_ulong;
-    #[no_mangle]
     static mut CheckSum: libc::c_ulong;
     #[no_mangle]
     fn v_execmac(str: *mut libc::c_char, mac: *mut _MACRO);
@@ -1202,10 +1198,11 @@ unsafe extern "C" fn outlistfile(mut comment: *const libc::c_char) {
                (*Ifstack).acctrue as libc::c_int != 0 {
             ' ' as i32
         } else { '-' as i32 } as libc::c_char;
-    c =
-        if Pflags & 0x10 as libc::c_int as libc::c_ulong != 0 {
-            'U' as i32
-        } else { ' ' as i32 } as libc::c_char;
+    c = if state.execution.programFlags & SegmentTypes::BSS!= 0 {
+        'U' as i8
+    } else {
+        ' ' as i8
+    };
     ptr = Extstr;
     dot = b"\x00" as *const u8 as *const libc::c_char;
     if !ptr.is_null() {
@@ -1218,7 +1215,7 @@ unsafe extern "C" fn outlistfile(mut comment: *const libc::c_char) {
         b"%7ld %c%s\x00" as *const u8 as *const libc::c_char,
         (*pIncfile).lineno,
         c as libc::c_int,
-        sftos(Plab as libc::c_long, (Pflags & 7) as libc::c_int)
+        sftos(state.execution.programOrg as libc::c_long, (state.execution.programFlags & 7) as libc::c_int)
     );
     j = strlen(buf1.as_mut_ptr()) as usize;
     i = 0;

@@ -71,6 +71,8 @@ pub struct ExecutionState {
 	pub modeNext: AddressModes,
 	pub pass: u8,
 	pub processor: Processors,
+	pub programOrg: u64,
+	pub programFlags: u8,
 	pub redoEval: i32,
 	pub redoIf: u64,
 	pub redoIndex: i32,

@@ -47,10 +47,6 @@ extern "C" {
     #[no_mangle]
     static mut Lastlocaldollarindex: libc::c_ulong;
     #[no_mangle]
-    static mut Plab: libc::c_ulong;
-    #[no_mangle]
-    static mut Pflags: libc::c_ulong;
-    #[no_mangle]
     static mut CheckSum: libc::c_ulong;
     #[no_mangle]
     fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const libc::c_char)
@@ -242,8 +238,8 @@ pub unsafe extern "C" fn programlabel() {
     } else {
         currentSegment.org
     };
-    Plab =currentSegment.org;
-    Pflags = currentSegment.flags as libc::c_ulong;
+    state.execution.programOrg = currentSegment.org;
+    state.execution.programFlags = currentSegment.flags;
     str = *Av.as_mut_ptr().offset(0 as isize);
     if *str as libc::c_int == 0 { return }
     len = strlen(str) as libc::c_int;

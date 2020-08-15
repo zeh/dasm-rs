@@ -53,6 +53,8 @@ pub static mut state: GlobalState = GlobalState {
         modeNext: AddressModes::Imp,
         pass: 0,
         processor: Processors::None,
+        programOrg: 0,
+	    programFlags: 0,
         redoEval: 0,
         redoIf: 0,
         redoIndex: 0,
