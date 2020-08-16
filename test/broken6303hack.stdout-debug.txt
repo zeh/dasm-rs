@@ -1,0 +1,363 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ; See ../src/BUGS for the details. Here's how to use macros
+
+0MEMORYADDR0 ; to work around the issue.
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	.processor HD6303
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	.mac hack
+
+0MEMORYADDR0 	dc.b	{1}	; opcode
+
+0MEMORYADDR0 	dc.b	{2}	; immediate value
+
+0MEMORYADDR0 	dc.b	{3}	; zero-page address
+
+0MEMORYADDR0 	.endm
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	.mac aimd
+
+0MEMORYADDR0 	hack	$71,{1},{2}
+
+0MEMORYADDR0 	.endm
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	.mac aimx
+
+0MEMORYADDR0 	hack	$61,{1},{2}
+
+0MEMORYADDR0 	.endm
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	.mac oimd
+
+0MEMORYADDR0 	hack	$72,{1},{2}
+
+0MEMORYADDR0 	.endm
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	.mac oimx
+
+0MEMORYADDR0 	hack	$62,{1},{2}
+
+0MEMORYADDR0 	.endm
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	.mac eimd
+
+0MEMORYADDR0 	hack	$75,{1},{2}
+
+0MEMORYADDR0 	.endm
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	.mac eimx
+
+0MEMORYADDR0 	hack	$65,{1},{2}
+
+0MEMORYADDR0 	.endm
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	.mac timd
+
+0MEMORYADDR0 	hack	$7b,{1},{2}
+
+0MEMORYADDR0 	.endm
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	.mac timx
+
+0MEMORYADDR0 	hack	$6b,{1},{2}
+
+0MEMORYADDR0 	.endm
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	.org $0
+
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	; the broken DASM versions
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	aim	$10	; assembles to 71 10
+
+char '$'
+stackarg 16 (@0)
+0MEMORYADDR0 	aim	$10,x	; assembles to 61 10
+
+char '$'
+stackarg 16 (@0)
+char ','
+0MEMORYADDR0 	oim	$10	; assembles to 72 10
+
+char '$'
+stackarg 16 (@0)
+0MEMORYADDR0 	oim	$10,x	; assembles to 62 10
+
+char '$'
+stackarg 16 (@0)
+char ','
+0MEMORYADDR0 	eim	$10	; assembles to 75 10
+
+char '$'
+stackarg 16 (@0)
+0MEMORYADDR0 	eim	$10,x	; assembles to 65 10
+
+char '$'
+stackarg 16 (@0)
+char ','
+0MEMORYADDR0 	tim	$10	; assembles to 7B 10
+
+char '$'
+stackarg 16 (@0)
+0MEMORYADDR0 	tim	$10,x	; assembles to 6B 10
+
+char '$'
+stackarg 16 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	; the fixed macro versions
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	aimd	$10,$20	; should be "aim #$10,$20"
+
+0MEMORYADDR0  hack $71,{1},{2}
+macro tail: '{1},{2}'
+add/str: -3 ',{2}'
+strlist: '$10' 3
+macro tail: '{2}'
+add/str: -3 ''
+strlist: '$20' 3
+0MEMORYADDR0  dc.b {1}
+macro tail: '{1}'
+add/str: -3 ''
+strlist: '$71' 3
+char '$'
+stackarg 113 (@0)
+0MEMORYADDR0  dc.b {2}
+macro tail: '{2}'
+add/str: -3 ''
+strlist: '$10' 3
+char '$'
+stackarg 16 (@0)
+0MEMORYADDR0  dc.b {3}
+macro tail: '{3}'
+add/str: -3 ''
+strlist: '$20' 3
+char '$'
+stackarg 32 (@0)
+0MEMORYADDR0 	aimx	$10,$20	; should be "aim #$10,$20,x"
+
+0MEMORYADDR0  hack $61,{1},{2}
+macro tail: '{1},{2}'
+add/str: -3 ',{2}'
+strlist: '$10' 3
+macro tail: '{2}'
+add/str: -3 ''
+strlist: '$20' 3
+0MEMORYADDR0  dc.b {1}
+macro tail: '{1}'
+add/str: -3 ''
+strlist: '$61' 3
+char '$'
+stackarg 97 (@0)
+0MEMORYADDR0  dc.b {2}
+macro tail: '{2}'
+add/str: -3 ''
+strlist: '$10' 3
+char '$'
+stackarg 16 (@0)
+0MEMORYADDR0  dc.b {3}
+macro tail: '{3}'
+add/str: -3 ''
+strlist: '$20' 3
+char '$'
+stackarg 32 (@0)
+0MEMORYADDR0 	oimd	$10,$20	; should be "oim #$10,$20"
+
+0MEMORYADDR0  hack $72,{1},{2}
+macro tail: '{1},{2}'
+add/str: -3 ',{2}'
+strlist: '$10' 3
+macro tail: '{2}'
+add/str: -3 ''
+strlist: '$20' 3
+0MEMORYADDR0  dc.b {1}
+macro tail: '{1}'
+add/str: -3 ''
+strlist: '$72' 3
+char '$'
+stackarg 114 (@0)
+0MEMORYADDR0  dc.b {2}
+macro tail: '{2}'
+add/str: -3 ''
+strlist: '$10' 3
+char '$'
+stackarg 16 (@0)
+0MEMORYADDR0  dc.b {3}
+macro tail: '{3}'
+add/str: -3 ''
+strlist: '$20' 3
+char '$'
+stackarg 32 (@0)
+0MEMORYADDR0 	oimx	$10,$20	; should be "oim #$10,$20,x"
+
+0MEMORYADDR0  hack $62,{1},{2}
+macro tail: '{1},{2}'
+add/str: -3 ',{2}'
+strlist: '$10' 3
+macro tail: '{2}'
+add/str: -3 ''
+strlist: '$20' 3
+0MEMORYADDR0  dc.b {1}
+macro tail: '{1}'
+add/str: -3 ''
+strlist: '$62' 3
+char '$'
+stackarg 98 (@0)
+0MEMORYADDR0  dc.b {2}
+macro tail: '{2}'
+add/str: -3 ''
+strlist: '$10' 3
+char '$'
+stackarg 16 (@0)
+0MEMORYADDR0  dc.b {3}
+macro tail: '{3}'
+add/str: -3 ''
+strlist: '$20' 3
+char '$'
+stackarg 32 (@0)
+0MEMORYADDR0 	eimd	$10,$20	; should be "eim #$10,$20"
+
+0MEMORYADDR0  hack $75,{1},{2}
+macro tail: '{1},{2}'
+add/str: -3 ',{2}'
+strlist: '$10' 3
+macro tail: '{2}'
+add/str: -3 ''
+strlist: '$20' 3
+0MEMORYADDR0  dc.b {1}
+macro tail: '{1}'
+add/str: -3 ''
+strlist: '$75' 3
+char '$'
+stackarg 117 (@0)
+0MEMORYADDR0  dc.b {2}
+macro tail: '{2}'
+add/str: -3 ''
+strlist: '$10' 3
+char '$'
+stackarg 16 (@0)
+0MEMORYADDR0  dc.b {3}
+macro tail: '{3}'
+add/str: -3 ''
+strlist: '$20' 3
+char '$'
+stackarg 32 (@0)
+0MEMORYADDR0 	eimx	$10,$20	; should be "eim #$10,$20,x"
+
+0MEMORYADDR0  hack $65,{1},{2}
+macro tail: '{1},{2}'
+add/str: -3 ',{2}'
+strlist: '$10' 3
+macro tail: '{2}'
+add/str: -3 ''
+strlist: '$20' 3
+0MEMORYADDR0  dc.b {1}
+macro tail: '{1}'
+add/str: -3 ''
+strlist: '$65' 3
+char '$'
+stackarg 101 (@0)
+0MEMORYADDR0  dc.b {2}
+macro tail: '{2}'
+add/str: -3 ''
+strlist: '$10' 3
+char '$'
+stackarg 16 (@0)
+0MEMORYADDR0  dc.b {3}
+macro tail: '{3}'
+add/str: -3 ''
+strlist: '$20' 3
+char '$'
+stackarg 32 (@0)
+0MEMORYADDR0 	timd	$10,$20	; should be "tim #$10,$20"
+
+0MEMORYADDR0  hack $7b,{1},{2}
+macro tail: '{1},{2}'
+add/str: -3 ',{2}'
+strlist: '$10' 3
+macro tail: '{2}'
+add/str: -3 ''
+strlist: '$20' 3
+0MEMORYADDR0  dc.b {1}
+macro tail: '{1}'
+add/str: -3 ''
+strlist: '$7b' 3
+char '$'
+stackarg 123 (@0)
+0MEMORYADDR0  dc.b {2}
+macro tail: '{2}'
+add/str: -3 ''
+strlist: '$10' 3
+char '$'
+stackarg 16 (@0)
+0MEMORYADDR0  dc.b {3}
+macro tail: '{3}'
+add/str: -3 ''
+strlist: '$20' 3
+char '$'
+stackarg 32 (@0)
+0MEMORYADDR0 	timx	$10,$20	; should be "tim #$10,$20,x"
+
+0MEMORYADDR0  hack $6b,{1},{2}
+macro tail: '{1},{2}'
+add/str: -3 ',{2}'
+strlist: '$10' 3
+macro tail: '{2}'
+add/str: -3 ''
+strlist: '$20' 3
+0MEMORYADDR0  dc.b {1}
+macro tail: '{1}'
+add/str: -3 ''
+strlist: '$6b' 3
+char '$'
+stackarg 107 (@0)
+0MEMORYADDR0  dc.b {2}
+macro tail: '{2}'
+add/str: -3 ''
+strlist: '$10' 3
+char '$'
+stackarg 16 (@0)
+0MEMORYADDR0  dc.b {3}
+macro tail: '{3}'
+add/str: -3 ''
+strlist: '$20' 3
+char '$'
+stackarg 32 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	.end
+
+
+Complete.

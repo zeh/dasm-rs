@@ -1,0 +1,805 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	processor 68705
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	org 0
+
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 	adc #10
+
+char '#'
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	adc 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	adc 1000
+
+char '1'
+stackarg 1000 (@0)
+0MEMORYADDR0 	adc ,x
+
+char ','
+0MEMORYADDR0 	adc 1,x
+
+char '1'
+stackarg 1 (@0)
+char ','
+0MEMORYADDR0 	adc 1000,x
+
+char '1'
+stackarg 1000 (@0)
+char ','
+0MEMORYADDR0 	add #10
+
+char '#'
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	add 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	add 1000
+
+char '1'
+stackarg 1000 (@0)
+0MEMORYADDR0 	add ,x
+
+char ','
+0MEMORYADDR0 	add 1,x
+
+char '1'
+stackarg 1 (@0)
+char ','
+0MEMORYADDR0 	add 1000,x
+
+char '1'
+stackarg 1000 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	and #10
+
+char '#'
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	and 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	and 1000
+
+char '1'
+stackarg 1000 (@0)
+0MEMORYADDR0 	and ,x
+
+char ','
+0MEMORYADDR0 	and 1,x
+
+char '1'
+stackarg 1 (@0)
+char ','
+0MEMORYADDR0 	and 1000,x
+
+char '1'
+stackarg 1000 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	asla
+
+0MEMORYADDR0 	aslx
+
+0MEMORYADDR0 	asl 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	asl ,x
+
+char ','
+0MEMORYADDR0 	asl 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	asra
+
+0MEMORYADDR0 	asrx
+
+0MEMORYADDR0 	asr 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	asr ,x
+
+char ','
+0MEMORYADDR0 	asr 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	bcc .
+
+char '.'
+stackarg 53 (@0)
+0MEMORYADDR0 	bclr	1,23
+
+char '1'
+stackarg 1 (@0)
+char ','
+char '2'
+stackarg 23 (@0)
+0MEMORYADDR0 	bcs .
+
+char '.'
+stackarg 57 (@0)
+0MEMORYADDR0 	beq .
+
+char '.'
+stackarg 59 (@0)
+0MEMORYADDR0 	bhcc .
+
+char '.'
+stackarg 61 (@0)
+0MEMORYADDR0 	bhcs .
+
+char '.'
+stackarg 63 (@0)
+0MEMORYADDR0 	bhi .
+
+char '.'
+stackarg 65 (@0)
+0MEMORYADDR0 	bhs .
+
+char '.'
+stackarg 67 (@0)
+0MEMORYADDR0 	bih .
+
+char '.'
+stackarg 69 (@0)
+0MEMORYADDR0 	bil .
+
+char '.'
+stackarg 71 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	bit #10
+
+char '#'
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	bit 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	bit 1000
+
+char '1'
+stackarg 1000 (@0)
+0MEMORYADDR0 	bit ,x
+
+char ','
+0MEMORYADDR0 	bit 1,x
+
+char '1'
+stackarg 1 (@0)
+char ','
+0MEMORYADDR0 	bit 1000,x
+
+char '1'
+stackarg 1000 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	blo .
+
+char '.'
+stackarg 86 (@0)
+0MEMORYADDR0 	bls .
+
+char '.'
+stackarg 88 (@0)
+0MEMORYADDR0 	bmc .
+
+char '.'
+stackarg 90 (@0)
+0MEMORYADDR0 	bmi .
+
+char '.'
+stackarg 92 (@0)
+0MEMORYADDR0 	bms .
+
+char '.'
+stackarg 94 (@0)
+0MEMORYADDR0 	bne .
+
+char '.'
+stackarg 96 (@0)
+0MEMORYADDR0 	bpl .
+
+char '.'
+stackarg 98 (@0)
+0MEMORYADDR0 	bra .
+
+char '.'
+stackarg 100 (@0)
+0MEMORYADDR0 	brn .
+
+char '.'
+stackarg 102 (@0)
+0MEMORYADDR0 	brclr	1,10,.
+
+char '1'
+stackarg 1 (@0)
+char ','
+char '1'
+stackarg 10 (@0)
+char ','
+char '.'
+stackarg 104 (@0)
+0MEMORYADDR0 	brset	1,10,.
+
+char '1'
+stackarg 1 (@0)
+char ','
+char '1'
+stackarg 10 (@0)
+char ','
+char '.'
+stackarg 107 (@0)
+0MEMORYADDR0 	bset	1,10
+
+char '1'
+stackarg 1 (@0)
+char ','
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	bsr .
+
+char '.'
+stackarg 112 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	clc
+
+0MEMORYADDR0 	cli
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	clra
+
+0MEMORYADDR0 	clrx
+
+0MEMORYADDR0 	clr 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	clr ,x
+
+char ','
+0MEMORYADDR0 	clr 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	cmp #10
+
+char '#'
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	cmp 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	cmp 1000
+
+char '1'
+stackarg 1000 (@0)
+0MEMORYADDR0 	cmp ,x
+
+char ','
+0MEMORYADDR0 	cmp 1,x
+
+char '1'
+stackarg 1 (@0)
+char ','
+0MEMORYADDR0 	cmp 1000,x
+
+char '1'
+stackarg 1000 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	coma
+
+0MEMORYADDR0 	comx
+
+0MEMORYADDR0 	com 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	com ,x
+
+char ','
+0MEMORYADDR0 	com 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	cpx #10
+
+char '#'
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	cpx 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	cpx 1000
+
+char '1'
+stackarg 1000 (@0)
+0MEMORYADDR0 	cpx ,x
+
+char ','
+0MEMORYADDR0 	cpx 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 	cpx 1000,x
+
+char '1'
+stackarg 1000 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	deca
+
+0MEMORYADDR0 	decx
+
+0MEMORYADDR0 	dec 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	dec ,x
+
+char ','
+0MEMORYADDR0 	dec 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	eor #10
+
+char '#'
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	eor 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	eor 1000
+
+char '1'
+stackarg 1000 (@0)
+0MEMORYADDR0 	eor ,x
+
+char ','
+0MEMORYADDR0 	eor 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 	eor 1000,x
+
+char '1'
+stackarg 1000 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	inca
+
+0MEMORYADDR0 	incx
+
+0MEMORYADDR0 	inc 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	inc ,x
+
+char ','
+0MEMORYADDR0 	inc 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	jmp 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	jmp 1000
+
+char '1'
+stackarg 1000 (@0)
+0MEMORYADDR0 	jmp ,x
+
+char ','
+0MEMORYADDR0 	jmp 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 	jmp 1000,x
+
+char '1'
+stackarg 1000 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	jsr 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	jsr 1000
+
+char '1'
+stackarg 1000 (@0)
+0MEMORYADDR0 	jsr ,x
+
+char ','
+0MEMORYADDR0 	jsr 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 	jsr 1000,x
+
+char '1'
+stackarg 1000 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	lda #10
+
+char '#'
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	lda 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	lda 1000
+
+char '1'
+stackarg 1000 (@0)
+0MEMORYADDR0 	lda ,x
+
+char ','
+0MEMORYADDR0 	lda 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 	lda 1000,x
+
+char '1'
+stackarg 1000 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	ldx #10
+
+char '#'
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	ldx 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	ldx 1000
+
+char '1'
+stackarg 1000 (@0)
+0MEMORYADDR0 	ldx ,x
+
+char ','
+0MEMORYADDR0 	ldx 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 	ldx 1000,x
+
+char '1'
+stackarg 1000 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	lsla
+
+0MEMORYADDR0 	lslx
+
+0MEMORYADDR0 	lsl 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	lsl ,x
+
+char ','
+0MEMORYADDR0 	lsl 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	lsra
+
+0MEMORYADDR0 	lsrx
+
+0MEMORYADDR0 	lsr 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	lsr ,x
+
+char ','
+0MEMORYADDR0 	lsr 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	nega
+
+0MEMORYADDR0 	negx
+
+0MEMORYADDR0 	neg 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	neg ,x
+
+char ','
+0MEMORYADDR0 	neg 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	nop
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	ora #10
+
+char '#'
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	ora 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	ora 1000
+
+char '1'
+stackarg 1000 (@0)
+0MEMORYADDR0 	ora ,x
+
+char ','
+0MEMORYADDR0 	ora 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 	ora 1000,x
+
+char '1'
+stackarg 1000 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	rola
+
+0MEMORYADDR0 	rolx
+
+0MEMORYADDR0 	rol 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	rol ,x
+
+char ','
+0MEMORYADDR0 	rol 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	rora
+
+0MEMORYADDR0 	rorx
+
+0MEMORYADDR0 	ror 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	ror ,x
+
+char ','
+0MEMORYADDR0 	ror 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	rsp
+
+0MEMORYADDR0 	rti
+
+0MEMORYADDR0 	rts
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	sbc #10
+
+char '#'
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	sbc 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	sbc 1000
+
+char '1'
+stackarg 1000 (@0)
+0MEMORYADDR0 	sbc ,x
+
+char ','
+0MEMORYADDR0 	sbc 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 	sbc 1000,x
+
+char '1'
+stackarg 1000 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	sec
+
+0MEMORYADDR0 	sei
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	sta 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	sta 1000
+
+char '1'
+stackarg 1000 (@0)
+0MEMORYADDR0 	sta ,x
+
+char ','
+0MEMORYADDR0 	sta 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 	sta 1000,x
+
+char '1'
+stackarg 1000 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	stx 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	stx 1000
+
+char '1'
+stackarg 1000 (@0)
+0MEMORYADDR0 	stx ,x
+
+char ','
+0MEMORYADDR0 	stx 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 	stx 1000,x
+
+char '1'
+stackarg 1000 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	sub #10
+
+char '#'
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	sub 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	sub 1000
+
+char '1'
+stackarg 1000 (@0)
+0MEMORYADDR0 	sub ,x
+
+char ','
+0MEMORYADDR0 	sub 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 	sub 1000,x
+
+char '1'
+stackarg 1000 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	swi
+
+0MEMORYADDR0 	tax
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	tsta
+
+0MEMORYADDR0 	tstx
+
+0MEMORYADDR0 	tst 10
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0 	tst ,x
+
+char ','
+0MEMORYADDR0 	tst 10,x
+
+char '1'
+stackarg 10 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0 	txa
+
+0MEMORYADDR0 
+
+
+Complete.

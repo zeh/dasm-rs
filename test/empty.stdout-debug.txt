@@ -1,0 +1,5 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+
+Complete.

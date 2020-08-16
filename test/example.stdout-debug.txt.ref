@@ -1,0 +1,1995 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;   EXAMPLE.ASM 	(6502 Microprocessor)
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    processor	6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; no spaces should be required before or after '=' char
+
+0MEMORYADDR0 LABEL1 = 1		
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 LABEL2= 2
+
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0 LABEL3 =3
+
+char '3'
+stackarg 3 (@0)
+0MEMORYADDR0 LABEL4=4
+
+char '4'
+stackarg 4 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    mac     ldax
+
+0MEMORYADDR0 	    lda     [{1}]
+
+0MEMORYADDR0 	    ldx     [{1}]+1
+
+0MEMORYADDR0 	    endm
+
+0MEMORYADDR0 	    mac     ldaxi
+
+0MEMORYADDR0 	    lda     #<[{1}]
+
+0MEMORYADDR0 	    ldx     #>[{1}]
+
+0MEMORYADDR0 	    endm
+
+0MEMORYADDR0 	    mac     stax
+
+0MEMORYADDR0 	    sta     [{1}]
+
+0MEMORYADDR0 	    stx     [{1}]+1
+
+0MEMORYADDR0 	    endm
+
+0MEMORYADDR0 	    mac     pushxy
+
+0MEMORYADDR0 	    txa
+
+0MEMORYADDR0 	    pha
+
+0MEMORYADDR0 	    tya
+
+0MEMORYADDR0 	    pha
+
+0MEMORYADDR0 	    endm
+
+0MEMORYADDR0 	    mac     popxy
+
+0MEMORYADDR0 	    pla
+
+0MEMORYADDR0 	    tay
+
+0MEMORYADDR0 	    pla
+
+0MEMORYADDR0 	    tax
+
+0MEMORYADDR0 	    endm
+
+0MEMORYADDR0 	    mac     inc16
+
+0MEMORYADDR0 	    inc     {1}
+
+0MEMORYADDR0 	    bne     .1
+
+0MEMORYADDR0 	    inc     {1}+1
+
+0MEMORYADDR0 .1
+
+0MEMORYADDR0 	    endm
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 STOP1	    equ %00000000	    ;CxCTL  1 Stop bit
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 STOP2	    equ %10000000	    ;CxCTL  2 Stop bits (WL5:1.5, WL8&par:1)
+
+char '%'
+stackarg 128 (@0)
+0MEMORYADDR0 WL5	    equ %01100000	    ;CxCTL  Wordlength
+
+char '%'
+stackarg 96 (@0)
+0MEMORYADDR0 WL6	    equ %01000000
+
+char '%'
+stackarg 64 (@0)
+0MEMORYADDR0 WL7	    equ %00100000
+
+char '%'
+stackarg 32 (@0)
+0MEMORYADDR0 WL8	    equ %00000000
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 RCS	    equ %00010000	    ;CxCTL  1=Select baud, 0=ext. receiver clk
+
+char '%'
+stackarg 16 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 B76800	    equ %0000		    ;CxCTL  Baud rates	(1.2288 Mhz clock)
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 B75	    equ %0001
+
+char '%'
+stackarg 1 (@0)
+0MEMORYADDR0 B100	    equ %0010
+
+char '%'
+stackarg 2 (@0)
+0MEMORYADDR0 B150	    equ %0011
+
+char '%'
+stackarg 3 (@0)
+0MEMORYADDR0 B200	    equ %0100
+
+char '%'
+stackarg 4 (@0)
+0MEMORYADDR0 B300	    equ %0101
+
+char '%'
+stackarg 5 (@0)
+0MEMORYADDR0 B400	    equ %0110
+
+char '%'
+stackarg 6 (@0)
+0MEMORYADDR0 B600	    equ %0111
+
+char '%'
+stackarg 7 (@0)
+0MEMORYADDR0 B800	    equ %1000
+
+char '%'
+stackarg 8 (@0)
+0MEMORYADDR0 B1200	    equ %1001
+
+char '%'
+stackarg 9 (@0)
+0MEMORYADDR0 B1600	    equ %1010
+
+char '%'
+stackarg 10 (@0)
+0MEMORYADDR0 B2400	    equ %1011
+
+char '%'
+stackarg 11 (@0)
+0MEMORYADDR0 B3200	    equ %1100
+
+char '%'
+stackarg 12 (@0)
+0MEMORYADDR0 B4800	    equ %1101
+
+char '%'
+stackarg 13 (@0)
+0MEMORYADDR0 B6400	    equ %1110
+
+char '%'
+stackarg 14 (@0)
+0MEMORYADDR0 B12800	    equ %1111
+
+char '%'
+stackarg 15 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 PARODD	    equ %00100000	    ;CxCMD  Select Parity
+
+char '%'
+stackarg 32 (@0)
+0MEMORYADDR0 PAREVEN     equ %01100000
+
+char '%'
+stackarg 96 (@0)
+0MEMORYADDR0 PARMARK     equ %10100000
+
+char '%'
+stackarg 160 (@0)
+0MEMORYADDR0 PARSPACE    equ %11100000
+
+char '%'
+stackarg 224 (@0)
+0MEMORYADDR0 PAROFF	    equ %00000000
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 RECECHO     equ %00010000	    ;CxCMD  Receiver Echo mode
+
+char '%'
+stackarg 16 (@0)
+0MEMORYADDR0 TMASK	    equ %00001100
+
+char '%'
+stackarg 12 (@0)
+0MEMORYADDR0 TDISABLE    equ %00000000	    ;CxCMD  Transmitter modes
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 TDISABLER   equ %00001000	    ;RTS stays asserted
+
+char '%'
+stackarg 8 (@0)
+0MEMORYADDR0 TENABLE     equ %00000100
+
+char '%'
+stackarg 4 (@0)
+0MEMORYADDR0 TBREAK	    equ %00001100	    ;send break
+
+char '%'
+stackarg 12 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 UA_IRQDSBL  equ %00000010
+
+char '%'
+stackarg 2 (@0)
+0MEMORYADDR0 DTRRDY	    equ %00000001	    ;~DTR output is inverted (low)
+
+char '%'
+stackarg 1 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 SR_PE	    equ %00000001	    ;CxSTAT  Status
+
+char '%'
+stackarg 1 (@0)
+0MEMORYADDR0 SR_FE	    equ %00000010	    ;NOTE: writing dummy data causes RESET
+
+char '%'
+stackarg 2 (@0)
+0MEMORYADDR0 SR_OVRUN    equ %00000100
+
+char '%'
+stackarg 4 (@0)
+0MEMORYADDR0 SR_RDRFULL  equ %00001000
+
+char '%'
+stackarg 8 (@0)
+0MEMORYADDR0 SR_TDREMPTY equ %00010000
+
+char '%'
+stackarg 16 (@0)
+0MEMORYADDR0 SR_DCD	    equ %00100000
+
+char '%'
+stackarg 32 (@0)
+0MEMORYADDR0 SR_DSR	    equ %01000000
+
+char '%'
+stackarg 64 (@0)
+0MEMORYADDR0 SR_INTPEND  equ %10000000
+
+char '%'
+stackarg 128 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 T1_OEPB7    equ %10000000	    ;x_ACR
+
+char '%'
+stackarg 128 (@0)
+0MEMORYADDR0 T1_FREERUN  equ %01000000	    ;T1 free running mode
+
+char '%'
+stackarg 64 (@0)
+0MEMORYADDR0 T1_ONESHOT  equ %00000000
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 T2_ICPB6    equ %00100000	    ;T2 counts pulses on PB6
+
+char '%'
+stackarg 32 (@0)
+0MEMORYADDR0 T2_ONESHOT  equ %00000000	    ;T2 counts phase2 transitions
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 SRC_OFF     equ %00000000	    ;shift register control
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 SRC_INT2    equ %00000100
+
+char '%'
+stackarg 4 (@0)
+0MEMORYADDR0 SRC_INPH2   equ %00001000
+
+char '%'
+stackarg 8 (@0)
+0MEMORYADDR0 SRC_INEXT   equ %00001100
+
+char '%'
+stackarg 12 (@0)
+0MEMORYADDR0 SRC_OUTFR   equ %00010000	    ;free running output using T2
+
+char '%'
+stackarg 16 (@0)
+0MEMORYADDR0 SRC_OUTT2   equ %00010100
+
+char '%'
+stackarg 20 (@0)
+0MEMORYADDR0 SRC_OUTPH2  equ %00011000
+
+char '%'
+stackarg 24 (@0)
+0MEMORYADDR0 SRC_OUTEXT  equ %00011100
+
+char '%'
+stackarg 28 (@0)
+0MEMORYADDR0 PBLE	    equ %00000010	    ;on CB1 transition (in/out).
+
+char '%'
+stackarg 2 (@0)
+0MEMORYADDR0 PALE	    equ %00000001	    ;on CA1 transition (in).  data retained
+
+char '%'
+stackarg 1 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 				    ;x_PCR
+
+0MEMORYADDR0 CB2_I_NEG   equ %00000000	    ;interrupt on neg trans, r/w ORB clears
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 CB2_I_NEGI  equ %00100000	    ; same, but r/w ORB does not clear int
+
+char '%'
+stackarg 32 (@0)
+0MEMORYADDR0 CB2_I_POS   equ %01000000	    ;interrupt on pos trans, r/w ORB clears
+
+char '%'
+stackarg 64 (@0)
+0MEMORYADDR0 CB2_I_POSI  equ %01100000	    ; same, but r/w ORB does not clear int
+
+char '%'
+stackarg 96 (@0)
+0MEMORYADDR0 CB2_O_HSHAK equ %10000000	    ;CB2=0 on r/w ORB, CB2=1 on CB1 transition
+
+char '%'
+stackarg 128 (@0)
+0MEMORYADDR0 CB2_O_PULSE equ %10100000	    ;CB2=0 for one clock after r/w ORB
+
+char '%'
+stackarg 160 (@0)
+0MEMORYADDR0 CB2_O_MANLO equ %11000000	    ;CB2=0
+
+char '%'
+stackarg 192 (@0)
+0MEMORYADDR0 CB2_O_MANHI equ %11100000	    ;CB2=1
+
+char '%'
+stackarg 224 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 CA2_I_NEG   equ %00000000	    ;interrupt on neg trans, r/w ORA clears
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 CA2_I_NEGI  equ %00100000	    ; same, but r/w ORA does not clear int
+
+char '%'
+stackarg 32 (@0)
+0MEMORYADDR0 CA2_I_POS   equ %01000000	    ;interrupt on pos trans, r/w ORA clears
+
+char '%'
+stackarg 64 (@0)
+0MEMORYADDR0 CA2_I_POSI  equ %01100000	    ; same, but r/w ORA does not clear int
+
+char '%'
+stackarg 96 (@0)
+0MEMORYADDR0 CA2_O_HSHAK equ %10000000	    ;CA2=0 on r/w ORA, CA2=1 on CA1 transition
+
+char '%'
+stackarg 128 (@0)
+0MEMORYADDR0 CA2_O_PULSE equ %10100000	    ;CA2=0 for one clock after r/w ORA
+
+char '%'
+stackarg 160 (@0)
+0MEMORYADDR0 CA2_O_MANLO equ %11000000	    ;CA2=0
+
+char '%'
+stackarg 192 (@0)
+0MEMORYADDR0 CA2_O_MANHI equ %11100000	    ;CA2=1
+
+char '%'
+stackarg 224 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 CB1_THI     equ %00010000
+
+char '%'
+stackarg 16 (@0)
+0MEMORYADDR0 CB1_TLO     equ %00000000
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 CA1_THI     equ %00000001
+
+char '%'
+stackarg 1 (@0)
+0MEMORYADDR0 CA1_TLO     equ %00000000
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 VIRPEND     equ %10000000	    ;x_IFR
+
+char '%'
+stackarg 128 (@0)
+0MEMORYADDR0 IRENABLE    equ %10000000	    ;x_IER  1's enable ints  0=no change
+
+char '%'
+stackarg 128 (@0)
+0MEMORYADDR0 IRDISABLE   equ %00000000	    ;x_IER  1's disable ints 0=no change
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 IRT1	    equ %01000000
+
+char '%'
+stackarg 64 (@0)
+0MEMORYADDR0 IRT2	    equ %00100000
+
+char '%'
+stackarg 32 (@0)
+0MEMORYADDR0 IRCB1	    equ %00010000
+
+char '%'
+stackarg 16 (@0)
+0MEMORYADDR0 IRCB2	    equ %00001000
+
+char '%'
+stackarg 8 (@0)
+0MEMORYADDR0 IRSR	    equ %00000100
+
+char '%'
+stackarg 4 (@0)
+0MEMORYADDR0 IRCA1	    equ %00000010
+
+char '%'
+stackarg 2 (@0)
+0MEMORYADDR0 IRCA2	    equ %00000001
+
+char '%'
+stackarg 1 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    seg.u   bss
+
+0MEMORYADDR0 	    org     $0000	    ;RAM (see below)
+
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 	    org     $2000	    ;unused
+
+char '$'
+stackarg 8192 (@0)
+0MEMORYADDR0 	    org     $4000	    ;unused
+
+char '$'
+stackarg 16384 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    org     $6000	    ;6551 CHANNEL #1
+
+char '$'
+stackarg 24576 (@0)
+0MEMORYADDR0 C1DATA	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 C1STAT	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 C1CMD	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 C1CTL	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    org     $8000	    ;6551 CHANNEL #2
+
+char '$'
+stackarg 32768 (@0)
+0MEMORYADDR0 C2DATA	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 C2STAT	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 C2CMD	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 C2CTL	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    org     $A000	    ;6522 (HOST COMM)
+
+char '$'
+stackarg 40960 (@0)
+0MEMORYADDR0 H_ORB	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_ORAHS     ds	    1		    ;with CA2 handshake
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_DDRB	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_DDRA	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_T1CL	    ds	    1		    ;read clears interrupt flag
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_T1CH	    ds	    1		    ;write clears interrupt flag
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_T1CLL     ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_T1CHL     ds	    1		    ;write clears interrupt flag
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_T2CL	    ds	    1		    ;read clears interrupt flag
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_T2CH	    ds	    1		    ;write clears interrupt flag
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_SR	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_ACR	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_PCR	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_IFR	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_IER	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_ORA	    ds	    1		    ;no CA2 handshake
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    org     $C000	    ;6522 (IO COMM)
+
+char '$'
+stackarg 49152 (@0)
+0MEMORYADDR0 I_ORB	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_ORAHS     ds	    1		    ;	(same comments apply)
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_DDRB	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_DDRA	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_T1CL	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_T1CH	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_T1CLL     ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_T1CHL     ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_T2CL	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_T2CH	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_SR	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_ACR	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_PCR	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_IFR	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_IER	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_ORA	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    ;	--------------------------   ZERO PAGE	 -------------------
+
+0MEMORYADDR0 	    seg.u   data
+
+0MEMORYADDR0 	    org     $00
+
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    ;	--------------------------  NORMAL RAM	 -------------------
+
+0MEMORYADDR0 	    org     $0100
+
+char '$'
+stackarg 256 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 RAMEND	    equ     $2000
+
+char '$'
+stackarg 8192 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    ;	--------------------------     CODE	 -------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    seg     code
+
+0MEMORYADDR0 	    org     $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 PROMBEG     equ     .
+
+char '.'
+stackarg 61440 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 RESET	    subroutine
+
+0MEMORYADDR0 	    sei 		;disable interrupts
+
+0MEMORYADDR0 	    ldx     #$FF	;reset stack
+
+char '#'
+char '$'
+stackarg 255 (@0)
+0MEMORYADDR0 	    txs
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    lda     #$FF
+
+char '#'
+char '$'
+stackarg 255 (@0)
+0MEMORYADDR0 	    sta     H_DDRA
+
+char 'H'
+stackarg 40963 (@0)
+0MEMORYADDR0 	    sta     C1STAT	;reset 6551#1 (garbage data)
+
+char 'C'
+stackarg 24577 (@0)
+0MEMORYADDR0 	    sta     C2STAT	;reset 6551#2
+
+char 'C'
+stackarg 32769 (@0)
+0MEMORYADDR0 	    lda     #$7F	;disable all 6522 interrupts
+
+char '#'
+char '$'
+stackarg 127 (@0)
+0MEMORYADDR0 	    sta     H_IER
+
+char 'H'
+stackarg 40974 (@0)
+0MEMORYADDR0 	    sta     I_IER
+
+char 'I'
+stackarg 49166 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    lda     #%00010000	;76.8 baud, 8 bits, 1 stop
+
+char '#'
+char '%'
+stackarg 16 (@0)
+0MEMORYADDR0 	    sta     C1CTL
+
+char 'C'
+stackarg 24579 (@0)
+0MEMORYADDR0 	    lda     #%00000101	;no parity, enable transmitter & int
+
+char '#'
+char '%'
+stackarg 5 (@0)
+0MEMORYADDR0 	    sta     C1CMD
+
+char 'C'
+stackarg 24578 (@0)
+0MEMORYADDR0 	    lda     #$AA	;begin transmision
+
+char '#'
+char '$'
+stackarg 170 (@0)
+0MEMORYADDR0 	    sta     C1DATA
+
+char 'C'
+stackarg 24576 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    lda     #%00011111	;9600 baud, 8 bits, 1 stop
+
+char '#'
+char '%'
+stackarg 31 (@0)
+0MEMORYADDR0 	    sta     C2CTL
+
+char 'C'
+stackarg 32771 (@0)
+0MEMORYADDR0 	    lda     #%00000101
+
+char '#'
+char '%'
+stackarg 5 (@0)
+0MEMORYADDR0 	    sta     C2CMD
+
+char 'C'
+stackarg 32770 (@0)
+0MEMORYADDR0 	    lda     #$41
+
+char '#'
+char '$'
+stackarg 65 (@0)
+0MEMORYADDR0 	    sta     C2DATA
+
+char 'C'
+stackarg 32768 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    cli 		;enable interrupts
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 .1	    jsr     LOAD
+
+char 'L'
+stackarg 0 (@0)
+0MEMORYADDR0 	    jsr     SAVE
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 	    jmp     .1
+
+char '.'
+stackarg 61494 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 LOAD	    subroutine
+
+redo 13: 'LOAD' 0045 0004
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    ldx     #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 .1	    txa
+
+0MEMORYADDR0 	    sta     $0500,x
+
+char '$'
+stackarg 1280 (@0)
+char ','
+0MEMORYADDR0 	    inx
+
+0MEMORYADDR0 	    bne     .1
+
+char '.'
+stackarg 61505 (@0)
+0MEMORYADDR0 	    rts
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 SAVE	    subroutine
+
+redo 13: 'SAVE' 0045 0004
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    ldx     #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 .2	    lda     $0500,x
+
+char '$'
+stackarg 1280 (@0)
+char ','
+0MEMORYADDR0 	    sta     H_ORA
+
+char 'H'
+stackarg 40975 (@0)
+0MEMORYADDR0 	    inx
+
+0MEMORYADDR0 	    bne     .2
+
+char '.'
+stackarg 61515 (@0)
+0MEMORYADDR0 	    rts
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 NMI	    rti
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    subroutine
+
+0MEMORYADDR0 IRQ	    bit     C1STAT
+
+char 'C'
+stackarg 24577 (@0)
+0MEMORYADDR0 	    bpl     .1
+
+char '.'
+stackarg 0 (@0)
+0MEMORYADDR0 	    pha
+
+0MEMORYADDR0 	    lda     #$AA
+
+char '#'
+char '$'
+stackarg 170 (@0)
+0MEMORYADDR0 	    sta     C1DATA
+
+char 'C'
+stackarg 24576 (@0)
+0MEMORYADDR0 	    lda     C1DATA
+
+char 'C'
+stackarg 24576 (@0)
+0MEMORYADDR0 	    pla
+
+0MEMORYADDR0 	    rti
+
+0MEMORYADDR0 .1	    bit     C2STAT
+
+redo 13: '4.1' 0045 0004
+char 'C'
+stackarg 32769 (@0)
+0MEMORYADDR0 	    bpl     .2
+
+char '.'
+stackarg 0 (@0)
+0MEMORYADDR0 	    pha
+
+0MEMORYADDR0 	    lda     #$41
+
+char '#'
+char '$'
+stackarg 65 (@0)
+0MEMORYADDR0 	    sta     C2DATA
+
+char 'C'
+stackarg 32768 (@0)
+0MEMORYADDR0 	    lda     C2DATA
+
+char 'C'
+stackarg 32768 (@0)
+0MEMORYADDR0 	    pla
+
+0MEMORYADDR0 .2	    rti
+
+redo 13: '4.2' 0045 0004
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    ;	VECTOR	------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    seg     vector
+
+0MEMORYADDR0 	    org     $FFFA
+
+char '$'
+stackarg 65530 (@0)
+0MEMORYADDR0 	    dc.w    NMI
+
+char 'N'
+stackarg 61525 (@0)
+0MEMORYADDR0 	    dc.w    RESET
+
+char 'R'
+stackarg 61440 (@0)
+0MEMORYADDR0 	    dc.w    IRQ
+
+char 'I'
+stackarg 61526 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 PROMEND     equ     .
+
+char '.'
+stackarg 65536 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;   EXAMPLE.ASM 	(6502 Microprocessor)
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    processor	6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; no spaces should be required before or after '=' char
+
+0MEMORYADDR0 LABEL1 = 1		
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 LABEL2= 2
+
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0 LABEL3 =3
+
+char '3'
+stackarg 3 (@0)
+0MEMORYADDR0 LABEL4=4
+
+char '4'
+stackarg 4 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    mac     ldax
+
+0MEMORYADDR0 	    lda     [{1}]
+
+0MEMORYADDR0 	    ldx     [{1}]+1
+
+0MEMORYADDR0 	    endm
+
+0MEMORYADDR0 	    mac     ldaxi
+
+0MEMORYADDR0 	    lda     #<[{1}]
+
+0MEMORYADDR0 	    ldx     #>[{1}]
+
+0MEMORYADDR0 	    endm
+
+0MEMORYADDR0 	    mac     stax
+
+0MEMORYADDR0 	    sta     [{1}]
+
+0MEMORYADDR0 	    stx     [{1}]+1
+
+0MEMORYADDR0 	    endm
+
+0MEMORYADDR0 	    mac     pushxy
+
+0MEMORYADDR0 	    txa
+
+0MEMORYADDR0 	    pha
+
+0MEMORYADDR0 	    tya
+
+0MEMORYADDR0 	    pha
+
+0MEMORYADDR0 	    endm
+
+0MEMORYADDR0 	    mac     popxy
+
+0MEMORYADDR0 	    pla
+
+0MEMORYADDR0 	    tay
+
+0MEMORYADDR0 	    pla
+
+0MEMORYADDR0 	    tax
+
+0MEMORYADDR0 	    endm
+
+0MEMORYADDR0 	    mac     inc16
+
+0MEMORYADDR0 	    inc     {1}
+
+0MEMORYADDR0 	    bne     .1
+
+0MEMORYADDR0 	    inc     {1}+1
+
+0MEMORYADDR0 .1
+
+0MEMORYADDR0 	    endm
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 STOP1	    equ %00000000	    ;CxCTL  1 Stop bit
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 STOP2	    equ %10000000	    ;CxCTL  2 Stop bits (WL5:1.5, WL8&par:1)
+
+char '%'
+stackarg 128 (@0)
+0MEMORYADDR0 WL5	    equ %01100000	    ;CxCTL  Wordlength
+
+char '%'
+stackarg 96 (@0)
+0MEMORYADDR0 WL6	    equ %01000000
+
+char '%'
+stackarg 64 (@0)
+0MEMORYADDR0 WL7	    equ %00100000
+
+char '%'
+stackarg 32 (@0)
+0MEMORYADDR0 WL8	    equ %00000000
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 RCS	    equ %00010000	    ;CxCTL  1=Select baud, 0=ext. receiver clk
+
+char '%'
+stackarg 16 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 B76800	    equ %0000		    ;CxCTL  Baud rates	(1.2288 Mhz clock)
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 B75	    equ %0001
+
+char '%'
+stackarg 1 (@0)
+0MEMORYADDR0 B100	    equ %0010
+
+char '%'
+stackarg 2 (@0)
+0MEMORYADDR0 B150	    equ %0011
+
+char '%'
+stackarg 3 (@0)
+0MEMORYADDR0 B200	    equ %0100
+
+char '%'
+stackarg 4 (@0)
+0MEMORYADDR0 B300	    equ %0101
+
+char '%'
+stackarg 5 (@0)
+0MEMORYADDR0 B400	    equ %0110
+
+char '%'
+stackarg 6 (@0)
+0MEMORYADDR0 B600	    equ %0111
+
+char '%'
+stackarg 7 (@0)
+0MEMORYADDR0 B800	    equ %1000
+
+char '%'
+stackarg 8 (@0)
+0MEMORYADDR0 B1200	    equ %1001
+
+char '%'
+stackarg 9 (@0)
+0MEMORYADDR0 B1600	    equ %1010
+
+char '%'
+stackarg 10 (@0)
+0MEMORYADDR0 B2400	    equ %1011
+
+char '%'
+stackarg 11 (@0)
+0MEMORYADDR0 B3200	    equ %1100
+
+char '%'
+stackarg 12 (@0)
+0MEMORYADDR0 B4800	    equ %1101
+
+char '%'
+stackarg 13 (@0)
+0MEMORYADDR0 B6400	    equ %1110
+
+char '%'
+stackarg 14 (@0)
+0MEMORYADDR0 B12800	    equ %1111
+
+char '%'
+stackarg 15 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 PARODD	    equ %00100000	    ;CxCMD  Select Parity
+
+char '%'
+stackarg 32 (@0)
+0MEMORYADDR0 PAREVEN     equ %01100000
+
+char '%'
+stackarg 96 (@0)
+0MEMORYADDR0 PARMARK     equ %10100000
+
+char '%'
+stackarg 160 (@0)
+0MEMORYADDR0 PARSPACE    equ %11100000
+
+char '%'
+stackarg 224 (@0)
+0MEMORYADDR0 PAROFF	    equ %00000000
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 RECECHO     equ %00010000	    ;CxCMD  Receiver Echo mode
+
+char '%'
+stackarg 16 (@0)
+0MEMORYADDR0 TMASK	    equ %00001100
+
+char '%'
+stackarg 12 (@0)
+0MEMORYADDR0 TDISABLE    equ %00000000	    ;CxCMD  Transmitter modes
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 TDISABLER   equ %00001000	    ;RTS stays asserted
+
+char '%'
+stackarg 8 (@0)
+0MEMORYADDR0 TENABLE     equ %00000100
+
+char '%'
+stackarg 4 (@0)
+0MEMORYADDR0 TBREAK	    equ %00001100	    ;send break
+
+char '%'
+stackarg 12 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 UA_IRQDSBL  equ %00000010
+
+char '%'
+stackarg 2 (@0)
+0MEMORYADDR0 DTRRDY	    equ %00000001	    ;~DTR output is inverted (low)
+
+char '%'
+stackarg 1 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 SR_PE	    equ %00000001	    ;CxSTAT  Status
+
+char '%'
+stackarg 1 (@0)
+0MEMORYADDR0 SR_FE	    equ %00000010	    ;NOTE: writing dummy data causes RESET
+
+char '%'
+stackarg 2 (@0)
+0MEMORYADDR0 SR_OVRUN    equ %00000100
+
+char '%'
+stackarg 4 (@0)
+0MEMORYADDR0 SR_RDRFULL  equ %00001000
+
+char '%'
+stackarg 8 (@0)
+0MEMORYADDR0 SR_TDREMPTY equ %00010000
+
+char '%'
+stackarg 16 (@0)
+0MEMORYADDR0 SR_DCD	    equ %00100000
+
+char '%'
+stackarg 32 (@0)
+0MEMORYADDR0 SR_DSR	    equ %01000000
+
+char '%'
+stackarg 64 (@0)
+0MEMORYADDR0 SR_INTPEND  equ %10000000
+
+char '%'
+stackarg 128 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 T1_OEPB7    equ %10000000	    ;x_ACR
+
+char '%'
+stackarg 128 (@0)
+0MEMORYADDR0 T1_FREERUN  equ %01000000	    ;T1 free running mode
+
+char '%'
+stackarg 64 (@0)
+0MEMORYADDR0 T1_ONESHOT  equ %00000000
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 T2_ICPB6    equ %00100000	    ;T2 counts pulses on PB6
+
+char '%'
+stackarg 32 (@0)
+0MEMORYADDR0 T2_ONESHOT  equ %00000000	    ;T2 counts phase2 transitions
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 SRC_OFF     equ %00000000	    ;shift register control
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 SRC_INT2    equ %00000100
+
+char '%'
+stackarg 4 (@0)
+0MEMORYADDR0 SRC_INPH2   equ %00001000
+
+char '%'
+stackarg 8 (@0)
+0MEMORYADDR0 SRC_INEXT   equ %00001100
+
+char '%'
+stackarg 12 (@0)
+0MEMORYADDR0 SRC_OUTFR   equ %00010000	    ;free running output using T2
+
+char '%'
+stackarg 16 (@0)
+0MEMORYADDR0 SRC_OUTT2   equ %00010100
+
+char '%'
+stackarg 20 (@0)
+0MEMORYADDR0 SRC_OUTPH2  equ %00011000
+
+char '%'
+stackarg 24 (@0)
+0MEMORYADDR0 SRC_OUTEXT  equ %00011100
+
+char '%'
+stackarg 28 (@0)
+0MEMORYADDR0 PBLE	    equ %00000010	    ;on CB1 transition (in/out).
+
+char '%'
+stackarg 2 (@0)
+0MEMORYADDR0 PALE	    equ %00000001	    ;on CA1 transition (in).  data retained
+
+char '%'
+stackarg 1 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 				    ;x_PCR
+
+0MEMORYADDR0 CB2_I_NEG   equ %00000000	    ;interrupt on neg trans, r/w ORB clears
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 CB2_I_NEGI  equ %00100000	    ; same, but r/w ORB does not clear int
+
+char '%'
+stackarg 32 (@0)
+0MEMORYADDR0 CB2_I_POS   equ %01000000	    ;interrupt on pos trans, r/w ORB clears
+
+char '%'
+stackarg 64 (@0)
+0MEMORYADDR0 CB2_I_POSI  equ %01100000	    ; same, but r/w ORB does not clear int
+
+char '%'
+stackarg 96 (@0)
+0MEMORYADDR0 CB2_O_HSHAK equ %10000000	    ;CB2=0 on r/w ORB, CB2=1 on CB1 transition
+
+char '%'
+stackarg 128 (@0)
+0MEMORYADDR0 CB2_O_PULSE equ %10100000	    ;CB2=0 for one clock after r/w ORB
+
+char '%'
+stackarg 160 (@0)
+0MEMORYADDR0 CB2_O_MANLO equ %11000000	    ;CB2=0
+
+char '%'
+stackarg 192 (@0)
+0MEMORYADDR0 CB2_O_MANHI equ %11100000	    ;CB2=1
+
+char '%'
+stackarg 224 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 CA2_I_NEG   equ %00000000	    ;interrupt on neg trans, r/w ORA clears
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 CA2_I_NEGI  equ %00100000	    ; same, but r/w ORA does not clear int
+
+char '%'
+stackarg 32 (@0)
+0MEMORYADDR0 CA2_I_POS   equ %01000000	    ;interrupt on pos trans, r/w ORA clears
+
+char '%'
+stackarg 64 (@0)
+0MEMORYADDR0 CA2_I_POSI  equ %01100000	    ; same, but r/w ORA does not clear int
+
+char '%'
+stackarg 96 (@0)
+0MEMORYADDR0 CA2_O_HSHAK equ %10000000	    ;CA2=0 on r/w ORA, CA2=1 on CA1 transition
+
+char '%'
+stackarg 128 (@0)
+0MEMORYADDR0 CA2_O_PULSE equ %10100000	    ;CA2=0 for one clock after r/w ORA
+
+char '%'
+stackarg 160 (@0)
+0MEMORYADDR0 CA2_O_MANLO equ %11000000	    ;CA2=0
+
+char '%'
+stackarg 192 (@0)
+0MEMORYADDR0 CA2_O_MANHI equ %11100000	    ;CA2=1
+
+char '%'
+stackarg 224 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 CB1_THI     equ %00010000
+
+char '%'
+stackarg 16 (@0)
+0MEMORYADDR0 CB1_TLO     equ %00000000
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 CA1_THI     equ %00000001
+
+char '%'
+stackarg 1 (@0)
+0MEMORYADDR0 CA1_TLO     equ %00000000
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 VIRPEND     equ %10000000	    ;x_IFR
+
+char '%'
+stackarg 128 (@0)
+0MEMORYADDR0 IRENABLE    equ %10000000	    ;x_IER  1's enable ints  0=no change
+
+char '%'
+stackarg 128 (@0)
+0MEMORYADDR0 IRDISABLE   equ %00000000	    ;x_IER  1's disable ints 0=no change
+
+char '%'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 IRT1	    equ %01000000
+
+char '%'
+stackarg 64 (@0)
+0MEMORYADDR0 IRT2	    equ %00100000
+
+char '%'
+stackarg 32 (@0)
+0MEMORYADDR0 IRCB1	    equ %00010000
+
+char '%'
+stackarg 16 (@0)
+0MEMORYADDR0 IRCB2	    equ %00001000
+
+char '%'
+stackarg 8 (@0)
+0MEMORYADDR0 IRSR	    equ %00000100
+
+char '%'
+stackarg 4 (@0)
+0MEMORYADDR0 IRCA1	    equ %00000010
+
+char '%'
+stackarg 2 (@0)
+0MEMORYADDR0 IRCA2	    equ %00000001
+
+char '%'
+stackarg 1 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    seg.u   bss
+
+0MEMORYADDR0 	    org     $0000	    ;RAM (see below)
+
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 	    org     $2000	    ;unused
+
+char '$'
+stackarg 8192 (@0)
+0MEMORYADDR0 	    org     $4000	    ;unused
+
+char '$'
+stackarg 16384 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    org     $6000	    ;6551 CHANNEL #1
+
+char '$'
+stackarg 24576 (@0)
+0MEMORYADDR0 C1DATA	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 C1STAT	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 C1CMD	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 C1CTL	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    org     $8000	    ;6551 CHANNEL #2
+
+char '$'
+stackarg 32768 (@0)
+0MEMORYADDR0 C2DATA	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 C2STAT	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 C2CMD	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 C2CTL	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    org     $A000	    ;6522 (HOST COMM)
+
+char '$'
+stackarg 40960 (@0)
+0MEMORYADDR0 H_ORB	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_ORAHS     ds	    1		    ;with CA2 handshake
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_DDRB	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_DDRA	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_T1CL	    ds	    1		    ;read clears interrupt flag
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_T1CH	    ds	    1		    ;write clears interrupt flag
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_T1CLL     ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_T1CHL     ds	    1		    ;write clears interrupt flag
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_T2CL	    ds	    1		    ;read clears interrupt flag
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_T2CH	    ds	    1		    ;write clears interrupt flag
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_SR	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_ACR	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_PCR	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_IFR	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_IER	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 H_ORA	    ds	    1		    ;no CA2 handshake
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    org     $C000	    ;6522 (IO COMM)
+
+char '$'
+stackarg 49152 (@0)
+0MEMORYADDR0 I_ORB	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_ORAHS     ds	    1		    ;	(same comments apply)
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_DDRB	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_DDRA	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_T1CL	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_T1CH	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_T1CLL     ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_T1CHL     ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_T2CL	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_T2CH	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_SR	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_ACR	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_PCR	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_IFR	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_IER	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 I_ORA	    ds	    1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    ;	--------------------------   ZERO PAGE	 -------------------
+
+0MEMORYADDR0 	    seg.u   data
+
+0MEMORYADDR0 	    org     $00
+
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    ;	--------------------------  NORMAL RAM	 -------------------
+
+0MEMORYADDR0 	    org     $0100
+
+char '$'
+stackarg 256 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 RAMEND	    equ     $2000
+
+char '$'
+stackarg 8192 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    ;	--------------------------     CODE	 -------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    seg     code
+
+0MEMORYADDR0 	    org     $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 PROMBEG     equ     .
+
+char '.'
+stackarg 61440 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 RESET	    subroutine
+
+0MEMORYADDR0 	    sei 		;disable interrupts
+
+0MEMORYADDR0 	    ldx     #$FF	;reset stack
+
+char '#'
+char '$'
+stackarg 255 (@0)
+0MEMORYADDR0 	    txs
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    lda     #$FF
+
+char '#'
+char '$'
+stackarg 255 (@0)
+0MEMORYADDR0 	    sta     H_DDRA
+
+char 'H'
+stackarg 40963 (@0)
+0MEMORYADDR0 	    sta     C1STAT	;reset 6551#1 (garbage data)
+
+char 'C'
+stackarg 24577 (@0)
+0MEMORYADDR0 	    sta     C2STAT	;reset 6551#2
+
+char 'C'
+stackarg 32769 (@0)
+0MEMORYADDR0 	    lda     #$7F	;disable all 6522 interrupts
+
+char '#'
+char '$'
+stackarg 127 (@0)
+0MEMORYADDR0 	    sta     H_IER
+
+char 'H'
+stackarg 40974 (@0)
+0MEMORYADDR0 	    sta     I_IER
+
+char 'I'
+stackarg 49166 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    lda     #%00010000	;76.8 baud, 8 bits, 1 stop
+
+char '#'
+char '%'
+stackarg 16 (@0)
+0MEMORYADDR0 	    sta     C1CTL
+
+char 'C'
+stackarg 24579 (@0)
+0MEMORYADDR0 	    lda     #%00000101	;no parity, enable transmitter & int
+
+char '#'
+char '%'
+stackarg 5 (@0)
+0MEMORYADDR0 	    sta     C1CMD
+
+char 'C'
+stackarg 24578 (@0)
+0MEMORYADDR0 	    lda     #$AA	;begin transmision
+
+char '#'
+char '$'
+stackarg 170 (@0)
+0MEMORYADDR0 	    sta     C1DATA
+
+char 'C'
+stackarg 24576 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    lda     #%00011111	;9600 baud, 8 bits, 1 stop
+
+char '#'
+char '%'
+stackarg 31 (@0)
+0MEMORYADDR0 	    sta     C2CTL
+
+char 'C'
+stackarg 32771 (@0)
+0MEMORYADDR0 	    lda     #%00000101
+
+char '#'
+char '%'
+stackarg 5 (@0)
+0MEMORYADDR0 	    sta     C2CMD
+
+char 'C'
+stackarg 32770 (@0)
+0MEMORYADDR0 	    lda     #$41
+
+char '#'
+char '$'
+stackarg 65 (@0)
+0MEMORYADDR0 	    sta     C2DATA
+
+char 'C'
+stackarg 32768 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    cli 		;enable interrupts
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 .1	    jsr     LOAD
+
+char 'L'
+stackarg 61503 (@0)
+0MEMORYADDR0 	    jsr     SAVE
+
+char 'S'
+stackarg 61513 (@0)
+0MEMORYADDR0 	    jmp     .1
+
+char '.'
+stackarg 61494 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 LOAD	    subroutine
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    ldx     #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 .1	    txa
+
+0MEMORYADDR0 	    sta     $0500,x
+
+char '$'
+stackarg 1280 (@0)
+char ','
+0MEMORYADDR0 	    inx
+
+0MEMORYADDR0 	    bne     .1
+
+char '.'
+stackarg 61505 (@0)
+0MEMORYADDR0 	    rts
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 SAVE	    subroutine
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    ldx     #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 .2	    lda     $0500,x
+
+char '$'
+stackarg 1280 (@0)
+char ','
+0MEMORYADDR0 	    sta     H_ORA
+
+char 'H'
+stackarg 40975 (@0)
+0MEMORYADDR0 	    inx
+
+0MEMORYADDR0 	    bne     .2
+
+char '.'
+stackarg 61515 (@0)
+0MEMORYADDR0 	    rts
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 NMI	    rti
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    subroutine
+
+0MEMORYADDR0 IRQ	    bit     C1STAT
+
+char 'C'
+stackarg 24577 (@0)
+0MEMORYADDR0 	    bpl     .1
+
+char '.'
+stackarg 61542 (@0)
+0MEMORYADDR0 	    pha
+
+0MEMORYADDR0 	    lda     #$AA
+
+char '#'
+char '$'
+stackarg 170 (@0)
+0MEMORYADDR0 	    sta     C1DATA
+
+char 'C'
+stackarg 24576 (@0)
+0MEMORYADDR0 	    lda     C1DATA
+
+char 'C'
+stackarg 24576 (@0)
+0MEMORYADDR0 	    pla
+
+0MEMORYADDR0 	    rti
+
+0MEMORYADDR0 .1	    bit     C2STAT
+
+char 'C'
+stackarg 32769 (@0)
+0MEMORYADDR0 	    bpl     .2
+
+char '.'
+stackarg 61557 (@0)
+0MEMORYADDR0 	    pha
+
+0MEMORYADDR0 	    lda     #$41
+
+char '#'
+char '$'
+stackarg 65 (@0)
+0MEMORYADDR0 	    sta     C2DATA
+
+char 'C'
+stackarg 32768 (@0)
+0MEMORYADDR0 	    lda     C2DATA
+
+char 'C'
+stackarg 32768 (@0)
+0MEMORYADDR0 	    pla
+
+0MEMORYADDR0 .2	    rti
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    ;	VECTOR	------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	    seg     vector
+
+0MEMORYADDR0 	    org     $FFFA
+
+char '$'
+stackarg 65530 (@0)
+0MEMORYADDR0 	    dc.w    NMI
+
+char 'N'
+stackarg 61525 (@0)
+0MEMORYADDR0 	    dc.w    RESET
+
+char 'R'
+stackarg 61440 (@0)
+0MEMORYADDR0 	    dc.w    IRQ
+
+char 'I'
+stackarg 61526 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 PROMEND     equ     .
+
+char '.'
+stackarg 65536 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+
+Complete.

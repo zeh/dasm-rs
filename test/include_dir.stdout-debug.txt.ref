@@ -1,0 +1,295 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ; Test symbolic includes
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Ensure that quoted, unquoted, and symbol based includes work.
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; --Mike Saarna
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	.processor	6502
+
+0MEMORYADDR0 	.org		0
+
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 TESTINCA = "include-a.inc"
+
+char '"'
+stackarg 0 (@0)
+STRING: include-a.inc
+0MEMORYADDR0 PASSFORCEA = PASSFORCEB
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	lda #PASSFORCEA
+
+char '#'
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0 	incdir "."
+
+0MEMORYADDR0 	incdir "../"
+
+0MEMORYADDR0 	incdir "incdirtest"
+
+0MEMORYADDR0 	include "include-a.inc"
+
+char '"'
+stackarg 0 (@0)
+STRING: include-a.inc
+0MEMORYADDR0  .byte $0A
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0 	include include-a.inc
+
+char 'i'
+stackarg 0 (@0)
+char '-'
+doop
+doop @ 0 unary
+char 'a'
+stackarg 0 (@1)
+evaltop @(A,O) 2 1
+stackarg 0 (@0)
+0MEMORYADDR0  .byte $0A
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0 	include TESTINCA
+
+char 'T'
+stackarg 0 (@0)
+STRING: include-a.inc
+0MEMORYADDR0  .byte $0A
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0 	include "11include.inc"
+
+char '"'
+stackarg 0 (@0)
+STRING: 11include.inc
+0MEMORYADDR0 ; 11include.inc - part of the symbolic include testing. 
+
+0MEMORYADDR0 ; To test non-symbol compliant include filenames, the name needs to begin with digits.
+
+0MEMORYADDR0 ; Please don't rename it.
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; --Mike Saarna
+
+0MEMORYADDR0 
+
+0MEMORYADDR0  .byte $11
+
+char '$'
+stackarg 17 (@0)
+0MEMORYADDR0 	include include-z.inc
+
+char 'i'
+stackarg 0 (@0)
+char '-'
+doop
+doop @ 0 unary
+char 'z'
+stackarg 0 (@1)
+evaltop @(A,O) 2 1
+stackarg 0 (@0)
+0MEMORYADDR0  .byte $0A
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	; Non-symbol compliant filenames without quotes...
+
+0MEMORYADDR0 	include 11include.inc
+
+0MEMORYADDR0 ; 11include.inc - part of the symbolic include testing. 
+
+0MEMORYADDR0 ; To test non-symbol compliant include filenames, the name needs to begin with digits.
+
+0MEMORYADDR0 ; Please don't rename it.
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; --Mike Saarna
+
+0MEMORYADDR0 
+
+0MEMORYADDR0  .byte $11
+
+char '$'
+stackarg 17 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 PASSFORCEB = 1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	.end
+
+0MEMORYADDR0 ; Test symbolic includes
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Ensure that quoted, unquoted, and symbol based includes work.
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; --Mike Saarna
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	.processor	6502
+
+0MEMORYADDR0 	.org		0
+
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 TESTINCA = "include-a.inc"
+
+char '"'
+stackarg 0 (@0)
+STRING: include-a.inc
+0MEMORYADDR0 PASSFORCEA = PASSFORCEB
+
+char 'P'
+stackarg 1 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	lda #PASSFORCEA
+
+char '#'
+char 'P'
+stackarg 1 (@0)
+0MEMORYADDR0 	incdir "."
+
+0MEMORYADDR0 	incdir "../"
+
+0MEMORYADDR0 	incdir "incdirtest"
+
+0MEMORYADDR0 	include "include-a.inc"
+
+char '"'
+stackarg 0 (@0)
+STRING: include-a.inc
+0MEMORYADDR0  .byte $0A
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0 	include include-a.inc
+
+char 'i'
+stackarg 0 (@0)
+char '-'
+doop
+doop @ 0 unary
+char 'a'
+stackarg 0 (@1)
+evaltop @(A,O) 2 1
+stackarg 0 (@0)
+0MEMORYADDR0  .byte $0A
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0 	include TESTINCA
+
+char 'T'
+stackarg 0 (@0)
+STRING: include-a.inc
+0MEMORYADDR0  .byte $0A
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0 	include "11include.inc"
+
+char '"'
+stackarg 0 (@0)
+STRING: 11include.inc
+0MEMORYADDR0 ; 11include.inc - part of the symbolic include testing. 
+
+0MEMORYADDR0 ; To test non-symbol compliant include filenames, the name needs to begin with digits.
+
+0MEMORYADDR0 ; Please don't rename it.
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; --Mike Saarna
+
+0MEMORYADDR0 
+
+0MEMORYADDR0  .byte $11
+
+char '$'
+stackarg 17 (@0)
+0MEMORYADDR0 	include include-z.inc
+
+char 'i'
+stackarg 0 (@0)
+char '-'
+doop
+doop @ 0 unary
+char 'z'
+stackarg 0 (@1)
+evaltop @(A,O) 2 1
+stackarg 0 (@0)
+0MEMORYADDR0  .byte $0A
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	; Non-symbol compliant filenames without quotes...
+
+0MEMORYADDR0 	include 11include.inc
+
+0MEMORYADDR0 ; 11include.inc - part of the symbolic include testing. 
+
+0MEMORYADDR0 ; To test non-symbol compliant include filenames, the name needs to begin with digits.
+
+0MEMORYADDR0 ; Please don't rename it.
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; --Mike Saarna
+
+0MEMORYADDR0 
+
+0MEMORYADDR0  .byte $11
+
+char '$'
+stackarg 17 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 PASSFORCEB = 1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	.end
+
+
+Complete.

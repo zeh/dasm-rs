@@ -1,0 +1,69 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Test various directives that "fill" memory.
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; This came about because Dennis Debro posted about .align not
+
+0MEMORYADDR0 ; doing the right thing to the Stella list. Thomas Mathys was
+
+0MEMORYADDR0 ; able to trace this to v_align, which uses the first value
+
+0MEMORYADDR0 ; instead of the second as the actual fill byte. Fixed as of
+
+0MEMORYADDR0 ; release 2.20.12 I hope. :-)
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Peter H. Froehlich
+
+0MEMORYADDR0 ; phf at acm dot org
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	.processor	6502
+
+0MEMORYADDR0 	.org		0
+
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	; .ds fills with $a5 as required, works
+
+0MEMORYADDR0 	.ds	33, $a5		; always filled $a5
+
+char '3'
+stackarg 33 (@0)
+char ','
+char ' '
+char '$'
+stackarg 165 (@0)
+0MEMORYADDR0 	; .align fills with *align* value prior to 2.20.12
+
+0MEMORYADDR0 	.align	64, $f5		; filled $40 <2.20.11, fills $f5 now
+
+char '6'
+stackarg 64 (@0)
+char ','
+char ' '
+char '$'
+stackarg 245 (@0)
+0MEMORYADDR0 	.align	256, $5f	; filled $0 <2.20.11, fills $5f now
+
+char '2'
+stackarg 256 (@0)
+char ','
+char ' '
+char '$'
+stackarg 95 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	.end
+
+
+Complete.

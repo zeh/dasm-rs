@@ -1,0 +1,467 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ; addressexpression - adapted from the "jentzsch3" address expression bug test.
+
+0MEMORYADDR0 ; Original test courtesy Thomas Jentzsch. Output result code generation 
+
+0MEMORYADDR0 ; added by Mike Saarna.
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	processor 6502
+
+0MEMORYADDR0 	ORG $100
+
+char '$'
+stackarg 256 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 TEST_1 = (.) 
+
+char '('
+char '.'
+stackarg 256 (@0)
+char ')'
+0MEMORYADDR0 TEST_2 = (*)
+
+char '('
+char '*'
+stackarg 256 (@0)
+char ')'
+0MEMORYADDR0 TEST_3 = (1 - .)
+
+char '('
+char '1'
+stackarg 1 (@0)
+char ' '
+char '-'
+doop
+doop @ 1
+char ' '
+char '.'
+stackarg 256 (@1)
+char ')'
+evaltop @(A,O) 2 2
+stackarg -255 (@0)
+0MEMORYADDR0 TEST_4 = (1 - *)
+
+char '('
+char '1'
+stackarg 1 (@0)
+char ' '
+char '-'
+doop
+doop @ 1
+char ' '
+char '*'
+stackarg 256 (@1)
+char ')'
+evaltop @(A,O) 2 2
+stackarg -255 (@0)
+0MEMORYADDR0 TEST_5 = (1 - . - 1)
+
+char '('
+char '1'
+stackarg 1 (@0)
+char ' '
+char '-'
+doop
+doop @ 1
+char ' '
+char '.'
+stackarg 256 (@1)
+char ' '
+char '-'
+doop
+evaltop @(A,O) 2 2
+stackarg -255 (@0)
+doop @ 1
+char ' '
+char '1'
+stackarg 1 (@1)
+char ')'
+evaltop @(A,O) 2 2
+stackarg -256 (@0)
+0MEMORYADDR0 TEST_6 = (1 - * - 1)
+
+char '('
+char '1'
+stackarg 1 (@0)
+char ' '
+char '-'
+doop
+doop @ 1
+char ' '
+char '*'
+stackarg 256 (@1)
+char ' '
+char '-'
+doop
+evaltop @(A,O) 2 2
+stackarg -255 (@0)
+doop @ 1
+char ' '
+char '1'
+stackarg 1 (@1)
+char ')'
+evaltop @(A,O) 2 2
+stackarg -256 (@0)
+0MEMORYADDR0 TEST_7 = (1 - 1 - .)
+
+char '('
+char '1'
+stackarg 1 (@0)
+char ' '
+char '-'
+doop
+doop @ 1
+char ' '
+char '1'
+stackarg 1 (@1)
+char ' '
+char '-'
+doop
+evaltop @(A,O) 2 2
+stackarg 0 (@0)
+doop @ 1
+char ' '
+char '.'
+stackarg 256 (@1)
+char ')'
+evaltop @(A,O) 2 2
+stackarg -256 (@0)
+0MEMORYADDR0 TEST_8 = (1 - 1 - *)
+
+char '('
+char '1'
+stackarg 1 (@0)
+char ' '
+char '-'
+doop
+doop @ 1
+char ' '
+char '1'
+stackarg 1 (@1)
+char ' '
+char '-'
+doop
+evaltop @(A,O) 2 2
+stackarg 0 (@0)
+doop @ 1
+char ' '
+char '*'
+stackarg 256 (@1)
+char ')'
+evaltop @(A,O) 2 2
+stackarg -256 (@0)
+0MEMORYADDR0 TEST_9 = (1 + *)
+
+char '('
+char '1'
+stackarg 1 (@0)
+char ' '
+char '+'
+doop
+doop @ 1
+char ' '
+char '*'
+stackarg 256 (@1)
+char ')'
+evaltop @(A,O) 2 2
+stackarg 257 (@0)
+0MEMORYADDR0 TEST_10 = (1 + * + 1)
+
+char '('
+char '1'
+stackarg 1 (@0)
+char ' '
+char '+'
+doop
+doop @ 1
+char ' '
+char '*'
+stackarg 256 (@1)
+char ' '
+char '+'
+doop
+evaltop @(A,O) 2 2
+stackarg 257 (@0)
+doop @ 1
+char ' '
+char '1'
+stackarg 1 (@1)
+char ')'
+evaltop @(A,O) 2 2
+stackarg 258 (@0)
+0MEMORYADDR0 TEST_11 = (1 + 1 + *)
+
+char '('
+char '1'
+stackarg 1 (@0)
+char ' '
+char '+'
+doop
+doop @ 1
+char ' '
+char '1'
+stackarg 1 (@1)
+char ' '
+char '+'
+doop
+evaltop @(A,O) 2 2
+stackarg 2 (@0)
+doop @ 1
+char ' '
+char '*'
+stackarg 256 (@1)
+char ')'
+evaltop @(A,O) 2 2
+stackarg 258 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0  if TEST_1 =  256
+
+char 'T'
+stackarg 256 (@0)
+char ' '
+char '='
+doop
+doop @ 0 unary
+char ' '
+char '2'
+stackarg 256 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0 	.byte $01
+
+char '$'
+stackarg 1 (@0)
+0MEMORYADDR0  endif
+
+0MEMORYADDR0  if TEST_2 = 256
+
+char 'T'
+stackarg 256 (@0)
+char ' '
+char '='
+doop
+doop @ 0 unary
+char ' '
+char '2'
+stackarg 256 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0 	.byte $02
+
+char '$'
+stackarg 2 (@0)
+0MEMORYADDR0  endif
+
+0MEMORYADDR0  if TEST_3 = -255
+
+char 'T'
+stackarg -255 (@0)
+char ' '
+char '='
+doop
+doop @ 0 unary
+char ' '
+char '-'
+doop
+doop @ 1 unary
+char '2'
+stackarg 255 (@1)
+evaltop @(A,O) 2 2
+stackarg -255 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0 	.byte $03
+
+char '$'
+stackarg 3 (@0)
+0MEMORYADDR0  endif
+
+0MEMORYADDR0  if TEST_4 = -255
+
+char 'T'
+stackarg -255 (@0)
+char ' '
+char '='
+doop
+doop @ 0 unary
+char ' '
+char '-'
+doop
+doop @ 1 unary
+char '2'
+stackarg 255 (@1)
+evaltop @(A,O) 2 2
+stackarg -255 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0 	.byte $04
+
+char '$'
+stackarg 4 (@0)
+0MEMORYADDR0  endif
+
+0MEMORYADDR0  if TEST_5 = -256
+
+char 'T'
+stackarg -256 (@0)
+char ' '
+char '='
+doop
+doop @ 0 unary
+char ' '
+char '-'
+doop
+doop @ 1 unary
+char '2'
+stackarg 256 (@1)
+evaltop @(A,O) 2 2
+stackarg -256 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0 	.byte $05
+
+char '$'
+stackarg 5 (@0)
+0MEMORYADDR0  endif
+
+0MEMORYADDR0  if TEST_6 = -256
+
+char 'T'
+stackarg -256 (@0)
+char ' '
+char '='
+doop
+doop @ 0 unary
+char ' '
+char '-'
+doop
+doop @ 1 unary
+char '2'
+stackarg 256 (@1)
+evaltop @(A,O) 2 2
+stackarg -256 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0 	.byte $06
+
+char '$'
+stackarg 6 (@0)
+0MEMORYADDR0  endif
+
+0MEMORYADDR0  if TEST_7 = -256
+
+char 'T'
+stackarg -256 (@0)
+char ' '
+char '='
+doop
+doop @ 0 unary
+char ' '
+char '-'
+doop
+doop @ 1 unary
+char '2'
+stackarg 256 (@1)
+evaltop @(A,O) 2 2
+stackarg -256 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0 	.byte $07
+
+char '$'
+stackarg 7 (@0)
+0MEMORYADDR0  endif
+
+0MEMORYADDR0  if TEST_8 = -256
+
+char 'T'
+stackarg -256 (@0)
+char ' '
+char '='
+doop
+doop @ 0 unary
+char ' '
+char '-'
+doop
+doop @ 1 unary
+char '2'
+stackarg 256 (@1)
+evaltop @(A,O) 2 2
+stackarg -256 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0 	.byte $08
+
+char '$'
+stackarg 8 (@0)
+0MEMORYADDR0  endif
+
+0MEMORYADDR0  if TEST_9 = 257
+
+char 'T'
+stackarg 257 (@0)
+char ' '
+char '='
+doop
+doop @ 0 unary
+char ' '
+char '2'
+stackarg 257 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0 	.byte $09
+
+char '$'
+stackarg 9 (@0)
+0MEMORYADDR0  endif
+
+0MEMORYADDR0  if TEST_10 = 258
+
+char 'T'
+stackarg 258 (@0)
+char ' '
+char '='
+doop
+doop @ 0 unary
+char ' '
+char '2'
+stackarg 258 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0 	.byte $0A
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0  endif
+
+0MEMORYADDR0  if TEST_11 = 258
+
+char 'T'
+stackarg 258 (@0)
+char ' '
+char '='
+doop
+doop @ 0 unary
+char ' '
+char '2'
+stackarg 258 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0 	.byte $0B
+
+char '$'
+stackarg 11 (@0)
+0MEMORYADDR0  endif
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+
+Complete.

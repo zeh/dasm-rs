@@ -1,0 +1,4000 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ; Atari 7800 sprite sample
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Written by Daniel Boris (dboris@home.com)
+
+0MEMORYADDR0 ; original at http://atarihq.com/danb/files/7800sprt.s
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Adapted to use 7800.h, optional a78 header added, and new 
+
+0MEMORYADDR0 ; comments added by Mike Saarna.
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; NOTE: assembling this source will create a simple BIN file. To
+
+0MEMORYADDR0 ; add an a78 header that most emulators will expect, assemble 
+
+0MEMORYADDR0 ; with -DA78HEADER, or uncomment the line below...
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;A780HEADER = 1
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; ...and be sure to use the A78 extension for your bin.
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; The binary won't be cryptographically signed, meaning it won't pass
+
+0MEMORYADDR0 ; the 7800 bios boot checks. This probably won't stop the bin from
+
+0MEMORYADDR0 ; running on most emulators. This may stop it from running on some
+
+0MEMORYADDR0 ; flash carts. It will certainly stop it running from EPROM based carts
+
+0MEMORYADDR0 ; To cryptographically sign binaries, you can use the tools found in
+
+0MEMORYADDR0 ; the 7800AsmDevKit - http://7800.8bitdev.org/index.php/7800AsmDevKit
+
+0MEMORYADDR0 
+
+0MEMORYADDR0   processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0   include "7800.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: 7800.h
+0MEMORYADDR0 ; 7800.h
+
+0MEMORYADDR0 ; Version 1.0, 2019/12/13
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; This file defines hardware registers and memory mapping for the
+
+0MEMORYADDR0 ; Atari 7800. It is distributed as a companion machine-specific support package
+
+0MEMORYADDR0 ; for the DASM compiler. Updates to this file, DASM, and associated tools are
+
+0MEMORYADDR0 ; available at https://github.com/dasm-assembler/dasm
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; ******************** 7800 Hardware Adresses ***************************
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;       MEMORY MAP USAGE OF THE 7800
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;	  00 -   1F	TIA REGISTERS
+
+0MEMORYADDR0 ;	  20 -   3F	MARIA REGISTERS
+
+0MEMORYADDR0 ;	  40 -   FF	RAM block 0 (zero page)
+
+0MEMORYADDR0 ;	 100 -  11F	TIA   (mirror of 0000-001f)
+
+0MEMORYADDR0 ;	 120 -  13F	MARIA (mirror of 0020-003f)
+
+0MEMORYADDR0 ;	 140 -  1FF	RAM block 1 (stack)
+
+0MEMORYADDR0 ;	 200 -  21F	TIA   (mirror of 0000-001f)
+
+0MEMORYADDR0 ;	 220 -  23F	MARIA (mirror of 0020-003f)
+
+0MEMORYADDR0 ;	 240 -  27F	???
+
+0MEMORYADDR0 ;	 280 -  2FF	RIOT I/O ports and timers
+
+0MEMORYADDR0 ;	 300 -  31F	TIA   (mirror of 0000-001f)
+
+0MEMORYADDR0 ;	 320 -  33F	MARIA (mirror of 0020-003f)
+
+0MEMORYADDR0 ;	 340 -  3FF	???
+
+0MEMORYADDR0 ;	 400 -  47F	unused address space
+
+0MEMORYADDR0 ;	 480 -  4FF	RIOT RAM
+
+0MEMORYADDR0 ;	 500 -  57F	unused address space
+
+0MEMORYADDR0 ;	 580 -  5FF	RIOT RAM (mirror of 0480-04ff)
+
+0MEMORYADDR0 ;	 600 - 17FF	unused address space
+
+0MEMORYADDR0 ;	1800 - 203F	RAM
+
+0MEMORYADDR0 ;	2040 - 20FF	RAM block 0 (mirror of 0000-001f)
+
+0MEMORYADDR0 ;	2100 - 213F	RAM
+
+0MEMORYADDR0 ;	2140 - 21FF	RAM block 1 (mirror of 0140-01ff)
+
+0MEMORYADDR0 ;	2200 - 27FF	RAM
+
+0MEMORYADDR0 ;	2800 - 2FFF	mirror of 1800-27ff
+
+0MEMORYADDR0 ;	3000 - 3FFF	unused address space
+
+0MEMORYADDR0 ;	4000 - FF7F	potential cartridge address space
+
+0MEMORYADDR0 ;	FF80 - FFF9	RESERVED FOR ENCRYPTION
+
+0MEMORYADDR0 ;	FFFA - FFFF 	6502 VECTORS
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;****** 00-1F ********* TIA REGISTERS ******************
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 INPTCTRL = $01     ;Input control. In same address space as TIA. write-only
+
+char '$'
+stackarg 1 (@0)
+0MEMORYADDR0 VBLANK   = $01     ;VBLANK. D7=1:dump paddle caps to ground.     write-only
+
+char '$'
+stackarg 1 (@0)
+0MEMORYADDR0 INPT0    = $08     ;Paddle Control Input 0                       read-only
+
+char '$'
+stackarg 8 (@0)
+0MEMORYADDR0 INPT1    = $09     ;Paddle Control Input 1                       read-only
+
+char '$'
+stackarg 9 (@0)
+0MEMORYADDR0 INPT2    = $0A     ;Paddle Control Input 2                       read-only
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0 INPT3    = $0B     ;Paddle Control Input 3                       read-only
+
+char '$'
+stackarg 11 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; ** some common alternate names for INPT0/1/2/3
+
+0MEMORYADDR0 INPT4B   = $08     ;Joystick 0 Fire 1                            read-only
+
+char '$'
+stackarg 8 (@0)
+0MEMORYADDR0 INPT4A   = $09     ;Joystick 0 Fire 1                            read-only
+
+char '$'
+stackarg 9 (@0)
+0MEMORYADDR0 INPT5B   = $0A     ;Joystick 1 Fire 0                            read-only
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0 INPT5A   = $0B     ;Joystick 1 Fire 1                            read-only
+
+char '$'
+stackarg 11 (@0)
+0MEMORYADDR0 INPT4R   = $08     ;Joystick 0 Fire 1                            read-only
+
+char '$'
+stackarg 8 (@0)
+0MEMORYADDR0 INPT4L   = $09     ;Joystick 0 Fire 1                            read-only
+
+char '$'
+stackarg 9 (@0)
+0MEMORYADDR0 INPT5R   = $0A     ;Joystick 1 Fire 0                            read-only
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0 INPT5L   = $0B     ;Joystick 1 Fire 1                            read-only
+
+char '$'
+stackarg 11 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 INPT4    = $0C     ;Player 0 Fire Button Input                   read-only
+
+char '$'
+stackarg 12 (@0)
+0MEMORYADDR0 INPT5    = $0D     ;Player 1 Fire Button Input                   read-only
+
+char '$'
+stackarg 13 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 AUDC0    = $15     ;Audio Control Channel   0                    write-only
+
+char '$'
+stackarg 21 (@0)
+0MEMORYADDR0 AUDC1    = $16     ;Audio Control Channel   1                    write-only
+
+char '$'
+stackarg 22 (@0)
+0MEMORYADDR0 AUDF0    = $17     ;Audio Frequency Channel 0                    write-only
+
+char '$'
+stackarg 23 (@0)
+0MEMORYADDR0 AUDF1    = $18     ;Audio Frequency Channel 1                    write-only
+
+char '$'
+stackarg 24 (@0)
+0MEMORYADDR0 AUDV0    = $19     ;Audio Volume Channel    0                    write-only
+
+char '$'
+stackarg 25 (@0)
+0MEMORYADDR0 AUDV1    = $1A     ;Audio Volume Channel    1                    write-only
+
+char '$'
+stackarg 26 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;****** 20-3F ********* MARIA REGISTERS ***************
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 BACKGRND = $20     ;Background Color                             write-only
+
+char '$'
+stackarg 32 (@0)
+0MEMORYADDR0 P0C1     = $21     ;Palette 0 - Color 1                          write-only
+
+char '$'
+stackarg 33 (@0)
+0MEMORYADDR0 P0C2     = $22     ;Palette 0 - Color 2                          write-only
+
+char '$'
+stackarg 34 (@0)
+0MEMORYADDR0 P0C3     = $23     ;Palette 0 - Color 3                          write-only
+
+char '$'
+stackarg 35 (@0)
+0MEMORYADDR0 WSYNC    = $24     ;Wait For Sync                                write-only
+
+char '$'
+stackarg 36 (@0)
+0MEMORYADDR0 P1C1     = $25     ;Palette 1 - Color 1                          write-only
+
+char '$'
+stackarg 37 (@0)
+0MEMORYADDR0 P1C2     = $26     ;Palette 1 - Color 2                          write-only
+
+char '$'
+stackarg 38 (@0)
+0MEMORYADDR0 P1C3     = $27     ;Palette 1 - Color 3                          write-only
+
+char '$'
+stackarg 39 (@0)
+0MEMORYADDR0 MSTAT    = $28     ;Maria Status                                 read-only
+
+char '$'
+stackarg 40 (@0)
+0MEMORYADDR0 P2C1     = $29     ;Palette 2 - Color 1                          write-only
+
+char '$'
+stackarg 41 (@0)
+0MEMORYADDR0 P2C2     = $2A     ;Palette 2 - Color 2                          write-only
+
+char '$'
+stackarg 42 (@0)
+0MEMORYADDR0 P2C3     = $2B     ;Palette 2 - Color 3                          write-only
+
+char '$'
+stackarg 43 (@0)
+0MEMORYADDR0 DPPH     = $2C     ;Display List List Pointer High               write-only
+
+char '$'
+stackarg 44 (@0)
+0MEMORYADDR0 P3C1     = $2D     ;Palette 3 - Color 1                          write-only
+
+char '$'
+stackarg 45 (@0)
+0MEMORYADDR0 P3C2     = $2E     ;Palette 3 - Color 2                          write-only
+
+char '$'
+stackarg 46 (@0)
+0MEMORYADDR0 P3C3     = $2F     ;Palette 3 - Color 3                          write-only
+
+char '$'
+stackarg 47 (@0)
+0MEMORYADDR0 DPPL     = $30     ;Display List List Pointer Low                write-only
+
+char '$'
+stackarg 48 (@0)
+0MEMORYADDR0 P4C1     = $31     ;Palette 4 - Color 1                          write-only
+
+char '$'
+stackarg 49 (@0)
+0MEMORYADDR0 P4C2     = $32     ;Palette 4 - Color 2                          write-only
+
+char '$'
+stackarg 50 (@0)
+0MEMORYADDR0 P4C3     = $33     ;Palette 4 - Color 3                          write-only
+
+char '$'
+stackarg 51 (@0)
+0MEMORYADDR0 CHARBASE = $34     ;Character Base Address                       write-only
+
+char '$'
+stackarg 52 (@0)
+0MEMORYADDR0 CHBASE   = $34     ;Character Base Address                       write-only
+
+char '$'
+stackarg 52 (@0)
+0MEMORYADDR0 P5C1     = $35     ;Palette 5 - Color 1                          write-only
+
+char '$'
+stackarg 53 (@0)
+0MEMORYADDR0 P5C2     = $36     ;Palette 5 - Color 2                          write-only
+
+char '$'
+stackarg 54 (@0)
+0MEMORYADDR0 P5C3     = $37     ;Palette 5 - Color 3                          write-only
+
+char '$'
+stackarg 55 (@0)
+0MEMORYADDR0 OFFSET   = $38     ;Unused - Store zero here                     write-only
+
+char '$'
+stackarg 56 (@0)
+0MEMORYADDR0 P6C1     = $39     ;Palette 6 - Color 1                          write-only
+
+char '$'
+stackarg 57 (@0)
+0MEMORYADDR0 P6C2     = $3A     ;Palette 6 - Color 2                          write-only
+
+char '$'
+stackarg 58 (@0)
+0MEMORYADDR0 P6C3     = $3B     ;Palette 6 - Color 3                          write-only
+
+char '$'
+stackarg 59 (@0)
+0MEMORYADDR0 CTRL     = $3C     ;Maria Control Register                       write-only
+
+char '$'
+stackarg 60 (@0)
+0MEMORYADDR0 P7C1     = $3D     ;Palette 7 - Color 1                          write-only
+
+char '$'
+stackarg 61 (@0)
+0MEMORYADDR0 P7C2     = $3E     ;Palette 7 - Color 2                          write-only
+
+char '$'
+stackarg 62 (@0)
+0MEMORYADDR0 P7C3     = $3F     ;Palette 7 - Color 3                          write-only
+
+char '$'
+stackarg 63 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;****** 280-2FF ******* PIA PORTS AND TIMERS ************
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 SWCHA    = $280    ;P0+P1 Joystick Directional Input             read-write
+
+char '$'
+stackarg 640 (@0)
+0MEMORYADDR0 CTLSWA   = $281    ;I/O Control for SCHWA                        read-write
+
+char '$'
+stackarg 641 (@0)
+0MEMORYADDR0 SWACNT   = $281    ;VCS name for above                           read-write
+
+char '$'
+stackarg 641 (@0)
+0MEMORYADDR0 SWCHB    = $282    ;Console Switches                             read-write
+
+char '$'
+stackarg 642 (@0)
+0MEMORYADDR0 CTLSWB   = $283    ;I/O Control for SCHWB                        read-write
+
+char '$'
+stackarg 643 (@0)
+0MEMORYADDR0 SWBCNT   = $283    ;VCS name for above                           read-write
+
+char '$'
+stackarg 643 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 INTIM    = $284    ;Iterval Timer Read                           read-only
+
+char '$'
+stackarg 644 (@0)
+0MEMORYADDR0 TIM1T    = $294    ;Set 1    CLK Interval (838   nsec/interval)  write-only
+
+char '$'
+stackarg 660 (@0)
+0MEMORYADDR0 TIM8T    = $295    ;Set 8    CLK Interval (6.7   usec/interval)  write-only
+
+char '$'
+stackarg 661 (@0)
+0MEMORYADDR0 TIM64T   = $296    ;Set 64   CLK Interval (63.6  usec/interval)  write-only
+
+char '$'
+stackarg 662 (@0)
+0MEMORYADDR0 T1024T   = $297    ;Set 1024 CLK Interval (858.2 usec/interval)  write-only
+
+char '$'
+stackarg 663 (@0)
+0MEMORYADDR0 TIM64TI  = $29E    ;Interrupt timer 64T                          write-only
+
+char '$'
+stackarg 670 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;XM
+
+0MEMORYADDR0 XCTRL    = $470    ; 7=YM2151 6=RAM@6k 5=RAM@4k 4=pokey@450 3=hsc 2=cart 1=RoF_bank1 0=RoF_bank2
+
+char '$'
+stackarg 1136 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Pokey register relative locations, since its base may be different
+
+0MEMORYADDR0 ; depending on the hardware.
+
+0MEMORYADDR0 PAUDF0   = $0    ; extra audio channels and frequencies
+
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 PAUDC0   = $1
+
+char '$'
+stackarg 1 (@0)
+0MEMORYADDR0 PAUDF1   = $2
+
+char '$'
+stackarg 2 (@0)
+0MEMORYADDR0 PAUDC1   = $3
+
+char '$'
+stackarg 3 (@0)
+0MEMORYADDR0 PAUDF2   = $4
+
+char '$'
+stackarg 4 (@0)
+0MEMORYADDR0 PAUDC2   = $5
+
+char '$'
+stackarg 5 (@0)
+0MEMORYADDR0 PAUDF3   = $6
+
+char '$'
+stackarg 6 (@0)
+0MEMORYADDR0 PAUDC3   = $7
+
+char '$'
+stackarg 7 (@0)
+0MEMORYADDR0 PAUDCTL  = $8    ; Audio Control
+
+char '$'
+stackarg 8 (@0)
+0MEMORYADDR0 PRANDOM  = $A    ; 17 bit polycounter pseudo random
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0 PSKCTL   = $F    ; Serial Port control
+
+char '$'
+stackarg 15 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	SEG.U data
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;******* Variables ********************************
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	org $40
+
+char '$'
+stackarg 64 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 xpos	ds.b	1	      	;X Position of sprite
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 ypos    ds.b    1            	;Y Position of sprite
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 temp    ds.b    1		
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 dlpnt	ds.w	1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 dlend	ds.b	12		;Index of end of each DL
+
+char '1'
+stackarg 12 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;**********************************************************
+
+0MEMORYADDR0  	
+
+0MEMORYADDR0         SEG     ROM
+
+0MEMORYADDR0 
+
+0MEMORYADDR0  ifconst A78HEADER
+
+char 'A'
+stackarg 0 (@0)
+0MEMORYADDR0 HEADER  ORG     ROMTOP-128
+
+0MEMORYADDR0         DC.B    1  ; 0   Header version     - 1 byte
+
+0MEMORYADDR0         DC.B    "ATARI7800"     ; 1..16  "ATARI7800   "  - 16 bytes
+
+0MEMORYADDR0         DS      7,32
+
+0MEMORYADDR0         DC.B    "Dan Boris, sprite sample"; 17..48 Cart title      - 32 bytes
+
+0MEMORYADDR0         DS      HEADER+49-.,0
+
+0MEMORYADDR0         DC.B    $00,$00,256->ROMTOP,$00; 49..52 data length      - 4 bytes
+
+0MEMORYADDR0         DC.B    $00,$00  ; 53..54 cart type      - 2 bytes
+
+0MEMORYADDR0     ;    bit 0 - pokey at $4000
+
+0MEMORYADDR0     ;    bit 1 - supergame bank switched
+
+0MEMORYADDR0     ;    bit 2 - supergame ram at $4000
+
+0MEMORYADDR0     ;    bit 3 - rom at $4000
+
+0MEMORYADDR0     ;    bit 4 - bank 6 at $4000
+
+0MEMORYADDR0     ;    bit 5 - supergame banked ram
+
+0MEMORYADDR0     ;    bit 6 - pokey at $450
+
+0MEMORYADDR0     ;    bit 7 - mirror ram at $4000
+
+0MEMORYADDR0     ;    bit 8-15 - Special
+
+0MEMORYADDR0     ;   0 = Normal cart
+
+0MEMORYADDR0         DC.B    1  ; 55   controller 1 type  - 1 byte
+
+0MEMORYADDR0         DC.B    1  ; 56   controller 2 type  - 1 byte
+
+0MEMORYADDR0     ;    0 = None
+
+0MEMORYADDR0     ;    1 = Joystick
+
+0MEMORYADDR0     ;    2 = Light Gun
+
+0MEMORYADDR0         DC.B    0  ; 57 0 = NTSC 1 = PAL
+
+0MEMORYADDR0         DC.B    0  ; 58   Save data peripheral - 1 byte (version 2)
+
+0MEMORYADDR0     ;    0 = None / unknown (default)
+
+0MEMORYADDR0     ;    1 = High Score Cart (HSC)
+
+0MEMORYADDR0     ;    2 = SaveKey
+
+0MEMORYADDR0         ORG     HEADER+63
+
+0MEMORYADDR0         DC.B    0  ; 63   Expansion module
+
+0MEMORYADDR0     ;    0 = No expansion module (default on all currently released games)
+
+0MEMORYADDR0     ;    1 = Expansion module required
+
+0MEMORYADDR0         ORG     HEADER+100      ; 100..127 "ACTUAL CART DATA STARTS HERE" - 28 bytes
+
+0MEMORYADDR0         DC.B    "ACTUAL CART DATA STARTS HERE"
+
+0MEMORYADDR0  endif
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ROMTOP  ORG     $8000       ;Start of code
+
+char '$'
+stackarg 32768 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0 START
+
+0MEMORYADDR0 	sei                     ;Disable interrupts
+
+0MEMORYADDR0 	cld                     ;Clear decimal mode
+
+0MEMORYADDR0 	
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;******** Atari recommended startup procedure
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	lda     #$07
+
+char '#'
+char '$'
+stackarg 7 (@0)
+0MEMORYADDR0 	sta     INPTCTRL        ;Lock into 7800 mode
+
+char 'I'
+stackarg 1 (@0)
+0MEMORYADDR0 	lda     #$7F
+
+char '#'
+char '$'
+stackarg 127 (@0)
+0MEMORYADDR0 	sta     CTRL            ;Disable DMA
+
+char 'C'
+stackarg 60 (@0)
+0MEMORYADDR0 	lda     #$00            
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 	sta     OFFSET
+
+char 'O'
+stackarg 56 (@0)
+0MEMORYADDR0 	sta     INPTCTRL
+
+char 'I'
+stackarg 1 (@0)
+0MEMORYADDR0 	ldx     #$FF            ;Reset stack pointer
+
+char '#'
+char '$'
+stackarg 255 (@0)
+0MEMORYADDR0 	txs
+
+0MEMORYADDR0 	
+
+0MEMORYADDR0 ;************** Clear zero page and hardware ******
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	ldx     #$40
+
+char '#'
+char '$'
+stackarg 64 (@0)
+0MEMORYADDR0 	lda     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 crloop1    
+
+0MEMORYADDR0 	sta     $00,x           ;Clear zero page
+
+char '$'
+stackarg 0 (@0)
+char ','
+0MEMORYADDR0 	sta	$100,x		;Clear page 1
+
+char '$'
+stackarg 256 (@0)
+char ','
+0MEMORYADDR0 	inx
+
+0MEMORYADDR0 	bne     crloop1
+
+char 'c'
+stackarg 32791 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;************* Clear RAM **************************
+
+0MEMORYADDR0 
+
+0MEMORYADDR0     ldy     #$00            ;Clear Ram
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0     lda     #$18            ;Start at $1800
+
+char '#'
+char '$'
+stackarg 24 (@0)
+0MEMORYADDR0     sta     $81             
+
+char '$'
+stackarg 129 (@0)
+0MEMORYADDR0     lda     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0     sta     $80
+
+char '$'
+stackarg 128 (@0)
+0MEMORYADDR0 crloop3
+
+0MEMORYADDR0     lda     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0     sta     ($80),y         ;Store data
+
+char '('
+char '$'
+stackarg 128 (@0)
+char ')'
+0MEMORYADDR0     iny                     ;Next byte
+
+0MEMORYADDR0     bne     crloop3         ;Branch if not done page
+
+char 'c'
+stackarg 32809 (@0)
+0MEMORYADDR0     inc     $81             ;Next page
+
+char '$'
+stackarg 129 (@0)
+0MEMORYADDR0     lda     $81
+
+char '$'
+stackarg 129 (@0)
+0MEMORYADDR0     cmp     #$20            ;End at $1FFF
+
+char '#'
+char '$'
+stackarg 32 (@0)
+0MEMORYADDR0     bne     crloop3         ;Branch if not
+
+char 'c'
+stackarg 32809 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0     ldy     #$00            ;Clear Ram
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0     lda     #$22            ;Start at $2200
+
+char '#'
+char '$'
+stackarg 34 (@0)
+0MEMORYADDR0     sta     $81             
+
+char '$'
+stackarg 129 (@0)
+0MEMORYADDR0     lda     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0     sta     $80
+
+char '$'
+stackarg 128 (@0)
+0MEMORYADDR0 crloop4
+
+0MEMORYADDR0     lda     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0     sta     ($80),y         ;Store data
+
+char '('
+char '$'
+stackarg 128 (@0)
+char ')'
+0MEMORYADDR0     iny                     ;Next byte
+
+0MEMORYADDR0     bne     crloop4         ;Branch if not done page
+
+char 'c'
+stackarg 32834 (@0)
+0MEMORYADDR0     inc     $81             ;Next page
+
+char '$'
+stackarg 129 (@0)
+0MEMORYADDR0     lda     $81
+
+char '$'
+stackarg 129 (@0)
+0MEMORYADDR0     cmp     #$27            ;End at $27FF
+
+char '#'
+char '$'
+stackarg 39 (@0)
+0MEMORYADDR0     bne     crloop4         ;Branch if not
+
+char 'c'
+stackarg 32834 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0     ldx     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0     lda     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 crloop5                         ;Clear 2100-213F
+
+0MEMORYADDR0     sta     $2100,x
+
+char '$'
+stackarg 8448 (@0)
+char ','
+0MEMORYADDR0     inx
+
+0MEMORYADDR0     cpx     #$40
+
+char '#'
+char '$'
+stackarg 64 (@0)
+0MEMORYADDR0     bne     crloop5
+
+char 'c'
+stackarg 32853 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0 ;************* Build DLL *******************
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; 20 blank lines
+
+0MEMORYADDR0 
+
+0MEMORYADDR0     ldx	#$00                   
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0     lda     #$4F            ;16 lines
+
+char '#'
+char '$'
+stackarg 79 (@0)
+0MEMORYADDR0     sta     $1800,x  	      
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0     inx
+
+0MEMORYADDR0     lda     #$21		;$2100 = blank DL
+
+char '#'
+char '$'
+stackarg 33 (@0)
+0MEMORYADDR0     sta	$1800,x
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0     inx
+
+0MEMORYADDR0     lda     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0     sta	$1800,x
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0     inx                   
+
+0MEMORYADDR0 	lda     #$44            ;4 lines
+
+char '#'
+char '$'
+stackarg 68 (@0)
+0MEMORYADDR0 	sta     $1800,x        
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0 	inx
+
+0MEMORYADDR0 	lda     #$21
+
+char '#'
+char '$'
+stackarg 33 (@0)
+0MEMORYADDR0 	sta	$1800,x
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0 	inx
+
+0MEMORYADDR0 	lda     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 	sta	$1800,x
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0     	inx
+
+0MEMORYADDR0         
+
+0MEMORYADDR0 ; 192 mode lines divided into 12 regions
+
+0MEMORYADDR0 
+
+0MEMORYADDR0     ldy     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 DLLloop2                         
+
+0MEMORYADDR0     lda     #$4F            ;16 lines
+
+char '#'
+char '$'
+stackarg 79 (@0)
+0MEMORYADDR0     sta     $1800,x        
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0     inx
+
+0MEMORYADDR0     lda     DLPOINTH,y
+
+char 'D'
+stackarg 0 (@0)
+char ','
+0MEMORYADDR0     sta	$1800,x
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0     inx
+
+0MEMORYADDR0     lda     DLPOINTL,y
+
+char 'D'
+stackarg 0 (@0)
+char ','
+0MEMORYADDR0     sta	$1800,x
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0     inx
+
+0MEMORYADDR0     iny
+
+0MEMORYADDR0     cpy     #$0D            ;12 DLL entries
+
+char '#'
+char '$'
+stackarg 13 (@0)
+0MEMORYADDR0     bne     DLLloop2
+
+char 'D'
+stackarg 32901 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; 26 blank lines
+
+0MEMORYADDR0                  
+
+0MEMORYADDR0     lda     #$4F            ;16 lines
+
+char '#'
+char '$'
+stackarg 79 (@0)
+0MEMORYADDR0     sta     $1800,x  	      
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0     inx
+
+0MEMORYADDR0     lda     #$21		;$2100 = blank DL
+
+char '#'
+char '$'
+stackarg 33 (@0)
+0MEMORYADDR0     sta	$1800,x
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0     inx
+
+0MEMORYADDR0     lda     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0     sta	$1800,x
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0     inx                   
+
+0MEMORYADDR0 	lda     #$4A            ;10 lines
+
+char '#'
+char '$'
+stackarg 74 (@0)
+0MEMORYADDR0 	sta     $1800,x        
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0 	inx
+
+0MEMORYADDR0 	lda     #$21
+
+char '#'
+char '$'
+stackarg 33 (@0)
+0MEMORYADDR0 	sta	$1800,x
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0 	inx
+
+0MEMORYADDR0 	lda     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 	sta	$1800,x
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0     	
+
+0MEMORYADDR0 ;***************** Setup Maria Registers ****************
+
+0MEMORYADDR0 	
+
+0MEMORYADDR0         lda     #$18            ;DLL at $1800
+
+char '#'
+char '$'
+stackarg 24 (@0)
+0MEMORYADDR0 	sta	DPPH
+
+char 'D'
+stackarg 44 (@0)
+0MEMORYADDR0 	lda	#$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 	sta	DPPL
+
+char 'D'
+stackarg 48 (@0)
+0MEMORYADDR0 	lda	#$18		;Setup Palette 0
+
+char '#'
+char '$'
+stackarg 24 (@0)
+0MEMORYADDR0 	sta	P0C1
+
+char 'P'
+stackarg 33 (@0)
+0MEMORYADDR0 	lda	#$38
+
+char '#'
+char '$'
+stackarg 56 (@0)
+0MEMORYADDR0 	sta	P0C2
+
+char 'P'
+stackarg 34 (@0)
+0MEMORYADDR0 	lda	#$58
+
+char '#'
+char '$'
+stackarg 88 (@0)
+0MEMORYADDR0 	sta	P0C3
+
+char 'P'
+stackarg 35 (@0)
+0MEMORYADDR0 	lda	#$43		;Enable DMA
+
+char '#'
+char '$'
+stackarg 67 (@0)
+0MEMORYADDR0 	sta	CTRL
+
+char 'C'
+stackarg 60 (@0)
+0MEMORYADDR0 	lda	#$00		;Setup ports to read mode
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 	sta	CTLSWA
+
+char 'C'
+stackarg 641 (@0)
+0MEMORYADDR0 	sta	CTLSWB
+
+char 'C'
+stackarg 643 (@0)
+0MEMORYADDR0 	
+
+0MEMORYADDR0 	lda	#$40		;Set initial X position of sprite
+
+char '#'
+char '$'
+stackarg 64 (@0)
+0MEMORYADDR0 	sta	xpos
+
+char 'x'
+stackarg 64 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0 mainloop
+
+0MEMORYADDR0 	lda	MSTAT		;Wait for VBLANK
+
+char 'M'
+stackarg 40 (@0)
+0MEMORYADDR0 	and	#$80
+
+char '#'
+char '$'
+stackarg 128 (@0)
+0MEMORYADDR0 	beq 	mainloop
+
+char 'm'
+stackarg 32997 (@0)
+0MEMORYADDR0 	
+
+0MEMORYADDR0 	lda	SWCHA		;Read stick
+
+char 'S'
+stackarg 640 (@0)
+0MEMORYADDR0 	and	#$80		;Pushed Right?
+
+char '#'
+char '$'
+stackarg 128 (@0)
+0MEMORYADDR0 	bne	skip1
+
+char 's'
+stackarg 0 (@0)
+0MEMORYADDR0 	ldx	xpos		;Move sprite to right
+
+char 'x'
+stackarg 64 (@0)
+0MEMORYADDR0 	inx
+
+0MEMORYADDR0 	stx	xpos
+
+char 'x'
+stackarg 64 (@0)
+0MEMORYADDR0 skip1
+
+redo 13: 'skip1' 0045 0004
+0MEMORYADDR0 	lda	SWCHA		;Read stick
+
+char 'S'
+stackarg 640 (@0)
+0MEMORYADDR0 	and 	#$40		;Pushed Left?
+
+char '#'
+char '$'
+stackarg 64 (@0)
+0MEMORYADDR0 	bne 	skip2
+
+char 's'
+stackarg 0 (@0)
+0MEMORYADDR0 	ldx 	xpos		;Move sprite to left
+
+char 'x'
+stackarg 64 (@0)
+0MEMORYADDR0 	dex
+
+0MEMORYADDR0 	stx 	xpos
+
+char 'x'
+stackarg 64 (@0)
+0MEMORYADDR0 skip2
+
+redo 13: 'skip2' 0045 0004
+0MEMORYADDR0     lda     SWCHA		;Read stick
+
+char 'S'
+stackarg 640 (@0)
+0MEMORYADDR0     and     #$20		;Pushed Down?
+
+char '#'
+char '$'
+stackarg 32 (@0)
+0MEMORYADDR0     bne     skip3		
+
+char 's'
+stackarg 0 (@0)
+0MEMORYADDR0     ldx     ypos		;Move sprite down
+
+char 'y'
+stackarg 65 (@0)
+0MEMORYADDR0     cpx	#176	
+
+char '#'
+char '1'
+stackarg 176 (@0)
+0MEMORYADDR0     beq	skip3		;Don't move if we are at the bottom
+
+char 's'
+stackarg 0 (@0)
+0MEMORYADDR0     inx
+
+0MEMORYADDR0     stx     ypos	
+
+char 'y'
+stackarg 65 (@0)
+0MEMORYADDR0 skip3
+
+redo 13: 'skip3' 0045 0004
+0MEMORYADDR0     lda     SWCHA		;Read stick
+
+char 'S'
+stackarg 640 (@0)
+0MEMORYADDR0     and     #$10		;Pushed Up?
+
+char '#'
+char '$'
+stackarg 16 (@0)
+0MEMORYADDR0     bne     skip4		
+
+char 's'
+stackarg 0 (@0)
+0MEMORYADDR0     ldx     ypos		;Move sprite up
+
+char 'y'
+stackarg 65 (@0)
+0MEMORYADDR0     beq	skip4		;Don't move if we are at the top
+
+char 's'
+stackarg 0 (@0)
+0MEMORYADDR0     dex			
+
+0MEMORYADDR0     stx     ypos
+
+char 'y'
+stackarg 65 (@0)
+0MEMORYADDR0 skip4
+
+redo 13: 'skip4' 0045 0004
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;********************** reset DL ends ******************
+
+0MEMORYADDR0 	
+
+0MEMORYADDR0 	ldx 	#$0C
+
+char '#'
+char '$'
+stackarg 12 (@0)
+0MEMORYADDR0 	lda	#$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 dlclearloop
+
+0MEMORYADDR0 	dex
+
+0MEMORYADDR0 	sta	dlend,x
+
+char 'd'
+stackarg 69 (@0)
+char ','
+0MEMORYADDR0 	bne	dlclearloop
+
+char 'd'
+stackarg 33061 (@0)
+0MEMORYADDR0 	
+
+0MEMORYADDR0 	
+
+0MEMORYADDR0 ;******************** build DL entries *********************
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         lda     ypos		;Get Y position
+
+char 'y'
+stackarg 65 (@0)
+0MEMORYADDR0    	and	#$F0		
+
+char '#'
+char '$'
+stackarg 240 (@0)
+0MEMORYADDR0    	lsr 			;Divide by 16
+
+0MEMORYADDR0    	lsr	
+
+0MEMORYADDR0    	lsr	
+
+0MEMORYADDR0    	lsr	
+
+0MEMORYADDR0    	tax
+
+0MEMORYADDR0    	lda	DLPOINTL,x	;Get pointer to DL that this sprite starts in
+
+char 'D'
+stackarg 0 (@0)
+char ','
+0MEMORYADDR0    	sta	dlpnt
+
+char 'd'
+stackarg 67 (@0)
+0MEMORYADDR0    	lda	DLPOINTH,x
+
+char 'D'
+stackarg 0 (@0)
+char ','
+0MEMORYADDR0    	sta	dlpnt+1
+
+char 'd'
+stackarg 67 (@0)
+char '+'
+doop
+doop @ 0 unary
+char '1'
+stackarg 1 (@1)
+evaltop @(A,O) 2 1
+stackarg 68 (@0)
+0MEMORYADDR0    	
+
+0MEMORYADDR0    	;Create DL entry for upper part of sprite
+
+0MEMORYADDR0    	
+
+0MEMORYADDR0    	ldy	dlend,x		;Get the index to the end of this DL
+
+char 'd'
+stackarg 69 (@0)
+char ','
+0MEMORYADDR0    	lda	#$00				
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 	sta     (dlpnt),y	;Low byte of data address
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0 	iny
+
+0MEMORYADDR0 	lda	#$40		;Mode 320x1
+
+char '#'
+char '$'
+stackarg 64 (@0)
+0MEMORYADDR0 	sta     (dlpnt),y
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0 	iny 
+
+0MEMORYADDR0 	lda	ypos		
+
+char 'y'
+stackarg 65 (@0)
+0MEMORYADDR0 	and	#$0F		
+
+char '#'
+char '$'
+stackarg 15 (@0)
+0MEMORYADDR0 	ora	#$a0
+
+char '#'
+char '$'
+stackarg 160 (@0)
+0MEMORYADDR0 	sta     (dlpnt),y
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0 	iny
+
+0MEMORYADDR0 	lda	#$1F		;Palette 0, 1 byte wide
+
+char '#'
+char '$'
+stackarg 31 (@0)
+0MEMORYADDR0 	sta     (dlpnt),y
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0 	iny
+
+0MEMORYADDR0 	lda	xpos		;Horizontal position
+
+char 'x'
+stackarg 64 (@0)
+0MEMORYADDR0     sta     (dlpnt),y
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0     sty	dlend,x
+
+char 'd'
+stackarg 69 (@0)
+char ','
+0MEMORYADDR0         
+
+0MEMORYADDR0     lda	ypos
+
+char 'y'
+stackarg 65 (@0)
+0MEMORYADDR0     and	#$0F		;See if sprite is entirely within this region
+
+char '#'
+char '$'
+stackarg 15 (@0)
+0MEMORYADDR0     beq	doneDL		;branch if it is
+
+char 'd'
+stackarg 0 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0     ;Create DL entry for lower part of sprite 
+
+0MEMORYADDR0         
+
+0MEMORYADDR0     inx			;Next region
+
+0MEMORYADDR0     lda	DLPOINTL,x	;Get pointer to next DL
+
+char 'D'
+stackarg 0 (@0)
+char ','
+0MEMORYADDR0    	sta	dlpnt
+
+char 'd'
+stackarg 67 (@0)
+0MEMORYADDR0    	lda	DLPOINTH,x
+
+char 'D'
+stackarg 0 (@0)
+char ','
+0MEMORYADDR0    	sta	dlpnt+1
+
+char 'd'
+stackarg 67 (@0)
+char '+'
+doop
+doop @ 0 unary
+char '1'
+stackarg 1 (@1)
+evaltop @(A,O) 2 1
+stackarg 68 (@0)
+0MEMORYADDR0         ldy	dlend,x		;Get the index to the end of this DL
+
+char 'd'
+stackarg 69 (@0)
+char ','
+0MEMORYADDR0 	lda	#$00				
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 	sta     (dlpnt),y
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0 	iny
+
+0MEMORYADDR0 	lda	#$40		;Mode 320x1
+
+char '#'
+char '$'
+stackarg 64 (@0)
+0MEMORYADDR0 	sta     (dlpnt),y
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0 	iny 
+
+0MEMORYADDR0 	lda	ypos
+
+char 'y'
+stackarg 65 (@0)
+0MEMORYADDR0 	and	#$0F
+
+char '#'
+char '$'
+stackarg 15 (@0)
+0MEMORYADDR0 	eor	#$0F
+
+char '#'
+char '$'
+stackarg 15 (@0)
+0MEMORYADDR0 	sta	temp
+
+char 't'
+stackarg 66 (@0)
+0MEMORYADDR0 	lda	#$a0
+
+char '#'
+char '$'
+stackarg 160 (@0)
+0MEMORYADDR0 	clc
+
+0MEMORYADDR0 	sbc 	temp
+
+char 't'
+stackarg 66 (@0)
+0MEMORYADDR0 	sta     (dlpnt),y
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0 	iny
+
+0MEMORYADDR0 	lda	#$1F		;Palette 0, 1 byte wide
+
+char '#'
+char '$'
+stackarg 31 (@0)
+0MEMORYADDR0 	sta     (dlpnt),y
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0 	iny
+
+0MEMORYADDR0 	lda	xpos		;Horizontal position
+
+char 'x'
+stackarg 64 (@0)
+0MEMORYADDR0 	sta     (dlpnt),y
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0 	sty	dlend,x
+
+char 'd'
+stackarg 69 (@0)
+char ','
+0MEMORYADDR0 doneDL
+
+redo 13: 'doneDL' 0045 0004
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;************** add DL end entry on each DL *****************************
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	ldx	#$0C
+
+char '#'
+char '$'
+stackarg 12 (@0)
+0MEMORYADDR0 dlendloop
+
+0MEMORYADDR0 	dex
+
+0MEMORYADDR0 	lda	DLPOINTL,x
+
+char 'D'
+stackarg 0 (@0)
+char ','
+0MEMORYADDR0 	sta	dlpnt
+
+char 'd'
+stackarg 67 (@0)
+0MEMORYADDR0 	lda	DLPOINTH,x
+
+char 'D'
+stackarg 0 (@0)
+char ','
+0MEMORYADDR0    	sta	dlpnt+1
+
+char 'd'
+stackarg 67 (@0)
+char '+'
+doop
+doop @ 0 unary
+char '1'
+stackarg 1 (@1)
+evaltop @(A,O) 2 1
+stackarg 68 (@0)
+0MEMORYADDR0    	ldy 	dlend,x
+
+char 'd'
+stackarg 69 (@0)
+char ','
+0MEMORYADDR0    	iny
+
+0MEMORYADDR0    	lda	#$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0    	sta	(dlpnt),y
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0    	txa
+
+0MEMORYADDR0 	bne 	dlendloop   	
+
+char 'd'
+stackarg 33175 (@0)
+0MEMORYADDR0    	
+
+0MEMORYADDR0 vbloop
+
+0MEMORYADDR0 	lda	MSTAT		;Wait for VBLANK to end
+
+char 'M'
+stackarg 40 (@0)
+0MEMORYADDR0 	and	#$80
+
+char '#'
+char '$'
+stackarg 128 (@0)
+0MEMORYADDR0 	bne 	vbloop
+
+char 'v'
+stackarg 33196 (@0)
+0MEMORYADDR0 	
+
+0MEMORYADDR0 	jmp     mainloop	;Loop
+
+char 'm'
+stackarg 32997 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 redraw
+
+0MEMORYADDR0       
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 NMI
+
+0MEMORYADDR0 	RTI
+
+0MEMORYADDR0 	
+
+0MEMORYADDR0 IRQ
+
+0MEMORYADDR0 	RTI
+
+0MEMORYADDR0 	
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;Pointers to the DLs
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 DLPOINTH
+
+redo 13: 'DLPOINTH' 0045 0004
+0MEMORYADDR0     .byte   $22,$22,$22,$22,$23,$23,$23,$23,$24,$24,$24,$24
+
+char '$'
+stackarg 34 (@0)
+char ','
+char '$'
+stackarg 34 (@0)
+char ','
+char '$'
+stackarg 34 (@0)
+char ','
+char '$'
+stackarg 34 (@0)
+char ','
+char '$'
+stackarg 35 (@0)
+char ','
+char '$'
+stackarg 35 (@0)
+char ','
+char '$'
+stackarg 35 (@0)
+char ','
+char '$'
+stackarg 35 (@0)
+char ','
+char '$'
+stackarg 36 (@0)
+char ','
+char '$'
+stackarg 36 (@0)
+char ','
+char '$'
+stackarg 36 (@0)
+char ','
+char '$'
+stackarg 36 (@0)
+0MEMORYADDR0 DLPOINTL
+
+redo 13: 'DLPOINTL' 0045 0004
+0MEMORYADDR0     .byte   $00,$40,$80,$C0,$00,$40,$80,$C0,$00,$40,$80,$C0
+
+char '$'
+stackarg 0 (@0)
+char ','
+char '$'
+stackarg 64 (@0)
+char ','
+char '$'
+stackarg 128 (@0)
+char ','
+char '$'
+stackarg 192 (@0)
+char ','
+char '$'
+stackarg 0 (@0)
+char ','
+char '$'
+stackarg 64 (@0)
+char ','
+char '$'
+stackarg 128 (@0)
+char ','
+char '$'
+stackarg 192 (@0)
+char ','
+char '$'
+stackarg 0 (@0)
+char ','
+char '$'
+stackarg 64 (@0)
+char ','
+char '$'
+stackarg 128 (@0)
+char ','
+char '$'
+stackarg 192 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;************** Graphic Data *****************************
+
+0MEMORYADDR0     org $a000
+
+char '$'
+stackarg 40960 (@0)
+0MEMORYADDR0     .byte     %00111100
+
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0     org $a100
+
+char '$'
+stackarg 41216 (@0)
+0MEMORYADDR0     .byte     %00111100
+
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0     org $a200
+
+char '$'
+stackarg 41472 (@0)
+0MEMORYADDR0     .byte     %01000010 
+
+char '%'
+stackarg 66 (@0)
+0MEMORYADDR0     org $a300
+
+char '$'
+stackarg 41728 (@0)
+0MEMORYADDR0     .byte     %01000010 
+
+char '%'
+stackarg 66 (@0)
+0MEMORYADDR0     org $a400
+
+char '$'
+stackarg 41984 (@0)
+0MEMORYADDR0     .byte     %10011001
+
+char '%'
+stackarg 153 (@0)
+0MEMORYADDR0     org $a500
+
+char '$'
+stackarg 42240 (@0)
+0MEMORYADDR0     .byte     %10011001
+
+char '%'
+stackarg 153 (@0)
+0MEMORYADDR0     org $a600
+
+char '$'
+stackarg 42496 (@0)
+0MEMORYADDR0     .byte     %10100101
+
+char '%'
+stackarg 165 (@0)
+0MEMORYADDR0     org $a700
+
+char '$'
+stackarg 42752 (@0)
+0MEMORYADDR0     .byte     %10100101
+
+char '%'
+stackarg 165 (@0)
+0MEMORYADDR0     org $a800
+
+char '$'
+stackarg 43008 (@0)
+0MEMORYADDR0     .byte     %10000001
+
+char '%'
+stackarg 129 (@0)
+0MEMORYADDR0     org $a900
+
+char '$'
+stackarg 43264 (@0)
+0MEMORYADDR0     .byte     %10000001
+
+char '%'
+stackarg 129 (@0)
+0MEMORYADDR0     org $aA00
+
+char '$'
+stackarg 43520 (@0)
+0MEMORYADDR0     .byte     %10100101
+
+char '%'
+stackarg 165 (@0)
+0MEMORYADDR0     org $aB00
+
+char '$'
+stackarg 43776 (@0)
+0MEMORYADDR0     .byte     %10100101
+
+char '%'
+stackarg 165 (@0)
+0MEMORYADDR0     org $aC00
+
+char '$'
+stackarg 44032 (@0)
+0MEMORYADDR0     .byte     %01000010
+
+char '%'
+stackarg 66 (@0)
+0MEMORYADDR0     org $aD00
+
+char '$'
+stackarg 44288 (@0)
+0MEMORYADDR0     .byte     %01000010
+
+char '%'
+stackarg 66 (@0)
+0MEMORYADDR0     org $aE00
+
+char '$'
+stackarg 44544 (@0)
+0MEMORYADDR0     .byte     %00111100
+
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0     org $aF00
+
+char '$'
+stackarg 44800 (@0)
+0MEMORYADDR0     .byte     %00111100
+
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;************** Cart reset vector **************************
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	 org     $fff8
+
+char '$'
+stackarg 65528 (@0)
+0MEMORYADDR0 	.byte   $FF         ;Region verification
+
+char '$'
+stackarg 255 (@0)
+0MEMORYADDR0 	.byte   $87         ;ROM start $4000
+
+char '$'
+stackarg 135 (@0)
+0MEMORYADDR0 	.word   #NMI
+
+char '#'
+char 'N'
+stackarg 33205 (@0)
+0MEMORYADDR0 	.word   #START
+
+char '#'
+char 'S'
+stackarg 32768 (@0)
+0MEMORYADDR0 	.word   #IRQ
+
+char '#'
+char 'I'
+stackarg 33206 (@0)
+0MEMORYADDR0 ; Atari 7800 sprite sample
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Written by Daniel Boris (dboris@home.com)
+
+0MEMORYADDR0 ; original at http://atarihq.com/danb/files/7800sprt.s
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Adapted to use 7800.h, optional a78 header added, and new 
+
+0MEMORYADDR0 ; comments added by Mike Saarna.
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; NOTE: assembling this source will create a simple BIN file. To
+
+0MEMORYADDR0 ; add an a78 header that most emulators will expect, assemble 
+
+0MEMORYADDR0 ; with -DA78HEADER, or uncomment the line below...
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;A780HEADER = 1
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; ...and be sure to use the A78 extension for your bin.
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; The binary won't be cryptographically signed, meaning it won't pass
+
+0MEMORYADDR0 ; the 7800 bios boot checks. This probably won't stop the bin from
+
+0MEMORYADDR0 ; running on most emulators. This may stop it from running on some
+
+0MEMORYADDR0 ; flash carts. It will certainly stop it running from EPROM based carts
+
+0MEMORYADDR0 ; To cryptographically sign binaries, you can use the tools found in
+
+0MEMORYADDR0 ; the 7800AsmDevKit - http://7800.8bitdev.org/index.php/7800AsmDevKit
+
+0MEMORYADDR0 
+
+0MEMORYADDR0   processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0   include "7800.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: 7800.h
+0MEMORYADDR0 ; 7800.h
+
+0MEMORYADDR0 ; Version 1.0, 2019/12/13
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; This file defines hardware registers and memory mapping for the
+
+0MEMORYADDR0 ; Atari 7800. It is distributed as a companion machine-specific support package
+
+0MEMORYADDR0 ; for the DASM compiler. Updates to this file, DASM, and associated tools are
+
+0MEMORYADDR0 ; available at https://github.com/dasm-assembler/dasm
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; ******************** 7800 Hardware Adresses ***************************
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;       MEMORY MAP USAGE OF THE 7800
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;	  00 -   1F	TIA REGISTERS
+
+0MEMORYADDR0 ;	  20 -   3F	MARIA REGISTERS
+
+0MEMORYADDR0 ;	  40 -   FF	RAM block 0 (zero page)
+
+0MEMORYADDR0 ;	 100 -  11F	TIA   (mirror of 0000-001f)
+
+0MEMORYADDR0 ;	 120 -  13F	MARIA (mirror of 0020-003f)
+
+0MEMORYADDR0 ;	 140 -  1FF	RAM block 1 (stack)
+
+0MEMORYADDR0 ;	 200 -  21F	TIA   (mirror of 0000-001f)
+
+0MEMORYADDR0 ;	 220 -  23F	MARIA (mirror of 0020-003f)
+
+0MEMORYADDR0 ;	 240 -  27F	???
+
+0MEMORYADDR0 ;	 280 -  2FF	RIOT I/O ports and timers
+
+0MEMORYADDR0 ;	 300 -  31F	TIA   (mirror of 0000-001f)
+
+0MEMORYADDR0 ;	 320 -  33F	MARIA (mirror of 0020-003f)
+
+0MEMORYADDR0 ;	 340 -  3FF	???
+
+0MEMORYADDR0 ;	 400 -  47F	unused address space
+
+0MEMORYADDR0 ;	 480 -  4FF	RIOT RAM
+
+0MEMORYADDR0 ;	 500 -  57F	unused address space
+
+0MEMORYADDR0 ;	 580 -  5FF	RIOT RAM (mirror of 0480-04ff)
+
+0MEMORYADDR0 ;	 600 - 17FF	unused address space
+
+0MEMORYADDR0 ;	1800 - 203F	RAM
+
+0MEMORYADDR0 ;	2040 - 20FF	RAM block 0 (mirror of 0000-001f)
+
+0MEMORYADDR0 ;	2100 - 213F	RAM
+
+0MEMORYADDR0 ;	2140 - 21FF	RAM block 1 (mirror of 0140-01ff)
+
+0MEMORYADDR0 ;	2200 - 27FF	RAM
+
+0MEMORYADDR0 ;	2800 - 2FFF	mirror of 1800-27ff
+
+0MEMORYADDR0 ;	3000 - 3FFF	unused address space
+
+0MEMORYADDR0 ;	4000 - FF7F	potential cartridge address space
+
+0MEMORYADDR0 ;	FF80 - FFF9	RESERVED FOR ENCRYPTION
+
+0MEMORYADDR0 ;	FFFA - FFFF 	6502 VECTORS
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;****** 00-1F ********* TIA REGISTERS ******************
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 INPTCTRL = $01     ;Input control. In same address space as TIA. write-only
+
+char '$'
+stackarg 1 (@0)
+0MEMORYADDR0 VBLANK   = $01     ;VBLANK. D7=1:dump paddle caps to ground.     write-only
+
+char '$'
+stackarg 1 (@0)
+0MEMORYADDR0 INPT0    = $08     ;Paddle Control Input 0                       read-only
+
+char '$'
+stackarg 8 (@0)
+0MEMORYADDR0 INPT1    = $09     ;Paddle Control Input 1                       read-only
+
+char '$'
+stackarg 9 (@0)
+0MEMORYADDR0 INPT2    = $0A     ;Paddle Control Input 2                       read-only
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0 INPT3    = $0B     ;Paddle Control Input 3                       read-only
+
+char '$'
+stackarg 11 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; ** some common alternate names for INPT0/1/2/3
+
+0MEMORYADDR0 INPT4B   = $08     ;Joystick 0 Fire 1                            read-only
+
+char '$'
+stackarg 8 (@0)
+0MEMORYADDR0 INPT4A   = $09     ;Joystick 0 Fire 1                            read-only
+
+char '$'
+stackarg 9 (@0)
+0MEMORYADDR0 INPT5B   = $0A     ;Joystick 1 Fire 0                            read-only
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0 INPT5A   = $0B     ;Joystick 1 Fire 1                            read-only
+
+char '$'
+stackarg 11 (@0)
+0MEMORYADDR0 INPT4R   = $08     ;Joystick 0 Fire 1                            read-only
+
+char '$'
+stackarg 8 (@0)
+0MEMORYADDR0 INPT4L   = $09     ;Joystick 0 Fire 1                            read-only
+
+char '$'
+stackarg 9 (@0)
+0MEMORYADDR0 INPT5R   = $0A     ;Joystick 1 Fire 0                            read-only
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0 INPT5L   = $0B     ;Joystick 1 Fire 1                            read-only
+
+char '$'
+stackarg 11 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 INPT4    = $0C     ;Player 0 Fire Button Input                   read-only
+
+char '$'
+stackarg 12 (@0)
+0MEMORYADDR0 INPT5    = $0D     ;Player 1 Fire Button Input                   read-only
+
+char '$'
+stackarg 13 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 AUDC0    = $15     ;Audio Control Channel   0                    write-only
+
+char '$'
+stackarg 21 (@0)
+0MEMORYADDR0 AUDC1    = $16     ;Audio Control Channel   1                    write-only
+
+char '$'
+stackarg 22 (@0)
+0MEMORYADDR0 AUDF0    = $17     ;Audio Frequency Channel 0                    write-only
+
+char '$'
+stackarg 23 (@0)
+0MEMORYADDR0 AUDF1    = $18     ;Audio Frequency Channel 1                    write-only
+
+char '$'
+stackarg 24 (@0)
+0MEMORYADDR0 AUDV0    = $19     ;Audio Volume Channel    0                    write-only
+
+char '$'
+stackarg 25 (@0)
+0MEMORYADDR0 AUDV1    = $1A     ;Audio Volume Channel    1                    write-only
+
+char '$'
+stackarg 26 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;****** 20-3F ********* MARIA REGISTERS ***************
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 BACKGRND = $20     ;Background Color                             write-only
+
+char '$'
+stackarg 32 (@0)
+0MEMORYADDR0 P0C1     = $21     ;Palette 0 - Color 1                          write-only
+
+char '$'
+stackarg 33 (@0)
+0MEMORYADDR0 P0C2     = $22     ;Palette 0 - Color 2                          write-only
+
+char '$'
+stackarg 34 (@0)
+0MEMORYADDR0 P0C3     = $23     ;Palette 0 - Color 3                          write-only
+
+char '$'
+stackarg 35 (@0)
+0MEMORYADDR0 WSYNC    = $24     ;Wait For Sync                                write-only
+
+char '$'
+stackarg 36 (@0)
+0MEMORYADDR0 P1C1     = $25     ;Palette 1 - Color 1                          write-only
+
+char '$'
+stackarg 37 (@0)
+0MEMORYADDR0 P1C2     = $26     ;Palette 1 - Color 2                          write-only
+
+char '$'
+stackarg 38 (@0)
+0MEMORYADDR0 P1C3     = $27     ;Palette 1 - Color 3                          write-only
+
+char '$'
+stackarg 39 (@0)
+0MEMORYADDR0 MSTAT    = $28     ;Maria Status                                 read-only
+
+char '$'
+stackarg 40 (@0)
+0MEMORYADDR0 P2C1     = $29     ;Palette 2 - Color 1                          write-only
+
+char '$'
+stackarg 41 (@0)
+0MEMORYADDR0 P2C2     = $2A     ;Palette 2 - Color 2                          write-only
+
+char '$'
+stackarg 42 (@0)
+0MEMORYADDR0 P2C3     = $2B     ;Palette 2 - Color 3                          write-only
+
+char '$'
+stackarg 43 (@0)
+0MEMORYADDR0 DPPH     = $2C     ;Display List List Pointer High               write-only
+
+char '$'
+stackarg 44 (@0)
+0MEMORYADDR0 P3C1     = $2D     ;Palette 3 - Color 1                          write-only
+
+char '$'
+stackarg 45 (@0)
+0MEMORYADDR0 P3C2     = $2E     ;Palette 3 - Color 2                          write-only
+
+char '$'
+stackarg 46 (@0)
+0MEMORYADDR0 P3C3     = $2F     ;Palette 3 - Color 3                          write-only
+
+char '$'
+stackarg 47 (@0)
+0MEMORYADDR0 DPPL     = $30     ;Display List List Pointer Low                write-only
+
+char '$'
+stackarg 48 (@0)
+0MEMORYADDR0 P4C1     = $31     ;Palette 4 - Color 1                          write-only
+
+char '$'
+stackarg 49 (@0)
+0MEMORYADDR0 P4C2     = $32     ;Palette 4 - Color 2                          write-only
+
+char '$'
+stackarg 50 (@0)
+0MEMORYADDR0 P4C3     = $33     ;Palette 4 - Color 3                          write-only
+
+char '$'
+stackarg 51 (@0)
+0MEMORYADDR0 CHARBASE = $34     ;Character Base Address                       write-only
+
+char '$'
+stackarg 52 (@0)
+0MEMORYADDR0 CHBASE   = $34     ;Character Base Address                       write-only
+
+char '$'
+stackarg 52 (@0)
+0MEMORYADDR0 P5C1     = $35     ;Palette 5 - Color 1                          write-only
+
+char '$'
+stackarg 53 (@0)
+0MEMORYADDR0 P5C2     = $36     ;Palette 5 - Color 2                          write-only
+
+char '$'
+stackarg 54 (@0)
+0MEMORYADDR0 P5C3     = $37     ;Palette 5 - Color 3                          write-only
+
+char '$'
+stackarg 55 (@0)
+0MEMORYADDR0 OFFSET   = $38     ;Unused - Store zero here                     write-only
+
+char '$'
+stackarg 56 (@0)
+0MEMORYADDR0 P6C1     = $39     ;Palette 6 - Color 1                          write-only
+
+char '$'
+stackarg 57 (@0)
+0MEMORYADDR0 P6C2     = $3A     ;Palette 6 - Color 2                          write-only
+
+char '$'
+stackarg 58 (@0)
+0MEMORYADDR0 P6C3     = $3B     ;Palette 6 - Color 3                          write-only
+
+char '$'
+stackarg 59 (@0)
+0MEMORYADDR0 CTRL     = $3C     ;Maria Control Register                       write-only
+
+char '$'
+stackarg 60 (@0)
+0MEMORYADDR0 P7C1     = $3D     ;Palette 7 - Color 1                          write-only
+
+char '$'
+stackarg 61 (@0)
+0MEMORYADDR0 P7C2     = $3E     ;Palette 7 - Color 2                          write-only
+
+char '$'
+stackarg 62 (@0)
+0MEMORYADDR0 P7C3     = $3F     ;Palette 7 - Color 3                          write-only
+
+char '$'
+stackarg 63 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;****** 280-2FF ******* PIA PORTS AND TIMERS ************
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 SWCHA    = $280    ;P0+P1 Joystick Directional Input             read-write
+
+char '$'
+stackarg 640 (@0)
+0MEMORYADDR0 CTLSWA   = $281    ;I/O Control for SCHWA                        read-write
+
+char '$'
+stackarg 641 (@0)
+0MEMORYADDR0 SWACNT   = $281    ;VCS name for above                           read-write
+
+char '$'
+stackarg 641 (@0)
+0MEMORYADDR0 SWCHB    = $282    ;Console Switches                             read-write
+
+char '$'
+stackarg 642 (@0)
+0MEMORYADDR0 CTLSWB   = $283    ;I/O Control for SCHWB                        read-write
+
+char '$'
+stackarg 643 (@0)
+0MEMORYADDR0 SWBCNT   = $283    ;VCS name for above                           read-write
+
+char '$'
+stackarg 643 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 INTIM    = $284    ;Iterval Timer Read                           read-only
+
+char '$'
+stackarg 644 (@0)
+0MEMORYADDR0 TIM1T    = $294    ;Set 1    CLK Interval (838   nsec/interval)  write-only
+
+char '$'
+stackarg 660 (@0)
+0MEMORYADDR0 TIM8T    = $295    ;Set 8    CLK Interval (6.7   usec/interval)  write-only
+
+char '$'
+stackarg 661 (@0)
+0MEMORYADDR0 TIM64T   = $296    ;Set 64   CLK Interval (63.6  usec/interval)  write-only
+
+char '$'
+stackarg 662 (@0)
+0MEMORYADDR0 T1024T   = $297    ;Set 1024 CLK Interval (858.2 usec/interval)  write-only
+
+char '$'
+stackarg 663 (@0)
+0MEMORYADDR0 TIM64TI  = $29E    ;Interrupt timer 64T                          write-only
+
+char '$'
+stackarg 670 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;XM
+
+0MEMORYADDR0 XCTRL    = $470    ; 7=YM2151 6=RAM@6k 5=RAM@4k 4=pokey@450 3=hsc 2=cart 1=RoF_bank1 0=RoF_bank2
+
+char '$'
+stackarg 1136 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Pokey register relative locations, since its base may be different
+
+0MEMORYADDR0 ; depending on the hardware.
+
+0MEMORYADDR0 PAUDF0   = $0    ; extra audio channels and frequencies
+
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 PAUDC0   = $1
+
+char '$'
+stackarg 1 (@0)
+0MEMORYADDR0 PAUDF1   = $2
+
+char '$'
+stackarg 2 (@0)
+0MEMORYADDR0 PAUDC1   = $3
+
+char '$'
+stackarg 3 (@0)
+0MEMORYADDR0 PAUDF2   = $4
+
+char '$'
+stackarg 4 (@0)
+0MEMORYADDR0 PAUDC2   = $5
+
+char '$'
+stackarg 5 (@0)
+0MEMORYADDR0 PAUDF3   = $6
+
+char '$'
+stackarg 6 (@0)
+0MEMORYADDR0 PAUDC3   = $7
+
+char '$'
+stackarg 7 (@0)
+0MEMORYADDR0 PAUDCTL  = $8    ; Audio Control
+
+char '$'
+stackarg 8 (@0)
+0MEMORYADDR0 PRANDOM  = $A    ; 17 bit polycounter pseudo random
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0 PSKCTL   = $F    ; Serial Port control
+
+char '$'
+stackarg 15 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	SEG.U data
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;******* Variables ********************************
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	org $40
+
+char '$'
+stackarg 64 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 xpos	ds.b	1	      	;X Position of sprite
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 ypos    ds.b    1            	;Y Position of sprite
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 temp    ds.b    1		
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 dlpnt	ds.w	1
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 dlend	ds.b	12		;Index of end of each DL
+
+char '1'
+stackarg 12 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;**********************************************************
+
+0MEMORYADDR0  	
+
+0MEMORYADDR0         SEG     ROM
+
+0MEMORYADDR0 
+
+0MEMORYADDR0  ifconst A78HEADER
+
+char 'A'
+stackarg 0 (@0)
+0MEMORYADDR0 HEADER  ORG     ROMTOP-128
+
+0MEMORYADDR0         DC.B    1  ; 0   Header version     - 1 byte
+
+0MEMORYADDR0         DC.B    "ATARI7800"     ; 1..16  "ATARI7800   "  - 16 bytes
+
+0MEMORYADDR0         DS      7,32
+
+0MEMORYADDR0         DC.B    "Dan Boris, sprite sample"; 17..48 Cart title      - 32 bytes
+
+0MEMORYADDR0         DS      HEADER+49-.,0
+
+0MEMORYADDR0         DC.B    $00,$00,256->ROMTOP,$00; 49..52 data length      - 4 bytes
+
+0MEMORYADDR0         DC.B    $00,$00  ; 53..54 cart type      - 2 bytes
+
+0MEMORYADDR0     ;    bit 0 - pokey at $4000
+
+0MEMORYADDR0     ;    bit 1 - supergame bank switched
+
+0MEMORYADDR0     ;    bit 2 - supergame ram at $4000
+
+0MEMORYADDR0     ;    bit 3 - rom at $4000
+
+0MEMORYADDR0     ;    bit 4 - bank 6 at $4000
+
+0MEMORYADDR0     ;    bit 5 - supergame banked ram
+
+0MEMORYADDR0     ;    bit 6 - pokey at $450
+
+0MEMORYADDR0     ;    bit 7 - mirror ram at $4000
+
+0MEMORYADDR0     ;    bit 8-15 - Special
+
+0MEMORYADDR0     ;   0 = Normal cart
+
+0MEMORYADDR0         DC.B    1  ; 55   controller 1 type  - 1 byte
+
+0MEMORYADDR0         DC.B    1  ; 56   controller 2 type  - 1 byte
+
+0MEMORYADDR0     ;    0 = None
+
+0MEMORYADDR0     ;    1 = Joystick
+
+0MEMORYADDR0     ;    2 = Light Gun
+
+0MEMORYADDR0         DC.B    0  ; 57 0 = NTSC 1 = PAL
+
+0MEMORYADDR0         DC.B    0  ; 58   Save data peripheral - 1 byte (version 2)
+
+0MEMORYADDR0     ;    0 = None / unknown (default)
+
+0MEMORYADDR0     ;    1 = High Score Cart (HSC)
+
+0MEMORYADDR0     ;    2 = SaveKey
+
+0MEMORYADDR0         ORG     HEADER+63
+
+0MEMORYADDR0         DC.B    0  ; 63   Expansion module
+
+0MEMORYADDR0     ;    0 = No expansion module (default on all currently released games)
+
+0MEMORYADDR0     ;    1 = Expansion module required
+
+0MEMORYADDR0         ORG     HEADER+100      ; 100..127 "ACTUAL CART DATA STARTS HERE" - 28 bytes
+
+0MEMORYADDR0         DC.B    "ACTUAL CART DATA STARTS HERE"
+
+0MEMORYADDR0  endif
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ROMTOP  ORG     $8000       ;Start of code
+
+char '$'
+stackarg 32768 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0 START
+
+0MEMORYADDR0 	sei                     ;Disable interrupts
+
+0MEMORYADDR0 	cld                     ;Clear decimal mode
+
+0MEMORYADDR0 	
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;******** Atari recommended startup procedure
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	lda     #$07
+
+char '#'
+char '$'
+stackarg 7 (@0)
+0MEMORYADDR0 	sta     INPTCTRL        ;Lock into 7800 mode
+
+char 'I'
+stackarg 1 (@0)
+0MEMORYADDR0 	lda     #$7F
+
+char '#'
+char '$'
+stackarg 127 (@0)
+0MEMORYADDR0 	sta     CTRL            ;Disable DMA
+
+char 'C'
+stackarg 60 (@0)
+0MEMORYADDR0 	lda     #$00            
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 	sta     OFFSET
+
+char 'O'
+stackarg 56 (@0)
+0MEMORYADDR0 	sta     INPTCTRL
+
+char 'I'
+stackarg 1 (@0)
+0MEMORYADDR0 	ldx     #$FF            ;Reset stack pointer
+
+char '#'
+char '$'
+stackarg 255 (@0)
+0MEMORYADDR0 	txs
+
+0MEMORYADDR0 	
+
+0MEMORYADDR0 ;************** Clear zero page and hardware ******
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	ldx     #$40
+
+char '#'
+char '$'
+stackarg 64 (@0)
+0MEMORYADDR0 	lda     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 crloop1    
+
+0MEMORYADDR0 	sta     $00,x           ;Clear zero page
+
+char '$'
+stackarg 0 (@0)
+char ','
+0MEMORYADDR0 	sta	$100,x		;Clear page 1
+
+char '$'
+stackarg 256 (@0)
+char ','
+0MEMORYADDR0 	inx
+
+0MEMORYADDR0 	bne     crloop1
+
+char 'c'
+stackarg 32791 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;************* Clear RAM **************************
+
+0MEMORYADDR0 
+
+0MEMORYADDR0     ldy     #$00            ;Clear Ram
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0     lda     #$18            ;Start at $1800
+
+char '#'
+char '$'
+stackarg 24 (@0)
+0MEMORYADDR0     sta     $81             
+
+char '$'
+stackarg 129 (@0)
+0MEMORYADDR0     lda     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0     sta     $80
+
+char '$'
+stackarg 128 (@0)
+0MEMORYADDR0 crloop3
+
+0MEMORYADDR0     lda     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0     sta     ($80),y         ;Store data
+
+char '('
+char '$'
+stackarg 128 (@0)
+char ')'
+0MEMORYADDR0     iny                     ;Next byte
+
+0MEMORYADDR0     bne     crloop3         ;Branch if not done page
+
+char 'c'
+stackarg 32809 (@0)
+0MEMORYADDR0     inc     $81             ;Next page
+
+char '$'
+stackarg 129 (@0)
+0MEMORYADDR0     lda     $81
+
+char '$'
+stackarg 129 (@0)
+0MEMORYADDR0     cmp     #$20            ;End at $1FFF
+
+char '#'
+char '$'
+stackarg 32 (@0)
+0MEMORYADDR0     bne     crloop3         ;Branch if not
+
+char 'c'
+stackarg 32809 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0     ldy     #$00            ;Clear Ram
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0     lda     #$22            ;Start at $2200
+
+char '#'
+char '$'
+stackarg 34 (@0)
+0MEMORYADDR0     sta     $81             
+
+char '$'
+stackarg 129 (@0)
+0MEMORYADDR0     lda     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0     sta     $80
+
+char '$'
+stackarg 128 (@0)
+0MEMORYADDR0 crloop4
+
+0MEMORYADDR0     lda     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0     sta     ($80),y         ;Store data
+
+char '('
+char '$'
+stackarg 128 (@0)
+char ')'
+0MEMORYADDR0     iny                     ;Next byte
+
+0MEMORYADDR0     bne     crloop4         ;Branch if not done page
+
+char 'c'
+stackarg 32834 (@0)
+0MEMORYADDR0     inc     $81             ;Next page
+
+char '$'
+stackarg 129 (@0)
+0MEMORYADDR0     lda     $81
+
+char '$'
+stackarg 129 (@0)
+0MEMORYADDR0     cmp     #$27            ;End at $27FF
+
+char '#'
+char '$'
+stackarg 39 (@0)
+0MEMORYADDR0     bne     crloop4         ;Branch if not
+
+char 'c'
+stackarg 32834 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0     ldx     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0     lda     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 crloop5                         ;Clear 2100-213F
+
+0MEMORYADDR0     sta     $2100,x
+
+char '$'
+stackarg 8448 (@0)
+char ','
+0MEMORYADDR0     inx
+
+0MEMORYADDR0     cpx     #$40
+
+char '#'
+char '$'
+stackarg 64 (@0)
+0MEMORYADDR0     bne     crloop5
+
+char 'c'
+stackarg 32853 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0 ;************* Build DLL *******************
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; 20 blank lines
+
+0MEMORYADDR0 
+
+0MEMORYADDR0     ldx	#$00                   
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0     lda     #$4F            ;16 lines
+
+char '#'
+char '$'
+stackarg 79 (@0)
+0MEMORYADDR0     sta     $1800,x  	      
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0     inx
+
+0MEMORYADDR0     lda     #$21		;$2100 = blank DL
+
+char '#'
+char '$'
+stackarg 33 (@0)
+0MEMORYADDR0     sta	$1800,x
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0     inx
+
+0MEMORYADDR0     lda     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0     sta	$1800,x
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0     inx                   
+
+0MEMORYADDR0 	lda     #$44            ;4 lines
+
+char '#'
+char '$'
+stackarg 68 (@0)
+0MEMORYADDR0 	sta     $1800,x        
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0 	inx
+
+0MEMORYADDR0 	lda     #$21
+
+char '#'
+char '$'
+stackarg 33 (@0)
+0MEMORYADDR0 	sta	$1800,x
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0 	inx
+
+0MEMORYADDR0 	lda     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 	sta	$1800,x
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0     	inx
+
+0MEMORYADDR0         
+
+0MEMORYADDR0 ; 192 mode lines divided into 12 regions
+
+0MEMORYADDR0 
+
+0MEMORYADDR0     ldy     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 DLLloop2                         
+
+0MEMORYADDR0     lda     #$4F            ;16 lines
+
+char '#'
+char '$'
+stackarg 79 (@0)
+0MEMORYADDR0     sta     $1800,x        
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0     inx
+
+0MEMORYADDR0     lda     DLPOINTH,y
+
+char 'D'
+stackarg 33207 (@0)
+char ','
+0MEMORYADDR0     sta	$1800,x
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0     inx
+
+0MEMORYADDR0     lda     DLPOINTL,y
+
+char 'D'
+stackarg 33219 (@0)
+char ','
+0MEMORYADDR0     sta	$1800,x
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0     inx
+
+0MEMORYADDR0     iny
+
+0MEMORYADDR0     cpy     #$0D            ;12 DLL entries
+
+char '#'
+char '$'
+stackarg 13 (@0)
+0MEMORYADDR0     bne     DLLloop2
+
+char 'D'
+stackarg 32901 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; 26 blank lines
+
+0MEMORYADDR0                  
+
+0MEMORYADDR0     lda     #$4F            ;16 lines
+
+char '#'
+char '$'
+stackarg 79 (@0)
+0MEMORYADDR0     sta     $1800,x  	      
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0     inx
+
+0MEMORYADDR0     lda     #$21		;$2100 = blank DL
+
+char '#'
+char '$'
+stackarg 33 (@0)
+0MEMORYADDR0     sta	$1800,x
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0     inx
+
+0MEMORYADDR0     lda     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0     sta	$1800,x
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0     inx                   
+
+0MEMORYADDR0 	lda     #$4A            ;10 lines
+
+char '#'
+char '$'
+stackarg 74 (@0)
+0MEMORYADDR0 	sta     $1800,x        
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0 	inx
+
+0MEMORYADDR0 	lda     #$21
+
+char '#'
+char '$'
+stackarg 33 (@0)
+0MEMORYADDR0 	sta	$1800,x
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0 	inx
+
+0MEMORYADDR0 	lda     #$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 	sta	$1800,x
+
+char '$'
+stackarg 6144 (@0)
+char ','
+0MEMORYADDR0 
+
+0MEMORYADDR0     	
+
+0MEMORYADDR0 ;***************** Setup Maria Registers ****************
+
+0MEMORYADDR0 	
+
+0MEMORYADDR0         lda     #$18            ;DLL at $1800
+
+char '#'
+char '$'
+stackarg 24 (@0)
+0MEMORYADDR0 	sta	DPPH
+
+char 'D'
+stackarg 44 (@0)
+0MEMORYADDR0 	lda	#$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 	sta	DPPL
+
+char 'D'
+stackarg 48 (@0)
+0MEMORYADDR0 	lda	#$18		;Setup Palette 0
+
+char '#'
+char '$'
+stackarg 24 (@0)
+0MEMORYADDR0 	sta	P0C1
+
+char 'P'
+stackarg 33 (@0)
+0MEMORYADDR0 	lda	#$38
+
+char '#'
+char '$'
+stackarg 56 (@0)
+0MEMORYADDR0 	sta	P0C2
+
+char 'P'
+stackarg 34 (@0)
+0MEMORYADDR0 	lda	#$58
+
+char '#'
+char '$'
+stackarg 88 (@0)
+0MEMORYADDR0 	sta	P0C3
+
+char 'P'
+stackarg 35 (@0)
+0MEMORYADDR0 	lda	#$43		;Enable DMA
+
+char '#'
+char '$'
+stackarg 67 (@0)
+0MEMORYADDR0 	sta	CTRL
+
+char 'C'
+stackarg 60 (@0)
+0MEMORYADDR0 	lda	#$00		;Setup ports to read mode
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 	sta	CTLSWA
+
+char 'C'
+stackarg 641 (@0)
+0MEMORYADDR0 	sta	CTLSWB
+
+char 'C'
+stackarg 643 (@0)
+0MEMORYADDR0 	
+
+0MEMORYADDR0 	lda	#$40		;Set initial X position of sprite
+
+char '#'
+char '$'
+stackarg 64 (@0)
+0MEMORYADDR0 	sta	xpos
+
+char 'x'
+stackarg 64 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0 mainloop
+
+0MEMORYADDR0 	lda	MSTAT		;Wait for VBLANK
+
+char 'M'
+stackarg 40 (@0)
+0MEMORYADDR0 	and	#$80
+
+char '#'
+char '$'
+stackarg 128 (@0)
+0MEMORYADDR0 	beq 	mainloop
+
+char 'm'
+stackarg 32997 (@0)
+0MEMORYADDR0 	
+
+0MEMORYADDR0 	lda	SWCHA		;Read stick
+
+char 'S'
+stackarg 640 (@0)
+0MEMORYADDR0 	and	#$80		;Pushed Right?
+
+char '#'
+char '$'
+stackarg 128 (@0)
+0MEMORYADDR0 	bne	skip1
+
+char 's'
+stackarg 33015 (@0)
+0MEMORYADDR0 	ldx	xpos		;Move sprite to right
+
+char 'x'
+stackarg 64 (@0)
+0MEMORYADDR0 	inx
+
+0MEMORYADDR0 	stx	xpos
+
+char 'x'
+stackarg 64 (@0)
+0MEMORYADDR0 skip1
+
+0MEMORYADDR0 	lda	SWCHA		;Read stick
+
+char 'S'
+stackarg 640 (@0)
+0MEMORYADDR0 	and 	#$40		;Pushed Left?
+
+char '#'
+char '$'
+stackarg 64 (@0)
+0MEMORYADDR0 	bne 	skip2
+
+char 's'
+stackarg 33027 (@0)
+0MEMORYADDR0 	ldx 	xpos		;Move sprite to left
+
+char 'x'
+stackarg 64 (@0)
+0MEMORYADDR0 	dex
+
+0MEMORYADDR0 	stx 	xpos
+
+char 'x'
+stackarg 64 (@0)
+0MEMORYADDR0 skip2
+
+0MEMORYADDR0     lda     SWCHA		;Read stick
+
+char 'S'
+stackarg 640 (@0)
+0MEMORYADDR0     and     #$20		;Pushed Down?
+
+char '#'
+char '$'
+stackarg 32 (@0)
+0MEMORYADDR0     bne     skip3		
+
+char 's'
+stackarg 33043 (@0)
+0MEMORYADDR0     ldx     ypos		;Move sprite down
+
+char 'y'
+stackarg 65 (@0)
+0MEMORYADDR0     cpx	#176	
+
+char '#'
+char '1'
+stackarg 176 (@0)
+0MEMORYADDR0     beq	skip3		;Don't move if we are at the bottom
+
+char 's'
+stackarg 33043 (@0)
+0MEMORYADDR0     inx
+
+0MEMORYADDR0     stx     ypos	
+
+char 'y'
+stackarg 65 (@0)
+0MEMORYADDR0 skip3
+
+0MEMORYADDR0     lda     SWCHA		;Read stick
+
+char 'S'
+stackarg 640 (@0)
+0MEMORYADDR0     and     #$10		;Pushed Up?
+
+char '#'
+char '$'
+stackarg 16 (@0)
+0MEMORYADDR0     bne     skip4		
+
+char 's'
+stackarg 33057 (@0)
+0MEMORYADDR0     ldx     ypos		;Move sprite up
+
+char 'y'
+stackarg 65 (@0)
+0MEMORYADDR0     beq	skip4		;Don't move if we are at the top
+
+char 's'
+stackarg 33057 (@0)
+0MEMORYADDR0     dex			
+
+0MEMORYADDR0     stx     ypos
+
+char 'y'
+stackarg 65 (@0)
+0MEMORYADDR0 skip4
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;********************** reset DL ends ******************
+
+0MEMORYADDR0 	
+
+0MEMORYADDR0 	ldx 	#$0C
+
+char '#'
+char '$'
+stackarg 12 (@0)
+0MEMORYADDR0 	lda	#$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 dlclearloop
+
+0MEMORYADDR0 	dex
+
+0MEMORYADDR0 	sta	dlend,x
+
+char 'd'
+stackarg 69 (@0)
+char ','
+0MEMORYADDR0 	bne	dlclearloop
+
+char 'd'
+stackarg 33061 (@0)
+0MEMORYADDR0 	
+
+0MEMORYADDR0 	
+
+0MEMORYADDR0 ;******************** build DL entries *********************
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         lda     ypos		;Get Y position
+
+char 'y'
+stackarg 65 (@0)
+0MEMORYADDR0    	and	#$F0		
+
+char '#'
+char '$'
+stackarg 240 (@0)
+0MEMORYADDR0    	lsr 			;Divide by 16
+
+0MEMORYADDR0    	lsr	
+
+0MEMORYADDR0    	lsr	
+
+0MEMORYADDR0    	lsr	
+
+0MEMORYADDR0    	tax
+
+0MEMORYADDR0    	lda	DLPOINTL,x	;Get pointer to DL that this sprite starts in
+
+char 'D'
+stackarg 33219 (@0)
+char ','
+0MEMORYADDR0    	sta	dlpnt
+
+char 'd'
+stackarg 67 (@0)
+0MEMORYADDR0    	lda	DLPOINTH,x
+
+char 'D'
+stackarg 33207 (@0)
+char ','
+0MEMORYADDR0    	sta	dlpnt+1
+
+char 'd'
+stackarg 67 (@0)
+char '+'
+doop
+doop @ 0 unary
+char '1'
+stackarg 1 (@1)
+evaltop @(A,O) 2 1
+stackarg 68 (@0)
+0MEMORYADDR0    	
+
+0MEMORYADDR0    	;Create DL entry for upper part of sprite
+
+0MEMORYADDR0    	
+
+0MEMORYADDR0    	ldy	dlend,x		;Get the index to the end of this DL
+
+char 'd'
+stackarg 69 (@0)
+char ','
+0MEMORYADDR0    	lda	#$00				
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 	sta     (dlpnt),y	;Low byte of data address
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0 	iny
+
+0MEMORYADDR0 	lda	#$40		;Mode 320x1
+
+char '#'
+char '$'
+stackarg 64 (@0)
+0MEMORYADDR0 	sta     (dlpnt),y
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0 	iny 
+
+0MEMORYADDR0 	lda	ypos		
+
+char 'y'
+stackarg 65 (@0)
+0MEMORYADDR0 	and	#$0F		
+
+char '#'
+char '$'
+stackarg 15 (@0)
+0MEMORYADDR0 	ora	#$a0
+
+char '#'
+char '$'
+stackarg 160 (@0)
+0MEMORYADDR0 	sta     (dlpnt),y
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0 	iny
+
+0MEMORYADDR0 	lda	#$1F		;Palette 0, 1 byte wide
+
+char '#'
+char '$'
+stackarg 31 (@0)
+0MEMORYADDR0 	sta     (dlpnt),y
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0 	iny
+
+0MEMORYADDR0 	lda	xpos		;Horizontal position
+
+char 'x'
+stackarg 64 (@0)
+0MEMORYADDR0     sta     (dlpnt),y
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0     sty	dlend,x
+
+char 'd'
+stackarg 69 (@0)
+char ','
+0MEMORYADDR0         
+
+0MEMORYADDR0     lda	ypos
+
+char 'y'
+stackarg 65 (@0)
+0MEMORYADDR0     and	#$0F		;See if sprite is entirely within this region
+
+char '#'
+char '$'
+stackarg 15 (@0)
+0MEMORYADDR0     beq	doneDL		;branch if it is
+
+char 'd'
+stackarg 33173 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0     ;Create DL entry for lower part of sprite 
+
+0MEMORYADDR0         
+
+0MEMORYADDR0     inx			;Next region
+
+0MEMORYADDR0     lda	DLPOINTL,x	;Get pointer to next DL
+
+char 'D'
+stackarg 33219 (@0)
+char ','
+0MEMORYADDR0    	sta	dlpnt
+
+char 'd'
+stackarg 67 (@0)
+0MEMORYADDR0    	lda	DLPOINTH,x
+
+char 'D'
+stackarg 33207 (@0)
+char ','
+0MEMORYADDR0    	sta	dlpnt+1
+
+char 'd'
+stackarg 67 (@0)
+char '+'
+doop
+doop @ 0 unary
+char '1'
+stackarg 1 (@1)
+evaltop @(A,O) 2 1
+stackarg 68 (@0)
+0MEMORYADDR0         ldy	dlend,x		;Get the index to the end of this DL
+
+char 'd'
+stackarg 69 (@0)
+char ','
+0MEMORYADDR0 	lda	#$00				
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 	sta     (dlpnt),y
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0 	iny
+
+0MEMORYADDR0 	lda	#$40		;Mode 320x1
+
+char '#'
+char '$'
+stackarg 64 (@0)
+0MEMORYADDR0 	sta     (dlpnt),y
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0 	iny 
+
+0MEMORYADDR0 	lda	ypos
+
+char 'y'
+stackarg 65 (@0)
+0MEMORYADDR0 	and	#$0F
+
+char '#'
+char '$'
+stackarg 15 (@0)
+0MEMORYADDR0 	eor	#$0F
+
+char '#'
+char '$'
+stackarg 15 (@0)
+0MEMORYADDR0 	sta	temp
+
+char 't'
+stackarg 66 (@0)
+0MEMORYADDR0 	lda	#$a0
+
+char '#'
+char '$'
+stackarg 160 (@0)
+0MEMORYADDR0 	clc
+
+0MEMORYADDR0 	sbc 	temp
+
+char 't'
+stackarg 66 (@0)
+0MEMORYADDR0 	sta     (dlpnt),y
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0 	iny
+
+0MEMORYADDR0 	lda	#$1F		;Palette 0, 1 byte wide
+
+char '#'
+char '$'
+stackarg 31 (@0)
+0MEMORYADDR0 	sta     (dlpnt),y
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0 	iny
+
+0MEMORYADDR0 	lda	xpos		;Horizontal position
+
+char 'x'
+stackarg 64 (@0)
+0MEMORYADDR0 	sta     (dlpnt),y
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0 	sty	dlend,x
+
+char 'd'
+stackarg 69 (@0)
+char ','
+0MEMORYADDR0 doneDL
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;************** add DL end entry on each DL *****************************
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	ldx	#$0C
+
+char '#'
+char '$'
+stackarg 12 (@0)
+0MEMORYADDR0 dlendloop
+
+0MEMORYADDR0 	dex
+
+0MEMORYADDR0 	lda	DLPOINTL,x
+
+char 'D'
+stackarg 33219 (@0)
+char ','
+0MEMORYADDR0 	sta	dlpnt
+
+char 'd'
+stackarg 67 (@0)
+0MEMORYADDR0 	lda	DLPOINTH,x
+
+char 'D'
+stackarg 33207 (@0)
+char ','
+0MEMORYADDR0    	sta	dlpnt+1
+
+char 'd'
+stackarg 67 (@0)
+char '+'
+doop
+doop @ 0 unary
+char '1'
+stackarg 1 (@1)
+evaltop @(A,O) 2 1
+stackarg 68 (@0)
+0MEMORYADDR0    	ldy 	dlend,x
+
+char 'd'
+stackarg 69 (@0)
+char ','
+0MEMORYADDR0    	iny
+
+0MEMORYADDR0    	lda	#$00
+
+char '#'
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0    	sta	(dlpnt),y
+
+char '('
+char 'd'
+stackarg 67 (@0)
+char ')'
+0MEMORYADDR0    	txa
+
+0MEMORYADDR0 	bne 	dlendloop   	
+
+char 'd'
+stackarg 33175 (@0)
+0MEMORYADDR0    	
+
+0MEMORYADDR0 vbloop
+
+0MEMORYADDR0 	lda	MSTAT		;Wait for VBLANK to end
+
+char 'M'
+stackarg 40 (@0)
+0MEMORYADDR0 	and	#$80
+
+char '#'
+char '$'
+stackarg 128 (@0)
+0MEMORYADDR0 	bne 	vbloop
+
+char 'v'
+stackarg 33196 (@0)
+0MEMORYADDR0 	
+
+0MEMORYADDR0 	jmp     mainloop	;Loop
+
+char 'm'
+stackarg 32997 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 redraw
+
+0MEMORYADDR0       
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 NMI
+
+0MEMORYADDR0 	RTI
+
+0MEMORYADDR0 	
+
+0MEMORYADDR0 IRQ
+
+0MEMORYADDR0 	RTI
+
+0MEMORYADDR0 	
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;Pointers to the DLs
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 DLPOINTH
+
+0MEMORYADDR0     .byte   $22,$22,$22,$22,$23,$23,$23,$23,$24,$24,$24,$24
+
+char '$'
+stackarg 34 (@0)
+char ','
+char '$'
+stackarg 34 (@0)
+char ','
+char '$'
+stackarg 34 (@0)
+char ','
+char '$'
+stackarg 34 (@0)
+char ','
+char '$'
+stackarg 35 (@0)
+char ','
+char '$'
+stackarg 35 (@0)
+char ','
+char '$'
+stackarg 35 (@0)
+char ','
+char '$'
+stackarg 35 (@0)
+char ','
+char '$'
+stackarg 36 (@0)
+char ','
+char '$'
+stackarg 36 (@0)
+char ','
+char '$'
+stackarg 36 (@0)
+char ','
+char '$'
+stackarg 36 (@0)
+0MEMORYADDR0 DLPOINTL
+
+0MEMORYADDR0     .byte   $00,$40,$80,$C0,$00,$40,$80,$C0,$00,$40,$80,$C0
+
+char '$'
+stackarg 0 (@0)
+char ','
+char '$'
+stackarg 64 (@0)
+char ','
+char '$'
+stackarg 128 (@0)
+char ','
+char '$'
+stackarg 192 (@0)
+char ','
+char '$'
+stackarg 0 (@0)
+char ','
+char '$'
+stackarg 64 (@0)
+char ','
+char '$'
+stackarg 128 (@0)
+char ','
+char '$'
+stackarg 192 (@0)
+char ','
+char '$'
+stackarg 0 (@0)
+char ','
+char '$'
+stackarg 64 (@0)
+char ','
+char '$'
+stackarg 128 (@0)
+char ','
+char '$'
+stackarg 192 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;************** Graphic Data *****************************
+
+0MEMORYADDR0     org $a000
+
+char '$'
+stackarg 40960 (@0)
+0MEMORYADDR0     .byte     %00111100
+
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0     org $a100
+
+char '$'
+stackarg 41216 (@0)
+0MEMORYADDR0     .byte     %00111100
+
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0     org $a200
+
+char '$'
+stackarg 41472 (@0)
+0MEMORYADDR0     .byte     %01000010 
+
+char '%'
+stackarg 66 (@0)
+0MEMORYADDR0     org $a300
+
+char '$'
+stackarg 41728 (@0)
+0MEMORYADDR0     .byte     %01000010 
+
+char '%'
+stackarg 66 (@0)
+0MEMORYADDR0     org $a400
+
+char '$'
+stackarg 41984 (@0)
+0MEMORYADDR0     .byte     %10011001
+
+char '%'
+stackarg 153 (@0)
+0MEMORYADDR0     org $a500
+
+char '$'
+stackarg 42240 (@0)
+0MEMORYADDR0     .byte     %10011001
+
+char '%'
+stackarg 153 (@0)
+0MEMORYADDR0     org $a600
+
+char '$'
+stackarg 42496 (@0)
+0MEMORYADDR0     .byte     %10100101
+
+char '%'
+stackarg 165 (@0)
+0MEMORYADDR0     org $a700
+
+char '$'
+stackarg 42752 (@0)
+0MEMORYADDR0     .byte     %10100101
+
+char '%'
+stackarg 165 (@0)
+0MEMORYADDR0     org $a800
+
+char '$'
+stackarg 43008 (@0)
+0MEMORYADDR0     .byte     %10000001
+
+char '%'
+stackarg 129 (@0)
+0MEMORYADDR0     org $a900
+
+char '$'
+stackarg 43264 (@0)
+0MEMORYADDR0     .byte     %10000001
+
+char '%'
+stackarg 129 (@0)
+0MEMORYADDR0     org $aA00
+
+char '$'
+stackarg 43520 (@0)
+0MEMORYADDR0     .byte     %10100101
+
+char '%'
+stackarg 165 (@0)
+0MEMORYADDR0     org $aB00
+
+char '$'
+stackarg 43776 (@0)
+0MEMORYADDR0     .byte     %10100101
+
+char '%'
+stackarg 165 (@0)
+0MEMORYADDR0     org $aC00
+
+char '$'
+stackarg 44032 (@0)
+0MEMORYADDR0     .byte     %01000010
+
+char '%'
+stackarg 66 (@0)
+0MEMORYADDR0     org $aD00
+
+char '$'
+stackarg 44288 (@0)
+0MEMORYADDR0     .byte     %01000010
+
+char '%'
+stackarg 66 (@0)
+0MEMORYADDR0     org $aE00
+
+char '$'
+stackarg 44544 (@0)
+0MEMORYADDR0     .byte     %00111100
+
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0     org $aF00
+
+char '$'
+stackarg 44800 (@0)
+0MEMORYADDR0     .byte     %00111100
+
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;************** Cart reset vector **************************
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	 org     $fff8
+
+char '$'
+stackarg 65528 (@0)
+0MEMORYADDR0 	.byte   $FF         ;Region verification
+
+char '$'
+stackarg 255 (@0)
+0MEMORYADDR0 	.byte   $87         ;ROM start $4000
+
+char '$'
+stackarg 135 (@0)
+0MEMORYADDR0 	.word   #NMI
+
+char '#'
+char 'N'
+stackarg 33205 (@0)
+0MEMORYADDR0 	.word   #START
+
+char '#'
+char 'S'
+stackarg 32768 (@0)
+0MEMORYADDR0 	.word   #IRQ
+
+char '#'
+char 'I'
+stackarg 33206 (@0)
+
+Complete.

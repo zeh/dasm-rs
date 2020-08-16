@@ -1,0 +1,46 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ; Thomas Jentzsch <tjentzsch@web.de> test case for bug
+
+0MEMORYADDR0 ; in error handling.
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	processor 6502
+
+0MEMORYADDR0 	include vcs.h
+
+char 'v'
+stackarg 0 (@0)
+Warning: Unable to open 'vcs.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 	ORG $f800
+
+char '$'
+stackarg 63488 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 Start
+
+0MEMORYADDR0 	ldz #$00 ; illegal mnemonic
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	org $fffc
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0 	.word Start
+
+char 'S'
+stackarg 63488 (@0)
+0MEMORYADDR0 	.word Start
+
+char 'S'
+stackarg 63488 (@0)
+jentzsch1.asm (10): error: Unknown Mnemonic 'ldz'.
+
+Unrecoverable error(s) in pass, aborting assembly!
+Complete.

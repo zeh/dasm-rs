@@ -1,0 +1,1298 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ; Fairchild F8 test suite for DASM
+
+0MEMORYADDR0 ; 2004 by Thomas Mathys
+
+0MEMORYADDR0         processor f8
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 TWO     =       2
+
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         org     0
+
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 start
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         adc                     ; 8e
+
+0MEMORYADDR0         ai      $f8             ; 24 f8
+
+char '$'
+stackarg 248 (@0)
+0MEMORYADDR0         am                      ; 88
+
+0MEMORYADDR0         amd                     ; 89
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         as      start           ; c0
+
+char 's'
+stackarg 0 (@0)
+0MEMORYADDR0         as      start+1         ; c1
+
+char 's'
+stackarg 0 (@0)
+char '+'
+doop
+doop @ 0 unary
+char '1'
+stackarg 1 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0         as      TWO             ; c2
+
+char 'T'
+stackarg 2 (@0)
+0MEMORYADDR0         as      3               ; c3
+
+char '3'
+stackarg 3 (@0)
+0MEMORYADDR0         as      4               ; c4
+
+char '4'
+stackarg 4 (@0)
+0MEMORYADDR0         as      5               ; c5
+
+char '5'
+stackarg 5 (@0)
+0MEMORYADDR0         as      2*[1+2]         ; c6
+
+char '2'
+stackarg 2 (@0)
+char '*'
+doop
+doop @ 0 unary
+char '['
+char '1'
+stackarg 1 (@1)
+char '+'
+doop
+doop @ 2
+char '2'
+stackarg 2 (@2)
+char ']'
+evaltop @(A,O) 3 3
+stackarg 3 (@1)
+evaltop @(A,O) 2 1
+stackarg 6 (@0)
+0MEMORYADDR0         as      7               ; c7
+
+char '7'
+stackarg 7 (@0)
+0MEMORYADDR0         as      (2+2)*2         ; c8
+
+char '('
+char '2'
+stackarg 2 (@0)
+char '+'
+doop
+doop @ 1
+char '2'
+stackarg 2 (@1)
+char ')'
+evaltop @(A,O) 2 2
+stackarg 4 (@0)
+char '*'
+doop
+doop @ 0 unary
+char '2'
+stackarg 2 (@1)
+evaltop @(A,O) 2 1
+stackarg 8 (@0)
+0MEMORYADDR0         as      9               ; c9
+
+char '9'
+stackarg 9 (@0)
+0MEMORYADDR0         as      j               ; c9
+
+0MEMORYADDR0         as      $a              ; ca
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0         as      hu              ; ca
+
+0MEMORYADDR0         as      11              ; cb
+
+char '1'
+stackarg 11 (@0)
+0MEMORYADDR0         as      hl              ; cb
+
+0MEMORYADDR0         as      s               ; cc
+
+0MEMORYADDR0         as      (is)            ; cc
+
+0MEMORYADDR0         as      i               ; cd
+
+0MEMORYADDR0         as      (is)+           ; cd
+
+0MEMORYADDR0         as      d               ; ce
+
+0MEMORYADDR0         as      (is)-           ; ce
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         asd     start           ; d0
+
+char 's'
+stackarg 0 (@0)
+0MEMORYADDR0         asd     start+1         ; d1
+
+char 's'
+stackarg 0 (@0)
+char '+'
+doop
+doop @ 0 unary
+char '1'
+stackarg 1 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0         asd     TWO             ; d2
+
+char 'T'
+stackarg 2 (@0)
+0MEMORYADDR0         asd     3               ; d3
+
+char '3'
+stackarg 3 (@0)
+0MEMORYADDR0         asd     4               ; d4
+
+char '4'
+stackarg 4 (@0)
+0MEMORYADDR0         asd     5               ; d5
+
+char '5'
+stackarg 5 (@0)
+0MEMORYADDR0         asd     2*[1+2]         ; d6
+
+char '2'
+stackarg 2 (@0)
+char '*'
+doop
+doop @ 0 unary
+char '['
+char '1'
+stackarg 1 (@1)
+char '+'
+doop
+doop @ 2
+char '2'
+stackarg 2 (@2)
+char ']'
+evaltop @(A,O) 3 3
+stackarg 3 (@1)
+evaltop @(A,O) 2 1
+stackarg 6 (@0)
+0MEMORYADDR0         asd     7               ; d7
+
+char '7'
+stackarg 7 (@0)
+0MEMORYADDR0         asd     (2+2)*2         ; d8
+
+char '('
+char '2'
+stackarg 2 (@0)
+char '+'
+doop
+doop @ 1
+char '2'
+stackarg 2 (@1)
+char ')'
+evaltop @(A,O) 2 2
+stackarg 4 (@0)
+char '*'
+doop
+doop @ 0 unary
+char '2'
+stackarg 2 (@1)
+evaltop @(A,O) 2 1
+stackarg 8 (@0)
+0MEMORYADDR0         asd     9               ; d9
+
+char '9'
+stackarg 9 (@0)
+0MEMORYADDR0         asd     j               ; d9
+
+0MEMORYADDR0         asd     $a              ; da
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0         asd     hu              ; da
+
+0MEMORYADDR0         asd     11              ; db
+
+char '1'
+stackarg 11 (@0)
+0MEMORYADDR0         asd     hl              ; db
+
+0MEMORYADDR0         asd     s               ; dc
+
+0MEMORYADDR0         asd     (is)            ; dc
+
+0MEMORYADDR0         asd     i               ; dd
+
+0MEMORYADDR0         asd     (is)+           ; dd
+
+0MEMORYADDR0         asd     d               ; de
+
+0MEMORYADDR0         asd     (is)-           ; de
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         bc      .               ; 82 ff
+
+char '.'
+stackarg 47 (@0)
+0MEMORYADDR0         bf      12,.            ; 9c ff
+
+char '1'
+stackarg 12 (@0)
+char '.'
+stackarg 49 (@0)
+0MEMORYADDR0         bm      .               ; 91 ff
+
+char '.'
+stackarg 51 (@0)
+0MEMORYADDR0         bnc     .               ; 92 ff
+
+char '.'
+stackarg 53 (@0)
+0MEMORYADDR0         bno     .               ; 98 ff
+
+char '.'
+stackarg 55 (@0)
+0MEMORYADDR0         bnz     .               ; 94 ff
+
+char '.'
+stackarg 57 (@0)
+0MEMORYADDR0         bp      .               ; 81 ff
+
+char '.'
+stackarg 59 (@0)
+0MEMORYADDR0         br      .               ; 90 ff
+
+char '.'
+stackarg 61 (@0)
+0MEMORYADDR0         br7     .               ; 8f ff
+
+char '.'
+stackarg 63 (@0)
+0MEMORYADDR0         bt      5,.             ; 85 ff
+
+char '5'
+stackarg 5 (@0)
+char '.'
+stackarg 65 (@0)
+0MEMORYADDR0         bz      .               ; 84 ff
+
+char '.'
+stackarg 67 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ci      4096/64-1       ; 25 3f
+
+char '4'
+stackarg 4096 (@0)
+char '/'
+doop
+doop @ 0 unary
+char '6'
+stackarg 64 (@1)
+char '-'
+doop
+evaltop @(A,O) 2 1
+stackarg 64 (@0)
+doop @ 0
+char '1'
+stackarg 1 (@1)
+evaltop @(A,O) 2 1
+stackarg 63 (@0)
+0MEMORYADDR0         clr                     ; 70
+
+0MEMORYADDR0         cm                      ; 8d
+
+0MEMORYADDR0         com                     ; 18
+
+0MEMORYADDR0         dci     TWO             ; 2a 00 02
+
+char 'T'
+stackarg 2 (@0)
+0MEMORYADDR0         dci     $1234           ; 2a 12 34
+
+char '$'
+stackarg 4660 (@0)
+0MEMORYADDR0         di                      ; 1a
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ds      start           ; 30
+
+char 's'
+stackarg 0 (@0)
+0MEMORYADDR0         ds      start+1         ; 31
+
+char 's'
+stackarg 0 (@0)
+char '+'
+doop
+doop @ 0 unary
+char '1'
+stackarg 1 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0         ds      TWO             ; 32
+
+char 'T'
+stackarg 2 (@0)
+0MEMORYADDR0         ds      3               ; 33
+
+char '3'
+stackarg 3 (@0)
+0MEMORYADDR0         ds      4               ; 34
+
+char '4'
+stackarg 4 (@0)
+0MEMORYADDR0         ds      5               ; 35
+
+char '5'
+stackarg 5 (@0)
+0MEMORYADDR0         ds      2*[1+2]         ; 36
+
+char '2'
+stackarg 2 (@0)
+char '*'
+doop
+doop @ 0 unary
+char '['
+char '1'
+stackarg 1 (@1)
+char '+'
+doop
+doop @ 2
+char '2'
+stackarg 2 (@2)
+char ']'
+evaltop @(A,O) 3 3
+stackarg 3 (@1)
+evaltop @(A,O) 2 1
+stackarg 6 (@0)
+0MEMORYADDR0         ds      7               ; 37
+
+char '7'
+stackarg 7 (@0)
+0MEMORYADDR0         ds      (2+2)*2         ; 38
+
+char '('
+char '2'
+stackarg 2 (@0)
+char '+'
+doop
+doop @ 1
+char '2'
+stackarg 2 (@1)
+char ')'
+evaltop @(A,O) 2 2
+stackarg 4 (@0)
+char '*'
+doop
+doop @ 0 unary
+char '2'
+stackarg 2 (@1)
+evaltop @(A,O) 2 1
+stackarg 8 (@0)
+0MEMORYADDR0         ds      9               ; 39
+
+char '9'
+stackarg 9 (@0)
+0MEMORYADDR0         ds      j               ; 39
+
+0MEMORYADDR0         ds      $a              ; 3a
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0         ds      hu              ; 3a
+
+0MEMORYADDR0         ds      11              ; 3b
+
+char '1'
+stackarg 11 (@0)
+0MEMORYADDR0         ds      hl              ; 3b
+
+0MEMORYADDR0         ds      s               ; 3c
+
+0MEMORYADDR0         ds      (is)            ; 3c
+
+0MEMORYADDR0         ds      i               ; 3d
+
+0MEMORYADDR0         ds      (is)+           ; 3d
+
+0MEMORYADDR0         ds      d               ; 3e
+
+0MEMORYADDR0         ds      (is)-           ; 3e
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ei                      ; 1b
+
+0MEMORYADDR0         in      TWO             ; 26 02
+
+char 'T'
+stackarg 2 (@0)
+0MEMORYADDR0         in      16*16-1         ; 26 ff
+
+char '1'
+stackarg 16 (@0)
+char '*'
+doop
+doop @ 0 unary
+char '1'
+stackarg 16 (@1)
+char '-'
+doop
+evaltop @(A,O) 2 1
+stackarg 256 (@0)
+doop @ 0
+char '1'
+stackarg 1 (@1)
+evaltop @(A,O) 2 1
+stackarg 255 (@0)
+0MEMORYADDR0         inc                     ; 1f
+
+0MEMORYADDR0         ins     5*3-15          ; a0
+
+char '5'
+stackarg 5 (@0)
+char '*'
+doop
+doop @ 0 unary
+char '3'
+stackarg 3 (@1)
+char '-'
+doop
+evaltop @(A,O) 2 1
+stackarg 15 (@0)
+doop @ 0
+char '1'
+stackarg 15 (@1)
+evaltop @(A,O) 2 1
+stackarg 0 (@0)
+0MEMORYADDR0         ins     15+start        ; af
+
+char '1'
+stackarg 15 (@0)
+char '+'
+doop
+doop @ 0 unary
+char 's'
+stackarg 0 (@1)
+evaltop @(A,O) 2 1
+stackarg 15 (@0)
+0MEMORYADDR0         jmp     $1234           ; 29 12 34
+
+char '$'
+stackarg 4660 (@0)
+0MEMORYADDR0         li      TWO             ; 20 02
+
+char 'T'
+stackarg 2 (@0)
+0MEMORYADDR0         lis     %111            ; 77
+
+char '%'
+stackarg 7 (@0)
+0MEMORYADDR0         lisl    (TWO+TWO)*TWO-1 ; 6f
+
+char '('
+char 'T'
+stackarg 2 (@0)
+char '+'
+doop
+doop @ 1
+char 'T'
+stackarg 2 (@1)
+char ')'
+evaltop @(A,O) 2 2
+stackarg 4 (@0)
+char '*'
+doop
+doop @ 0 unary
+char 'T'
+stackarg 2 (@1)
+char '-'
+doop
+evaltop @(A,O) 2 1
+stackarg 8 (@0)
+doop @ 0
+char '1'
+stackarg 1 (@1)
+evaltop @(A,O) 2 1
+stackarg 7 (@0)
+0MEMORYADDR0         lisu    4               ; 64
+
+char '4'
+stackarg 4 (@0)
+0MEMORYADDR0         lm                      ; 16
+
+0MEMORYADDR0         lnk                     ; 19
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         lr      start,a         ; 50
+
+char 's'
+stackarg 0 (@0)
+0MEMORYADDR0         lr      start+1,a       ; 51
+
+char 's'
+stackarg 0 (@0)
+char '+'
+doop
+doop @ 0 unary
+char '1'
+stackarg 1 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0         lr      TWO,a           ; 52
+
+char 'T'
+stackarg 2 (@0)
+0MEMORYADDR0         lr      3,a             ; 53
+
+char '3'
+stackarg 3 (@0)
+0MEMORYADDR0         lr      4,a             ; 54
+
+char '4'
+stackarg 4 (@0)
+0MEMORYADDR0         lr      5,a             ; 55
+
+char '5'
+stackarg 5 (@0)
+0MEMORYADDR0         lr      2*[1+2],a       ; 56
+
+char '2'
+stackarg 2 (@0)
+char '*'
+doop
+doop @ 0 unary
+char '['
+char '1'
+stackarg 1 (@1)
+char '+'
+doop
+doop @ 2
+char '2'
+stackarg 2 (@2)
+char ']'
+evaltop @(A,O) 3 3
+stackarg 3 (@1)
+evaltop @(A,O) 2 1
+stackarg 6 (@0)
+0MEMORYADDR0         lr      7,a             ; 57
+
+char '7'
+stackarg 7 (@0)
+0MEMORYADDR0         lr      (2+2)*2,a       ; 58
+
+char '('
+char '2'
+stackarg 2 (@0)
+char '+'
+doop
+doop @ 1
+char '2'
+stackarg 2 (@1)
+char ')'
+evaltop @(A,O) 2 2
+stackarg 4 (@0)
+char '*'
+doop
+doop @ 0 unary
+char '2'
+stackarg 2 (@1)
+evaltop @(A,O) 2 1
+stackarg 8 (@0)
+0MEMORYADDR0         lr      9,a             ; 59
+
+char '9'
+stackarg 9 (@0)
+0MEMORYADDR0         lr      j,a             ; 59
+
+0MEMORYADDR0         lr      $a,a            ; 5a
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0         lr      hu,a            ; 5a
+
+0MEMORYADDR0         lr      11,a            ; 5b
+
+char '1'
+stackarg 11 (@0)
+0MEMORYADDR0         lr      hl,a            ; 5b
+
+0MEMORYADDR0         lr      s,a             ; 5c
+
+0MEMORYADDR0         lr      (is),a          ; 5c
+
+0MEMORYADDR0         lr      i,a             ; 5d
+
+0MEMORYADDR0         lr      (is)+,a         ; 5d
+
+0MEMORYADDR0         lr      d,a             ; 5e
+
+0MEMORYADDR0         lr      (is)-,a         ; 5e
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         lr      a,start         ; 40
+
+char 's'
+stackarg 0 (@0)
+0MEMORYADDR0         lr      a,start+1       ; 41
+
+char 's'
+stackarg 0 (@0)
+char '+'
+doop
+doop @ 0 unary
+char '1'
+stackarg 1 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0         lr      a,TWO           ; 42
+
+char 'T'
+stackarg 2 (@0)
+0MEMORYADDR0         lr      a,3             ; 43
+
+char '3'
+stackarg 3 (@0)
+0MEMORYADDR0         lr      a,4             ; 44
+
+char '4'
+stackarg 4 (@0)
+0MEMORYADDR0         lr      a,5             ; 45
+
+char '5'
+stackarg 5 (@0)
+0MEMORYADDR0         lr      a,2*[1+2]       ; 46
+
+char '2'
+stackarg 2 (@0)
+char '*'
+doop
+doop @ 0 unary
+char '['
+char '1'
+stackarg 1 (@1)
+char '+'
+doop
+doop @ 2
+char '2'
+stackarg 2 (@2)
+char ']'
+evaltop @(A,O) 3 3
+stackarg 3 (@1)
+evaltop @(A,O) 2 1
+stackarg 6 (@0)
+0MEMORYADDR0         lr      a,7             ; 47
+
+char '7'
+stackarg 7 (@0)
+0MEMORYADDR0         lr      a,(2+2)*2       ; 48
+
+char '('
+char '2'
+stackarg 2 (@0)
+char '+'
+doop
+doop @ 1
+char '2'
+stackarg 2 (@1)
+char ')'
+evaltop @(A,O) 2 2
+stackarg 4 (@0)
+char '*'
+doop
+doop @ 0 unary
+char '2'
+stackarg 2 (@1)
+evaltop @(A,O) 2 1
+stackarg 8 (@0)
+0MEMORYADDR0         lr      a,9             ; 49
+
+char '9'
+stackarg 9 (@0)
+0MEMORYADDR0         lr      a,j             ; 49
+
+0MEMORYADDR0         lr      a,$a            ; 4a
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0         lr      a,hu            ; 4a
+
+0MEMORYADDR0         lr      a,11            ; 4b
+
+char '1'
+stackarg 11 (@0)
+0MEMORYADDR0         lr      a,hl            ; 4b
+
+0MEMORYADDR0         lr      a,s             ; 4c
+
+0MEMORYADDR0         lr      a,(is)          ; 4c
+
+0MEMORYADDR0         lr      a,i             ; 4d
+
+0MEMORYADDR0         lr      a,(is)+         ; 4d
+
+0MEMORYADDR0         lr      a,d             ; 4e
+
+0MEMORYADDR0         lr      a,(is)-         ; 4e
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         lr      a,ku            ; 00
+
+0MEMORYADDR0         lr      a,kl            ; 01
+
+0MEMORYADDR0         lr      a,qu            ; 02
+
+0MEMORYADDR0         lr      a,ql            ; 03
+
+0MEMORYADDR0         lr      ku,a            ; 04
+
+0MEMORYADDR0         lr      kl,a            ; 05
+
+0MEMORYADDR0         lr      qu,a            ; 06
+
+0MEMORYADDR0         lr      ql,a            ; 07
+
+0MEMORYADDR0         lr      h,dc0           ; 11
+
+0MEMORYADDR0         lr      h,dc            ; 11
+
+0MEMORYADDR0         lr      q,dc0           ; 0e
+
+0MEMORYADDR0         lr      q,dc            ; 0e
+
+0MEMORYADDR0         lr      dc0,h           ; 10
+
+0MEMORYADDR0         lr      dc,h            ; 10
+
+0MEMORYADDR0         lr      dc0,q           ; 0f
+
+0MEMORYADDR0         lr      dc,q            ; 0f
+
+0MEMORYADDR0         lr      k,pc1           ; 08
+
+0MEMORYADDR0         lr      k,p             ; 08
+
+0MEMORYADDR0         lr      pc1,k           ; 09
+
+0MEMORYADDR0         lr      p,k             ; 09
+
+0MEMORYADDR0         lr      pc0,q           ; 0d
+
+0MEMORYADDR0         lr      p0,q            ; 0d
+
+0MEMORYADDR0         lr      a,is            ; 0a
+
+0MEMORYADDR0         lr      is,a            ; 0b
+
+0MEMORYADDR0         lr      w,j             ; 1d
+
+0MEMORYADDR0         lr      w,(TWO+1)*3     ; 1d
+
+char '('
+char 'T'
+stackarg 2 (@0)
+char '+'
+doop
+doop @ 1
+char '1'
+stackarg 1 (@1)
+char ')'
+evaltop @(A,O) 2 2
+stackarg 3 (@0)
+char '*'
+doop
+doop @ 0 unary
+char '3'
+stackarg 3 (@1)
+evaltop @(A,O) 2 1
+stackarg 9 (@0)
+0MEMORYADDR0         lr      9,w             ; 1e
+
+char '9'
+stackarg 9 (@0)
+0MEMORYADDR0         lr      j,w             ; 1e
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ni      %10000001       ; 21 81
+
+char '%'
+stackarg 129 (@0)
+0MEMORYADDR0         nm                      ; 8a
+
+0MEMORYADDR0         nop                     ; 2b
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ns      start           ; f0
+
+char 's'
+stackarg 0 (@0)
+0MEMORYADDR0         ns      start+1         ; f1
+
+char 's'
+stackarg 0 (@0)
+char '+'
+doop
+doop @ 0 unary
+char '1'
+stackarg 1 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0         ns      TWO             ; f2
+
+char 'T'
+stackarg 2 (@0)
+0MEMORYADDR0         ns      3               ; f3
+
+char '3'
+stackarg 3 (@0)
+0MEMORYADDR0         ns      4               ; f4
+
+char '4'
+stackarg 4 (@0)
+0MEMORYADDR0         ns      5               ; f5
+
+char '5'
+stackarg 5 (@0)
+0MEMORYADDR0         ns      2*[1+2]         ; f6
+
+char '2'
+stackarg 2 (@0)
+char '*'
+doop
+doop @ 0 unary
+char '['
+char '1'
+stackarg 1 (@1)
+char '+'
+doop
+doop @ 2
+char '2'
+stackarg 2 (@2)
+char ']'
+evaltop @(A,O) 3 3
+stackarg 3 (@1)
+evaltop @(A,O) 2 1
+stackarg 6 (@0)
+0MEMORYADDR0         ns      7               ; f7
+
+char '7'
+stackarg 7 (@0)
+0MEMORYADDR0         ns      (2+2)*2         ; f8
+
+char '('
+char '2'
+stackarg 2 (@0)
+char '+'
+doop
+doop @ 1
+char '2'
+stackarg 2 (@1)
+char ')'
+evaltop @(A,O) 2 2
+stackarg 4 (@0)
+char '*'
+doop
+doop @ 0 unary
+char '2'
+stackarg 2 (@1)
+evaltop @(A,O) 2 1
+stackarg 8 (@0)
+0MEMORYADDR0         ns      9               ; f9
+
+char '9'
+stackarg 9 (@0)
+0MEMORYADDR0         ns      j               ; f9
+
+0MEMORYADDR0         ns      $a              ; fa
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0         ns      hu              ; fa
+
+0MEMORYADDR0         ns      11              ; fb
+
+char '1'
+stackarg 11 (@0)
+0MEMORYADDR0         ns      hl              ; fb
+
+0MEMORYADDR0         ns      s               ; fc
+
+0MEMORYADDR0         ns      (is)            ; fc
+
+0MEMORYADDR0         ns      i               ; fd
+
+0MEMORYADDR0         ns      (is)+           ; fd
+
+0MEMORYADDR0         ns      d               ; fe
+
+0MEMORYADDR0         ns      (is)-           ; fe
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         oi      (TWO+start)*64  ; 22 80
+
+char '('
+char 'T'
+stackarg 2 (@0)
+char '+'
+doop
+doop @ 1
+char 's'
+stackarg 0 (@1)
+char ')'
+evaltop @(A,O) 2 2
+stackarg 2 (@0)
+char '*'
+doop
+doop @ 0 unary
+char '6'
+stackarg 64 (@1)
+evaltop @(A,O) 2 1
+stackarg 128 (@0)
+0MEMORYADDR0         om                      ; 8b
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         out     TWO             ; 27 02
+
+char 'T'
+stackarg 2 (@0)
+0MEMORYADDR0         out     16*16-1         ; 27 ff
+
+char '1'
+stackarg 16 (@0)
+char '*'
+doop
+doop @ 0 unary
+char '1'
+stackarg 16 (@1)
+char '-'
+doop
+evaltop @(A,O) 2 1
+stackarg 256 (@0)
+doop @ 0
+char '1'
+stackarg 1 (@1)
+evaltop @(A,O) 2 1
+stackarg 255 (@0)
+0MEMORYADDR0         outs    5*3-15          ; b0
+
+char '5'
+stackarg 5 (@0)
+char '*'
+doop
+doop @ 0 unary
+char '3'
+stackarg 3 (@1)
+char '-'
+doop
+evaltop @(A,O) 2 1
+stackarg 15 (@0)
+doop @ 0
+char '1'
+stackarg 15 (@1)
+evaltop @(A,O) 2 1
+stackarg 0 (@0)
+0MEMORYADDR0         outs    15+start        ; bf
+
+char '1'
+stackarg 15 (@0)
+char '+'
+doop
+doop @ 0 unary
+char 's'
+stackarg 0 (@1)
+evaltop @(A,O) 2 1
+stackarg 15 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         pi      start           ; 28 00 00
+
+char 's'
+stackarg 0 (@0)
+0MEMORYADDR0         pi      $1234           ; 28 12 34
+
+char '$'
+stackarg 4660 (@0)
+0MEMORYADDR0         pk                      ; 0c
+
+0MEMORYADDR0         pop                     ; 1c
+
+0MEMORYADDR0         sl      start+1         ; 13
+
+char 's'
+stackarg 0 (@0)
+char '+'
+doop
+doop @ 0 unary
+char '1'
+stackarg 1 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0         sl      TWO+TWO         ; 15
+
+char 'T'
+stackarg 2 (@0)
+char '+'
+doop
+doop @ 0 unary
+char 'T'
+stackarg 2 (@1)
+evaltop @(A,O) 2 1
+stackarg 4 (@0)
+0MEMORYADDR0         sr      1               ; 12
+
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0         sr      3+1             ; 14
+
+char '3'
+stackarg 3 (@0)
+char '+'
+doop
+doop @ 0 unary
+char '1'
+stackarg 1 (@1)
+evaltop @(A,O) 2 1
+stackarg 4 (@0)
+0MEMORYADDR0         st                      ; 17
+
+0MEMORYADDR0         xdc                     ; 2c
+
+0MEMORYADDR0         xi      64              ; 23 40
+
+char '6'
+stackarg 64 (@0)
+0MEMORYADDR0         xm                      ; 8c
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         xs      start           ; e0
+
+char 's'
+stackarg 0 (@0)
+0MEMORYADDR0         xs      start+1         ; e1
+
+char 's'
+stackarg 0 (@0)
+char '+'
+doop
+doop @ 0 unary
+char '1'
+stackarg 1 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0         xs      TWO             ; e2
+
+char 'T'
+stackarg 2 (@0)
+0MEMORYADDR0         xs      3               ; e3
+
+char '3'
+stackarg 3 (@0)
+0MEMORYADDR0         xs      4               ; e4
+
+char '4'
+stackarg 4 (@0)
+0MEMORYADDR0         xs      5               ; e5
+
+char '5'
+stackarg 5 (@0)
+0MEMORYADDR0         xs      2*[1+2]         ; e6
+
+char '2'
+stackarg 2 (@0)
+char '*'
+doop
+doop @ 0 unary
+char '['
+char '1'
+stackarg 1 (@1)
+char '+'
+doop
+doop @ 2
+char '2'
+stackarg 2 (@2)
+char ']'
+evaltop @(A,O) 3 3
+stackarg 3 (@1)
+evaltop @(A,O) 2 1
+stackarg 6 (@0)
+0MEMORYADDR0         xs      7               ; e7
+
+char '7'
+stackarg 7 (@0)
+0MEMORYADDR0         xs      (2+2)*2         ; e8
+
+char '('
+char '2'
+stackarg 2 (@0)
+char '+'
+doop
+doop @ 1
+char '2'
+stackarg 2 (@1)
+char ')'
+evaltop @(A,O) 2 2
+stackarg 4 (@0)
+char '*'
+doop
+doop @ 0 unary
+char '2'
+stackarg 2 (@1)
+evaltop @(A,O) 2 1
+stackarg 8 (@0)
+0MEMORYADDR0         xs      9               ; e9
+
+char '9'
+stackarg 9 (@0)
+0MEMORYADDR0         xs      j               ; e9
+
+0MEMORYADDR0         xs      $a              ; ea
+
+char '$'
+stackarg 10 (@0)
+0MEMORYADDR0         xs      hu              ; ea
+
+0MEMORYADDR0         xs      11              ; ab
+
+char '1'
+stackarg 11 (@0)
+0MEMORYADDR0         xs      hl              ; eb
+
+0MEMORYADDR0         xs      s               ; ec
+
+0MEMORYADDR0         xs      (is)            ; ec
+
+0MEMORYADDR0         xs      i               ; ed
+
+0MEMORYADDR0         xs      (is)+           ; ed
+
+0MEMORYADDR0         xs      d               ; ee
+
+0MEMORYADDR0         xs      (is)-           ; ee
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         xs      12              ; ec
+
+char '1'
+stackarg 12 (@0)
+0MEMORYADDR0         xs      13              ; ed
+
+char '1'
+stackarg 13 (@0)
+0MEMORYADDR0         xs      14              ; ee
+
+char '1'
+stackarg 14 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         dc.b    0               ; 00
+
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         dc.w    $1234           ; 12 34
+
+char '$'
+stackarg 4660 (@0)
+0MEMORYADDR0         dc.l    $deadbeef       ; de ad be ef
+
+char '$'
+stackarg 3735928559 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         db      0               ; 00
+
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         dw      $1234           ; 12 34
+
+char '$'
+stackarg 4660 (@0)
+0MEMORYADDR0         dd      $deadbeef       ; de ad be ef
+
+char '$'
+stackarg 3735928559 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         byte    0               ; 00
+
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         word    $1234           ; 12 34
+
+char '$'
+stackarg 4660 (@0)
+0MEMORYADDR0         long    $deadbeef       ; de ad be ef
+
+char '$'
+stackarg 3735928559 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         .byte   0               ; 00
+
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         .word   $1234           ; 12 34
+
+char '$'
+stackarg 4660 (@0)
+0MEMORYADDR0         .long   $deadbeef       ; de ad be ef
+
+char '$'
+stackarg 3735928559 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         res.b   4, $33          ; 33 33 33 33
+
+char '4'
+stackarg 4 (@0)
+char ','
+char ' '
+char '$'
+stackarg 51 (@0)
+0MEMORYADDR0         res.w   2, $1234        ; 12 34 12 34
+
+char '2'
+stackarg 2 (@0)
+char ','
+char ' '
+char '$'
+stackarg 4660 (@0)
+0MEMORYADDR0         res.l   2, $deadbeef    ; de ad be ef de ad be ef
+
+char '2'
+stackarg 2 (@0)
+char ','
+char ' '
+char '$'
+stackarg 3735928559 (@0)
+
+Complete.

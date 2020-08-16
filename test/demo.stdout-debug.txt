@@ -1,0 +1,119 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ;;;
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;   Some useful macros and techniques
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 	processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;;;
+
+0MEMORYADDR0 	mac	hexdig
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	if [{1}] <= 9
+
+0MEMORYADDR0 	    dc.b	'0 + [{1}]
+
+0MEMORYADDR0 	else
+
+0MEMORYADDR0 	    dc.b	'a + [{1}] - 10
+
+0MEMORYADDR0 	endif
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	endm
+
+0MEMORYADDR0 ;;;
+
+0MEMORYADDR0 	mac	hexnum
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	if [{1}] >= $10
+
+0MEMORYADDR0 	    hexnum [{1}] >> 4
+
+0MEMORYADDR0 	endif
+
+0MEMORYADDR0 	hexdig [{1}] & $0F
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	endm
+
+0MEMORYADDR0 ;;;
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	org 0
+
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 	hexnum $123ab
+
+0MEMORYADDR0 
+0MEMORYADDR0  if [{1}] >= $10
+macro tail: '{1}] >= $10'
+add/str: -3 '] >= $10'
+strlist: '$123ab' 6
+char '['
+char '$'
+stackarg 74667 (@0)
+char ']'
+char ' '
+char '>'
+doop
+doop @ 0 unary
+char ' '
+char '$'
+stackarg 16 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0      hexnum [{1}] >> 4
+macro tail: '{1}] >> 4'
+add/str: -3 '] >> 4'
+strlist: '$123ab' 6
+0MEMORYADDR0 
+0MEMORYADDR0  if [{1}] >= $10
+macro tail: '{1}] >= $10'
+add/str: -3 '] >= $10'
+strlist: '[$123ab] >> 4' 13
+char '['
+char '['
+char '$'
+stackarg 74667 (@0)
+char ']'
+char ' '
+char '>'
+doop
+doop @ 1
+char ' '
+char '4'
+stackarg 4 (@1)
+char ']'
+evaltop @(A,O) 2 2
+stackarg 4666 (@0)
+char ' '
+char '>'
+doop
+doop @ 0 unary
+char ' '
+char '$'
+stackarg 16 (@1)
+evaltop @(A,O) 2 1
+stackarg 1 (@0)
+0MEMORYADDR0      hexnum [{1}] >> 4
+macro tail: '{1}] >> 4'
+add/str: -3 '] >> 4'
+strlist: '[$123ab] >> 4' 13
+malloc(): corrupted top size

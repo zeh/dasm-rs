@@ -1,0 +1,287 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ;;;;
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;   Test local symbols
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 	processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	mac	test1
+
+0MEMORYADDR0 	bne	.end
+
+0MEMORYADDR0 test$	=	1
+
+0MEMORYADDR0 	test2
+
+0MEMORYADDR0 .end
+
+0MEMORYADDR0 	nop
+
+0MEMORYADDR0 	endm
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	mac	test2
+
+0MEMORYADDR0 	bne	.end
+
+0MEMORYADDR0 test$	=	1
+
+0MEMORYADDR0 	test3
+
+0MEMORYADDR0 .end
+
+0MEMORYADDR0 	nop
+
+0MEMORYADDR0 	endm
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	mac	test3
+
+0MEMORYADDR0 	bne	.end
+
+0MEMORYADDR0 test$	=	1
+
+0MEMORYADDR0 	nop
+
+0MEMORYADDR0 .end
+
+0MEMORYADDR0 	nop
+
+0MEMORYADDR0 	endm
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	org	0
+
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	test1
+
+0MEMORYADDR0  bne .end
+char '.'
+stackarg 0 (@0)
+0MEMORYADDR0 test$ = 1
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0  test2
+0MEMORYADDR0  bne .end
+char '.'
+stackarg 0 (@0)
+0MEMORYADDR0 test$ = 1
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0  test3
+0MEMORYADDR0  bne .end
+char '.'
+stackarg 0 (@0)
+0MEMORYADDR0 test$ = 1
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0  nop
+0MEMORYADDR0 .end
+redo 13: '3.end' 0045 0004
+0MEMORYADDR0  nop
+0MEMORYADDR0 .end
+redo 13: '2.end' 0045 0004
+0MEMORYADDR0  nop
+0MEMORYADDR0 .end
+redo 13: '1.end' 0045 0004
+0MEMORYADDR0  nop
+0MEMORYADDR0 	test2
+
+0MEMORYADDR0  bne .end
+char '.'
+stackarg 0 (@0)
+0MEMORYADDR0 test$ = 1
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0  test3
+0MEMORYADDR0  bne .end
+char '.'
+stackarg 0 (@0)
+0MEMORYADDR0 test$ = 1
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0  nop
+0MEMORYADDR0 .end
+redo 13: '5.end' 0045 0004
+0MEMORYADDR0  nop
+0MEMORYADDR0 .end
+redo 13: '4.end' 0045 0004
+0MEMORYADDR0  nop
+0MEMORYADDR0 	test3
+
+0MEMORYADDR0  bne .end
+char '.'
+stackarg 0 (@0)
+0MEMORYADDR0 test$ = 1
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0  nop
+0MEMORYADDR0 .end
+redo 13: '6.end' 0045 0004
+0MEMORYADDR0  nop
+0MEMORYADDR0 
+
+0MEMORYADDR0 .end
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 loop	set	0
+
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 	
+
+0MEMORYADDR0 ;;;;
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;   Test local symbols
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 	processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	mac	test1
+
+0MEMORYADDR0 	bne	.end
+
+0MEMORYADDR0 test$	=	1
+
+0MEMORYADDR0 	test2
+
+0MEMORYADDR0 .end
+
+0MEMORYADDR0 	nop
+
+0MEMORYADDR0 	endm
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	mac	test2
+
+0MEMORYADDR0 	bne	.end
+
+0MEMORYADDR0 test$	=	1
+
+0MEMORYADDR0 	test3
+
+0MEMORYADDR0 .end
+
+0MEMORYADDR0 	nop
+
+0MEMORYADDR0 	endm
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	mac	test3
+
+0MEMORYADDR0 	bne	.end
+
+0MEMORYADDR0 test$	=	1
+
+0MEMORYADDR0 	nop
+
+0MEMORYADDR0 .end
+
+0MEMORYADDR0 	nop
+
+0MEMORYADDR0 	endm
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	org	0
+
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	test1
+
+0MEMORYADDR0  bne .end
+char '.'
+stackarg 9 (@0)
+0MEMORYADDR0 test$ = 1
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0  test2
+0MEMORYADDR0  bne .end
+char '.'
+stackarg 8 (@0)
+0MEMORYADDR0 test$ = 1
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0  test3
+0MEMORYADDR0  bne .end
+char '.'
+stackarg 7 (@0)
+0MEMORYADDR0 test$ = 1
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0  nop
+0MEMORYADDR0 .end
+0MEMORYADDR0  nop
+0MEMORYADDR0 .end
+0MEMORYADDR0  nop
+0MEMORYADDR0 .end
+0MEMORYADDR0  nop
+0MEMORYADDR0 	test2
+
+0MEMORYADDR0  bne .end
+char '.'
+stackarg 16 (@0)
+0MEMORYADDR0 test$ = 1
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0  test3
+0MEMORYADDR0  bne .end
+char '.'
+stackarg 15 (@0)
+0MEMORYADDR0 test$ = 1
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0  nop
+0MEMORYADDR0 .end
+0MEMORYADDR0  nop
+0MEMORYADDR0 .end
+0MEMORYADDR0  nop
+0MEMORYADDR0 	test3
+
+0MEMORYADDR0  bne .end
+char '.'
+stackarg 20 (@0)
+0MEMORYADDR0 test$ = 1
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0  nop
+0MEMORYADDR0 .end
+0MEMORYADDR0  nop
+0MEMORYADDR0 
+
+0MEMORYADDR0 .end
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 loop	set	0
+
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 	
+
+
+Complete.

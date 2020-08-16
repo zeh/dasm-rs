@@ -1,0 +1,396 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ; Bug in string conversion.
+
+0MEMORYADDR0 ; Reported 2007/08/25 by Eduardo Casino Almao <casino_e@movistar.es>
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; I've found a bug in the string conversion feature ([exp]d) I'm using
+
+0MEMORYADDR0 ; version 2.20.10b
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Basically, if exp is a not-yet-resolved label, the assembler aborts with
+
+0MEMORYADDR0 ; "program.a: (XX): error Label mismatch...
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	org	$0801
+
+char '$'
+stackarg 2049 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	word	endprg			; pointer to next line
+
+char 'e'
+stackarg 0 (@0)
+0MEMORYADDR0 	word	1968			; line number
+
+char '1'
+stackarg 1968 (@0)
+0MEMORYADDR0 	byte	$9e			; SYS token
+
+char '$'
+stackarg 158 (@0)
+0MEMORYADDR0 	byte	[start]d		; ASCII of SYS address
+
+char '['
+char 's'
+stackarg 0 (@0)
+char ']'
+0MEMORYADDR0 	byte	" TESTPROG BY TESTSOFT"	; Show copyright
+
+char '"'
+stackarg 0 (@0)
+STRING:  TESTPROG BY TESTSOFT
+0MEMORYADDR0 endprg	byte	0,0,0			; End of BASIC program
+
+redo 13: 'endprg' 0045 0000
+char '0'
+stackarg 0 (@0)
+char ','
+char '0'
+stackarg 0 (@0)
+char ','
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 start	rts
+
+redo 13: 'start' 0045 0004
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; The assembler outputs:
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ; DASM V2.20.10, Macro Assembler (C)1988-2004
+
+0MEMORYADDR0 ; testcase.a (13): error: Label mismatch...
+
+0MEMORYADDR0 ;  --> endprg 081c
+
+0MEMORYADDR0 ; testcase.a (16): error: Label mismatch...
+
+0MEMORYADDR0 ;  --> start 081f
+
+0MEMORYADDR0 ; Unrecoverable error(s) in pass, aborting assembly!
+
+0MEMORYADDR0 ; Complete.
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; The offending code is in symbols.c, lines 203 to 210. I think that there
+
+0MEMORYADDR0 ; should be an extra condition, so if in the previous pass it has been a
+
+0MEMORYADDR0 ; string conversion, just go for another pass.
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; -----CUT-----
+
+0MEMORYADDR0 ;            /*
+
+0MEMORYADDR0 ;            * If we had an unevaluated IF expression in the
+
+0MEMORYADDR0 ;            * previous pass, don't complain about phase errors
+
+0MEMORYADDR0 ;            * too loudly.
+
+0MEMORYADDR0 ;                */
+
+0MEMORYADDR0 ; 203            if (F_verbose >= 1 || !(Redo_if & (REASON_OBSCURE)))
+
+0MEMORYADDR0 ;                {
+
+0MEMORYADDR0 ;                    char sBuffer[ MAX_SYM_LEN * 2 ];
+
+0MEMORYADDR0 ;                    sprintf( sBuffer, "%s %s", sym->name, sftos( sym->value, 0 ) );
+
+0MEMORYADDR0 ;                    /*, sftos(sym->value,
+
+0MEMORYADDR0 ;                    sym->flags) ); , sftos(pc, cflags & 7));*/
+
+0MEMORYADDR0 ;                    asmerr( ERROR_LABEL_MISMATCH, false, sBuffer );
+
+0MEMORYADDR0 ; 210            }
+
+0MEMORYADDR0 ;                ++Redo;
+
+0MEMORYADDR0 ;                Redo_why |= REASON_PHASE_ERROR;
+
+0MEMORYADDR0 ; -----CUT-----
+
+0MEMORYADDR0 ; Bug in string conversion.
+
+0MEMORYADDR0 ; Reported 2007/08/25 by Eduardo Casino Almao <casino_e@movistar.es>
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; I've found a bug in the string conversion feature ([exp]d) I'm using
+
+0MEMORYADDR0 ; version 2.20.10b
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Basically, if exp is a not-yet-resolved label, the assembler aborts with
+
+0MEMORYADDR0 ; "program.a: (XX): error Label mismatch...
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	org	$0801
+
+char '$'
+stackarg 2049 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	word	endprg			; pointer to next line
+
+char 'e'
+stackarg 2076 (@0)
+0MEMORYADDR0 	word	1968			; line number
+
+char '1'
+stackarg 1968 (@0)
+0MEMORYADDR0 	byte	$9e			; SYS token
+
+char '$'
+stackarg 158 (@0)
+0MEMORYADDR0 	byte	[start]d		; ASCII of SYS address
+
+char '['
+char 's'
+stackarg 2079 (@0)
+char ']'
+STRING: 2079
+0MEMORYADDR0 	byte	" TESTPROG BY TESTSOFT"	; Show copyright
+
+char '"'
+stackarg 0 (@0)
+STRING:  TESTPROG BY TESTSOFT
+0MEMORYADDR0 endprg	byte	0,0,0			; End of BASIC program
+
+char '0'
+stackarg 0 (@0)
+char ','
+char '0'
+stackarg 0 (@0)
+char ','
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 start	rts
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; The assembler outputs:
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ; DASM V2.20.10, Macro Assembler (C)1988-2004
+
+0MEMORYADDR0 ; testcase.a (13): error: Label mismatch...
+
+0MEMORYADDR0 ;  --> endprg 081c
+
+0MEMORYADDR0 ; testcase.a (16): error: Label mismatch...
+
+0MEMORYADDR0 ;  --> start 081f
+
+0MEMORYADDR0 ; Unrecoverable error(s) in pass, aborting assembly!
+
+0MEMORYADDR0 ; Complete.
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; The offending code is in symbols.c, lines 203 to 210. I think that there
+
+0MEMORYADDR0 ; should be an extra condition, so if in the previous pass it has been a
+
+0MEMORYADDR0 ; string conversion, just go for another pass.
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; -----CUT-----
+
+0MEMORYADDR0 ;            /*
+
+0MEMORYADDR0 ;            * If we had an unevaluated IF expression in the
+
+0MEMORYADDR0 ;            * previous pass, don't complain about phase errors
+
+0MEMORYADDR0 ;            * too loudly.
+
+0MEMORYADDR0 ;                */
+
+0MEMORYADDR0 ; 203            if (F_verbose >= 1 || !(Redo_if & (REASON_OBSCURE)))
+
+0MEMORYADDR0 ;                {
+
+0MEMORYADDR0 ;                    char sBuffer[ MAX_SYM_LEN * 2 ];
+
+0MEMORYADDR0 ;                    sprintf( sBuffer, "%s %s", sym->name, sftos( sym->value, 0 ) );
+
+0MEMORYADDR0 ;                    /*, sftos(sym->value,
+
+0MEMORYADDR0 ;                    sym->flags) ); , sftos(pc, cflags & 7));*/
+
+0MEMORYADDR0 ;                    asmerr( ERROR_LABEL_MISMATCH, false, sBuffer );
+
+0MEMORYADDR0 ; 210            }
+
+0MEMORYADDR0 ;                ++Redo;
+
+0MEMORYADDR0 ;                Redo_why |= REASON_PHASE_ERROR;
+
+0MEMORYADDR0 ; -----CUT-----
+
+0MEMORYADDR0 ; Bug in string conversion.
+
+0MEMORYADDR0 ; Reported 2007/08/25 by Eduardo Casino Almao <casino_e@movistar.es>
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; I've found a bug in the string conversion feature ([exp]d) I'm using
+
+0MEMORYADDR0 ; version 2.20.10b
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Basically, if exp is a not-yet-resolved label, the assembler aborts with
+
+0MEMORYADDR0 ; "program.a: (XX): error Label mismatch...
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	org	$0801
+
+char '$'
+stackarg 2049 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	word	endprg			; pointer to next line
+
+char 'e'
+stackarg 2079 (@0)
+0MEMORYADDR0 	word	1968			; line number
+
+char '1'
+stackarg 1968 (@0)
+0MEMORYADDR0 	byte	$9e			; SYS token
+
+char '$'
+stackarg 158 (@0)
+0MEMORYADDR0 	byte	[start]d		; ASCII of SYS address
+
+char '['
+char 's'
+stackarg 2082 (@0)
+char ']'
+STRING: 2082
+0MEMORYADDR0 	byte	" TESTPROG BY TESTSOFT"	; Show copyright
+
+char '"'
+stackarg 0 (@0)
+STRING:  TESTPROG BY TESTSOFT
+0MEMORYADDR0 endprg	byte	0,0,0			; End of BASIC program
+
+char '0'
+stackarg 0 (@0)
+char ','
+char '0'
+stackarg 0 (@0)
+char ','
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 start	rts
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; The assembler outputs:
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ; DASM V2.20.10, Macro Assembler (C)1988-2004
+
+0MEMORYADDR0 ; testcase.a (13): error: Label mismatch...
+
+0MEMORYADDR0 ;  --> endprg 081c
+
+0MEMORYADDR0 ; testcase.a (16): error: Label mismatch...
+
+0MEMORYADDR0 ;  --> start 081f
+
+0MEMORYADDR0 ; Unrecoverable error(s) in pass, aborting assembly!
+
+0MEMORYADDR0 ; Complete.
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; The offending code is in symbols.c, lines 203 to 210. I think that there
+
+0MEMORYADDR0 ; should be an extra condition, so if in the previous pass it has been a
+
+0MEMORYADDR0 ; string conversion, just go for another pass.
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; -----CUT-----
+
+0MEMORYADDR0 ;            /*
+
+0MEMORYADDR0 ;            * If we had an unevaluated IF expression in the
+
+0MEMORYADDR0 ;            * previous pass, don't complain about phase errors
+
+0MEMORYADDR0 ;            * too loudly.
+
+0MEMORYADDR0 ;                */
+
+0MEMORYADDR0 ; 203            if (F_verbose >= 1 || !(Redo_if & (REASON_OBSCURE)))
+
+0MEMORYADDR0 ;                {
+
+0MEMORYADDR0 ;                    char sBuffer[ MAX_SYM_LEN * 2 ];
+
+0MEMORYADDR0 ;                    sprintf( sBuffer, "%s %s", sym->name, sftos( sym->value, 0 ) );
+
+0MEMORYADDR0 ;                    /*, sftos(sym->value,
+
+0MEMORYADDR0 ;                    sym->flags) ); , sftos(pc, cflags & 7));*/
+
+0MEMORYADDR0 ;                    asmerr( ERROR_LABEL_MISMATCH, false, sBuffer );
+
+0MEMORYADDR0 ; 210            }
+
+0MEMORYADDR0 ;                ++Redo;
+
+0MEMORYADDR0 ;                Redo_why |= REASON_PHASE_ERROR;
+
+0MEMORYADDR0 ; -----CUT-----
+
+
+Complete.
