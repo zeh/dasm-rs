@@ -59,6 +59,9 @@ for i in *.asm; do
   $DASM "$i" -f1 -v4 -o/dev/null -DINEEPROM > "$NAME.stdout-verbose.txt$SUFFIX" 2>&1
   $DASM "$i" -f1 -d1 -o/dev/null -DINEEPROM > "$NAME.stdout-debug.txt$SUFFIX" 2>&1
 
+  # Obfuscate memory addresses (they change every time)
+  sed -i -r 's/^[0-9a-f]{12} /0MEMORYADDR0 /g' "$NAME.stdout-debug.txt$SUFFIX"
+
   # Generate .hex file from .bin
   $FTOHEX 1 "$NAME.bin$SUFFIX" "$NAME.hex$SUFFIX"
 
@@ -146,6 +149,9 @@ for i in *.fail; do
     # | \grep -vE 'error|Complete|Fatal|Warning^?'
   $DASM "$i" -S -f1 -v4 -o/dev/null -DINEEPROM > "$NAME.stdout-verbose.strict.txt$SUFFIX" 2>&1
   $DASM "$i" -S -f1 -d1 -o/dev/null -DINEEPROM > "$NAME.stdout-debug.strict.txt$SUFFIX" 2>&1
+
+  # Obfuscate memory addresses (they change every time)
+  sed -i -r 's/^[0-9a-f]{12} /0MEMORYADDR0 /g' "$NAME.stdout-debug.strict.txt$SUFFIX"
 
   # Display results
   echo -ne "  * ${NAME}: "
@@ -246,6 +252,9 @@ for ((i = 0; i < ${#custom_files[@]}; i++)); do
     # | \grep -vE 'error|Complete|Fatal|Warning^?'
   $DASM "$NAME.asm" -v4 ${custom_params[i]} -o/dev/null -DINEEPROM > "$NAME.stdout-verbose.txt$SUFFIX" 2>&1
   $DASM "$NAME.asm" -d1 ${custom_params[i]} -o/dev/null -DINEEPROM > "$NAME.stdout-debug.txt$SUFFIX" 2>&1
+
+  # Obfuscate memory addresses (they change every time)
+  sed -i -r 's/^[0-9a-f]{12} /0MEMORYADDR0 /g' "$NAME.stdout-debug.txt$SUFFIX"
 
   # Generate .hex file from .bin
   $FTOHEX 1 "$NAME.bin$SUFFIX" "$NAME.hex$SUFFIX"
@@ -354,3 +363,16 @@ else
 fi
 echo
 echo
+
+# 6. Fixes file errors for comparison
+
+echo "Fixing snapshots"
+echo
+
+if [ -n "$SUFFIX" ]; then
+  # Typos in original
+  sed -i -r 's/defintion/definition/g' *$SUFFIX
+  sed -i -r 's/defintion/definition/g' ./atari2600/*$SUFFIX
+  sed -i -r 's/defintion/definition/g' ./atari7800/*$SUFFIX
+  sed -i -r 's/defintion/definition/g' ./channel-f/*$SUFFIX
+fi
