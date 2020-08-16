@@ -56,7 +56,8 @@ for i in *.asm; do
   $DASM "$i" -f1 -o"$NAME.bin$SUFFIX" -l"$NAME.list.txt$SUFFIX" -s"$NAME.symbols.txt$SUFFIX" -DINEEPROM 2>&1 | \
     tee "$NAME.stdout.txt$SUFFIX" >/dev/null
     # | \grep -vE 'error|Complete|Fatal|Warning^?'
-  $DASM "$i" -f1 -d -v4 -o/dev/null -DINEEPROM > "$NAME.stdout-verbose.txt$SUFFIX" 2>&1
+  $DASM "$i" -f1 -v4 -o/dev/null -DINEEPROM > "$NAME.stdout-verbose.txt$SUFFIX" 2>&1
+  $DASM "$i" -f1 -d1 -o/dev/null -DINEEPROM > "$NAME.stdout-debug.txt$SUFFIX" 2>&1
 
   # Generate .hex file from .bin
   $FTOHEX 1 "$NAME.bin$SUFFIX" "$NAME.hex$SUFFIX"
@@ -102,9 +103,16 @@ for i in *.asm; do
     fi
     cmp -s "$NAME.stdout-verbose.txt" "$NAME.stdout-verbose.txt.ref"
     if [ $? == 0 ]; then
-      echo -ne "stdout-verbose pass. "
+      echo -ne "stdout-verbose pass; "
     else
-      echo -ne "stdout-verbose $FAIL_LABEL. "
+      echo -ne "stdout-verbose $FAIL_LABEL; "
+      errors=$((errors + 1))
+    fi
+    cmp -s "$NAME.stdout-debug.txt" "$NAME.stdout-debug.txt.ref"
+    if [ $? == 0 ]; then
+      echo -ne "stdout-debug pass. "
+    else
+      echo -ne "stdout-debug $FAIL_LABEL. "
       errors=$((errors + 1))
     fi
   else
@@ -136,7 +144,8 @@ for i in *.fail; do
   $DASM "$i" -S -f1 -o"$NAME.strict.bin$SUFFIX" -l"$NAME.list.strict.txt$SUFFIX" -s"$NAME.symbols.strict.txt$SUFFIX" -DINEEPROM 2>&1 | \
     tee "$NAME.stdout.strict.txt$SUFFIX" >/dev/null
     # | \grep -vE 'error|Complete|Fatal|Warning^?'
-  $DASM "$i" -S -f1 -d -v4 -o/dev/null -DINEEPROM > "$NAME.stdout-verbose.strict.txt$SUFFIX" 2>&1
+  $DASM "$i" -S -f1 -v4 -o/dev/null -DINEEPROM > "$NAME.stdout-verbose.strict.txt$SUFFIX" 2>&1
+  $DASM "$i" -S -f1 -d1 -o/dev/null -DINEEPROM > "$NAME.stdout-debug.strict.txt$SUFFIX" 2>&1
 
   # Display results
   echo -ne "  * ${NAME}: "
@@ -181,9 +190,16 @@ for i in *.fail; do
     fi
     cmp -s "$NAME.stdout-verbose.strict.txt" "$NAME.stdout-verbose.strict.txt.ref"
     if [ $? == 0 ]; then
-      echo -ne "stdout-verbose pass. "
+      echo -ne "stdout-verbose pass; "
     else
-      echo -ne "stdout-verbose $FAIL_LABEL. "
+      echo -ne "stdout-verbose $FAIL_LABEL; "
+      errors=$((errors + 1))
+    fi
+    cmp -s "$NAME.stdout-debug.strict.txt" "$NAME.stdout-debug.strict.txt.ref"
+    if [ $? == 0 ]; then
+      echo -ne "stdout-debug pass. "
+    else
+      echo -ne "stdout-debug $FAIL_LABEL. "
       errors=$((errors + 1))
     fi
   else
@@ -228,7 +244,8 @@ for ((i = 0; i < ${#custom_files[@]}; i++)); do
   $DASM "$NAME.asm" ${custom_params[i]} -o"$NAME.bin$SUFFIX" -l"$NAME.list.txt$SUFFIX" -s"$NAME.symbols.txt$SUFFIX" -DINEEPROM 2>&1 | \
     tee "$NAME.stdout.txt$SUFFIX" >/dev/null
     # | \grep -vE 'error|Complete|Fatal|Warning^?'
-  $DASM "$NAME.asm" -d -v4 ${custom_params[i]} -o/dev/null -DINEEPROM > "$NAME.stdout-verbose.txt$SUFFIX" 2>&1
+  $DASM "$NAME.asm" -v4 ${custom_params[i]} -o/dev/null -DINEEPROM > "$NAME.stdout-verbose.txt$SUFFIX" 2>&1
+  $DASM "$NAME.asm" -d1 ${custom_params[i]} -o/dev/null -DINEEPROM > "$NAME.stdout-debug.txt$SUFFIX" 2>&1
 
   # Generate .hex file from .bin
   $FTOHEX 1 "$NAME.bin$SUFFIX" "$NAME.hex$SUFFIX"
@@ -274,9 +291,16 @@ for ((i = 0; i < ${#custom_files[@]}; i++)); do
     fi
     cmp -s "$NAME.stdout-verbose.txt" "$NAME.stdout-verbose.txt.ref"
     if [ $? == 0 ]; then
-      echo -ne "stdout-verbose pass. "
+      echo -ne "stdout-verbose pass; "
     else
-      echo -ne "stdout-verbose $FAIL_LABEL. "
+      echo -ne "stdout-verbose $FAIL_LABEL; "
+      errors=$((errors + 1))
+    fi
+    cmp -s "$NAME.stdout-debug.txt" "$NAME.stdout-debug.txt.ref"
+    if [ $? == 0 ]; then
+      echo -ne "stdout-debug pass. "
+    else
+      echo -ne "stdout-debug $FAIL_LABEL. "
       errors=$((errors + 1))
     fi
   else
