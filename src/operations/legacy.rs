@@ -1651,38 +1651,11 @@ pub unsafe extern "C" fn v_repend(mut _str: *mut libc::c_char,
     println!("no repeat");
 }
 #[no_mangle]
-pub static mut incdirlist: *mut _STRLIST =
-    0 as *const _STRLIST as *mut _STRLIST;
-#[no_mangle]
 pub unsafe extern "C" fn v_incdir(mut str: *mut libc::c_char, mut _dummy: *mut _MNE) {
-    let mut tail: *mut *mut _STRLIST = 0 as *mut *mut _STRLIST;
-    let mut buf: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut found: libc::c_int = 0;
-    // FIXME: new, start
     let filename = get_filename(transient::str_pointer_to_string(str).as_str()).to_owned();
     if state.execution.includeDirList.iter().find(|dir| dir.cmp(&&filename) == Ordering::Equal).is_none() {
         state.execution.includeDirList.push(filename);
     }
-    // FIXME: new, end
-    buf = getfilename(str);
-    tail = &mut incdirlist;
-    while !(*tail).is_null() {
-        if strcmp((**tail).buf.as_mut_ptr(), buf) == 0 {
-            found = 1
-        }
-        tail = &mut (**tail).next
-    }
-    if found == 0 {
-        let mut newdir: *mut _STRLIST = 0 as *mut _STRLIST;
-        newdir =
-            permalloc((::std::mem::size_of::<*mut _STRLIST>() as
-                           libc::c_ulong).wrapping_add(1 as
-                                                           libc::c_ulong).wrapping_add(strlen(buf))
-                          as libc::c_int) as *mut _STRLIST;
-        strcpy((*newdir).buf.as_mut_ptr(), buf);
-        *tail = newdir
-    }
-    if buf != str { free(buf as *mut libc::c_void); };
 }
 unsafe extern "C" fn addpart(mut dest: *mut libc::c_char,
                              mut dir: *const libc::c_char,
@@ -1705,7 +1678,6 @@ unsafe extern "C" fn addpart(mut dest: *mut libc::c_char,
 pub unsafe extern "C" fn pfopen(mut name: *const libc::c_char,
                                 mut mode: *const libc::c_char) -> *mut FILE {
     let mut f: *mut FILE = 0 as *mut FILE;
-    let mut incdir: *mut _STRLIST = 0 as *mut _STRLIST;
     let mut buf: *mut libc::c_char = 0 as *mut libc::c_char;
     f = fopen(name, mode);
     if !f.is_null() { return f }
@@ -1714,12 +1686,12 @@ pub unsafe extern "C" fn pfopen(mut name: *const libc::c_char,
         return 0 as *mut FILE
     } /*	multiplied later    */
     buf = zmalloc(512 as libc::c_int);
-    incdir = incdirlist;
-    while !incdir.is_null() {
-        addpart(buf, (*incdir).buf.as_mut_ptr(), name);
+    for incDir in &state.execution.includeDirList {
+        addpart(buf, transient::string_to_str_pointer(incDir.to_owned()), name);
         f = fopen(buf, mode);
-        if !f.is_null() { break ; }
-        incdir = (*incdir).next
+        if !f.is_null() {
+            break;
+        }
     }
     free(buf as *mut libc::c_void);
     return f;
