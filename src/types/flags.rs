@@ -45,3 +45,13 @@ pub mod FileFlags {
     pub const Macro: u8 = 0b0000_0001;
     pub const NoList: u8 = 0b0000_0010;
 }
+
+// In original C code, used for flags as "MF_*" but without a clear enum
+pub mod MnemonicsFlags {
+    pub const If: u8 = 0b0000_0100;                 // 0x04
+    pub const Macro: u8 = 0b0000_1000;              // 0x08
+    pub const Mask: u8 = 0b0001_0000;               // 0x10: Has mask argument (byte)
+    pub const Rel: u8 = 0b0010_0000;                // 0x20: Has rel. address (byte)
+    pub const InstructionMod: u8 = 0b0100_0000;     // 0x40: Instruction byte mod
+    pub const EndMnemonic: u8 = 0b1000_0000;        // 0x80: Is v_endm
+}
