@@ -37,7 +37,7 @@ if [[ -z "$SUFFIX" ]]; then
   rm -r ./channel-f/*.hex
 else
   echo "... Removing all previously generated files with suffix $SUFFIX"
-  rm "./*$SUFFIX"
+  rm *$SUFFIX
 fi
 echo
 
