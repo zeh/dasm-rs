@@ -39,3 +39,9 @@ pub mod SegmentTypes {
     pub const BSS: u8 = 0b0001_0000;                // 0x10: uninitialized area (U flag)
     pub const RelocatableOrigin: u8 = 0b0010_0000;  // 0x20: Relocatable origin active
 }
+
+// In original C code, used for flags as "INF*" but without a clear enum
+pub mod FileFlags {
+    pub const Macro: u8 = 0b0000_0001;
+    pub const NoList: u8 = 0b0000_0010;
+}

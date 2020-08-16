@@ -7,6 +7,7 @@ use crate::constants::{
 };
 use crate::globals::state;
 use crate::types::flags::{
+    FileFlags,
     ReasonCodes,
     SegmentTypes,
     SymbolTypes,
@@ -600,28 +601,18 @@ pub unsafe extern "C" fn v_trace(mut str: *mut libc::c_char,
 pub unsafe extern "C" fn v_list(mut str: *mut libc::c_char,
                                 mut _dummy: *mut _MNE) {
     programlabel();
+
+    // Only so outlist() works
     state.output.generatedLength = 0;
-    if strncmp(str, b"localoff\x00" as *const u8 as *const libc::c_char,
-               7) == 0 ||
-           strncmp(str, b"LOCALOFF\x00" as *const u8 as *const libc::c_char,
-                   7) == 0 {
-        (*pIncfile).flags =
-            ((*pIncfile).flags as libc::c_int | 0x2 as libc::c_int) as u8;
-    } else if strncmp(str, b"localon\x00" as *const u8 as *const libc::c_char,
-                      7) == 0
-                  ||
-                  strncmp(str,
-                          b"LOCALON\x00" as *const u8 as *const libc::c_char,
-                          7) ==
-                      0 {
-        (*pIncfile).flags =
-            ((*pIncfile).flags as libc::c_int & !(0x2 as libc::c_int)) as u8;
-    } else if strncmp(str, b"off\x00" as *const u8 as *const libc::c_char,
-                      2) == 0
-                  ||
-                  strncmp(str, b"OFF\x00" as *const u8 as *const libc::c_char,
-                          2) ==
-                      0 {
+
+    if strncmp(str, b"localoff\x00" as *const u8 as *const libc::c_char, 7) == 0 ||
+        strncmp(str, b"LOCALOFF\x00" as *const u8 as *const libc::c_char, 7) == 0 {
+        (*pIncfile).flags = (*pIncfile).flags | FileFlags::NoList;
+    } else if strncmp(str, b"localon\x00" as *const u8 as *const libc::c_char, 7) == 0 ||
+        strncmp(str, b"LOCALON\x00" as *const u8 as *const libc::c_char, 7) == 0 {
+        (*pIncfile).flags = ((*pIncfile).flags & !(FileFlags::NoList)) as u8;
+    } else if strncmp(str, b"off\x00" as *const u8 as *const libc::c_char, 2) == 0 ||
+        strncmp(str, b"OFF\x00" as *const u8 as *const libc::c_char, 2) == 0 {
         state.execution.listMode = ListMode::None
     } else {
         state.execution.listMode = ListMode::List
