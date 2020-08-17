@@ -1509,39 +1509,38 @@ pub unsafe extern "C" fn findext(mut str: *mut libc::c_char) {
         *str = 0;
         str = str.offset(1);
         state.execution.extraString = transient::str_pointer_to_string(str);
-        match *str.offset(0 as isize) as libc::c_int |
-                  0x20 as libc::c_int {
-            48 | 105 => {
+        match (*str.offset(0) as u8 | 0x20) as char {
+            '0' | 'i' => {
                 state.execution.modeNext = AddressModes::Imp;
-                match *str.offset(1 as isize) as libc::c_int | 0x20 as libc::c_int {
-                    120 => { state.execution.modeNext = AddressModes::ZeroX }
-                    121 => { state.execution.modeNext = AddressModes::ZeroY }
-                    110 => { state.execution.modeNext = AddressModes::IndWord }
+                match (*str.offset(1) as u8 | 0x20) as char {
+                    'x' => { state.execution.modeNext = AddressModes::ZeroX; }
+                    'y' => { state.execution.modeNext = AddressModes::ZeroY; }
+                    'n' => { state.execution.modeNext = AddressModes::IndWord; }
                     _ => { }
                 }
                 return
             }
-            100 | 98 | 122 => {
-                match *str.offset(1 as isize) as libc::c_int | 0x20 as libc::c_int {
-                    120 => { state.execution.modeNext = AddressModes::ByteAdrX }
-                    121 => { state.execution.modeNext = AddressModes::ByteAdrY }
-                    105 => { state.execution.modeNext = AddressModes::BitMod }
-                    98 => { state.execution.modeNext = AddressModes::BitBraMod }
-                    _ => { state.execution.modeNext = AddressModes::ByteAdr }
+            'd' | 'b' | 'z' => {
+                match (*str.offset(1) as u8 | 0x20) as char {
+                    'x' => { state.execution.modeNext = AddressModes::ByteAdrX; }
+                    'y' => { state.execution.modeNext = AddressModes::ByteAdrY; }
+                    'i' => { state.execution.modeNext = AddressModes::BitMod; }
+                    'b' => { state.execution.modeNext = AddressModes::BitBraMod; }
+                    _ => { state.execution.modeNext = AddressModes::ByteAdr; }
                 }
                 return
             }
-            101 | 119 | 97 => {
-                match *str.offset(1 as isize) as libc::c_int | 0x20 as libc::c_int {
-                    120 => { state.execution.modeNext = AddressModes::WordAdrX }
-                    121 => { state.execution.modeNext = AddressModes::WordAdrY }
-                    _ => { state.execution.modeNext = AddressModes::WordAdr }
+            'e' | 'w' | 'a' => {
+                match (*str.offset(1) as u8 | 0x20) as char {
+                    'x' => { state.execution.modeNext = AddressModes::WordAdrX; }
+                    'y' => { state.execution.modeNext = AddressModes::WordAdrY; }
+                    _ => { state.execution.modeNext = AddressModes::WordAdr; }
                 }
                 return
             }
-            108 => { state.execution.modeNext = AddressModes::Long; return }
-            114 => { state.execution.modeNext = AddressModes::Rel; return }
-            117 => { state.execution.modeNext = AddressModes::BSS; return }
+            'l' => { state.execution.modeNext = AddressModes::Long; return; }
+            'r' => { state.execution.modeNext = AddressModes::Rel; return; }
+            'u' => { state.execution.modeNext = AddressModes::BSS; return; }
             _ => { }
         }
     };
