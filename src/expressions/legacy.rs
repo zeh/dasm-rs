@@ -134,8 +134,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
     base = cur;
     while *str != 0 {
         if state.parameters.debug {
-            printf(b"char \'%c\'\n\x00" as *const u8 as *const libc::c_char,
-                   *str as libc::c_int);
+            println!("char '{}'", transient::str_pointer_and_len_to_string(str, 1));
         }
         let mut current_block_184: u64;
         match *str as libc::c_int {
@@ -537,8 +536,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                             ((*cur).flags as libc::c_int | 0x8 as libc::c_int)
                                 as libc::c_uchar;
                         if state.parameters.debug {
-                            printf(b"STRING: %s\n\x00" as *const u8 as
-                                       *const libc::c_char, (*cur).string);
+                            println!("STRING: {}", transient::str_pointer_to_string((*cur).string));
                         }
                     }
                     cur = pNewSymbol
@@ -658,8 +656,7 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
 #[no_mangle]
 pub unsafe extern "C" fn evaltop() {
     if state.parameters.debug {
-        printf(b"evaltop @(A,O) %d %d\n\x00" as *const u8 as
-                   *const libc::c_char, state.expressions.argIndex, state.expressions.opIndex);
+        println!("evaltop @(A,O) {} {}", state.expressions.argIndex, state.expressions.opIndex);
     }
     if state.expressions.opIndex <= state.expressions.opIndexBase {
         asmerr(AsmErrorEquates::SyntaxError, false,
@@ -712,8 +709,7 @@ unsafe extern "C" fn stackarg(mut val: libc::c_long, mut flags: libc::c_int,
                               mut ptr1: *const libc::c_char) {
     let mut str: *mut libc::c_char = 0 as *mut libc::c_char;
     if state.parameters.debug {
-        printf(b"stackarg %ld (@%d)\n\x00" as *const u8 as
-                   *const libc::c_char, val, state.expressions.argIndex);
+        println!("stackarg {} (@{})", val, state.expressions.argIndex);
     }
     state.expressions.lastWasOp = false;
     if flags & 0x8 as libc::c_int != 0 {
@@ -758,8 +754,7 @@ pub unsafe extern "C" fn doop(mut func: opfunc_t, mut pri: usize) {
     state.expressions.lastWasOp = true;
     if state.expressions.opIndex == state.expressions.opIndexBase || pri == 128 {
         if state.parameters.debug {
-            printf(b"doop @ %d unary\n\x00" as *const u8 as
-                       *const libc::c_char, state.expressions.opIndex);
+            println!("doop @ {} unary", state.expressions.opIndex);
         }
         Opdis[state.expressions.opIndex] = func;
         state.expressions.opPri[state.expressions.opIndex] = pri;
@@ -770,7 +765,7 @@ pub unsafe extern "C" fn doop(mut func: opfunc_t, mut pri: usize) {
         evaltop();
     }
     if state.parameters.debug {
-        printf(b"doop @ %d\n\x00" as *const u8 as *const libc::c_char, state.expressions.opIndex);
+        println!("doop @ {}", state.expressions.opIndex);
     }
     Opdis[state.expressions.opIndex] = func;
     state.expressions.opPri[state.expressions.opIndex] = pri;

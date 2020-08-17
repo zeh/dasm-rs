@@ -948,10 +948,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                                 break ;
                             }
                             if state.parameters.debug {
-                                printf(b"%08lx %s\n\x00" as *const u8 as
-                                           *const libc::c_char,
-                                       pIncfile as libc::c_ulong,
-                                       buf.as_mut_ptr());
+                                println!("{:08x} {}", pIncfile as libc::c_ulong, transient::str_pointer_to_string(buf.as_mut_ptr()));
                             }
                             comment =
                                 cleanup(buf.as_mut_ptr(),
@@ -1386,8 +1383,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
             123 => {
                 if !bDisable {
                     if state.parameters.debug {
-                        printf(b"macro tail: \'%s\'\n\x00" as *const u8 as
-                                   *const libc::c_char, str);
+                        println!("macro tail: '{}'", transient::str_pointer_to_string(str));
                     }
                     arg =
                         strtol(str.offset(1 as isize),
@@ -1407,8 +1403,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
                         add -= 1;
                         str = str.offset(1);
                         if state.parameters.debug {
-                            printf(b"add/str: %d \'%s\'\n\x00" as *const u8 as
-                                       *const libc::c_char, add, str);
+                            println!("add/str: {} '{}'", add, transient::str_pointer_to_string(str));
                         }
                         strlist = (*pIncfile).args;
                         while arg != 0 && !strlist.is_null() {
@@ -1421,27 +1416,21 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
                                      libc::c_ulong).wrapping_add(strlen((*strlist).buf.as_mut_ptr()))
                                     as libc::c_int as libc::c_int;
                             if state.parameters.debug {
-                                printf(b"strlist: \'%s\' %zu\n\x00" as
-                                           *const u8 as *const libc::c_char,
-                                       (*strlist).buf.as_mut_ptr(),
-                                       strlen((*strlist).buf.as_mut_ptr()));
+                                println!(
+                                    "strlist: '{}' {}",
+                                    transient::str_pointer_to_string((*strlist).buf.as_mut_ptr()),
+                                    strlen((*strlist).buf.as_mut_ptr())
+                                );
                             }
-                            if str.offset(add as
-                                              isize).offset(strlen(str) as
-                                                                isize).offset(1
-                                                                                  as
-                                                                                  libc::c_int
-                                                                                  as
-                                                                                  isize)
-                                   > buf.offset(MAX_LINES as isize)
-                               {
+                            if str.offset(add as isize).offset(strlen(str) as isize).offset(1) > buf.offset(MAX_LINES as isize) {
                                 if state.parameters.debug {
-                                    printf(b"str %8ld buf %8ld (add/strlen(str)): %d %ld\n\x00"
-                                               as *const u8 as
-                                               *const libc::c_char,
-                                           str as libc::c_ulong,
-                                           buf as libc::c_ulong, add,
-                                           strlen(str) as libc::c_long);
+                                    println!(
+                                        "str {:8} buf {:8} (add/strlen(str)): {} {}",
+                                        str as libc::c_ulong,
+                                        buf as libc::c_ulong,
+                                        add,
+                                        strlen(str) as libc::c_long
+                                    );
                                 }
                                 panic("failure1");
                             }
@@ -1868,8 +1857,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
                  (*pIncfile).fi).is_null() {
         let mut comment: *const libc::c_char = 0 as *const libc::c_char;
         if state.parameters.debug {
-            printf(b"%08lx %s\n\x00" as *const u8 as *const libc::c_char,
-                   pIncfile as libc::c_ulong, buf.as_mut_ptr());
+            println!("{:08x} {}", pIncfile as libc::c_ulong, transient::str_pointer_to_string(buf.as_mut_ptr()));
         }
         (*pIncfile).lineno = (*pIncfile).lineno.wrapping_add(1);
         comment = cleanup(buf.as_mut_ptr(), true);
