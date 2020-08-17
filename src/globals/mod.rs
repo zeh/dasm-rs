@@ -47,6 +47,7 @@ pub static mut state: GlobalState = GlobalState {
 
 	execution: ExecutionState {
 		bitOrder: BitOrder::MostLeast,
+		extraString: String::new(),
 		isClear: false,
 		includeDirList: Vec::<String>::new(),
 		listMode: ListMode::List,

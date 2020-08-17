@@ -345,9 +345,6 @@ pub union align {
 pub static mut passbuffer: [*mut libc::c_char; 2] =
     [0 as *const libc::c_char as *mut libc::c_char,
      0 as *const libc::c_char as *mut libc::c_char];
-#[no_mangle]
-pub static mut Extstr: *mut libc::c_char =
-    0 as *const libc::c_char as *mut libc::c_char;
 /*unsigned char     Listing = 1;*/
 unsafe extern "C" fn CountUnresolvedSymbols() -> libc::c_int {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
@@ -1189,7 +1186,6 @@ unsafe extern "C" fn outlistfile(mut comment: *const libc::c_char) {
     let mut c: libc::c_char = 0;
     static mut buf1: [libc::c_char; MAX_LINES + 32] = [0; MAX_LINES + 32];
     static mut buf2: [libc::c_char; MAX_LINES + 32] = [0; MAX_LINES + 32];
-    let mut ptr: *const libc::c_char = 0 as *const libc::c_char;
     let mut dot: *const libc::c_char = 0 as *const libc::c_char;
     let mut i: usize = 0;
     let mut j: usize = 0;
@@ -1204,12 +1200,11 @@ unsafe extern "C" fn outlistfile(mut comment: *const libc::c_char) {
     } else {
         ' ' as i8
     };
-    ptr = Extstr;
     dot = b"\x00" as *const u8 as *const libc::c_char;
-    if !ptr.is_null() {
+    if !state.execution.extraString.is_empty() {
         dot = b".\x00" as *const u8 as *const libc::c_char;
     } else {
-        ptr = b"\x00" as *const u8 as *const libc::c_char;
+        state.execution.extraString.clear();
     }
     sprintf(
         buf1.as_mut_ptr(),
@@ -1245,7 +1240,7 @@ unsafe extern "C" fn outlistfile(mut comment: *const libc::c_char) {
         *Av.as_mut_ptr().offset(0),
         *Av.as_mut_ptr().offset(1),
         dot,
-        ptr,
+        transient::string_to_str_pointer(state.execution.extraString.clone()),
         *Av.as_mut_ptr().offset(2)
     );
     if *comment.offset(0 as isize) != 0 {
@@ -1265,7 +1260,7 @@ unsafe extern "C" fn outlistfile(mut comment: *const libc::c_char) {
         &vec,
     );
     state.output.generatedLength = 0;
-    Extstr = 0 as *mut libc::c_char;
+    state.execution.extraString.clear();
 }
 #[no_mangle]
 pub unsafe extern "C" fn sftos(mut val: libc::c_long, mut flags: libc::c_int)
@@ -1502,7 +1497,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut libc::c_char, mut bDisable: bool)
 #[no_mangle]
 pub unsafe extern "C" fn findext(mut str: *mut libc::c_char) {
     state.execution.modeNext = AddressModes::None;
-    Extstr = 0 as *mut libc::c_char;
+    state.execution.extraString.clear();
     if *str.offset(0 as isize) as libc::c_int == '.' as i32 {
         /* Allow .OP for OP */
         return
@@ -1513,7 +1508,7 @@ pub unsafe extern "C" fn findext(mut str: *mut libc::c_char) {
     if *str != 0 {
         *str = 0;
         str = str.offset(1);
-        Extstr = str;
+        state.execution.extraString = transient::str_pointer_to_string(str);
         match *str.offset(0 as isize) as libc::c_int |
                   0x20 as libc::c_int {
             48 | 105 => {
