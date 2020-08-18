@@ -17,6 +17,7 @@ extern crate smart_default;
 
 use libc;
 use std::convert::TryFrom;
+use std::fs::File;
 
 pub mod constants;
 pub mod expressions;
@@ -423,6 +424,8 @@ unsafe extern "C" fn CompareAddress(mut arg1: *const libc::c_void,
     return ((*sym1).value - (*sym2).value) as libc::c_int;
 }
 // FIXME: update parameters, and move to symbols/mod
+/* bTableSort true -> by address, false -> by name [phf] */
+// In original C code, part of ShowSymbols()" in main.c
 unsafe fn generate_resolved_symbols_list(sorted: bool) -> String {
     let mut result = String::new();
     /* Display sorted (!) symbol table - if it runs out of memory, table will be displayed unsorted */
@@ -526,16 +529,38 @@ unsafe fn generate_resolved_symbols_list(sorted: bool) -> String {
     result.push_str("--- End of Symbol List.\n");
     result
 }
-/* bTableSort true -> by address, false -> by name [phf] */
-// FIXME: move to symbols/mod
-// Originally sorta like "ShowSymbols" in main.c
-unsafe extern "C" fn write_symbols_to_file(mut file: *mut FILE, sorted: bool) {
-    let result = generate_resolved_symbols_list(sorted);
-    fputs(transient::string_to_str_pointer(result), file);
+
+// FIXME: move to symbols/mod.rs
+/**
+ * Write symbol list to a file.
+ * In original C code, part of DumpSymbolTable()" in main.c
+ */
+unsafe fn dump_symbol_table(sorted: bool) {
+    if !state.parameters.symbolsFile.is_empty() {
+        let mut file = filesystem::create_new_file(state.parameters.symbolsFile.as_str()).expect(
+            format!("Warning: Unable to open Symbol Dump file '{}'", state.parameters.symbolsFile).as_str()
+        );
+        write_symbols_to_file(&mut file, sorted);
+        filesystem::close_file(&mut file);
+    }
 }
 
-// Originally sorta like "ShowSymbols" in main.c
-unsafe extern "C" fn write_symbols_to_stdout(sorted: bool) {
+// FIXME: move to symbols/mod.rs
+/**
+ * Write symbol list to a file.
+ * In original C code, part of ShowSymbols()" in main.c
+ */
+unsafe fn write_symbols_to_file(file: &mut File, sorted: bool) {
+    let result = generate_resolved_symbols_list(sorted);
+    filesystem::write_to_file(file, result.as_str());
+}
+
+// FIXME: move to symbols/mod.rs
+/**
+ * Write symbol list to stdout.
+ * In original C code, part of ShowSymbols()" in main.c
+ */
+unsafe fn write_symbols_to_stdout(sorted: bool) {
     let result = generate_resolved_symbols_list(sorted);
     print!("{}", result);
 }
@@ -655,20 +680,7 @@ unsafe extern "C" fn ShowSegments() {
     }
     println!();
 }
-unsafe extern "C" fn DumpSymbolTable(sorted: bool) {
-    if !state.parameters.symbolsFile.is_empty() {
-        // FIXME: replace this with correct file reference
-        let mut symfile = state.parameters.symbolsFile.clone();
-        symfile.push_str("\x00");
-        let mut fi: *mut FILE = fopen(symfile.as_ptr() as *const i8, b"w\x00" as *const u8 as *const libc::c_char);
-        if !fi.is_null() {
-            write_symbols_to_file(fi, sorted);
-            fclose(fi);
-        } else {
-            println!("Warning: Unable to open Symbol Dump file '{}'", state.parameters.symbolsFile);
-        }
-    };
-}
+
 unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                                 mut av: *mut *mut libc::c_char,
                                 mut pbTableSort: *mut bool) -> AsmErrorEquates {
@@ -2143,7 +2155,7 @@ unsafe fn main_0(mut ac: libc::c_int, mut av: *mut *mut libc::c_char)
         passbuffer_output(0);
         println!("Fatal assembly error: {}", find_error_definition(nError).description);
     }
-    DumpSymbolTable(bTableSort);
+    dump_symbol_table(bTableSort);
     passbuffer_cleanup();
     return nError.into();
 }
