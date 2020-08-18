@@ -1648,43 +1648,26 @@ pub unsafe extern "C" fn v_incdir(mut str: *mut libc::c_char, mut _dummy: *mut _
         state.execution.includeDirList.push(filename);
     }
 }
-unsafe extern "C" fn addpart(mut dest: *mut libc::c_char,
-                             mut dir: *const libc::c_char,
-                             mut file: *const libc::c_char) {
-    /* not needed here */
-    let mut pos: libc::c_int = 0;
-    strcpy(dest, dir);
-    pos = strlen(dest) as libc::c_int;
-    if pos > 0 &&
-           *dest.offset((pos - 1) as isize) as libc::c_int !=
-               ':' as i32 &&
-           *dest.offset((pos - 1) as isize) as libc::c_int !=
-               '/' as i32 {
-        *dest.offset(pos as isize) = '/' as i32 as libc::c_char;
-        pos += 1
-    }
-    strcpy(dest.offset(pos as isize), file);
-}
 #[no_mangle]
 pub unsafe extern "C" fn pfopen(mut name: *const libc::c_char,
                                 mut mode: *const libc::c_char) -> *mut FILE {
+    // FIXME: replace with filesystem::try_open_file_with_locations()
     let mut f: *mut FILE = 0 as *mut FILE;
-    let mut buf: *mut libc::c_char = 0 as *mut libc::c_char;
     f = fopen(name, mode);
-    if !f.is_null() { return f }
+    if !f.is_null() {
+        return f;
+    }
     /* Don't use the incdirlist for absolute pathnames */
     if !strchr(name, ':' as i32).is_null() {
         return 0 as *mut FILE
     } /*	multiplied later    */
-    buf = zmalloc(512 as libc::c_int);
     for incDir in &state.execution.includeDirList {
-        addpart(buf, transient::string_to_str_pointer(incDir.to_owned()), name);
-        f = fopen(buf, mode);
+        let path = filesystem::combine_paths(incDir.as_str(), transient::str_pointer_to_string(name).as_str());
+        f = fopen(transient::string_to_str_pointer(path), mode);
         if !f.is_null() {
             break;
         }
     }
-    free(buf as *mut libc::c_void);
     return f;
 }
 static mut Seglen: usize = 0;
