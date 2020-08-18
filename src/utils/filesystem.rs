@@ -10,6 +10,10 @@ pub fn try_open_file(filename: &str) -> std::io::Result<File> {
 	File::open(filename)
 }
 
+pub fn open_file(filename: &str) -> File {
+	try_open_file(filename).expect(format!("Error opening file {}", filename).as_str())
+}
+
 pub fn try_open_file_with_locations(filename: &str, locations: &Vec<String>) -> std::io::Result<File> {
 	// We won't use the include dir list for absolute pathnames.
 	// This is probably not entirely correct (should it use is_absolute()?),
@@ -52,34 +56,46 @@ pub fn combine_paths(a: &str, b: &str) -> String {
 	path
 }
 
-pub fn open_file(filename: &str) -> File {
-	try_open_file(filename).expect(format!("Error opening file {}", filename).as_str())
-}
-
 pub fn write_buffer_to_file_maybe(maybe_file: &mut Option<File>, buffer: &[u8]) {
 	match maybe_file {
 		Some(file) => {
-			file.write_all(buffer).expect("Error writing to file");
+			write_buffer_to_file(file, buffer);
 		}
 		None => {}
 	}
+}
+
+pub fn write_buffer_to_file(file: &mut File, buffer: &[u8]) {
+	file.write_all(buffer).expect("Error writing to file");
 }
 
 pub fn write_to_file_maybe(maybe_file: &mut Option<File>, message: &str) {
 	write_buffer_to_file_maybe(maybe_file, message.as_bytes());
 }
 
+pub fn write_to_file(file: &mut File, message: &str) {
+	write_buffer_to_file(file, message.as_bytes());
+}
+
 pub fn writeln_to_file_maybe(maybe_file: &mut Option<File>, message: &str) {
 	write_to_file_maybe(maybe_file, &([message, "\n"]).concat());
+}
+
+pub fn writeln_to_file(file: &mut File, message: &str) {
+	write_to_file(file, &([message, "\n"]).concat());
 }
 
 pub fn close_file_maybe(maybe_file: &mut Option<File>) {
 	match maybe_file {
 		Some(file) => {
-			file.sync_all().expect("Error closing file");
+			close_file(file);
 		}
 		None => {}
 	}
+}
+
+pub fn close_file(file: &mut File) {
+	file.sync_all().expect("Error closing file");
 }
 
 pub fn file_exists(filename: &str) -> bool {
