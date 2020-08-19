@@ -50,6 +50,7 @@ pub struct ParametersState {
 	pub listAllPasses: bool,
 	pub listFile: String,
 	pub maxPasses: u8,
+	pub outFile: String,
 	pub sortMode: SortMode,
 	pub strictMode: bool,
 	pub symbolsFile: String,

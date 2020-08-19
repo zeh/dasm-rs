@@ -155,8 +155,6 @@ extern "C" {
     #[no_mangle]
     static mut Lastlocaldollarindex: libc::c_ulong;
     #[no_mangle]
-    static mut F_outfile: *const libc::c_char;
-    #[no_mangle]
     static mut FI_temp: *mut FILE;
     #[no_mangle]
     static mut CheckSum: libc::c_ulong;
@@ -777,7 +775,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
                 'o' => {
-                    F_outfile = str;
+                    state.parameters.outFile = transient::str_pointer_to_string(str);
                     current_block = 15042310719884093888; // FIXME: remove this
                 }
                 'L' => {
@@ -897,14 +895,15 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     Lastlocaldollarindex = 0;
                     Localdollarindex = Lastlocaldollarindex;
                     /*_fmode = 0x8000;*/
-                    FI_temp =
-                        fopen(F_outfile,
-                              b"wb\x00" as *const u8 as *const libc::c_char);
+                    if state.parameters.outFile.is_empty() {
+                        state.parameters.outFile = String::from("a.out");
+                    }
+                    FI_temp = fopen(transient::string_to_str_pointer(state.parameters.outFile.clone()), b"wb\x00" as *const u8 as *const libc::c_char);
                     /*_fmode = 0;*/
                     state.execution.isClear = true;
                     CheckSum = 0;
                     if FI_temp.is_null() {
-                        println!("Warning: Unable to [re]open '{}'", transient::str_pointer_to_string(F_outfile));
+                        println!("Warning: Unable to [re]open '{}'", state.parameters.outFile);
                         return AsmErrorEquates::FileError
                     }
                     if !state.parameters.listFile.is_empty() {

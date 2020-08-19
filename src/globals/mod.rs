@@ -32,6 +32,7 @@ pub static mut state: GlobalState = GlobalState {
 		listAllPasses: false,
 		listFile: String::new(),
 		maxPasses: 10,
+		outFile: String::new(),
 		sortMode: SortMode::Alpha,
 		strictMode: false,
 		symbolsFile: String::new(),
