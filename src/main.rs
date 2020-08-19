@@ -341,11 +341,6 @@ pub union align {
  *  DASM   sourcefile
  *  NOTE: must handle mnemonic extensions and expression decode/compare.
  */
-// buffers to supress errors and messages until last pass
-#[no_mangle]
-pub static mut passbuffer: [*mut libc::c_char; 2] =
-    [0 as *const libc::c_char as *mut libc::c_char,
-     0 as *const libc::c_char as *mut libc::c_char];
 /*unsigned char     Listing = 1;*/
 unsafe extern "C" fn CountUnresolvedSymbols() -> libc::c_int {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
@@ -892,8 +887,8 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                 (*ifs).xtrue = 1;
                 Ifstack = ifs;
                 // ready error and message buffer...
-                passbuffer_clear(0);
-                passbuffer_clear(1);
+                operations::clear_passbuffer(&mut state.output.passBufferErrors);
+                operations::clear_passbuffer(&mut state.output.passBufferMessages);
                 loop  {
                     if state.parameters.verbosity != Verbosity::None {
                         println!();
@@ -1077,26 +1072,24 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                             );
                             return asmerr(AsmErrorEquates::TooManyPasses, false, sBuffer.as_mut_ptr());
                         } else {
-                            passbuffer_clear(0);
-                            passbuffer_clear(1);
+                            operations::clear_passbuffer(&mut state.output.passBufferErrors);
+                            operations::clear_passbuffer(&mut state.output.passBufferMessages);
                             clearrefs();
                             clear_segments(&mut state.other.segments);
                         }
                     } else {
                         // Do not print any errors if assembly is successful!!!!! -FXQ
-    // only print messages from last pass and if there's no errors
+                        // only print messages from last pass and if there's no errors
                         if !state.other.stopAtEnd {
-                            passbuffer_output(1);
+                            operations::output_passbuffer(&mut state.output.passBufferMessages);
                         } else {
                             // Only print errors if assembly is unsuccessful!!!!!
-        // by FXQ
-                            passbuffer_output(0);
-                            printf(b"Unrecoverable error(s) in pass, aborting assembly!\n\x00"
-                                       as *const u8 as *const libc::c_char);
+                            // by FXQ
+                            operations::output_passbuffer(&mut state.output.passBufferErrors);
+                            println!("Unrecoverable error(s) in pass, aborting assembly!");
                             nError = AsmErrorEquates::NonAbort;
                         }
-                        printf(b"Complete.\n\x00" as *const u8 as
-                                   *const libc::c_char);
+                        println!("Complete.");
                         return nError
                     }
                 }
@@ -1132,10 +1125,9 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
     return AsmErrorEquates::CommandLine;
 }
 #[no_mangle]
-pub unsafe extern "C" fn addmsg(mut message: *mut libc::c_char)
- // add to message buffer (FXQ)
- {
-    passbuffer_update(1, message);
+pub unsafe extern "C" fn addmsg(mut message: *mut libc::c_char) {
+    // add to message buffer (FXQ)
+    operations::update_passbuffer(&mut state.output.passBufferMessages, transient::str_pointer_to_string(message).as_str());
 }
 unsafe extern "C" fn tabit(mut buf1: *mut libc::c_char,
                            mut buf2: *mut libc::c_char) -> libc::c_int {
@@ -2051,11 +2043,9 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut abort: bool, mut s
         filesystem::write_to_file_maybe(errorFile, errorDescription.as_str());
     }
     errorOutput.push_str(errorDescription.as_str());
-    // FIXME: this is just temporary, for passbuffer. Remove later.
-    errorOutput.push_str("\x00");
-    passbuffer_update(0, errorOutput.as_mut_ptr() as *mut i8);
+    operations::update_passbuffer(&mut state.output.passBufferErrors, errorOutput.as_str());
     if abort {
-        passbuffer_output(1);
+        operations::output_passbuffer(&mut state.output.passBufferMessages);
         if errorToFile {
             filesystem::writeln_to_file_maybe(
                 errorFile,
@@ -2065,7 +2055,7 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut abort: bool, mut s
         } else {
             println!("Aborting assembly");
         }
-        passbuffer_output(0);
+        operations::output_passbuffer(&mut state.output.passBufferErrors);
         std::process::exit(1);
     }
     return err;
@@ -2149,91 +2139,16 @@ unsafe fn main_0(mut ac: libc::c_int, mut av: *mut *mut libc::c_char)
     let mut bTableSort: bool = false;
     let mut nError: AsmErrorEquates = MainShadow(ac, av, &mut bTableSort);
     if nError != AsmErrorEquates::None && nError != AsmErrorEquates::NonAbort {
-        // dump messages when aborting due to errors
-        passbuffer_output(1);
+        // Dump messages when aborting due to errors
+        operations::output_passbuffer(&mut state.output.passBufferMessages);
         // Only print errors if assembly is unsuccessful
-        passbuffer_output(0);
+        operations::output_passbuffer(&mut state.output.passBufferErrors);
         println!("Fatal assembly error: {}", find_error_definition(nError).description);
     }
     dump_symbol_table(bTableSort);
-    passbuffer_cleanup();
+    operations::clear_passbuffer(&mut state.output.passBufferErrors);
+    operations::clear_passbuffer(&mut state.output.passBufferMessages);
     return nError.into();
-}
-#[no_mangle]
-pub unsafe extern "C" fn passbuffer_clear(mut mbindex: libc::c_int) {
-    // ensure the buffer is initialized before we attempt to clear it,
-    // just in case no messages have been stored prior to this clear.
-    if passbuffer[mbindex as usize].is_null() {
-        passbuffer_update(mbindex,
-                          b"\x00" as *const u8 as *const libc::c_char as
-                              *mut libc::c_char);
-    }
-    // clear the requested guffer
-    *passbuffer[mbindex as usize].offset(0 as isize) =
-        0;
-}
-#[no_mangle]
-pub unsafe extern "C" fn passbuffer_update(mut mbindex: libc::c_int,
-                                           mut message: *mut libc::c_char) {
-    let mut newsizerequired: libc::c_int = 0;
-    // allocate 16k buffers to start...
-    static mut passbuffersize: [libc::c_int; 2] =
-        [16384 as libc::c_int, 16384 as libc::c_int];
-    // check if the buffer we're working with needs initialization
-    if passbuffer[mbindex as usize].is_null() {
-        passbuffer[mbindex as usize] =
-            malloc(passbuffersize[mbindex as usize] as libc::c_ulong) as
-                *mut libc::c_char;
-        if passbuffer[mbindex as usize].is_null() {
-            panic("couldn\'t allocate memory for message buffer.");
-        }
-        *passbuffer[mbindex as usize].offset(0 as isize) =
-            0
-        // empty string
-    }
-    // check if we need to grow the buffer...
-    newsizerequired =
-        strlen(passbuffer[mbindex as usize]).wrapping_add(strlen(message)) as
-            libc::c_int;
-    if newsizerequired > passbuffersize[mbindex as usize] {
-        // double the current buffer size, if sufficient, so we don't continually reallocate memory...
-        newsizerequired =
-            if newsizerequired <
-                   passbuffersize[mbindex as usize] * 2 {
-                (passbuffersize[mbindex as usize]) * 2
-            } else { newsizerequired };
-        //fprintf(stderr,"DEBUG: growing buffer %d to %d bytes\n", mbindex, newsizerequired);
-        passbuffer[mbindex as usize] =
-            realloc(passbuffer[mbindex as usize] as *mut libc::c_void,
-                    newsizerequired as libc::c_ulong) as *mut libc::c_char;
-        if passbuffer[mbindex as usize].is_null() {
-            panic("couldn\'t grow memory for message buffer.");
-        }
-        passbuffersize[mbindex as usize] = newsizerequired
-    }
-    // update the buffer with the message...
-    strcat(passbuffer[mbindex as usize], message);
-}
-#[no_mangle]
-pub unsafe extern "C" fn passbuffer_output(mut mbindex: libc::c_int) {
-    // ensure the buffer is initialized before we attempt to clear it,
-    // just in case no messages have been stored yet.
-    if passbuffer[mbindex as usize].is_null() {
-        passbuffer_update(mbindex, b"\x00" as *const u8 as *const libc::c_char as *mut libc::c_char);
-    }
-    println!("{}", transient::str_pointer_to_string(passbuffer[mbindex as usize]));
-    // ...do we really still need to put this through stdout, instead stderr?
-}
-#[no_mangle]
-pub unsafe extern "C" fn passbuffer_cleanup() {
-    let mut t: libc::c_int = 0;
-    t = 0;
-    while t < 2 {
-        if !passbuffer[t as usize].is_null() {
-            free(passbuffer[t as usize] as *mut libc::c_void);
-        }
-        t += 1
-    };
 }
 #[main]
 pub fn main() {

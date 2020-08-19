@@ -79,5 +79,7 @@ pub static mut state: GlobalState = GlobalState {
 		generatedLength: 0,
 		listFile: None,
 		orgFill: constants::DEF_ORG_FILL,
+		passBufferErrors: Vec::<String>::new(),
+		passBufferMessages: Vec::<String>::new(),
 	},
 };
