@@ -1813,7 +1813,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
     let mut skipit: libc::c_int =
         !((*Ifstack).xtrue as libc::c_int != 0 &&
               (*Ifstack).acctrue as libc::c_int != 0) as libc::c_int;
-    strlower(str);
+    str = transient::string_to_str_pointer(transient::str_pointer_to_string(str).to_ascii_lowercase());
     mne = findmne(str);
     if skipit != 0 {
         defined = 1
@@ -2117,22 +2117,6 @@ pub unsafe extern "C" fn permalloc(mut bytes: libc::c_int)
     buf = buf.offset(bytes as isize);
     left -= bytes;
     return ptr;
-}
-#[no_mangle]
-pub unsafe extern "C" fn strlower(mut str: *mut libc::c_char)
- -> *mut libc::c_char {
-    let mut c: libc::c_char = 0;
-    let mut ptr: *mut libc::c_char = 0 as *mut libc::c_char;
-    ptr = str;
-    loop  {
-        c = *ptr;
-        if !(c != 0) { break ; }
-        if c as libc::c_int >= 'A' as i32 && c as libc::c_int <= 'Z' as i32 {
-            *ptr = (c as libc::c_int | 0x20 as libc::c_int) as libc::c_char
-        }
-        ptr = ptr.offset(1)
-    }
-    return str;
 }
 unsafe fn main_0(mut ac: libc::c_int, mut av: *mut *mut libc::c_char)
  -> u8 {
