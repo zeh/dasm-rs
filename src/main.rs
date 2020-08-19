@@ -81,8 +81,6 @@ extern "C" {
     fn fopen(__filename: *const libc::c_char, __modes: *const libc::c_char)
      -> *mut FILE;
     #[no_mangle]
-    fn printf(_: *const libc::c_char, _: ...) -> libc::c_int;
-    #[no_mangle]
     fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...)
      -> libc::c_int;
     #[no_mangle]
@@ -1023,9 +1021,9 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                                    libc::c_ulong as libc::c_int);
                         if !pIncfile.is_null() {
                             /*
-        if (state.parameters.verbosity as u8 > 1)
-        printf("back to: %s\n", Incfile->name);
-            */
+                            if (state.parameters.verbosity as u8 > 1)
+                            printf("back to: %s\n", Incfile->name);
+                            */
                             filesystem::writeln_to_file_maybe(
                                 &mut state.output.listFile,
                                 format!(

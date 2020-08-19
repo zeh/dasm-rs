@@ -40,8 +40,6 @@ extern "C" {
     fn fopen(__filename: *const libc::c_char, __modes: *const libc::c_char)
      -> *mut FILE;
     #[no_mangle]
-    fn printf(_: *const libc::c_char, _: ...) -> libc::c_int;
-    #[no_mangle]
     fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...)
      -> libc::c_int;
     #[no_mangle]
@@ -699,8 +697,7 @@ pub unsafe extern "C" fn v_incbin(mut str: *mut libc::c_char,
         }
         fclose(binfile);
     } else {
-        printf(b"unable to open %s\n\x00" as *const u8 as *const libc::c_char,
-               buf);
+        println!("unable to open {}", transient::str_pointer_to_string(buf));
     }
     if buf != str { free(buf as *mut libc::c_void); }
     state.output.generatedLength = 0;
@@ -1164,12 +1161,13 @@ pub unsafe extern "C" fn v_equ(mut str: *mut libc::c_char,
             state.execution.redoIndex += 1;
             state.execution.redoWhy |= ReasonCodes::EquNotResolved
         } else if (*lab).value != (*sym).value {
-            asmerr(AsmErrorEquates::EquValueMismatch,
-                   false, 0 as *const libc::c_char);
-            printf(b"INFO: Label \'%s\' changed from $%04lx to $%04lx\n\x00"
-                       as *const u8 as *const libc::c_char,
-                   *Av.as_mut_ptr().offset(0 as isize),
-                   (*lab).value, (*sym).value);
+            asmerr(AsmErrorEquates::EquValueMismatch, false, 0 as *const libc::c_char);
+            println!(
+                "INFO: Label '{}' changed from ${:04x} to ${:04x}",
+                transient::str_pointer_to_string(*Av.as_mut_ptr().offset(0)),
+                (*lab).value,
+                (*sym).value,
+            );
             state.execution.redoIndex += 1;
             state.execution.redoWhy |= ReasonCodes::EquValueMismatch
         }
@@ -1245,7 +1243,6 @@ pub unsafe extern "C" fn v_echo(mut str: *mut libc::c_char,
                 &mut state.output.listFile,
                 format!(" {}", transient::str_pointer_to_string(buf.as_mut_ptr())).as_str(),
             );
-            //printf(" %s", buf);
             addmsg(b" \x00" as *const u8 as *const libc::c_char as
                        *mut libc::c_char); // -FXQ supress output until final pass
             addmsg(buf.as_mut_ptr());

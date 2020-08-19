@@ -19,8 +19,6 @@ use crate::utils::{
 
 extern "C" {
     #[no_mangle]
-    fn printf(_: *const libc::c_char, _: ...) -> libc::c_int;
-    #[no_mangle]
     fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...)
      -> libc::c_int;
     #[no_mangle]
