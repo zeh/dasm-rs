@@ -126,8 +126,6 @@ extern "C" {
     #[no_mangle]
     fn FreeSymbolList(sym: *mut _SYMBOL);
     #[no_mangle]
-    static mut FI_temp: *mut FILE;
-    #[no_mangle]
     static mut Lastlocaldollarindex: libc::c_ulong;
     #[no_mangle]
     fn programlabel();
@@ -1691,13 +1689,14 @@ pub unsafe extern "C" fn generate() {
                 }
                 org = currentSegment.org;
                 if state.parameters.format == Format::Default || state.parameters.format == Format::Ras {
-                    putc((org & 0xff as libc::c_int as libc::c_ulong) as libc::c_int, FI_temp);
-                    putc((org >> 8 & 0xff as libc::c_int as libc::c_ulong) as libc::c_int, FI_temp);
+                    filesystem::write_buffer_to_file_maybe(
+                        &mut state.output.outFile,
+                        &[(org & 0xff) as u8, (org >> 8 & 0xff) as u8]
+                    );
                     if state.parameters.format == Format::Ras {
-                        Seekback = ftell(FI_temp);
+                        Seekback = filesystem::get_stream_position_maybe(&mut state.output.outFile) as i64;
                         Seglen = 0;
-                        putc(0, FI_temp);
-                        putc(0, FI_temp);
+                        filesystem::write_buffer_to_file_maybe(&mut state.output.outFile, &[0u8, 0u8]);
                     }
                 }
             }
@@ -1716,31 +1715,36 @@ pub unsafe extern "C" fn generate() {
                         std::process::exit(1);
                     }
                     while currentSegment.org != org {
-                        putc(state.output.orgFill as libc::c_int, FI_temp);
+                        filesystem::write_char_to_file_maybe(&mut state.output.outFile, state.output.orgFill as char);
                         org = org.wrapping_add(1)
                     }
-                    fwrite(state.output.generated.as_mut_ptr() as *const libc::c_void,
-                           state.output.generatedLength as size_t, 1 as size_t,
-                           FI_temp);
+                    filesystem::write_buffer_to_file_maybe(
+                        &mut state.output.outFile,
+                        &state.output.generated[0..state.output.generatedLength]
+                    );
                 }
                 Format::Ras => {
                     if org != currentSegment.org {
                         org = currentSegment.org;
-                        seekpos = ftell(FI_temp);
-                        fseek(FI_temp, Seekback, 0);
-                        putc((Seglen & 0xff) as libc::c_int, FI_temp);
-                        putc((Seglen >> 8 & 0xff) as libc::c_int, FI_temp);
-                        fseek(FI_temp, seekpos, 0);
-                        putc((org & 0xff) as libc::c_int, FI_temp);
-                        putc((org >> 8 & 0xff) as libc::c_int, FI_temp);
-                        Seekback = ftell(FI_temp);
+                        seekpos = filesystem::get_stream_position_maybe(&mut state.output.outFile) as i64;
+                        filesystem::seek_maybe(&mut state.output.outFile, Seekback as u64);
+                        filesystem::write_buffer_to_file_maybe(
+                            &mut state.output.outFile,
+                            &[(Seglen & 0xff) as u8, (Seglen >> 8 & 0xff) as u8]
+                        );
+                        filesystem::seek_maybe(&mut state.output.outFile, seekpos as u64);
+                        filesystem::write_buffer_to_file_maybe(
+                            &mut state.output.outFile,
+                            &[(org & 0xff) as u8, (org >> 8 & 0xff) as u8]
+                        );
+                        Seekback = filesystem::get_stream_position_maybe(&mut state.output.outFile) as i64;
                         Seglen = 0;
-                        putc(0, FI_temp);
-                        putc(0, FI_temp);
+                        filesystem::write_buffer_to_file_maybe(&mut state.output.outFile, &[0u8, 0u8]);
                     }
-                    fwrite(state.output.generated.as_mut_ptr() as *const libc::c_void,
-                           state.output.generatedLength as size_t, 1 as size_t,
-                           FI_temp);
+                    filesystem::write_buffer_to_file_maybe(
+                        &mut state.output.outFile,
+                        &state.output.generated[0..state.output.generatedLength]
+                    );
                     Seglen += state.output.generatedLength;
                 }
             }
@@ -1756,10 +1760,12 @@ pub unsafe extern "C" fn generate() {
 pub unsafe extern "C" fn closegenerate() {
     if state.execution.redoIndex == 0 {
         if state.parameters.format == Format::Ras {
-            fseek(FI_temp, Seekback, 0);
-            putc((Seglen & 0xff) as libc::c_int, FI_temp);
-            putc((Seglen >> 8 & 0xff) as libc::c_int, FI_temp);
-            fseek(FI_temp, 0, 2);
+            filesystem::seek_maybe(&mut state.output.outFile, Seekback as u64);
+            filesystem::write_buffer_to_file_maybe(
+                &mut state.output.outFile,
+                &[(Seglen & 0xff) as u8, (Seglen >> 8 & 0xff) as u8]
+            );
+            filesystem::seek_end_maybe(&mut state.output.outFile, 0);
         }
     };
 }

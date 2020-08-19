@@ -56,6 +56,53 @@ pub fn combine_paths(a: &str, b: &str) -> String {
 	path
 }
 
+pub fn write_char_to_file_maybe(maybe_file: &mut Option<File>, char: char) {
+	write_buffer_to_file_maybe(maybe_file, &[char as u8]);
+}
+
+pub fn get_stream_position(file: &mut File) -> u64 {
+	// Equivalent to ftell()
+	// FIXME: this requires #![feature(seek_convenience)]; is there a better way?
+	file.stream_position().expect("Could not get stream position")
+}
+
+pub fn get_stream_position_maybe(maybe_file: &mut Option<File>) -> u64 {
+	match maybe_file {
+		Some(file) => {
+			get_stream_position(file)
+		}
+		None => {
+			0
+		}
+	}
+}
+
+pub fn seek_maybe(maybe_file: &mut Option<File>, position: u64) {
+	match maybe_file {
+		Some(file) => {
+			seek(file, position);
+		}
+		None => {}
+	}
+}
+
+pub fn seek(file: &mut File, position: u64) {
+	file.seek(std::io::SeekFrom::Start(position)).expect("Could not seek file from start");
+}
+
+pub fn seek_end_maybe(maybe_file: &mut Option<File>, position: i64) {
+	match maybe_file {
+		Some(file) => {
+			seek_end(file, position);
+		}
+		None => {}
+	}
+}
+
+pub fn seek_end(file: &mut File, position: i64) {
+	file.seek(std::io::SeekFrom::End(position)).expect("Could not seek file from end");
+}
+
 pub fn write_buffer_to_file_maybe(maybe_file: &mut Option<File>, buffer: &[u8]) {
 	match maybe_file {
 		Some(file) => {
@@ -95,7 +142,16 @@ pub fn close_file_maybe(maybe_file: &mut Option<File>) {
 }
 
 pub fn close_file(file: &mut File) {
-	file.sync_all().expect("Error closing file");
+	// FIXME: this is a bit of a weird solution,
+	// since Rust doesn't have a classic way of
+	// closing a file and attempting to sync_all()
+	// on "/dev/null creates an OS error 22
+	// ("Invalid argument").
+	// Maybe the best solution is to have a Writer
+	// instance, but this would change the structure
+	// a bit much.
+	file.flush().expect("Error closing file");
+	file.sync_all().unwrap_or(());
 }
 
 pub fn file_exists(filename: &str) -> bool {

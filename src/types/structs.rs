@@ -98,6 +98,7 @@ pub struct OutputState {
 	pub generatedLength: usize,
 	pub listFile: Option<File>,
 	pub orgFill: u8, // ? where?
+	pub outFile: Option<File>,
 	pub passBufferErrors: Vec<String>,
 	pub passBufferMessages: Vec<String>, // Buffers to supress errors and messages until last pass
 }

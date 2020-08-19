@@ -10,6 +10,7 @@
 #![feature(main)]
 #![feature(ptr_wrapping_offset_from)]
 #![feature(register_tool)]
+#![feature(seek_convenience)]
 #![register_tool(c2rust)]
 
 #[macro_use]
@@ -154,8 +155,6 @@ extern "C" {
     static mut Localdollarindex: libc::c_ulong;
     #[no_mangle]
     static mut Lastlocaldollarindex: libc::c_ulong;
-    #[no_mangle]
-    static mut FI_temp: *mut FILE;
     #[no_mangle]
     static mut CheckSum: libc::c_ulong;
     #[no_mangle]
@@ -894,18 +893,26 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     Localindex = Lastlocalindex;
                     Lastlocaldollarindex = 0;
                     Localdollarindex = Lastlocaldollarindex;
-                    /*_fmode = 0x8000;*/
+
+                    state.execution.isClear = true;
+                    CheckSum = 0;
+
+                    // Create basic output file
                     if state.parameters.outFile.is_empty() {
                         state.parameters.outFile = String::from("a.out");
                     }
-                    FI_temp = fopen(transient::string_to_str_pointer(state.parameters.outFile.clone()), b"wb\x00" as *const u8 as *const libc::c_char);
-                    /*_fmode = 0;*/
-                    state.execution.isClear = true;
-                    CheckSum = 0;
-                    if FI_temp.is_null() {
-                        println!("Warning: Unable to [re]open '{}'", state.parameters.outFile);
-                        return AsmErrorEquates::FileError
+                    let fileOutOption = filesystem::create_new_file(state.parameters.outFile.as_str());
+                    match fileOutOption {
+                        Ok(file) => {
+                            state.output.outFile = Some(file);
+                        },
+                        _ => {
+                            println!("Warning: Unable to [re]open '{}'", state.parameters.outFile);
+                            return AsmErrorEquates::FileError
+                        },
                     }
+
+                    // Create list output file
                     if !state.parameters.listFile.is_empty() {
                         let fileOption = filesystem::create_new_file(state.parameters.listFile.as_str());
                         match fileOption {
@@ -918,6 +925,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                             },
                         }
                     }
+
                     pushinclude(*av.offset(1 as isize));
                     while !pIncfile.is_null() {
                         loop  {
@@ -1042,7 +1050,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                         ShowUnresolvedSymbols();
                     }
                     closegenerate();
-                    fclose(FI_temp);
+                    filesystem::close_file_maybe(&mut state.output.outFile);
                     filesystem::close_file_maybe(&mut state.output.listFile);
                     if state.execution.redoIndex != 0 {
                         if !doAllPasses {

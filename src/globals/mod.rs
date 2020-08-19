@@ -80,6 +80,7 @@ pub static mut state: GlobalState = GlobalState {
 		generatedLength: 0,
 		listFile: None,
 		orgFill: constants::DEF_ORG_FILL,
+		outFile: None,
 		passBufferErrors: Vec::<String>::new(),
 		passBufferMessages: Vec::<String>::new(),
 	},
