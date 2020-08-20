@@ -1818,7 +1818,16 @@ pub unsafe extern "C" fn v_macro(mut str: *mut libc::c_char,
     let mut skipit: libc::c_int =
         !((*Ifstack).xtrue as libc::c_int != 0 &&
               (*Ifstack).acctrue as libc::c_int != 0) as libc::c_int;
-    str = transient::string_to_str_pointer(transient::str_pointer_to_string(str).to_ascii_lowercase());
+
+    // Updates the *str in memory.
+    // This could have been just...
+    //   str = transient::string_to_str_pointer(transient::str_pointer_to_string(str).to_ascii_lowercase());
+    // ...but, other parts of the code reuse the same string, so we need to update
+    // the original location rather than just a copy of the string.
+    // FIXME: drop all of this in favor of properly renamed macros
+    let newStr = transient::str_pointer_to_string(str).to_ascii_lowercase();
+    transient::update_str_pointer_in_place(str, newStr.as_str());
+
     mne = findmne(str);
     if skipit != 0 {
         defined = 1

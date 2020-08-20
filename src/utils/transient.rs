@@ -39,6 +39,20 @@ pub fn str_pointer_and_len_to_string(str: *const c_char, len: usize) -> String {
 }
 
 /**
+ * Updates a *str in memory, replacing its contents with the new string.
+ * This is needed because in some cases dasm does string changes in
+ * memory, while other places depend on the same pointer.
+ */
+pub fn update_str_pointer_in_place(ptr: *mut i8, new_content: &str) {
+	unsafe {
+		for (i, char) in new_content.as_bytes().iter().enumerate() {
+			*(ptr.offset(i as isize)) = *char as i8;
+		}
+		*(ptr.offset(new_content.len() as isize)) = 0;
+	}
+}
+
+/**
  * Converts a String to a *str pointer.
  * FIXME: this should likely be removed in the future, once we drop all uses of *str.
  */
