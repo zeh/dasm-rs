@@ -94,6 +94,7 @@ pub struct ExpressionsState {
 }
 
 pub struct OutputState {
+	pub checksum: u64,
 	pub generated: [u8; constants::MAX_LINES],
 	pub generatedLength: usize,
 	pub listFile: Option<File>,

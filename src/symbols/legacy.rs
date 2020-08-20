@@ -45,8 +45,6 @@ extern "C" {
     #[no_mangle]
     static mut Lastlocaldollarindex: libc::c_ulong;
     #[no_mangle]
-    static mut CheckSum: libc::c_ulong;
-    #[no_mangle]
     fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const libc::c_char)
      -> libc::c_int;
     #[no_mangle]
@@ -139,7 +137,7 @@ pub unsafe extern "C" fn findsymbol(mut str: *const libc::c_char,
                *str.offset(2 as isize) as libc::c_int ==
                    '.' as i32 {
             specchk.flags = 0;
-            specchk.value = CheckSum as libc::c_long;
+            specchk.value = state.output.checksum as i64;
             return &mut specchk
         }
         sprintf(buf.as_mut_ptr(),

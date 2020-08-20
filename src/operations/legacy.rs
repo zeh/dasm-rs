@@ -91,8 +91,6 @@ extern "C" {
     #[no_mangle]
     static mut Mlevel: libc::c_uint;
     #[no_mangle]
-    static mut CheckSum: libc::c_ulong;
-    #[no_mangle]
     fn findext(str: *mut libc::c_char);
     #[no_mangle]
     fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const libc::c_char)
@@ -1671,7 +1669,9 @@ pub unsafe extern "C" fn generate() {
         if currentSegment.flags & SegmentTypes::BSS == 0 {
             i = state.output.generatedLength as i32 - 1;
             while i >= 0 {
-                CheckSum = CheckSum.wrapping_add(state.output.generated[i as usize] as libc::c_ulong);
+                // In practice, this will never wrap since the value is never high enough, but just in case,
+                // we use "wrapping_add()" instead of "+="
+                state.output.checksum = state.output.checksum.wrapping_add(state.output.generated[i as usize] as u64);
                 i -= 1;
             }
             if state.execution.isClear {

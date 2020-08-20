@@ -151,8 +151,6 @@ extern "C" {
     #[no_mangle]
     static mut Lastlocaldollarindex: libc::c_ulong;
     #[no_mangle]
-    static mut CheckSum: libc::c_ulong;
-    #[no_mangle]
     fn v_execmac(str: *mut libc::c_char, mac: *mut _MACRO);
     /* exp.c */
     #[no_mangle]
@@ -889,7 +887,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                     Localdollarindex = Lastlocaldollarindex;
 
                     state.execution.isClear = true;
-                    CheckSum = 0;
+                    state.output.checksum = 0;
 
                     // Create basic output file
                     if state.parameters.outFile.is_empty() {

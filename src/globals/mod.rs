@@ -76,6 +76,7 @@ pub static mut state: GlobalState = GlobalState {
 	},
 
 	output: OutputState {
+		checksum: 0,
 		generated: [0; constants::MAX_LINES],
 		generatedLength: 0,
 		listFile: None,

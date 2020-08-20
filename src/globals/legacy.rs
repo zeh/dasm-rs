@@ -224,9 +224,6 @@ pub static mut Lastlocalindex: libc::c_ulong = 0;
 pub static mut Localdollarindex: libc::c_ulong = 0;
 #[no_mangle]
 pub static mut Lastlocaldollarindex: libc::c_ulong = 0;
-#[no_mangle]
-pub static mut CheckSum: libc::c_ulong = 0;
-/*	output data checksum		*/
 /*unsigned int	Adrbytes[]  = { 1, 2, 3, 2, 2, 2, 3, 3, 3, 2, 2, 2, 3, 1, 1, 2, 3 };*/
 #[no_mangle]
 pub static mut Cvt: [libc::c_uint; 17] =
