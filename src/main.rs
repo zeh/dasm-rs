@@ -91,11 +91,6 @@ extern "C" {
     fn fgets(__s: *mut libc::c_char, __n: libc::c_int, __stream: *mut FILE)
      -> *mut libc::c_char;
     #[no_mangle]
-    fn fputs(__s: *const libc::c_char, __stream: *mut FILE) -> libc::c_int;
-    #[no_mangle]
-    fn fwrite(__ptr: *const libc::c_void, __size: size_t, __n: size_t,
-              __s: *mut FILE) -> size_t;
-    #[no_mangle]
     fn v_incdir(_: *mut libc::c_char, _: *mut _MNE);
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
@@ -211,7 +206,6 @@ pub struct _IO_FILE {
     pub _mode: libc::c_int,
     pub _unused2: [libc::c_char; 20],
 }
-pub type _IO_lock_t = ();
 pub type FILE = _IO_FILE;
 pub type __compar_fn_t
     =

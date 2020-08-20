@@ -46,13 +46,8 @@ extern "C" {
     fn snprintf(_: *mut libc::c_char, _: libc::c_ulong,
                 _: *const libc::c_char, _: ...) -> libc::c_int;
     #[no_mangle]
-    fn putc(__c: libc::c_int, __stream: *mut FILE) -> libc::c_int;
-    #[no_mangle]
     fn fread(__ptr: *mut libc::c_void, __size: size_t, __n: size_t,
              __stream: *mut FILE) -> size_t;
-    #[no_mangle]
-    fn fwrite(__ptr: *const libc::c_void, __size: size_t, __n: size_t,
-              __s: *mut FILE) -> size_t;
     #[no_mangle]
     fn fseek(__stream: *mut FILE, __off: libc::c_long, __whence: libc::c_int)
      -> libc::c_int;
@@ -187,7 +182,6 @@ pub struct _IO_FILE {
     pub _mode: libc::c_int,
     pub _unused2: [libc::c_char; 20],
 }
-pub type _IO_lock_t = ();
 pub type FILE = _IO_FILE;
 #[derive(Copy, Clone)]
 #[repr(C)]

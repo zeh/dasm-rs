@@ -82,7 +82,6 @@ pub struct _IO_FILE {
     pub _mode: libc::c_int,
     pub _unused2: [libc::c_char; 20],
 }
-pub type _IO_lock_t = ();
 pub type FILE = _IO_FILE;
 unsafe fn main_0(mut ac: libc::c_int, mut av: *mut *mut libc::c_char)
  -> libc::c_int {
