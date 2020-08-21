@@ -35,7 +35,6 @@ use constants::{
     CHAR_TAB,
     DASM_ID,
     MAX_LINES,
-    MAX_SYMBOLS,
     S_HASH_SIZE,
 };
 use globals::state;
@@ -43,6 +42,7 @@ use segments::{
     clear_segments,
 };
 use types::flags:: {
+    FileFlags,
     ReasonCodes,
     SegmentTypes,
 };
@@ -81,9 +81,6 @@ extern "C" {
     #[no_mangle]
     fn fopen(__filename: *const libc::c_char, __modes: *const libc::c_char)
      -> *mut FILE;
-    #[no_mangle]
-    fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...)
-     -> libc::c_int;
     #[no_mangle]
     fn snprintf(_: *mut libc::c_char, _: libc::c_ulong,
                 _: *const libc::c_char, _: ...) -> libc::c_int;
@@ -1126,186 +1123,83 @@ pub unsafe extern "C" fn addmsg(mut message: *mut libc::c_char) {
     // add to message buffer (FXQ)
     operations::update_passbuffer(&mut state.output.passBufferMessages, transient::str_pointer_to_string(message).as_str());
 }
-unsafe extern "C" fn tabit(mut buf1: *mut libc::c_char,
-                           mut buf2: *mut libc::c_char) -> libc::c_int {
-    let mut bp: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut ptr: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut j: libc::c_int = 0;
-    let mut k: libc::c_int = 0;
-    bp = buf2;
-    ptr = buf1;
-    j = 0;
-    while *ptr as libc::c_int != 0 && *ptr as libc::c_int != '\n' as i32 {
-        *bp = *ptr;
-        if *ptr as libc::c_int == '\t' as i32 {
-            /* optimize out spaces before the tab */
-            while j > 0 &&
-                      *bp.offset(-(1) as isize) as libc::c_int
-                          == ' ' as i32 {
-                bp = bp.offset(-1);
-                j -= 1
-            }
-            j = 0;
-            *bp = '\t' as i32 as libc::c_char
-            /* recopy the tab */
-        }
-        if j == 7 && *bp as libc::c_int == ' ' as i32 &&
-               *bp.offset(-(1) as isize) as libc::c_int ==
-                   ' ' as i32 {
-            k = j;
-            loop  {
-                let fresh4 = k;
-                k = k - 1;
-                if !(fresh4 >= 0 &&
-                         *bp as libc::c_int == ' ' as i32) {
-                    break ;
-                }
-                bp = bp.offset(-1)
-            }
-            bp = bp.offset(1);
-            *bp = '\t' as i32 as libc::c_char
-        }
-        ptr = ptr.offset(1);
-        bp = bp.offset(1);
-        j = j + 1 & 7
-    }
-    while bp != buf2 &&
-              (*bp.offset(-(1) as isize) as libc::c_int ==
-                   ' ' as i32 ||
-                   *bp.offset(-(1) as isize) as libc::c_int ==
-                       '\t' as i32) {
-        bp = bp.offset(-1)
-    }
-    let fresh5 = bp;
-    bp = bp.offset(1);
-    *fresh5 = '\n' as i32 as libc::c_char;
-    *bp = '\u{0}' as i32 as libc::c_char;
-    return bp.wrapping_offset_from(buf2) as libc::c_long as libc::c_int;
-}
 unsafe extern "C" fn outlistfile(mut comment: *const libc::c_char) {
-    let mut xtrue: libc::c_char = 0;
-    let mut c: libc::c_char = 0;
-    static mut buf1: [libc::c_char; MAX_LINES + 32] = [0; MAX_LINES + 32];
-    static mut buf2: [libc::c_char; MAX_LINES + 32] = [0; MAX_LINES + 32];
-    let mut dot: *const libc::c_char = 0 as *const libc::c_char;
+    let mut xtrue: char = 0 as char;
+    let mut c: char = 0 as char;
+    let mut buffer: String = String::new();
     let mut i: usize = 0;
-    let mut j: usize = 0;
-    if (*pIncfile).flags as libc::c_int & 0x2 as libc::c_int != 0 { return }
-    xtrue =
-        if (*Ifstack).xtrue as libc::c_int != 0 &&
-               (*Ifstack).acctrue as libc::c_int != 0 {
-            ' ' as i32
-        } else { '-' as i32 } as libc::c_char;
-    c = if state.execution.programFlags & SegmentTypes::BSS!= 0 {
-        'U' as i8
+    if (*pIncfile).flags & FileFlags::NoList != 0 {
+        return;
+    }
+    xtrue = if (*Ifstack).xtrue as u8 != 0 && (*Ifstack).acctrue as u8 != 0 {
+        ' '
     } else {
-        ' ' as i8
+        '-'
     };
-    dot = b"\x00" as *const u8 as *const libc::c_char;
+    c = if state.execution.programFlags & SegmentTypes::BSS != 0 {
+        'U'
+    } else {
+        ' '
+    };
+    let mut dot = String::from("");
     if !state.execution.extraString.is_empty() {
-        dot = b".\x00" as *const u8 as *const libc::c_char;
+        dot.push_str(".");
     } else {
         state.execution.extraString.clear();
     }
-    sprintf(
-        buf1.as_mut_ptr(),
-        b"%7ld %c%s\x00" as *const u8 as *const libc::c_char,
-        (*pIncfile).lineno,
-        c as libc::c_int,
-        sftos(state.execution.programOrg as libc::c_long, (state.execution.programFlags & 7) as libc::c_int)
+    buffer.push_str(
+        format!(
+            "{:7} {}{}",
+            (*pIncfile).lineno,
+            c,
+            formatting::segment_address_to_string(state.execution.programOrg, state.execution.programFlags & 7),
+        ).as_str()
     );
-    j = strlen(buf1.as_mut_ptr()) as usize;
     i = 0;
     while i < state.output.generatedLength && i < 4 {
-        sprintf(buf1.as_mut_ptr().offset(j as isize),
-                b"%02x \x00" as *const u8 as *const libc::c_char,
-                state.output.generated[i] as libc::c_int);
+        buffer.push_str(
+            format!(
+                "{:02x} ",
+                state.output.generated[i]
+            ).as_str()
+        );
         i += 1;
-        j += 3;
     }
     if i < state.output.generatedLength && i == 4 {
-        xtrue = '*' as i32 as libc::c_char
+        xtrue = '*'
     }
     while i < 4 {
-        buf1[(j + 2) as usize] = ' ' as i32 as libc::c_char;
-        buf1[(j + 1) as usize] =
-            buf1[(j + 2) as usize];
-        buf1[j as usize] = buf1[(j + 1) as usize];
-        j += 3;
+        buffer.push_str("   ");
         i += 1
     }
-    sprintf(
-        buf1.as_mut_ptr().offset(j as isize).offset(-(1 as isize)),
-        b"%c%-10s %s%s%s\t%s\n\x00" as *const u8 as *const libc::c_char,
-        xtrue as libc::c_int,
-        *Av.as_mut_ptr().offset(0),
-        *Av.as_mut_ptr().offset(1),
-        dot,
-        transient::string_to_str_pointer(state.execution.extraString.clone()),
-        *Av.as_mut_ptr().offset(2)
+    buffer.remove(buffer.len() - 1);
+    buffer.push_str(
+        format!(
+            "{}{:10} {}{}{}\t{}\n",
+            xtrue,
+            transient::str_pointer_to_string(*Av.as_mut_ptr().offset(0)),
+            transient::str_pointer_to_string(*Av.as_mut_ptr().offset(1)),
+            dot,
+            state.execution.extraString.clone(),
+            transient::str_pointer_to_string(*Av.as_mut_ptr().offset(2)),
+        ).as_str()
     );
     if *comment.offset(0 as isize) != 0 {
         /*  tab and comment */
-        j = strlen(buf1.as_mut_ptr()).wrapping_sub(1) as usize;
-        sprintf(
-            buf1.as_mut_ptr().offset(j as isize),
-            b"\t;%s\x00" as *const u8 as *const libc::c_char,
-            comment
+        buffer.remove(buffer.len() - 1);
+        buffer.push_str(
+            format!(
+                "\t;{}",
+                transient::str_pointer_to_string(comment)
+            ).as_str()
         );
     }
-    // FIXME: convoluted conversion of max-length &[i8] to flexible-length &[u8]
-    let len = tabit(buf1.as_mut_ptr(), buf2.as_mut_ptr()) as usize;
-    let vec = buf2.to_vec()[0..len].iter().map(|&x| x as u8).collect::<Vec<_>>();
-    filesystem::write_buffer_to_file_maybe(
+    filesystem::write_to_file_maybe(
         &mut state.output.listFile,
-        &vec,
+        formatting::format_line_tabs(buffer.as_str()).as_str(),
     );
     state.output.generatedLength = 0;
     state.execution.extraString.clear();
-}
-#[no_mangle]
-pub unsafe extern "C" fn sftos(mut val: libc::c_long, mut flags: libc::c_int)
- -> *mut libc::c_char {
-    static mut buf: [libc::c_char; MAX_SYMBOLS + 14] = [0; MAX_SYMBOLS + 14];
-    static mut c: libc::c_char = 0;
-    let mut ptr: *mut libc::c_char =
-        if c as libc::c_int != 0 {
-            buf.as_mut_ptr()
-        } else {
-            buf.as_mut_ptr().offset((::std::mem::size_of::<[libc::c_char; 1038]>()
-                                         as
-                                         libc::c_ulong).wrapping_div(2 as
-                                                                         libc::c_int
-                                                                         as
-                                                                         libc::c_ulong)
-                                        as isize)
-        };
-    memset(buf.as_mut_ptr() as *mut libc::c_void, 0,
-           ::std::mem::size_of::<[libc::c_char; 1038]>() as libc::c_ulong);
-    c = (1 - c as libc::c_int) as libc::c_char;
-    sprintf(ptr, b"%04lx \x00" as *const u8 as *const libc::c_char, val);
-    if flags & 0x1 as libc::c_int != 0 {
-        strcat(ptr, b"???? \x00" as *const u8 as *const libc::c_char);
-    } else { strcat(ptr, b"     \x00" as *const u8 as *const libc::c_char); }
-    if flags & 0x8 as libc::c_int != 0 {
-        strcat(ptr, b"str \x00" as *const u8 as *const libc::c_char);
-    } else { strcat(ptr, b"    \x00" as *const u8 as *const libc::c_char); }
-    if flags & 0x20 as libc::c_int != 0 {
-        strcat(ptr, b"eqm \x00" as *const u8 as *const libc::c_char);
-    } else { strcat(ptr, b"    \x00" as *const u8 as *const libc::c_char); }
-    if flags & (0x40 as libc::c_int | 0x10 as libc::c_int) != 0 {
-        strcat(ptr, b"(\x00" as *const u8 as *const libc::c_char);
-    } else { strcat(ptr, b" \x00" as *const u8 as *const libc::c_char); }
-    if flags & 0x40 as libc::c_int != 0 {
-        strcat(ptr, b"R\x00" as *const u8 as *const libc::c_char);
-    } else { strcat(ptr, b" \x00" as *const u8 as *const libc::c_char); }
-    if flags & 0x10 as libc::c_int != 0 {
-        strcat(ptr, b"S\x00" as *const u8 as *const libc::c_char);
-    } else { strcat(ptr, b" \x00" as *const u8 as *const libc::c_char); }
-    if flags & (0x40 as libc::c_int | 0x10 as libc::c_int) != 0 {
-        strcat(ptr, b")\x00" as *const u8 as *const libc::c_char);
-    } else { strcat(ptr, b" \x00" as *const u8 as *const libc::c_char); }
-    return ptr;
 }
 #[no_mangle]
 pub unsafe extern "C" fn clearrefs() {
