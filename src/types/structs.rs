@@ -102,6 +102,8 @@ pub struct OutputState {
 	pub outFile: Option<File>,
 	pub passBufferErrors: Vec<String>,
 	pub passBufferMessages: Vec<String>, // Buffers to supress errors and messages until last pass
+	pub seekBack: i64,
+	pub segmentLength: usize,
 }
 
 // In original C code, "_SEGMENT" and used as a linked list

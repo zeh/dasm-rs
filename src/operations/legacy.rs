@@ -1657,8 +1657,6 @@ pub unsafe extern "C" fn pfopen(mut name: *const libc::c_char,
     }
     return f;
 }
-static mut Seglen: usize = 0;
-static mut Seekback: libc::c_long = 0;
 #[no_mangle]
 pub unsafe extern "C" fn generate() {
     let mut seekpos: libc::c_long = 0;
@@ -1688,8 +1686,8 @@ pub unsafe extern "C" fn generate() {
                         &[(org & 0xff) as u8, (org >> 8 & 0xff) as u8]
                     );
                     if state.parameters.format == Format::Ras {
-                        Seekback = filesystem::get_stream_position_maybe(&mut state.output.outFile) as i64;
-                        Seglen = 0;
+                        state.output.seekBack = filesystem::get_stream_position_maybe(&mut state.output.outFile) as i64;
+                        state.output.segmentLength = 0;
                         filesystem::write_buffer_to_file_maybe(&mut state.output.outFile, &[0u8, 0u8]);
                     }
                 }
@@ -1721,25 +1719,25 @@ pub unsafe extern "C" fn generate() {
                     if org != currentSegment.org {
                         org = currentSegment.org;
                         seekpos = filesystem::get_stream_position_maybe(&mut state.output.outFile) as i64;
-                        filesystem::seek_maybe(&mut state.output.outFile, Seekback as u64);
+                        filesystem::seek_maybe(&mut state.output.outFile, state.output.seekBack as u64);
                         filesystem::write_buffer_to_file_maybe(
                             &mut state.output.outFile,
-                            &[(Seglen & 0xff) as u8, (Seglen >> 8 & 0xff) as u8]
+                            &[(state.output.segmentLength & 0xff) as u8, (state.output.segmentLength >> 8 & 0xff) as u8]
                         );
                         filesystem::seek_maybe(&mut state.output.outFile, seekpos as u64);
                         filesystem::write_buffer_to_file_maybe(
                             &mut state.output.outFile,
                             &[(org & 0xff) as u8, (org >> 8 & 0xff) as u8]
                         );
-                        Seekback = filesystem::get_stream_position_maybe(&mut state.output.outFile) as i64;
-                        Seglen = 0;
+                        state.output.seekBack = filesystem::get_stream_position_maybe(&mut state.output.outFile) as i64;
+                        state.output.segmentLength = 0;
                         filesystem::write_buffer_to_file_maybe(&mut state.output.outFile, &[0u8, 0u8]);
                     }
                     filesystem::write_buffer_to_file_maybe(
                         &mut state.output.outFile,
                         &state.output.generated[0..state.output.generatedLength]
                     );
-                    Seglen += state.output.generatedLength;
+                    state.output.segmentLength += state.output.generatedLength;
                 }
             }
             org = org.wrapping_add(state.output.generatedLength as u64)
@@ -1754,10 +1752,10 @@ pub unsafe extern "C" fn generate() {
 pub unsafe extern "C" fn closegenerate() {
     if state.execution.redoIndex == 0 {
         if state.parameters.format == Format::Ras {
-            filesystem::seek_maybe(&mut state.output.outFile, Seekback as u64);
+            filesystem::seek_maybe(&mut state.output.outFile, state.output.seekBack as u64);
             filesystem::write_buffer_to_file_maybe(
                 &mut state.output.outFile,
-                &[(Seglen & 0xff) as u8, (Seglen >> 8 & 0xff) as u8]
+                &[(state.output.segmentLength & 0xff) as u8, (state.output.segmentLength >> 8 & 0xff) as u8]
             );
             filesystem::seek_end_maybe(&mut state.output.outFile, 0);
         }

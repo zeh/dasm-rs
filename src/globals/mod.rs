@@ -84,5 +84,7 @@ pub static mut state: GlobalState = GlobalState {
 		outFile: None,
 		passBufferErrors: Vec::<String>::new(),
 		passBufferMessages: Vec::<String>::new(),
+		seekBack: 0,
+		segmentLength: 0,
 	},
 };
