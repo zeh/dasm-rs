@@ -9,15 +9,15 @@ use crate::types::enums::{
     AddressModes,
     AsmErrorEquates,
 };
+use crate::utils::{
+    transient,
+};
 
 extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const libc::c_ushort;
     #[no_mangle]
     fn strcasecmp(_: *const libc::c_char, _: *const libc::c_char)
-     -> libc::c_int;
-    #[no_mangle]
-    fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...)
      -> libc::c_int;
     #[no_mangle]
     fn strcpy(_: *mut libc::c_char, _: *const libc::c_char)
@@ -654,29 +654,16 @@ unsafe extern "C" fn generate_branch(mut opcode: libc::c_uchar,
     }
     /* calculate displacement */
     if isPCKnown() != 0 {
-        disp =
-            target_adr.wrapping_sub(getPC() as
-                                        libc::c_ulong).wrapping_sub(1 as
-                                                                        libc::c_int
-                                                                        as
-                                                                        libc::c_ulong)
-                as libc::c_long;
-        if disp > 127 as libc::c_int as libc::c_long ||
-               disp < -(128 as libc::c_int) as libc::c_long {
-            let mut buf: [libc::c_char; 64] = [0; 64];
-            sprintf(buf.as_mut_ptr(),
-                    b"%d\x00" as *const u8 as *const libc::c_char,
-                    disp as libc::c_int);
-            asmerr(AsmErrorEquates::BranchOutOfRange,
-                   false, buf.as_mut_ptr());
+        disp = target_adr.wrapping_sub(getPC() as libc::c_ulong).wrapping_sub(1) as libc::c_long;
+        if disp > 127 || disp < -128{
+            let buffer = format!("{}", disp);
+            asmerr(AsmErrorEquates::BranchOutOfRange, false, transient::string_to_str_pointer(buffer));
         }
     } else {
         /* unknown pc, will be (hopefully) resolved in future passes */
         disp = 0
     }
-    emit_opcode2(opcode,
-                 (disp & 255 as libc::c_int as libc::c_long) as
-                     libc::c_uchar);
+    emit_opcode2(opcode, (disp & 255) as libc::c_uchar);
 }
 /*
  * handles the following branch mnemonics:

@@ -1018,7 +1018,7 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                         if !pIncfile.is_null() {
                             /*
                             if (state.parameters.verbosity as u8 > 1)
-                            printf("back to: %s\n", Incfile->name);
+                            println!("back to: {}", Incfile->name);
                             */
                             filesystem::writeln_to_file_maybe(
                                 &mut state.output.listFile,
@@ -1058,13 +1058,8 @@ unsafe extern "C" fn MainShadow(mut ac: libc::c_int,
                         state.execution.redoIf <<= 1;
                         state.execution.pass += 1;
                         if state.execution.pass > state.parameters.maxPasses {
-                            let mut sBuffer: [libc::c_char; 64] = [0; 64];
-                            sprintf(
-                                sBuffer.as_mut_ptr(),
-                                b"%d\x00" as *const u8 as *const libc::c_char,
-                                state.execution.pass as i32
-                            );
-                            return asmerr(AsmErrorEquates::TooManyPasses, false, sBuffer.as_mut_ptr());
+                            let buffer = format!("{}", state.execution.pass);
+                            return asmerr(AsmErrorEquates::TooManyPasses, false, transient::string_to_str_pointer(buffer));
                         } else {
                             operations::clear_passbuffer(&mut state.output.passBufferErrors);
                             operations::clear_passbuffer(&mut state.output.passBufferMessages);

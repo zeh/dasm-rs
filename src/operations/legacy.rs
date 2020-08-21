@@ -40,8 +40,6 @@ extern "C" {
     fn fopen(__filename: *const libc::c_char, __modes: *const libc::c_char)
      -> *mut FILE;
     #[no_mangle]
-    fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...)
-     -> libc::c_int;
     #[no_mangle]
     fn snprintf(_: *mut libc::c_char, _: libc::c_ulong,
                 _: *const libc::c_char, _: ...) -> libc::c_int;
@@ -398,11 +396,12 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
         );
     }
     if (*mne).okmask & ((1) << addressMode as u8) as libc::c_ulong == 0 {
-        let mut sBuffer: [libc::c_char; 128] = [0; 128];
-        sprintf(sBuffer.as_mut_ptr(),
-                b"%s %s\x00" as *const u8 as *const libc::c_char, (*mne).name,
-                str);
-        asmerr(AsmErrorEquates::IllegalAddressingMode, false, sBuffer.as_mut_ptr());
+        let buffer = format!(
+            "{} {}",
+            transient::str_pointer_to_string((*mne).name),
+            transient::str_pointer_to_string(str),
+        );
+        asmerr(AsmErrorEquates::IllegalAddressingMode, false, transient::string_to_str_pointer(buffer));
         FreeSymbolList(symbase);
         //FIX
         state.execution.redoIndex += 1;
@@ -425,9 +424,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
         println!("final addrmode = {}", addressMode as u8);
     }
     while opsize as libc::c_uint > *Opsize.as_mut_ptr().offset(addressMode as isize) {
-        if *Cvt.as_mut_ptr().offset(addressMode as isize) == 0 ||
-            (*mne).okmask & ((1) << *Cvt.as_mut_ptr().offset(addressMode as isize)) as libc::c_ulong == 0 {
-            let mut sBuffer_0: [libc::c_char; 128] = [0; 128];
+        if *Cvt.as_mut_ptr().offset(addressMode as isize) == 0 || (*mne).okmask & ((1) << *Cvt.as_mut_ptr().offset(addressMode as isize)) as libc::c_ulong == 0 {
             if (*sym).flags as libc::c_int & 0x1 as libc::c_int != 0 {
                 break;
             }
@@ -437,12 +434,13 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
                 (*sym).value = ((*sym).value & 255 as libc::c_int as libc::c_long) as libc::c_char as libc::c_long;
                 break;
             } else {
-                sprintf(sBuffer_0.as_mut_ptr(),
-                        b"%s %s\x00" as *const u8 as *const libc::c_char,
-                        (*mne).name, str);
-                asmerr(AsmErrorEquates::AddressMustBeLowerThan100,
-                       false, sBuffer_0.as_mut_ptr());
-                break ;
+                let buffer = format!(
+                    "{} {}",
+                    transient::str_pointer_to_string((*mne).name),
+                    transient::str_pointer_to_string(str),
+                );
+                asmerr(AsmErrorEquates::AddressMustBeLowerThan100, false, transient::string_to_str_pointer(buffer));
+                break;
             }
         } else {
             addressMode = AddressModes::try_from(*Cvt.as_mut_ptr().offset(addressMode as isize) as u8).unwrap();
@@ -549,28 +547,22 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut libc::c_char,
             // FIXME: weird comparison, "2" is like a ghost flag
             if pcf & (SegmentTypes::Unknown | 2) == 0 {
                 dest = (*sym).value - (pc as i64) - (opidx as i64);
-                if dest >= 128 as libc::c_int as libc::c_long ||
-                       dest < -(128 as libc::c_int) as libc::c_long {
+                if dest >= 128 || dest < -128 {
                     /*	byte before end of inst.    */
                     //FIX: sometimes zero page addressing will first be assumed to be absolute until
                     //     another pass. ERROR_BRANCH_OUT_OF_RANGE was made non-fatal, but we keep
                     //     pushing for Redo so assembly won't actually be succesfull until the branch
                     //     actually works.
-                    let mut sBuffer_1: [libc::c_char; 64] = [0; 64];
-                    sprintf(sBuffer_1.as_mut_ptr(),
-                            b"%ld\x00" as *const u8 as *const libc::c_char,
-                            dest);
-                    asmerr(AsmErrorEquates::BranchOutOfRange,
-                           false, sBuffer_1.as_mut_ptr());
+                    let buffer = format!("{}", dest);
+                    asmerr(AsmErrorEquates::BranchOutOfRange, false, transient::string_to_str_pointer(buffer));
                     state.execution.redoIndex += 1;
                     state.execution.redoWhy |= ReasonCodes::BranchOutOfRange;
-                    (*sym).flags =
-                        ((*sym).flags as libc::c_int | 0x1 as libc::c_int) as u8;
-                    dest = 0
+                    (*sym).flags = ((*sym).flags as libc::c_int | 0x1 as libc::c_int) as u8;
+                    dest = 0;
                 }
             } else {
                 /* Don't bother - we'll take another pass */
-                dest = 0
+                dest = 0;
             } /*  Only so outlist() works */
             state.output.generated[(opidx - 1) as usize] = (dest & 0xff) as u8;
         }
@@ -749,7 +741,6 @@ pub unsafe extern "C" fn v_hex(mut str: *mut libc::c_char,
 }
 #[no_mangle]
 pub unsafe extern "C" fn gethexdig(mut c: libc::c_int) -> libc::c_int {
-    let mut sBuffer: [libc::c_char; 64] = [0; 64];
     if c >= '0' as i32 && c <= '9' as i32 { return c - '0' as i32 }
     if c >= 'a' as i32 && c <= 'f' as i32 {
         return c - 'a' as i32 + 10
@@ -757,10 +748,8 @@ pub unsafe extern "C" fn gethexdig(mut c: libc::c_int) -> libc::c_int {
     if c >= 'A' as i32 && c <= 'F' as i32 {
         return c - 'A' as i32 + 10
     }
-    sprintf(sBuffer.as_mut_ptr(),
-            b"Bad Hex Digit %c\x00" as *const u8 as *const libc::c_char, c);
-    asmerr(AsmErrorEquates::SyntaxError, false,
-           sBuffer.as_mut_ptr());
+    let buffer = format!("Bad Hex Digit {}", c as u8 as char);
+    asmerr(AsmErrorEquates::SyntaxError, false, transient::string_to_str_pointer(buffer));
     println!("(Must be a valid hex digit)");
     filesystem::writeln_to_file_maybe(&mut state.output.listFile, "(Must be a valid hex digit)");
     return 0;
@@ -914,18 +903,14 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
             }
             match state.execution.modeNext {
                 AddressModes::WordAdr => {
-                    //any value outside two's complement +ve and +ve word representation is invalid...
-                    if state.parameters.strictMode && (
-                        value < -(0xffff as libc::c_int) as libc::c_long
-                        ||
-                        value > 0xffff as libc::c_int as libc::c_long
-                    )
-                       {
-                        let mut sBuffer_0: [libc::c_char; 128] = [0; 128];
-                        sprintf(sBuffer_0.as_mut_ptr(),
-                                b"%s %ld\x00" as *const u8 as *const libc::c_char, (*mne).name, value);
-                        asmerr(AsmErrorEquates::AddressMustBeLowerThan10000,
-                               false, sBuffer_0.as_mut_ptr());
+                    // Any value outside two's complement +ve and +ve word representation is invalid...
+                    if state.parameters.strictMode && (value < -0xffff || value > 0xffff) {
+                        let buffer = format!(
+                            "{} {}",
+                            transient::str_pointer_to_string((*mne).name),
+                            value,
+                        );
+                        asmerr(AsmErrorEquates::AddressMustBeLowerThan10000, false, transient::string_to_str_pointer(buffer));
                     }
                     if state.execution.bitOrder != BitOrder::LeastMost {
                         state.output.generated[state.output.generatedLength] = (value >> 8 & 0xff) as u8;
@@ -962,14 +947,13 @@ pub unsafe extern "C" fn v_dc(mut str: *mut libc::c_char,
                 }
                 AddressModes::ByteAdr | _ => {
                     //any value outside two's complement +ve and +ve byte representation is invalid...
-                    if value < -(0xff as libc::c_int) as libc::c_long ||
-                           value > 0xff as libc::c_int as libc::c_long {
-                        let mut sBuffer: [libc::c_char; 128] = [0; 128];
-                        sprintf(sBuffer.as_mut_ptr(),
-                                b"%s %ld\x00" as *const u8 as
-                                    *const libc::c_char, (*mne).name, value);
-                        asmerr(AsmErrorEquates::AddressMustBeLowerThan100,
-                               false, sBuffer.as_mut_ptr());
+                    if value < -0xff || value > 0xff  {
+                        let buffer = format!(
+                            "{} {}",
+                            transient::str_pointer_to_string((*mne).name),
+                            value,
+                        );
+                        asmerr(AsmErrorEquates::AddressMustBeLowerThan100, false, transient::string_to_str_pointer(buffer));
                     }
                     state.output.generated[state.output.generatedLength] = (value & 0xff) as u8;
                     state.output.generatedLength += 1;
@@ -1215,27 +1199,22 @@ pub unsafe extern "C" fn v_echo(mut str: *mut libc::c_char,
                                 mut _dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = eval(str, 0);
     let mut s: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut buf: [libc::c_char; 256] = [0; 256];
+
     s = sym;
     while !s.is_null() {
-        if (*s).flags as libc::c_int & 0x1 as libc::c_int == 0 {
-            if (*s).flags as libc::c_int &
-                   (0x20 as libc::c_int | 0x8 as libc::c_int) != 0 {
-                sprintf(buf.as_mut_ptr(),
-                        b"%s\x00" as *const u8 as *const libc::c_char,
-                        (*s).string);
+        if (*s).flags & SymbolTypes::Unknown == 0 {
+            let mut buffer: String = String::new();
+            if (*s).flags & (SymbolTypes::Macro | SymbolTypes::StringResult) != 0 {
+                buffer.push_str(transient::str_pointer_to_string((*s).string).as_str());
             } else {
-                sprintf(buf.as_mut_ptr(),
-                        b"$%lx\x00" as *const u8 as *const libc::c_char,
-                        (*s).value);
+                buffer.push_str(format!("${:x}", (*s).value).as_str());
             }
             filesystem::write_to_file_maybe(
                 &mut state.output.listFile,
-                format!(" {}", transient::str_pointer_to_string(buf.as_mut_ptr())).as_str(),
+                format!(" {}", buffer).as_str(),
             );
-            addmsg(b" \x00" as *const u8 as *const libc::c_char as
-                       *mut libc::c_char); // -FXQ supress output until final pass
-            addmsg(buf.as_mut_ptr());
+            addmsg(b" \x00" as *const u8 as *const libc::c_char as *mut libc::c_char); // -FXQ supress output until final pass
+            addmsg(transient::string_to_str_pointer(buffer));
         }
         s = (*s).next
     }

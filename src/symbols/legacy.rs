@@ -14,13 +14,11 @@ use crate::types::enums::{
     AsmErrorEquates,
 };
 use crate::utils::{
+    formatting,
     transient,
 };
 
 extern "C" {
-    #[no_mangle]
-    fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...)
-     -> libc::c_int;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
      -> *mut libc::c_void;
@@ -47,8 +45,6 @@ extern "C" {
     #[no_mangle]
     fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const libc::c_char)
      -> libc::c_int;
-    #[no_mangle]
-    fn sftos(val: libc::c_long, flags: libc::c_int) -> *mut libc::c_char;
     #[no_mangle]
     fn permalloc(bytes: libc::c_int) -> *mut libc::c_char;
 }
@@ -112,7 +108,6 @@ pub unsafe extern "C" fn findsymbol(mut str: *const libc::c_char,
                                     mut len: libc::c_int) -> *mut _SYMBOL {
     let mut h1: libc::c_uint = 0; /*	permalloc zeros the array for us */
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut buf: [libc::c_char; MAX_SYMBOLS + 14] = [0; MAX_SYMBOLS + 14];
     if len > MAX_SYMBOLS as libc::c_int { len = MAX_SYMBOLS as libc::c_int }
     if *str.offset(0 as isize) as libc::c_int == '.' as i32 {
         if len == 1 {
@@ -140,18 +135,24 @@ pub unsafe extern "C" fn findsymbol(mut str: *const libc::c_char,
             specchk.value = state.output.checksum as i64;
             return &mut specchk
         }
-        sprintf(buf.as_mut_ptr(),
-                b"%ld%.*s\x00" as *const u8 as *const libc::c_char,
-                Localindex, len, str);
-        len = strlen(buf.as_mut_ptr()) as libc::c_int;
-        str = buf.as_mut_ptr()
-    } else if *str.offset((len - 1) as isize) as libc::c_int ==
-                  '$' as i32 {
-        sprintf(buf.as_mut_ptr(),
-                b"%ld$%.*s\x00" as *const u8 as *const libc::c_char,
-                Localdollarindex, len, str);
-        len = strlen(buf.as_mut_ptr()) as libc::c_int;
-        str = buf.as_mut_ptr()
+
+        let buffer = format!(
+            "{}{:2$}",
+            Localindex,
+            transient::str_pointer_to_string(str),
+            len as usize,
+        );
+        len = buffer.len() as i32;
+        str = transient::string_to_str_pointer(buffer);
+    } else if *str.offset((len - 1) as isize) as libc::c_int == '$' as i32 {
+        let buffer = format!(
+            "{}${:2$}",
+            Localdollarindex,
+            transient::str_pointer_to_string(str),
+            len as usize,
+        );
+        len = buffer.len() as i32;
+        str = transient::string_to_str_pointer(buffer);
     }
     h1 = hash1(str, len);
     sym = *SHash.as_mut_ptr().offset(h1 as isize);
@@ -170,26 +171,30 @@ pub unsafe extern "C" fn CreateSymbol(mut str: *const libc::c_char,
                                       mut len: libc::c_int) -> *mut _SYMBOL {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut h1: libc::c_uint = 0;
-    let mut buf: [libc::c_char; MAX_SYMBOLS + 14] = [0; MAX_SYMBOLS + 14];
     if len > MAX_SYMBOLS as libc::c_int { len = MAX_SYMBOLS as libc::c_int }
-    if *str.offset(0 as isize) as libc::c_int == '.' as i32 {
-        sprintf(buf.as_mut_ptr(),
-                b"%ld%.*s\x00" as *const u8 as *const libc::c_char,
-                Localindex, len, str);
-        len = strlen(buf.as_mut_ptr()) as libc::c_int;
-        str = buf.as_mut_ptr()
-    } else if *str.offset((len - 1) as isize) as libc::c_int ==
-                  '$' as i32 {
-        sprintf(buf.as_mut_ptr(),
-                b"%ld$%.*s\x00" as *const u8 as *const libc::c_char,
-                Localdollarindex, len, str);
-        len = strlen(buf.as_mut_ptr()) as libc::c_int;
-        str = buf.as_mut_ptr()
+    // FIXME: this duplicates functionality in findsymbol(). Merge or extract?
+    if *str.offset(0) as libc::c_int == '.' as i32 {
+        let buffer = format!(
+            "{}{:2$}",
+            Localindex,
+            transient::str_pointer_to_string(str),
+            len as usize,
+        );
+        len = buffer.len() as i32;
+        str = transient::string_to_str_pointer(buffer);
+    } else if *str.offset((len - 1) as isize) as libc::c_int == '$' as i32 {
+        let buffer = format!(
+            "{}${:2$}",
+            Localdollarindex,
+            transient::str_pointer_to_string(str),
+            len as usize,
+        );
+        len = buffer.len() as i32;
+        str = transient::string_to_str_pointer(buffer);
     }
     sym = allocsymbol();
     (*sym).name = permalloc(len + 1);
-    memcpy((*sym).name as *mut libc::c_void, str as *const libc::c_void,
-           len as libc::c_ulong);
+    memcpy((*sym).name as *mut libc::c_void, str as *const libc::c_void, len as libc::c_ulong);
     (*sym).namelen = len as libc::c_uint;
     h1 = hash1(str, len);
     (*sym).next = *SHash.as_mut_ptr().offset(h1 as isize);
@@ -283,13 +288,12 @@ pub unsafe extern "C" fn programlabel() {
                 //     the previous pass.
                 //if (state.verbose >= 1 || !(state.execution.redoIf & (ReasonCodes::Obscure)))
                 if state.execution.redoIf & ReasonCodes::Obscure == 0 {
-                    let mut sBuffer: [libc::c_char; MAX_SYMBOLS * 4] = [0; MAX_SYMBOLS * 4];
-                    sprintf(sBuffer.as_mut_ptr(),
-                            b"%s %s\x00" as *const u8 as *const libc::c_char,
-                            (*sym).name,
-                            sftos((*sym).value, 0));
-                    asmerr(AsmErrorEquates::LabelMismatch,
-                           false, sBuffer.as_mut_ptr());
+                    let buffer = format!(
+                        "{} {}",
+                        transient::str_pointer_to_string((*sym).name),
+                        formatting::segment_address_to_string((*sym).value as u64, 0),
+                    );
+                    asmerr(AsmErrorEquates::LabelMismatch, false, transient::string_to_str_pointer(buffer));
                 }
                 state.execution.redoIndex += 1;
                 state.execution.redoWhy |= ReasonCodes::PhaseError

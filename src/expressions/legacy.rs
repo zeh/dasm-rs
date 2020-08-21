@@ -25,9 +25,6 @@ extern "C" {
     pub type _IO_codecvt;
     pub type _IO_marker;
     #[no_mangle]
-    fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...)
-     -> libc::c_int;
-    #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
      -> *mut libc::c_void;
     #[no_mangle]
@@ -421,19 +418,10 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                         str = str.offset(2 as isize)
                     }
                     //FIX: detect illegal opc (zp),x syntax...
-                    if (*cur).addrmode as libc::c_int ==
-                            AddressModes::IndByteY as i32 &&
-                           *str.offset(1 as isize) as
-                               libc::c_int == ',' as i32 &&
-                           *str.offset(2 as isize) as
-                               libc::c_int | 0x20 as libc::c_int == 'x' as i32
-                       {
-                        let mut sBuffer: [libc::c_char; 128] = [0; 128];
-                        sprintf(sBuffer.as_mut_ptr(),
-                                b"%s\x00" as *const u8 as *const libc::c_char,
-                                str);
-                        asmerr(AsmErrorEquates::IllegalAddressingMode,
-                               false, pLine);
+                    if (*cur).addrmode as u8 == AddressModes::IndByteY as u8 && *str.offset(1) as u8 == ',' as u8 && *str.offset(2) as u8 | 0x20 == 'x' as u8 {
+                        // FIXME: strangely, this is never used, so we have it here but commented out
+                        // let buffer: String = transient::str_pointer_to_string(str);
+                        asmerr(AsmErrorEquates::IllegalAddressingMode, false, pLine);
                         state.execution.redoIndex += 1;
                         state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved
                         //we treat the opcode as valid to allow passes to continue, which should
@@ -461,22 +449,13 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 scr =
                     *str.offset(1 as isize) as libc::c_int |
                         0x20 as libc::c_int;
-                if (*cur).addrmode as libc::c_int == AddressModes::IndWord as i32
-                       && scr == 'x' as i32 && !is_alpha_num(*str.offset(2) as u8 as char) {
-                    (*cur).addrmode =
-                        AddressModes::IndByteX as u8;
-                    str = str.offset(1)
-                } else if (*cur).addrmode as libc::c_int ==
-                              AddressModes::IndWord as i32 && scr == 'y' as i32
-                              &&
-                              *str.offset(2 as isize) as
-                                  libc::c_int == ')' as i32 && wantmode != 0 {
-                    let mut sBuffer_0: [libc::c_char; 128] = [0; 128];
-                    sprintf(sBuffer_0.as_mut_ptr(),
-                            b"%s\x00" as *const u8 as *const libc::c_char,
-                            str);
-                    asmerr(AsmErrorEquates::IllegalAddressingMode,
-                           false, pLine);
+                if (*cur).addrmode == AddressModes::IndWord as u8 && scr == 'x' as i32 && !is_alpha_num(*str.offset(2) as u8 as char) {
+                    (*cur).addrmode = AddressModes::IndByteX as u8;
+                    str = str.offset(1);
+                } else if (*cur).addrmode as u8 == AddressModes::IndWord as u8 && scr == 'y' as i32 && *str.offset(2) as u8 == ')' as u8 && wantmode != 0 {
+                    // FIXME: strangely, this is never used, so we have it here but commented out
+                    // let buffer: String = transient::str_pointer_to_string(str);
+                    asmerr(AsmErrorEquates::IllegalAddressingMode, false, pLine);
                     state.execution.redoIndex += 1;
                     state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved;
                     //FIX: detect illegal opc (zp,y) syntax...
@@ -584,21 +563,10 @@ pub unsafe extern "C" fn eval(mut str: *const libc::c_char,
                 } else {
                     if *str as libc::c_int == 'd' as i32 {
                         /*  STRING CONVERSION   */
-                        let mut buf: [libc::c_char; 32] = [0; 32];
                         str = str.offset(1);
                         if state.expressions.argFlags[state.expressions.argIndex - 1] == 0 {
-                            sprintf(buf.as_mut_ptr(),
-                                b"%ld\x00" as *const u8 as *const libc::c_char,
-                                state.expressions.argStack[state.expressions.argIndex - 1]
-                            );
-                            Argstring[state.expressions.argIndex - 1] =
-                                strcpy(ckmalloc(strlen(buf.as_mut_ptr()).wrapping_add(1
-                                                                                          as
-                                                                                          libc::c_int
-                                                                                          as
-                                                                                          libc::c_ulong)
-                                                    as libc::c_int),
-                                       buf.as_mut_ptr())
+                            let buffer = format!("{}", state.expressions.argStack[state.expressions.argIndex - 1]);
+                            Argstring[state.expressions.argIndex - 1] = transient::string_to_str_pointer(buffer);
                         }
                     }
                     state.expressions.lastWasOp = false
