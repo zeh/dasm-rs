@@ -105,9 +105,6 @@ extern "C" {
     fn strncpy(_: *mut libc::c_char, _: *const libc::c_char, _: libc::c_ulong)
      -> *mut libc::c_char;
     #[no_mangle]
-    fn strcat(_: *mut libc::c_char, _: *const libc::c_char)
-     -> *mut libc::c_char;
-    #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
     fn strlen(_: *const libc::c_char) -> libc::c_ulong;
@@ -116,8 +113,6 @@ extern "C" {
               __base: libc::c_int) -> libc::c_long;
     #[no_mangle]
     fn malloc(_: libc::c_ulong) -> *mut libc::c_void;
-    #[no_mangle]
-    fn realloc(_: *mut libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]

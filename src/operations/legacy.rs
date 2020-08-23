@@ -40,7 +40,6 @@ extern "C" {
     fn fopen(__filename: *const libc::c_char, __modes: *const libc::c_char)
      -> *mut FILE;
     #[no_mangle]
-    #[no_mangle]
     fn snprintf(_: *mut libc::c_char, _: libc::c_ulong,
                 _: *const libc::c_char, _: ...) -> libc::c_int;
     #[no_mangle]
@@ -63,8 +62,6 @@ extern "C" {
     #[no_mangle]
     fn strncpy(_: *mut libc::c_char, _: *const libc::c_char, _: libc::c_ulong)
      -> *mut libc::c_char;
-    #[no_mangle]
-    fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
     fn strncmp(_: *const libc::c_char, _: *const libc::c_char,
                _: libc::c_ulong) -> libc::c_int;
