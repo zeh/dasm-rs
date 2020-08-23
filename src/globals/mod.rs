@@ -52,6 +52,7 @@ pub static mut state: GlobalState = GlobalState {
 		isClear: false,
 		includeDirList: Vec::<String>::new(),
 		listMode: ListMode::List,
+		macroLevel: 0,
 		modeNext: AddressModes::Imp,
 		pass: 0,
 		processor: Processors::None,

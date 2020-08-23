@@ -84,8 +84,6 @@ extern "C" {
     #[no_mangle]
     static mut Opsize: [libc::c_uint; 0];
     #[no_mangle]
-    static mut Mlevel: libc::c_uint;
-    #[no_mangle]
     fn findext(str: *mut libc::c_char);
     #[no_mangle]
     fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const libc::c_char)
@@ -1372,19 +1370,12 @@ pub unsafe extern "C" fn v_execmac(mut str: *mut libc::c_char,
     let mut sl: *mut _STRLIST = 0 as *mut _STRLIST;
     let mut s1: *mut libc::c_char = 0 as *mut libc::c_char;
     programlabel();
-    if Mlevel == MAX_MACRO_LEVEL as libc::c_int as libc::c_uint {
+    if state.execution.macroLevel == MAX_MACRO_LEVEL {
         println!("infinite macro recursion");
         return
     }
-    Mlevel = Mlevel.wrapping_add(1);
-    base =
-        ckmalloc((::std::mem::size_of::<*mut _STRLIST>() as
-                      libc::c_ulong).wrapping_add(strlen(str)).wrapping_add(1
-                                                                                as
-                                                                                libc::c_int
-                                                                                as
-                                                                                libc::c_ulong)
-                     as libc::c_int) as *mut _STRLIST;
+    state.execution.macroLevel += 1;
+    base = ckmalloc((std::mem::size_of::<*mut _STRLIST>() as libc::c_ulong).wrapping_add(strlen(str)).wrapping_add(1) as libc::c_int) as *mut _STRLIST;
     (*base).next = 0 as *mut _STRLIST;
     strcpy((*base).buf.as_mut_ptr(), str);
     psl = &mut (*base).next;
@@ -1452,7 +1443,7 @@ pub unsafe extern "C" fn v_endm(mut _str: *mut libc::c_char,
     let mut an: *mut _STRLIST = 0 as *mut _STRLIST;
     /* programlabel(); contrary to documentation */
     if (*inc).flags as libc::c_int & 0x1 as libc::c_int != 0 {
-        Mlevel = Mlevel.wrapping_sub(1);
+        state.execution.macroLevel -= 1;
         args = (*inc).args;
         while !args.is_null() {
             an = (*args).next;

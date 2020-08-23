@@ -214,8 +214,6 @@ pub static mut Av: [*mut libc::c_char; 256] =
 #[no_mangle]
 pub static mut Avbuf: [libc::c_char; 512] = [0; 512];
 #[no_mangle]
-pub static mut Mlevel: libc::c_uint = 0;
-#[no_mangle]
 pub static mut Localindex: libc::c_ulong = 0;
 /*  to generate local variables */
 #[no_mangle]

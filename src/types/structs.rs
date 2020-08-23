@@ -70,6 +70,7 @@ pub struct ExecutionState {
 	pub isClear: bool,
 	pub includeDirList: Vec<String>,
 	pub listMode: ListMode,
+	pub macroLevel: u8,
 	pub modeNext: AddressModes,
 	pub pass: u8,
 	pub processor: Processors,
