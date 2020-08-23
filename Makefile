@@ -55,6 +55,8 @@ build-release:
 	mkdir -p bin
 	cp target/release/dasm bin/dasm
 	cp target/release/ftohex bin/ftohex
+	strip bin/dasm
+	strip bin/ftohex
 	./stats.sh
 
 
