@@ -68,12 +68,8 @@ pub fn get_stream_position(file: &mut File) -> u64 {
 
 pub fn get_stream_position_maybe(maybe_file: &mut Option<File>) -> u64 {
 	match maybe_file {
-		Some(file) => {
-			get_stream_position(file)
-		}
-		None => {
-			0
-		}
+		Some(file) => get_stream_position(file),
+		None => 0,
 	}
 }
 
