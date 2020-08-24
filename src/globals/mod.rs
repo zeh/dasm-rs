@@ -18,6 +18,7 @@ use crate::types::structs::{
 	OutputState,
 	ParametersState,
 	Segment,
+	Symbol,
 };
 
 // FIXME: remove legacy module once it's all translated or moved somewhere else
@@ -58,6 +59,7 @@ pub static mut state: GlobalState = GlobalState {
 		localIndex: 0,
 		macroLevel: 0,
 		modeNext: AddressModes::Imp,
+		orgSymbol: Symbol::new(),
 		pass: 0,
 		processor: Processors::None,
 		programFlags: 0,
@@ -66,6 +68,9 @@ pub static mut state: GlobalState = GlobalState {
 		redoIf: 0,
 		redoIndex: 0,
 		redoWhy: 0,
+		specialCheckSymbol: Symbol::new(),
+		specialSymbol: Symbol::new(),
+		symbols: Vec::<Symbol>::new(),
 		trace: false,
 	},
 
