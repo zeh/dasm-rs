@@ -68,7 +68,7 @@ pub fn format_line_tabs(line: &str) -> String {
 		if c == '\t' {
 			// Optimize out spaces before the tab
 			while spaces > 0 && result.ends_with(" ") {
-				result.remove(result.len() - 1);
+				result.pop();
 				spaces -= 1
 			}
 			spaces = 0;
@@ -82,7 +82,7 @@ pub fn format_line_tabs(line: &str) -> String {
 			let mut spaces_to_remove = spaces;
 			while spaces_to_remove >= 0 && result.ends_with(" ") {
 				spaces_to_remove -= 1;
-				result.remove(result.len() - 1);
+				result.pop();
 			}
 			result.push_str("\t");
 		}
@@ -90,7 +90,7 @@ pub fn format_line_tabs(line: &str) -> String {
 	}
 
 	while result.len() > 0 && (result.ends_with(" ") || result.ends_with("\t")) {
-		result.remove(result.len() - 1);
+		result.pop();
 	}
 
 	result.push_str("\n");

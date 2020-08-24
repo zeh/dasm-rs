@@ -1147,7 +1147,7 @@ unsafe extern "C" fn outlistfile(mut comment: *const i8) {
         buffer.push_str("   ");
         i += 1
     }
-    buffer.remove(buffer.len() - 1);
+    buffer.pop();
     buffer.push_str(
         format!(
             "{}{:10} {}{}{}\t{}\n",
@@ -1161,7 +1161,7 @@ unsafe extern "C" fn outlistfile(mut comment: *const i8) {
     );
     if *comment.offset(0 as isize) != 0 {
         /*  tab and comment */
-        buffer.remove(buffer.len() - 1);
+        buffer.pop();
         buffer.push_str(
             format!(
                 "\t;{}",
