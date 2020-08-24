@@ -6,6 +6,7 @@ use crate::constants::{
     MAX_MACRO_LEVEL,
 };
 use crate::globals::state;
+use crate::symbols;
 use crate::types::flags::{
     FileFlags,
     ReasonCodes,
@@ -99,8 +100,6 @@ extern "C" {
     fn ckmalloc(bytes: i32) -> *mut i8;
     #[no_mangle]
     fn addmsg(message: *mut i8);
-    #[no_mangle]
-    fn setspecial(value: i32, flags: i32);
     #[no_mangle]
     fn findsymbol(str: *const i8, len: i32) -> *mut _SYMBOL;
     #[no_mangle]
@@ -821,7 +820,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut i8,
                 value = *ptr as i64;
                 if !(value != 0) { break ; }
                 if vmode != 0 {
-                    setspecial(value as i32, 0);
+                    symbols::set_special_symbol(&mut state.execution.specialSymbol, value as u64, 0);
                     tmp = eval(macstr, 0);
                     value = (*tmp).value;
                     if (*tmp).flags as i32 & 0x1 as i32 != 0 {
@@ -874,7 +873,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut i8,
             }
         } else {
             if vmode != 0 {
-                setspecial(value as i32, (*sym).flags as i32);
+                symbols::set_special_symbol(&mut state.execution.specialSymbol, value as u64, (*sym).flags);
                 tmp = eval(macstr, 0);
                 value = (*tmp).value;
                 if (*tmp).flags as i32 & 0x1 as i32 != 0 {
