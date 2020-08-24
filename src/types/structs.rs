@@ -76,6 +76,7 @@ pub struct ExecutionState {
 	pub localIndex: u64, // To generate local variables
 	pub macroLevel: u8,
 	pub modeNext: AddressModes,
+	pub orgSymbol: Symbol,
 	pub pass: u8,
 	pub processor: Processors,
 	pub programFlags: u8,
@@ -84,6 +85,9 @@ pub struct ExecutionState {
 	pub redoIf: u64,
 	pub redoIndex: i32,
 	pub redoWhy: u64,
+	pub specialCheckSymbol: Symbol,
+	pub specialSymbol: Symbol,
+	pub symbols: Vec<Symbol>, // Symbol hash table; originally, *SHash, an array of linked lists
 	pub trace: bool,
 }
 
@@ -122,4 +126,25 @@ pub struct Segment {
 	pub initrorg: u64,
 	pub initflags: u8,
 	pub initrflags: u8,
+}
+
+// In original C code, "_SYMBOL" and used as a linked list in many places
+pub struct Symbol {
+	pub name: String,
+	pub string: String,
+	pub flags: u8,
+	pub addressMode: u8,
+	pub value: u64,
+}
+
+impl Symbol {
+	pub const fn new() -> Symbol {
+		Symbol {
+			name: String::new(),
+			string: String::new(),
+			flags: 0,
+			addressMode: 0,
+			value: 0,
+		}
+	}
 }
