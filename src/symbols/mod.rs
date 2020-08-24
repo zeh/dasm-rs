@@ -72,3 +72,12 @@ pub fn clear_references(symbols: &mut Vec<Symbol>) {
 		symbol.flags &= !SymbolTypes::Referenced;
 	}
 }
+
+/**
+ * Sets the special symbol.
+ * In original C code, "setspecial()" in symbols.c
+ */
+pub fn set_special_symbol(specialSymbol: &mut Symbol, value: u64, flags: u8) {
+    specialSymbol.value = value;
+    specialSymbol.flags = flags;
+}
