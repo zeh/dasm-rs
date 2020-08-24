@@ -3,6 +3,7 @@ use libc;
 use crate::globals::state;
 use crate::types::flags::{
     ReasonCodes,
+    SymbolTypes,
 };
 use crate::types::enums::{
     AddressModes,
@@ -32,14 +33,8 @@ extern "C" {
     #[no_mangle]
     fn ckmalloc(bytes: i32) -> *mut i8;
     #[no_mangle]
-    fn allocsymbol() -> *mut _SYMBOL;
-    #[no_mangle]
-    fn findsymbol(str: *const i8, len: i32) -> *mut _SYMBOL;
-    #[no_mangle]
     fn CreateSymbol(str: *const i8, len: i32)
      -> *mut _SYMBOL;
-    #[no_mangle]
-    fn FreeSymbolList(sym: *mut _SYMBOL);
 }
 pub type size_t = u64;
 pub type __off_t = i64;
@@ -78,17 +73,6 @@ pub struct _IO_FILE {
     pub _unused2: [i8; 20],
 }
 pub type FILE = _IO_FILE;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct _SYMBOL {
-    pub next: *mut _SYMBOL,
-    pub name: *mut i8,
-    pub string: *mut i8,
-    pub flags: u8,
-    pub addrmode: u8,
-    pub value: i64,
-    pub namelen: u32,
-}
 /*
  *  EXP.C
  *
@@ -107,10 +91,9 @@ pub static mut Argstring: [*mut i8; MAX_ARGS] =
 #[no_mangle]
 pub static mut Opdis: [opfunc_t; MAX_OPS] = [None; MAX_OPS];
 #[no_mangle]
-pub unsafe extern "C" fn eval(mut str: *const i8,
-                              mut wantmode: i32) -> *mut _SYMBOL {
-    let mut base: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut cur: *mut _SYMBOL = 0 as *mut _SYMBOL;
+pub unsafe extern "C" fn eval(str: &str, mut wantmode: i32) -> Symbol {
+    let mut base: Symbol = Symbol::new();
+    let mut cur: Symbol = Symbol::new();
     let mut oldArgIndexBase = state.expressions.argIndexBase;
     let mut oldOpIndexBase = state.expressions.opIndexBase;
     let mut scr: i32 = 0;
@@ -118,19 +101,18 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
     state.expressions.argIndexBase = state.expressions.argIndex;
     state.expressions.opIndexBase = state.expressions.opIndex;
     state.expressions.lastWasOp = true;
-    cur = allocsymbol();
-    base = cur;
-    while *str != 0 {
+    base = &cur;
+    for c in str.chars() {
         if state.parameters.debug {
             println!("char '{}'", transient::str_pointer_and_len_to_string(str, 1));
         }
         let mut current_block_184: u64;
-        match *str as i32 {
-            32 | 10 => {
+        match c {
+            ' ' | '\n' => {
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
-            126 => {
+            '~' => {
                 if state.expressions.lastWasOp {
                     doop(
                         ::std::mem::transmute::<Option<unsafe extern "C" fn(_: i64, _: i32) -> ()>, opfunc_t>(
@@ -145,7 +127,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
-            42 => {
+            '*' => {
                 if state.expressions.lastWasOp {
                     pushsymbol(b".\x00" as *const u8 as *const i8);
                 } else {
@@ -159,7 +141,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
-            47 => {
+            '/' => {
                 doop(
                     ::std::mem::transmute::<Option<unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32) -> ()>, opfunc_t>(
                         Some(op_div as unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32) -> ())
@@ -169,7 +151,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
-            37 => {
+            '%' => {
                 if state.expressions.lastWasOp {
                     str = pushbin(str.offset(1))
                 } else {
@@ -183,7 +165,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                 }
                 current_block_184 = 3166194604430448652;
             }
-            63 => {
+            '?' => {
                 /*  10      */
                 doop(
                     ::std::mem::transmute::<Option<unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32)-> ()>, opfunc_t>(
@@ -194,7 +176,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
-            43 => {
+            '+' => {
                 /*  19      */
                 doop(
                     ::std::mem::transmute::<Option<unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32)-> ()>, opfunc_t>(
@@ -205,7 +187,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
-            45 => {
+            '-' => {
                 /*  19: -   (or - unary)        */
                 if state.expressions.lastWasOp {
                     doop(
@@ -225,7 +207,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
-            62 => {
+            '>' => {
                 /*  18: >> <<  17: > >= <= <    */
                 if state.expressions.lastWasOp {
                     doop(
@@ -264,7 +246,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                 }
                 current_block_184 = 3166194604430448652;
             }
-            60 => {
+            '<' => {
                 if state.expressions.lastWasOp {
                     doop(
                         ::std::mem::transmute::<Option<unsafe extern "C" fn(_: i64, _: i32)-> ()>, opfunc_t>(
@@ -301,7 +283,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                 }
                 current_block_184 = 3166194604430448652;
             }
-            61 => {
+            '=' => {
                 /*  16: ==  (= same as ==)      */
                 if *str.offset(1) as i32 == '=' as i32 {
                     str = str.offset(1)
@@ -315,7 +297,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
-            33 => {
+            '!' => {
                 /*  16: !=                      */
                 if state.expressions.lastWasOp {
                     doop(
@@ -336,7 +318,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
-            38 => {
+            '&' => {
                 /*  15: &   12: &&              */
                 if *str.offset(1) as i32 == '&' as i32 {
                     doop(
@@ -357,7 +339,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
-            94 => {
+            '^'  => {
                 /*  14: ^                       */
                 doop(
                     ::std::mem::transmute::<Option<unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32)-> ()>, opfunc_t>(
@@ -368,7 +350,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
-            124 => {
+            '|' => {
                 /*  13: |   11: ||              */
                 if *str.offset(1) as i32 == '|' as i32 {
                     doop(
@@ -389,7 +371,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
-            40 => {
+            '(' => {
                 if wantmode != 0 {
                     (*cur).addrmode =
                         AddressModes::IndWord as u8;
@@ -397,8 +379,8 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                     current_block_184 = 3166194604430448652;
                 } else { current_block_184 = 18384894229789369419; }
             }
-            91 => { current_block_184 = 18384894229789369419; }
-            41 => {
+            '[' => { current_block_184 = 18384894229789369419; }
+            ')' => {
                 if wantmode != 0 {
                     if (*cur).addrmode as i32 ==
                         AddressModes::IndWord as i32 &&
@@ -424,8 +406,8 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                     current_block_184 = 3166194604430448652;
                 } else { current_block_184 = 8741107198128373303; }
             }
-            93 => { current_block_184 = 8741107198128373303; }
-            35 => {
+            ']' => { current_block_184 = 8741107198128373303; }
+            '#' => {
                 (*cur).addrmode = AddressModes::Imm8 as u8;
                 str = str.offset(1);
                 /*
@@ -435,7 +417,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                 wantmode = 0; /* to lower case */
                 current_block_184 = 3166194604430448652;
             }
-            44 => { // ',' - FIXME: convert back to original char
+            ',' => {
                 while state.expressions.opIndex != state.expressions.opIndexBase { evaltop(); }
                 state.expressions.lastWasOp = true;
                 scr =
@@ -511,15 +493,15 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
-            36 => {
+            '$' => {
                 str = pushhex(str.offset(1));
                 current_block_184 = 3166194604430448652;
             }
-            39 => {
+            '\'' => {
                 str = pushchar(str.offset(1));
                 current_block_184 = 3166194604430448652;
             }
-            34 => {
+            '"' => {
                 str = pushstr(str.offset(1));
                 current_block_184 = 3166194604430448652;
             }
@@ -579,7 +561,9 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
             _ => { }
         }
     }
-    while state.expressions.opIndex != state.expressions.opIndexBase { evaltop(); }
+    while state.expressions.opIndex != state.expressions.opIndexBase {
+        evaltop();
+    }
     if state.expressions.argIndex != state.expressions.argIndexBase {
         state.expressions.argIndex -= 1;
         (*cur).value = state.expressions.argStack[state.expressions.argIndex];
@@ -614,16 +598,14 @@ pub unsafe extern "C" fn evaltop() {
         println!("evaltop @(A,O) {} {}", state.expressions.argIndex, state.expressions.opIndex);
     }
     if state.expressions.opIndex <= state.expressions.opIndexBase {
-        asmerr(AsmErrorEquates::SyntaxError, false,
-               0 as *const i8);
+        asmerr(AsmErrorEquates::SyntaxError, false, 0 as *const i8);
         state.expressions.opIndex = state.expressions.opIndexBase;
         return
     }
     state.expressions.opIndex -= 1;
     if state.expressions.opPri[state.expressions.opIndex] == 128 {
         if state.expressions.argIndex < state.expressions.argIndexBase + 1 {
-            asmerr(AsmErrorEquates::SyntaxError, false,
-                   0 as *const i8);
+            asmerr(AsmErrorEquates::SyntaxError, false, 0 as *const i8);
             state.expressions.argIndex = state.expressions.argIndexBase;
             return
         }
@@ -1034,38 +1016,31 @@ pub unsafe extern "C" fn pushsymbol(mut str: *const i8) -> *const i8 {
         return str.offset(1);
     }
     if *ptr as i32 == '$' as i32 { ptr = ptr.offset(1) }
-    sym =
-        findsymbol(str,
-                   ptr.wrapping_offset_from(str) as i64 as i32);
-    if !sym.is_null() {
-        if (*sym).flags as i32 & 0x1 as i32 != 0 {
-            state.execution.redoEval += 1
+    match symbols::find_symbol(&mut state, transient::str_pointer_to_string(str).as_str()) {
+        Some(symbol) => {
+            if symbol.flags & SymbolTypes::Unknown != 0 {
+                state.execution.redoEval += 1
+            }
+            if symbol.flags & SymbolTypes::Macro != 0 {
+                macro_0 = 1;
+                sym = eval(symbol.string, 0)
+            }
+            if symbol.flags & SymbolTypes::StringResult != 0 {
+                stackarg(0, SymbolTypes::StringResult, symbol.string);
+            } else {
+                stackarg(symbol.value, symbol.flags & SymbolTypes::Unknown, 0);
+            }
+            symbol.flags = symbol.flags | (SymbolTypes::Referenced | SymbolTypes::MasterReference);
+            if macro_0 != 0 {
+                FreeSymbolList(sym);
+            }
+        },
+        None => {
+            stackarg(0, SymbolTypes::Unknown, 0);
+            sym = CreateSymbol(str, ptr.wrapping_offset_from(str) as i64 as i32);
+            symbol.flags = (SymbolTypes::Referenced | SymbolTypes::MasterReference | SymbolTypes::Unknown);
+            state.execution.redoEval += 1;
         }
-        if (*sym).flags as i32 & 0x20 as i32 != 0 {
-            macro_0 = 1;
-            sym = eval((*sym).string, 0)
-        }
-        if (*sym).flags as i32 & 0x8 as i32 != 0 {
-            stackarg(0, 0x8 as i32,
-                     (*sym).string);
-        } else {
-            stackarg((*sym).value,
-                     (*sym).flags as i32 & 0x1 as i32,
-                     0 as *const i8);
-        }
-        (*sym).flags =
-            ((*sym).flags as i32 |
-                 (0x4 as i32 | 0x40 as i32)) as u8;
-        if macro_0 != 0 { FreeSymbolList(sym); }
-    } else {
-        stackarg(0, 0x1 as i32,
-                 0 as *const i8);
-        sym =
-            CreateSymbol(str,
-                         ptr.wrapping_offset_from(str) as i64 as i32);
-        (*sym).flags =
-            (0x4 as i32 | 0x40 as i32 | 0x1 as i32) as u8;
-        state.execution.redoEval += 1
     }
     return ptr;
 }

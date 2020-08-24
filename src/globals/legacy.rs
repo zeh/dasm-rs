@@ -174,17 +174,6 @@ pub struct _SEGMENT {
     pub initflags: u8,
     pub initrflags: u8,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct _SYMBOL {
-    pub next: *mut _SYMBOL,
-    pub name: *mut i8,
-    pub string: *mut i8,
-    pub flags: u8,
-    pub addrmode: u8,
-    pub value: i64,
-    pub namelen: u32,
-}
 /*
  *  GLOBALS.C
  */

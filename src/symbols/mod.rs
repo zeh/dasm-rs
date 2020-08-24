@@ -6,6 +6,7 @@ use crate::types::flags::{
     SymbolTypes,
 };
 use crate::types::structs::{
+    GlobalState,
     Symbol,
 };
 
@@ -80,4 +81,37 @@ pub fn clear_references(symbols: &mut Vec<Symbol>) {
 pub fn set_special_symbol(specialSymbol: &mut Symbol, value: u64, flags: u8) {
     specialSymbol.value = value;
     specialSymbol.flags = flags;
+}
+
+/**
+ * Find a symbol.
+ * In original C code, "findsymbol()" in symbols.c
+ */
+pub fn find_symbol(state: &mut GlobalState, name: &str) -> Option<&mut Symbol> {
+    let mut usedName: String = String::from(name);
+    if name.starts_with(".") {
+        if name.len() == 1 {
+            let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
+            if currentSegment.flags & SegmentTypes::RelocatableOrigin != 0 {
+                state.execution.orgSymbol.flags = currentSegment.rflags & SymbolTypes::Unknown;
+                state.execution.orgSymbol.value = currentSegment.rorg;
+            } else {
+                state.execution.orgSymbol.flags = currentSegment.flags & SymbolTypes::Unknown;
+                state.execution.orgSymbol.value = currentSegment.org;
+            }
+            return Some(&mut state.execution.orgSymbol);
+        } else if name.len() == 2 && name == ".." {
+            return Some(&mut state.execution.specialSymbol);
+        } else if name.len() == 3 && name == "..." {
+            state.execution.specialCheckSymbol.flags = 0;
+            state.execution.specialCheckSymbol.value = state.output.checksum;
+            return Some(&mut state.execution.specialCheckSymbol);
+        }
+
+        usedName = format!("{}{}", state.execution.localIndex, name);
+    } else if name.ends_with("$") {
+        usedName = format!("{}${}", state.execution.localDollarIndex, name);
+    }
+
+    state.execution.symbols.iter_mut().find(|symbol| symbol.name == usedName)
 }

@@ -101,8 +101,6 @@ extern "C" {
     #[no_mangle]
     fn addmsg(message: *mut i8);
     #[no_mangle]
-    fn findsymbol(str: *const i8, len: i32) -> *mut _SYMBOL;
-    #[no_mangle]
     fn CreateSymbol(str: *const i8, len: i32)
      -> *mut _SYMBOL;
     #[no_mangle]
@@ -793,7 +791,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut i8,
                   *str.offset(i as isize) as i32 != ' ' as i32 {
             i += 1
         }
-        tmp = findsymbol(str, i);
+        tmp = find_symbol(&state, transient::str_pointer_to_string(str));
         str = str.offset(i as isize);
         if tmp.is_null() {
             println!("EQM label not found");
@@ -1107,7 +1105,7 @@ pub unsafe extern "C" fn v_equ(mut str: *mut i8,
         }
         return
     }
-    lab = findsymbol(*Av.as_mut_ptr().offset(0), strlen(*Av.as_mut_ptr().offset(0)) as i32);
+    lab = find_symbol(&state, transient::str_pointer_to_string(*Av.as_mut_ptr().offset(0)));
     if lab.is_null() {
         lab = CreateSymbol(*Av.as_mut_ptr().offset(0), strlen(*Av.as_mut_ptr().offset(0)) as i32)
     }
@@ -1154,9 +1152,8 @@ pub unsafe extern "C" fn v_equ(mut str: *mut i8,
 pub unsafe extern "C" fn v_eqm(mut str: *mut i8,
                                mut _dummy: *mut _MNE) {
     let mut lab: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut len: i32 =
-        strlen(*Av.as_mut_ptr().offset(0)) as i32;
-    lab = findsymbol(*Av.as_mut_ptr().offset(0), len);
+    let mut len: i32 = strlen(*Av.as_mut_ptr().offset(0 as isize)) as i32;
+    lab = find_symbol(&state, transient::str_pointer_to_string(*Av.as_mut_ptr().offset(0)));
     if !lab.is_null() {
         if (*lab).flags as i32 & 0x8 as i32 != 0 {
             free((*lab).string as *mut libc::c_void);
@@ -1306,13 +1303,9 @@ pub unsafe extern "C" fn v_set(mut str: *mut i8,
         // traditional SET behavior
         sym = eval(str, 0)
     } /* garbage */
-    lab =
-        findsymbol(*Av.as_mut_ptr().offset(0),
-                   strlen(*Av.as_mut_ptr().offset(0)) as i32);
+    lab = find_symbol(&state, transient::str_pointer_to_string(*Av.as_mut_ptr().offset(0)));
     if lab.is_null() {
-        lab =
-            CreateSymbol(*Av.as_mut_ptr().offset(0),
-                         strlen(*Av.as_mut_ptr().offset(0)) as i32)
+        lab = CreateSymbol(*Av.as_mut_ptr().offset(0), strlen(*Av.as_mut_ptr().offset(0)) as i32)
     }
     (*lab).value = (*sym).value;
     (*lab).flags =
