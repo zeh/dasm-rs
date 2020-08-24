@@ -133,14 +133,6 @@ extern "C" {
     #[no_mangle]
     static mut Ops: [_MNE; 0];
     #[no_mangle]
-    static mut Localindex: u64;
-    #[no_mangle]
-    static mut Lastlocalindex: u64;
-    #[no_mangle]
-    static mut Localdollarindex: u64;
-    #[no_mangle]
-    static mut Lastlocaldollarindex: u64;
-    #[no_mangle]
     fn v_execmac(str: *mut i8, mac: *mut _MACRO);
     /* exp.c */
     #[no_mangle]
@@ -867,11 +859,10 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
                         println!();
                         println!("START OF PASS: {}", state.execution.pass);
                     }
-                    Lastlocalindex = 0;
-                    Localindex = Lastlocalindex;
-                    Lastlocaldollarindex = 0;
-                    Localdollarindex = Lastlocaldollarindex;
-
+                    state.execution.lastLocalIndex = 0;
+                    state.execution.localIndex = 0;
+                    state.execution.lastLocalDollarIndex = 0;
+                    state.execution.localDollarIndex = 0;
                     state.execution.isClear = true;
                     state.output.checksum = 0;
 

@@ -37,12 +37,6 @@ extern "C" {
     #[no_mangle]
     static mut Av: [*mut i8; 0];
     #[no_mangle]
-    static mut Localindex: u64;
-    #[no_mangle]
-    static mut Localdollarindex: u64;
-    #[no_mangle]
-    static mut Lastlocaldollarindex: u64;
-    #[no_mangle]
     fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8)
      -> i32;
     #[no_mangle]
@@ -138,7 +132,7 @@ pub unsafe extern "C" fn findsymbol(mut str: *const i8,
 
         let buffer = format!(
             "{}{:2$}",
-            Localindex,
+            state.execution.localIndex,
             transient::str_pointer_to_string(str),
             len as usize,
         );
@@ -147,7 +141,7 @@ pub unsafe extern "C" fn findsymbol(mut str: *const i8,
     } else if *str.offset((len - 1) as isize) as i32 == '$' as i32 {
         let buffer = format!(
             "{}${:2$}",
-            Localdollarindex,
+            state.execution.localDollarIndex,
             transient::str_pointer_to_string(str),
             len as usize,
         );
@@ -176,7 +170,7 @@ pub unsafe extern "C" fn CreateSymbol(mut str: *const i8,
     if *str.offset(0) as i32 == '.' as i32 {
         let buffer = format!(
             "{}{:2$}",
-            Localindex,
+            state.execution.localIndex,
             transient::str_pointer_to_string(str),
             len as usize,
         );
@@ -185,7 +179,7 @@ pub unsafe extern "C" fn CreateSymbol(mut str: *const i8,
     } else if *str.offset((len - 1) as isize) as i32 == '$' as i32 {
         let buffer = format!(
             "{}${:2$}",
-            Localdollarindex,
+            state.execution.localDollarIndex,
             transient::str_pointer_to_string(str),
             len as usize,
         );
@@ -244,15 +238,12 @@ pub unsafe extern "C" fn programlabel() {
     str = *Av.as_mut_ptr().offset(0 as isize);
     if *str as i32 == 0 { return }
     len = strlen(str) as i32;
-    if *str.offset((len - 1) as isize) as i32 ==
-           ':' as i32 {
+    if *str.offset((len - 1) as isize) as i32 == ':' as i32 {
         len -= 1
     }
-    if *str.offset(0 as isize) as i32 != '.' as i32 &&
-           *str.offset((len - 1) as isize) as i32 !=
-               '$' as i32 {
-        Lastlocaldollarindex = Lastlocaldollarindex.wrapping_add(1);
-        Localdollarindex = Lastlocaldollarindex
+    if *str.offset(0 as isize) as i32 != '.' as i32 && *str.offset((len - 1) as isize) as i32 != '$' as i32 {
+        state.execution.lastLocalDollarIndex += 1;
+        state.execution.localDollarIndex = state.execution.lastLocalDollarIndex;
     }
     /*
     *	Redo:	unknown and referenced

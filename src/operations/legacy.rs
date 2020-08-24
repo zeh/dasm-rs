@@ -109,15 +109,7 @@ extern "C" {
     #[no_mangle]
     fn FreeSymbolList(sym: *mut _SYMBOL);
     #[no_mangle]
-    static mut Lastlocaldollarindex: u64;
-    #[no_mangle]
     fn programlabel();
-    #[no_mangle]
-    static mut Localdollarindex: u64;
-    #[no_mangle]
-    static mut Localindex: u64;
-    #[no_mangle]
-    static mut Lastlocalindex: u64;
     /* exp.c */
     #[no_mangle]
     fn eval(str: *const i8, wantmode: i32) -> *mut _SYMBOL;
@@ -1080,8 +1072,8 @@ pub unsafe extern "C" fn v_align(mut str: *mut i8,
 #[no_mangle]
 pub unsafe extern "C" fn v_subroutine(mut _str: *mut i8,
                                       mut _dummy: *mut _MNE) {
-    Lastlocalindex = Lastlocalindex.wrapping_add(1);
-    Localindex = Lastlocalindex;
+    state.execution.lastLocalIndex += 1;
+    state.execution.localIndex = state.execution.lastLocalIndex;
     programlabel();
 }
 #[no_mangle]
@@ -1391,15 +1383,15 @@ pub unsafe extern "C" fn v_execmac(mut str: *mut i8,
     (*inc).fi = (*pIncfile).fi;
     (*inc).lineno = 0;
     (*inc).flags = 0x1 as i32 as u8;
-    (*inc).saveidx = Localindex;
-    (*inc).savedolidx = Localdollarindex;
+    (*inc).saveidx = state.execution.localIndex;
+    (*inc).savedolidx = state.execution.localDollarIndex;
     (*inc).strlist = (*mac).strlist;
     (*inc).args = base;
     pIncfile = inc;
-    Lastlocalindex = Lastlocalindex.wrapping_add(1);
-    Localindex = Lastlocalindex;
-    Lastlocaldollarindex = Lastlocaldollarindex.wrapping_add(1);
-    Localdollarindex = Lastlocaldollarindex;
+    state.execution.lastLocalIndex += 1;
+    state.execution.localIndex = state.execution.lastLocalIndex;
+    state.execution.lastLocalDollarIndex += 1;
+    state.execution.localDollarIndex = state.execution.lastLocalDollarIndex;
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_end(mut _str: *mut i8,
@@ -1425,8 +1417,8 @@ pub unsafe extern "C" fn v_endm(mut _str: *mut i8,
             free(args as *mut libc::c_void);
             args = an
         }
-        Localindex = (*inc).saveidx;
-        Localdollarindex = (*inc).savedolidx;
+        state.execution.localIndex = (*inc).saveidx;
+        state.execution.localDollarIndex = (*inc).savedolidx;
         pIncfile = (*inc).next;
         free(inc as *mut libc::c_void);
         return

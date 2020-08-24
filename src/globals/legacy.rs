@@ -213,15 +213,6 @@ pub static mut Av: [*mut i8; 256] =
 /*	up to 256 arguments */
 #[no_mangle]
 pub static mut Avbuf: [i8; 512] = [0; 512];
-#[no_mangle]
-pub static mut Localindex: u64 = 0;
-/*  to generate local variables */
-#[no_mangle]
-pub static mut Lastlocalindex: u64 = 0;
-#[no_mangle]
-pub static mut Localdollarindex: u64 = 0;
-#[no_mangle]
-pub static mut Lastlocaldollarindex: u64 = 0;
 /*unsigned int	Adrbytes[]  = { 1, 2, 3, 2, 2, 2, 3, 3, 3, 2, 2, 2, 3, 1, 1, 2, 3 };*/
 #[no_mangle]
 pub static mut Cvt: [u32; 17] =
