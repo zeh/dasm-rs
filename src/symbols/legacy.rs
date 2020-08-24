@@ -1,14 +1,13 @@
 use libc;
 
-use crate::constants::{
-    MAX_SYMBOLS,
-    S_HASH_AND,
-};
 use crate::globals::state;
 use crate::types::flags::{
     ReasonCodes,
     SegmentTypes,
     SymbolTypes,
+};
+use crate::types::structs::{
+    Symbol,
 };
 use crate::types::enums::{
     AsmErrorEquates,
@@ -32,8 +31,6 @@ extern "C" {
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
-    #[no_mangle]
-    static mut SHash: [*mut _SYMBOL; 0];
     #[no_mangle]
     static mut Av: [*mut i8; 0];
     #[no_mangle]
@@ -91,208 +88,143 @@ static mut specchk: _SYMBOL =
             addrmode: 0,
             value: 0,
             namelen: 0,};
+
+// FIXME: move to symbols module
 #[no_mangle]
-pub unsafe extern "C" fn setspecial(mut value: i32,
-                                    mut flags: i32) {
-    special.value = value as i64; /* historical */
-    special.flags = flags as u8; /* historical */
+pub unsafe extern "C" fn set_special_symbol(value: u64, flags: u8) {
+    state.execution.specialSymbol.value = value;
+    state.execution.specialSymbol.flags = flags;
 }
+
+// FIXME: move to symbols module
 #[no_mangle]
-pub unsafe extern "C" fn findsymbol(mut str: *const i8,
-                                    mut len: i32) -> *mut _SYMBOL {
-    let mut h1: u32 = 0; /*	permalloc zeros the array for us */
-    let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    if len > MAX_SYMBOLS as i32 { len = MAX_SYMBOLS as i32 }
-    if *str.offset(0) as i32 == '.' as i32 {
-        if len == 1 {
+pub unsafe extern "C" fn find_symbol(name: &str) -> Option<&mut Symbol> {
+    let mut usedName: String = String::from(name);
+    if name.starts_with(".") {
+        if name.len() == 1 {
             let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
             if currentSegment.flags & SegmentTypes::RelocatableOrigin != 0 {
-                org.flags = currentSegment.rflags & SymbolTypes::Unknown;
-                org.value = currentSegment.rorg as i64;
+                state.execution.orgSymbol.flags = currentSegment.rflags & SymbolTypes::Unknown;
+                state.execution.orgSymbol.value = currentSegment.rorg;
             } else {
-                org.flags = currentSegment.flags & SymbolTypes::Unknown;
-                org.value = currentSegment.org as i64;
+                state.execution.orgSymbol.flags = currentSegment.flags & SymbolTypes::Unknown;
+                state.execution.orgSymbol.value = currentSegment.org;
             }
-            return &mut org
-        }
-        if len == 2 &&
-               *str.offset(1) as i32 ==
-                   '.' as i32 {
-            return &mut special
-        }
-        if len == 3 &&
-               *str.offset(1) as i32 ==
-                   '.' as i32 &&
-               *str.offset(2) as i32 ==
-                   '.' as i32 {
-            specchk.flags = 0;
-            specchk.value = state.output.checksum as i64;
-            return &mut specchk
+            return Some(&mut state.execution.orgSymbol);
+        } else if name.len() == 2 && name == ".." {
+            return Some(&mut state.execution.specialSymbol);
+        } else if name.len() == 3 && name == "..." {
+            state.execution.specialCheckSymbol.flags = 0;
+            state.execution.specialCheckSymbol.value = state.output.checksum;
+            return Some(&mut state.execution.specialCheckSymbol);
         }
 
-        let buffer = format!(
-            "{}{:2$}",
-            state.execution.localIndex,
-            transient::str_pointer_to_string(str),
-            len as usize,
-        );
-        len = buffer.len() as i32;
-        str = transient::string_to_str_pointer(buffer);
-    } else if *str.offset((len - 1) as isize) as i32 == '$' as i32 {
-        let buffer = format!(
-            "{}${:2$}",
-            state.execution.localDollarIndex,
-            transient::str_pointer_to_string(str),
-            len as usize,
-        );
-        len = buffer.len() as i32;
-        str = transient::string_to_str_pointer(buffer);
+        usedName = format!("{}{}", state.execution.localIndex, name);
+    } else if name.ends_with("$") {
+        usedName = format!("{}${}", state.execution.localDollarIndex, name);
     }
-    h1 = hash1(str, len);
-    sym = *SHash.as_mut_ptr().offset(h1 as isize);
-    while !sym.is_null() {
-        if (*sym).namelen == len as u32 &&
-               memcmp((*sym).name as *const libc::c_void,
-                      str as *const libc::c_void, len as u64) == 0 {
-            break ;
-        }
-        sym = (*sym).next
-    }
-    return sym;
+
+    state.execution.symbols.iter_mut().find(|symbol| symbol.name == usedName)
 }
-#[no_mangle]
-pub unsafe extern "C" fn CreateSymbol(mut str: *const i8,
-                                      mut len: i32) -> *mut _SYMBOL {
-    let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut h1: u32 = 0;
-    if len > MAX_SYMBOLS as i32 { len = MAX_SYMBOLS as i32 }
-    // FIXME: this duplicates functionality in findsymbol(). Merge or extract?
-    if *str.offset(0) as i32 == '.' as i32 {
-        let buffer = format!(
-            "{}{:2$}",
-            state.execution.localIndex,
-            transient::str_pointer_to_string(str),
-            len as usize,
-        );
-        len = buffer.len() as i32;
-        str = transient::string_to_str_pointer(buffer);
-    } else if *str.offset((len - 1) as isize) as i32 == '$' as i32 {
-        let buffer = format!(
-            "{}${:2$}",
-            state.execution.localDollarIndex,
-            transient::str_pointer_to_string(str),
-            len as usize,
-        );
-        len = buffer.len() as i32;
-        str = transient::string_to_str_pointer(buffer);
+
+// FIXME: move to module
+pub unsafe extern "C" fn create_symbol(name: &str) -> &mut Symbol {
+    // FIXME: this is a bit duplicated from find_symbol(), extract?
+    let mut usedName = String::from(name);
+    if name.starts_with(".") {
+        usedName = format!("{}{}", state.execution.localIndex, name);
+    } else if name.ends_with("$") {
+        usedName = format!("{}${}", state.execution.localDollarIndex, name);
     }
-    sym = allocsymbol();
-    (*sym).name = permalloc(len + 1);
-    memcpy((*sym).name as *mut libc::c_void, str as *const libc::c_void, len as u64);
-    (*sym).namelen = len as u32;
-    h1 = hash1(str, len);
-    (*sym).next = *SHash.as_mut_ptr().offset(h1 as isize);
-    (*sym).flags = 0x1 as i32 as u8;
-    let ref mut fresh0 = *SHash.as_mut_ptr().offset(h1 as isize);
-    *fresh0 = sym;
-    return sym;
+
+    let mut symbol = Symbol::new();
+    symbol.name = usedName;
+    symbol.flags = SymbolTypes::Unknown;
+    state.execution.symbols.insert(0, symbol);
+    &mut state.execution.symbols[0]
 }
-/*
- *  SYMBOLS.C
- */
-unsafe extern "C" fn hash1(mut str: *const i8, mut len: i32)
- -> u32 {
-    let mut result: u32 = 0;
-    loop  {
-        let fresh1 = len;
-        len = len - 1;
-        if !(fresh1 != 0) { break ; }
-        let fresh2 = str;
-        str = str.offset(1);
-        result = result << 2 ^ *fresh2 as u32
-    }
-    return result & S_HASH_AND as i32 as u32;
-}
+
 /*
 *  Label Support Routines
 */
 #[no_mangle]
 pub unsafe extern "C" fn programlabel() {
-    let mut len: i32 = 0;
-    let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let currentSegment = &state.other.segments[state.other.currentSegment];
-    let mut str: *mut i8 = 0 as *mut i8;
-    let mut rorg: u8 = currentSegment.flags & SegmentTypes::RelocatableOrigin;
-    let mut cflags: u8 = if rorg != 0 {
-        currentSegment.rflags
+    let currentSegment = &mut state.other.segments[state.other.currentSegment];
+    let rorg = currentSegment.flags & SegmentTypes::RelocatableOrigin;
+    let (cflags, pc) = if rorg != 0 {
+        (currentSegment.rflags, currentSegment.rorg)
     } else {
-        currentSegment.flags
-    };
-    let mut pc: u64 = if rorg != 0 {
-        currentSegment.rorg
-    } else {
-        currentSegment.org
+        (currentSegment.flags, currentSegment.org)
     };
     state.execution.programOrg = currentSegment.org;
     state.execution.programFlags = currentSegment.flags;
-    str = *Av.as_mut_ptr().offset(0);
-    if *str as i32 == 0 { return }
-    len = strlen(str) as i32;
-    if *str.offset((len - 1) as isize) as i32 == ':' as i32 {
-        len -= 1
+    let mut name = transient::str_pointer_to_string(*Av.as_mut_ptr());
+    if name.len() == 0 {
+        return;
     }
-    if *str.offset(0) as i32 != '.' as i32 && *str.offset((len - 1) as isize) as i32 != '$' as i32 {
+
+    if name.ends_with(":") {
+        name.pop();
+    }
+    if name.starts_with(".") && name.ends_with("$") {
         state.execution.lastLocalDollarIndex += 1;
         state.execution.localDollarIndex = state.execution.lastLocalDollarIndex;
     }
-    /*
-    *	Redo:	unknown and referenced
-    *		referenced and origin not known
-    *		known and phase error	 (origin known)
-    */
-    sym = findsymbol(str, len);
-    if !sym.is_null() {
-        if (*sym).flags & (SymbolTypes::Unknown | SymbolTypes::Referenced) == SymbolTypes::Unknown | SymbolTypes::Referenced {
-            state.execution.redoIndex += 1;
-            state.execution.redoWhy |= ReasonCodes::ForwardReference;
-            if state.parameters.debug {
-                println!(
-                    "redo 13: '{}' {:04x} {:04x}",
-                    transient::str_pointer_to_string((*sym).name).as_str(),
-                    (*sym).flags,
-                    cflags,
-                );
-            }
-        } else if cflags & SymbolTypes::Unknown != 0 && (*sym).flags & SymbolTypes::Referenced != 0 {
-            state.execution.redoIndex += 1;
-            state.execution.redoWhy |= ReasonCodes::ForwardReference
-        } else if cflags & SymbolTypes::Unknown == 0 && (*sym).flags & SymbolTypes::Unknown == 0 {
-            if pc != (*sym).value as u64 {
-                /*
-            * If we had an unevaluated IF expression in the
-            * previous pass, don't complain about phase errors
-            * too loudly.
-                */
-                //FIX: calling asmerr with ERROR_LABEL_MISMATCH is fatal. The clause
-                //     below was causing aborts if verbosity was up, even when the
-                //     phase errors were the result of unevaluated IF expressions in
-                //     the previous pass.
-                //if (state.verbose >= 1 || !(state.execution.redoIf & (ReasonCodes::Obscure)))
-                if state.execution.redoIf & ReasonCodes::Obscure == 0 {
-                    let buffer = format!(
-                        "{} {}",
-                        transient::str_pointer_to_string((*sym).name),
-                        formatting::segment_address_to_string((*sym).value as u64, 0),
-                    );
-                    asmerr(AsmErrorEquates::LabelMismatch, false, transient::string_to_str_pointer(buffer));
-                }
+
+    // Redo: unknown and referenced
+    //   referenced and origin not known
+    //   known and phase error	 (origin known)
+
+    let symbolSearch = find_symbol(name.as_str());
+    let symbol: &mut Symbol;
+    match symbolSearch {
+        Some(result) => {
+            symbol = result;
+            if symbol.flags & (SymbolTypes::Unknown | SymbolTypes::Referenced) == SymbolTypes::Unknown | SymbolTypes::Referenced {
                 state.execution.redoIndex += 1;
-                state.execution.redoWhy |= ReasonCodes::PhaseError
+                state.execution.redoWhy |= ReasonCodes::ForwardReference;
+                if state.parameters.debug {
+                    println!(
+                        "redo 13: '{}' {:04x} {:04x}",
+                        symbol.name,
+                        symbol.flags,
+                        cflags,
+                    );
+                }
+            } else if cflags & SymbolTypes::Unknown != 0 && symbol.flags & SymbolTypes::Referenced != 0 {
+                state.execution.redoIndex += 1;
+                state.execution.redoWhy |= ReasonCodes::ForwardReference;
+            } else if cflags & SymbolTypes::Unknown == 0 && symbol.flags & SymbolTypes::Referenced == 0 {
+                if pc != symbol.value {
+                    // If we had an unevaluated IF expression in the
+                    // previous pass, don't complain about phase errors
+                    // too loudly
+
+                    // FIX: calling asmerr with ERROR_LABEL_MISMATCH is fatal. The clause
+                    //      below was causing aborts if verbosity was up, even when the
+                    //      phase errors were the result of unevaluated IF expressions in
+                    //      the previous pass.
+                    // if (state.verbose >= 1 || !(st.execution.redoIf & (ReasonCodes::Obscure)))
+                    if state.execution.redoIf & ReasonCodes::Obscure == 0 {
+                        let buffer = format!(
+                            "{} {}",
+                            symbol.name,
+                            formatting::segment_address_to_string(symbol.value, 0),
+                        );
+                        asmerr(AsmErrorEquates::LabelMismatch, false, transient::string_to_str_pointer(buffer));
+                    }
+                    state.execution.redoIndex += 1;
+                    state.execution.redoWhy |= ReasonCodes::PhaseError
+                }
             }
-        }
-    } else { sym = CreateSymbol(str, len) }
-    (*sym).value = pc as i64;
-    (*sym).flags = ((*sym).flags & !(SymbolTypes::Unknown) | cflags & SymbolTypes::Unknown) as u8;
+        },
+        None => {
+            symbol = create_symbol(name.as_str());
+        },
+    }
+
+    symbol.value = pc;
+    symbol.flags = symbol.flags & !(SymbolTypes::Unknown) | cflags & SymbolTypes::Unknown;
 }
 #[no_mangle]
 pub static mut SymAlloc: *mut _SYMBOL = 0 as *const _SYMBOL as *mut _SYMBOL;
