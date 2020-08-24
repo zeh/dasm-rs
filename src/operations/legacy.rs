@@ -559,7 +559,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut i8,
 pub unsafe extern "C" fn v_trace(mut str: *mut i8,
                                  mut _dummy: *mut _MNE) {
     state.execution.trace =
-        *str.offset(1 as isize) as i32 == 'n' as i32;
+        *str.offset(1) as i32 == 'n' as i32;
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_list(mut str: *mut i8,
@@ -588,7 +588,7 @@ unsafe extern "C" fn getfilename(mut str: *mut i8)
         let mut buf: *mut i8 = 0 as *mut i8;
         str = str.offset(1);
         buf =
-            ckmalloc(strlen(str).wrapping_add(1 as u64) as i32);
+            ckmalloc(strlen(str).wrapping_add(1) as i32);
         strcpy(buf, str);
         str = buf;
         while *str as i32 != 0 && *str as i32 != '\"' as i32 {
@@ -755,37 +755,37 @@ pub unsafe extern "C" fn v_dc(mut str: *mut i8,
     state.output.generatedLength = 0;
     programlabel();
     /* for byte, .byte, word, .word, long, .long */
-    if *(*mne).name.offset(0 as isize) as i32 !=
+    if *(*mne).name.offset(0) as i32 !=
            'd' as i32 {
         static mut sTmp: [i8; 4] = [0; 4];
         strcpy(sTmp.as_mut_ptr(),
                b"x.x\x00" as *const u8 as *const i8);
-        sTmp[2 as usize] =
-            *(*mne).name.offset(0 as isize);
+        sTmp[2] =
+            *(*mne).name.offset(0);
         findext(sTmp.as_mut_ptr());
     }
     /* F8... */
     /* db, dw, dd */
-    if *(*mne).name.offset(0 as isize) as i32 ==
+    if *(*mne).name.offset(0) as i32 ==
            'd' as i32 &&
-           *(*mne).name.offset(1 as isize) as i32 !=
+           *(*mne).name.offset(1) as i32 !=
                'c' as i32 &&
-           *(*mne).name.offset(1 as isize) as i32 !=
+           *(*mne).name.offset(1) as i32 !=
                'v' as i32 {
         static mut sTmp_0: [i8; 4] = [0; 4];
         strcpy(sTmp_0.as_mut_ptr(),
                b"x.x\x00" as *const u8 as *const i8);
         if 'd' as i32 ==
-               *(*mne).name.offset(1 as isize) as i32 {
-            sTmp_0[2 as usize] = 'l' as i32 as i8
+               *(*mne).name.offset(1) as i32 {
+            sTmp_0[2] = 'l' as i32 as i8
         } else {
-            sTmp_0[2 as usize] =
-                *(*mne).name.offset(1 as isize)
+            sTmp_0[2] =
+                *(*mne).name.offset(1)
         }
         findext(sTmp_0.as_mut_ptr());
     }
     /* ...F8 */
-    if *(*mne).name.offset(1 as isize) as i32 ==
+    if *(*mne).name.offset(1) as i32 ==
            'v' as i32 {
         let mut i: i32 = 0;
         vmode = 1;
@@ -1156,22 +1156,22 @@ pub unsafe extern "C" fn v_eqm(mut str: *mut i8,
                                mut _dummy: *mut _MNE) {
     let mut lab: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut len: i32 =
-        strlen(*Av.as_mut_ptr().offset(0 as isize)) as i32;
-    lab = findsymbol(*Av.as_mut_ptr().offset(0 as isize), len);
+        strlen(*Av.as_mut_ptr().offset(0)) as i32;
+    lab = findsymbol(*Av.as_mut_ptr().offset(0), len);
     if !lab.is_null() {
         if (*lab).flags as i32 & 0x8 as i32 != 0 {
             free((*lab).string as *mut libc::c_void);
         }
     } else {
         lab =
-            CreateSymbol(*Av.as_mut_ptr().offset(0 as isize),
+            CreateSymbol(*Av.as_mut_ptr().offset(0),
                          len)
     }
     (*lab).value = 0;
     (*lab).flags =
         (0x8 as i32 | 0x10 as i32 | 0x20 as i32) as u8;
     (*lab).string =
-        strcpy(ckmalloc(strlen(str).wrapping_add(1 as u64) as i32), str);
+        strcpy(ckmalloc(strlen(str).wrapping_add(1) as i32), str);
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_echo(mut str: *mut i8,
@@ -1308,13 +1308,12 @@ pub unsafe extern "C" fn v_set(mut str: *mut i8,
         sym = eval(str, 0)
     } /* garbage */
     lab =
-        findsymbol(*Av.as_mut_ptr().offset(0 as isize),
-                   strlen(*Av.as_mut_ptr().offset(0 as isize)) as i32);
+        findsymbol(*Av.as_mut_ptr().offset(0),
+                   strlen(*Av.as_mut_ptr().offset(0)) as i32);
     if lab.is_null() {
         lab =
-            CreateSymbol(*Av.as_mut_ptr().offset(0 as isize),
-                         strlen(*Av.as_mut_ptr().offset(0 as
-                                                            isize)) as i32)
+            CreateSymbol(*Av.as_mut_ptr().offset(0),
+                         strlen(*Av.as_mut_ptr().offset(0)) as i32)
     }
     (*lab).value = (*sym).value;
     (*lab).flags =
@@ -1357,7 +1356,7 @@ pub unsafe extern "C" fn v_execmac(mut str: *mut i8,
             str = str.offset(1)
         }
         sl =
-            ckmalloc((::std::mem::size_of::<*mut _STRLIST>() as u64).wrapping_add(1 as u64) as i32) as *mut _STRLIST;
+            ckmalloc((::std::mem::size_of::<*mut _STRLIST>() as u64).wrapping_add(1) as i32) as *mut _STRLIST;
         // Conversion note: in the above line, removed additional wrapping data...
         //     .wrapping_add(str.wrapping_offset_from(s1) as i64 as u64)
         // ...because it was relying on allocating more memory than the buffer needed, THEN

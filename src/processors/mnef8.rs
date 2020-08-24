@@ -392,7 +392,7 @@ unsafe extern "C" fn v_ins_outs(mut str: *mut i8,
         f8err(AsmErrorEquates::ValueMustBeLowerThan10, (*mne).name, str,
               false);
     }
-    emit_opcode1(((*mne).opcode[0 as usize] as u64 |
+    emit_opcode1(((*mne).opcode[0] as u64 |
                       operand & 15) as u8);
 }
 unsafe extern "C" fn v_sl_sr(mut str: *mut i8, mut mne: *mut _MNE) {
@@ -404,11 +404,10 @@ unsafe extern "C" fn v_sl_sr(mut str: *mut i8, mut mne: *mut _MNE) {
     } else {
         match operand {
             1 => {
-                emit_opcode1((*mne).opcode[0 as usize] as u8);
+                emit_opcode1((*mne).opcode[0] as u8);
             }
             4 => {
-                emit_opcode1((*mne).opcode[0 as
-                                               usize].wrapping_add(2 as i32 as u32) as u8);
+                emit_opcode1((*mne).opcode[0].wrapping_add(2) as u8);
             }
             _ => {
                 f8err(AsmErrorEquates::ValueMustBeOneOrFour, (*mne).name,
@@ -438,7 +437,7 @@ unsafe extern "C" fn v_lisu_lisl(mut str: *mut i8,
         f8err(AsmErrorEquates::ValueMustBeLowerThan8, (*mne).name, str,
               false);
     }
-    emit_opcode1(((*mne).opcode[0 as usize] as u64 |
+    emit_opcode1(((*mne).opcode[0] as u64 |
                       operand & 7) as u8);
 }
 /*
@@ -450,7 +449,7 @@ unsafe extern "C" fn v_sreg_op(mut str: *mut i8,
     let mut reg: u8 = 0;
     programlabel();
     parse_scratchpad_register(str, &mut reg);
-    emit_opcode1(((*mne).opcode[0 as usize] |
+    emit_opcode1(((*mne).opcode[0] |
                       reg as u32) as u8);
 }
 unsafe extern "C" fn v_lr(mut str: *mut i8, mut mne: *mut _MNE) {
@@ -657,7 +656,7 @@ unsafe extern "C" fn generate_branch(mut opcode: u8,
  */
 unsafe extern "C" fn v_branch(mut str: *mut i8,
                               mut mne: *mut _MNE) {
-    generate_branch((*mne).opcode[0 as usize] as u8,
+    generate_branch((*mne).opcode[0] as u8,
                     str);
 }
 unsafe extern "C" fn v_bf_bt(mut str: *mut i8, mut mne: *mut _MNE) {
@@ -700,7 +699,7 @@ unsafe extern "C" fn v_bf_bt(mut str: *mut i8, mut mne: *mut _MNE) {
     *str.offset(cindex as isize) =
         ',' as i32 as i8; /* restore operand string */
     if 'f' as i32 ==
-           *(*mne).name.offset(1 as isize) as i32 {
+           *(*mne).name.offset(1) as i32 {
         /* bf */
         if value > 15 {
             f8err(AsmErrorEquates::ValueMustBeLowerThan10, (*mne).name, str,
@@ -712,7 +711,7 @@ unsafe extern "C" fn v_bf_bt(mut str: *mut i8, mut mne: *mut _MNE) {
               false);
         value &= 7
     }
-    generate_branch(((*mne).opcode[0 as usize] as u64
+    generate_branch(((*mne).opcode[0] as u64
                          | value) as u8, op2);
 }
 /* bt */
@@ -729,7 +728,7 @@ unsafe extern "C" fn v_wordop(mut str: *mut i8,
         f8err(AsmErrorEquates::ValueMustBeLowerThan10000, (*mne).name, str,
               false);
     }
-    emit_opcode3((*mne).opcode[0 as usize] as u8,
+    emit_opcode3((*mne).opcode[0] as u8,
                  (value >> 8 &
                       0xff as i32 as u64) as u8,
                  (value & 0xff as i32 as u64) as u8);
@@ -747,7 +746,7 @@ unsafe extern "C" fn v_byteop(mut str: *mut i8,
         f8err(AsmErrorEquates::AddressMustBeLowerThan100, (*mne).name, str,
               false);
     }
-    emit_opcode2((*mne).opcode[0 as usize] as u8,
+    emit_opcode2((*mne).opcode[0] as u8,
                  (value & 0xff as i32 as u64) as u8);
 }
 #[no_mangle]

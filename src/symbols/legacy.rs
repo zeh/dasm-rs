@@ -103,7 +103,7 @@ pub unsafe extern "C" fn findsymbol(mut str: *const i8,
     let mut h1: u32 = 0; /*	permalloc zeros the array for us */
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     if len > MAX_SYMBOLS as i32 { len = MAX_SYMBOLS as i32 }
-    if *str.offset(0 as isize) as i32 == '.' as i32 {
+    if *str.offset(0) as i32 == '.' as i32 {
         if len == 1 {
             let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
             if currentSegment.flags & SegmentTypes::RelocatableOrigin != 0 {
@@ -116,14 +116,14 @@ pub unsafe extern "C" fn findsymbol(mut str: *const i8,
             return &mut org
         }
         if len == 2 &&
-               *str.offset(1 as isize) as i32 ==
+               *str.offset(1) as i32 ==
                    '.' as i32 {
             return &mut special
         }
         if len == 3 &&
-               *str.offset(1 as isize) as i32 ==
+               *str.offset(1) as i32 ==
                    '.' as i32 &&
-               *str.offset(2 as isize) as i32 ==
+               *str.offset(2) as i32 ==
                    '.' as i32 {
             specchk.flags = 0;
             specchk.value = state.output.checksum as i64;
@@ -235,13 +235,13 @@ pub unsafe extern "C" fn programlabel() {
     };
     state.execution.programOrg = currentSegment.org;
     state.execution.programFlags = currentSegment.flags;
-    str = *Av.as_mut_ptr().offset(0 as isize);
+    str = *Av.as_mut_ptr().offset(0);
     if *str as i32 == 0 { return }
     len = strlen(str) as i32;
     if *str.offset((len - 1) as isize) as i32 == ':' as i32 {
         len -= 1
     }
-    if *str.offset(0 as isize) as i32 != '.' as i32 && *str.offset((len - 1) as isize) as i32 != '$' as i32 {
+    if *str.offset(0) as i32 != '.' as i32 && *str.offset((len - 1) as isize) as i32 != '$' as i32 {
         state.execution.lastLocalDollarIndex += 1;
         state.execution.localDollarIndex = state.execution.lastLocalDollarIndex;
     }

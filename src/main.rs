@@ -661,16 +661,15 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
         i = 2;
         loop  {
             if !(i < ac) { current_block = 16231175055492490595; break ; }
-            if !(*(*av.offset(i as isize)).offset(0 as isize) as i32 == '-' as i32 ||
+            if !(*(*av.offset(i as isize)).offset(0) as i32 == '-' as i32 ||
                      *(*av.offset(i as
-                                      isize)).offset(0 as
-                                                         isize) as i32
+                                      isize)).offset(0) as i32
                          == '/' as i32) {
                 current_block = 15878785573848117940;
                 break ;
             }
             let mut str: *mut i8 =
-                (*av.offset(i as isize)).offset(2 as isize);
+                (*av.offset(i as isize)).offset(2);
             // FIXME: use better strings for parsing chars. These are temporary.
             let str_rs_1 = &[*str as u8];
             let str_rs = std::str::from_utf8(str_rs_1).unwrap();
@@ -722,7 +721,7 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
                     } else {
                         str = b"0\x00" as *const u8 as *const i8 as *mut i8
                     }
-                    let ref mut fresh2 = *Av.as_mut_ptr().offset(0 as isize);
+                    let ref mut fresh2 = *Av.as_mut_ptr().offset(0);
                     *fresh2 = (*av.offset(i as isize)).offset(2);
                     if *(*av.offset(i as isize)).offset(1) as i32 == 'M' as i32 {
                         v_eqm(str, 0 as *mut _MNE);
@@ -895,7 +894,7 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
                         }
                     }
 
-                    pushinclude(*av.offset(1 as isize));
+                    pushinclude(*av.offset(1));
                     while !pIncfile.is_null() {
                         loop  {
                             let mut comment: *const i8 =
@@ -904,8 +903,7 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
                                    0x1 as i32 != 0 {
                                 if (*pIncfile).strlist.is_null() {
                                     let ref mut fresh3 =
-                                        *Av.as_mut_ptr().offset(0 as i32
-                                                                    as isize);
+                                        *Av.as_mut_ptr().offset(0);
                                     *fresh3 =
                                         b"\x00" as *const u8 as
                                             *const i8 as
@@ -933,10 +931,7 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
                             (*pIncfile).lineno =
                                 (*pIncfile).lineno.wrapping_add(1);
                             mne = parse(buf.as_mut_ptr());
-                            if *(*Av.as_mut_ptr().offset(1 as
-                                                             isize)).offset(0 as i32
-                                                                                as
-                                                                                isize)
+                            if *(*Av.as_mut_ptr().offset(1)).offset(0)
                                    != 0 {
                                 if !mne.is_null() {
                                     if (*mne).flags as i32 &
@@ -944,9 +939,7 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
                                            (*Ifstack).xtrue as i32 !=
                                                0 &&
                                                (*Ifstack).acctrue as i32 != 0 {
-                                        Some((*mne).vect.expect("non-null function pointer")).expect("non-null function pointer")(*Av.as_mut_ptr().offset(2 as i32
-                                                                                                                                                              as
-                                                                                                                                                              isize),
+                                        Some((*mne).vect.expect("non-null function pointer")).expect("non-null function pointer")(*Av.as_mut_ptr().offset(2),
                                                                                                                                   mne);
                                     }
                                 } else if (*Ifstack).xtrue as i32 != 0
@@ -954,9 +947,7 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
                                               (*Ifstack).acctrue as i32 != 0 {
                                     asmerr(AsmErrorEquates::UnknownMnemonic,
                                            false,
-                                           *Av.as_mut_ptr().offset(1 as i32
-                                                                       as
-                                                                       isize));
+                                           *Av.as_mut_ptr().offset(1));
                                 }
                             } else if (*Ifstack).xtrue as i32 != 0 &&
                                           (*Ifstack).acctrue as i32 !=
@@ -1148,7 +1139,7 @@ unsafe extern "C" fn outlistfile(mut comment: *const i8) {
             transient::str_pointer_to_string(*Av.as_mut_ptr().offset(2)),
         ).as_str()
     );
-    if *comment.offset(0 as isize) != 0 {
+    if *comment.offset(0) != 0 {
         /*  tab and comment */
         buffer.pop();
         buffer.push_str(
@@ -1197,7 +1188,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut i8, mut bDisable: bool)
     str = buf;
     while *str != 0 {
         match *str as i32 {
-            59 => { comment = str.offset(1 as isize); break ; }
+            59 => { comment = str.offset(1); break ; }
             13 | 10 => { break ; }
             CHAR_TAB => { *str = ' ' as i32 as i8 }
             39 => {
@@ -1207,14 +1198,14 @@ unsafe extern "C" fn cleanup(mut buf: *mut i8, mut bDisable: bool)
                 }
                 if *str as i32 == '\n' as i32 ||
                        *str as i32 == 0 {
-                    *str.offset(0 as isize) =
+                    *str.offset(0) =
                         ' ' as i32 as i8;
-                    *str.offset(1 as isize) =
+                    *str.offset(1) =
                         0
                 }
-                if *str.offset(0 as isize) as i32 ==
+                if *str.offset(0) as i32 ==
                        ' ' as i32 {
-                    *str.offset(0 as isize) =
+                    *str.offset(0) =
                         -128i32 as i8
                 }
             }
@@ -1239,7 +1230,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut i8, mut bDisable: bool)
                         println!("macro tail: '{}'", transient::str_pointer_to_string(str));
                     }
                     arg =
-                        strtol(str.offset(1 as isize),
+                        strtol(str.offset(1),
                                0 as *mut libc::c_void as
                                    *mut *mut i8, 10) as i32;
                     add = 0;
@@ -1287,7 +1278,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut i8, mut bDisable: bool)
                             memmove(str.offset(add as isize) as
                                         *mut libc::c_void,
                                     str as *const libc::c_void,
-                                    strlen(str).wrapping_add(1 as u64));
+                                    strlen(str).wrapping_add(1));
                             str = str.offset(add as isize);
                             if str.offset(-(strlen((*strlist).buf.as_mut_ptr())
                                                 as isize)) < buf {
@@ -1324,7 +1315,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut i8, mut bDisable: bool)
     }
     /*    FALL THROUGH    */
     while str != buf &&
-              *str.offset(-(1 as isize)) as i32 ==
+              *str.offset(-(1)) as i32 ==
                   ' ' as i32 {
         str = str.offset(-1)
     }
@@ -1351,7 +1342,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut i8, mut bDisable: bool)
 pub unsafe extern "C" fn findext(mut str: *mut i8) {
     state.execution.modeNext = AddressModes::None;
     state.execution.extraString.clear();
-    if *str.offset(0 as isize) as i32 == '.' as i32 {
+    if *str.offset(0) as i32 == '.' as i32 {
         /* Allow .OP for OP */
         return
     }
@@ -1436,7 +1427,7 @@ pub unsafe extern "C" fn parse(mut buf: *mut i8) -> *mut _MNE {
         *buf.offset(i as isize) = ' ' as i32 as i8
         /* label separator */
     } else { i = 0 }
-    let ref mut fresh6 = *Av.as_mut_ptr().offset(0 as isize);
+    let ref mut fresh6 = *Av.as_mut_ptr().offset(0);
     *fresh6 = Avbuf.as_mut_ptr().offset(j as isize);
     while *buf.offset(i as isize) as i32 != 0 &&
               *buf.offset(i as isize) as i32 != ' ' as i32 &&
@@ -1543,7 +1534,7 @@ pub unsafe extern "C" fn parse(mut buf: *mut i8) -> *mut _MNE {
     }
     /* Parse the second word of the line */
     while *buf.offset(i as isize) as i32 == ' ' as i32 { i += 1 }
-    let ref mut fresh13 = *Av.as_mut_ptr().offset(1 as isize);
+    let ref mut fresh13 = *Av.as_mut_ptr().offset(1);
     *fresh13 = Avbuf.as_mut_ptr().offset(j as isize);
     if *buf.offset(i as isize) as i32 == '=' as i32 {
         /* '=' directly seperates Av[0] and Av[2] */
@@ -1573,11 +1564,11 @@ pub unsafe extern "C" fn parse(mut buf: *mut i8) -> *mut _MNE {
     *Avbuf.as_mut_ptr().offset(fresh18 as isize) =
         0;
     /* and analyse it as an opcode */
-    findext(*Av.as_mut_ptr().offset(1 as isize));
-    mne = findmne(*Av.as_mut_ptr().offset(1 as isize));
+    findext(*Av.as_mut_ptr().offset(1));
+    mne = findmne(*Av.as_mut_ptr().offset(1));
     /* Parse the rest of the line */
     while *buf.offset(i as isize) as i32 == ' ' as i32 { i += 1 }
-    let ref mut fresh19 = *Av.as_mut_ptr().offset(2 as isize);
+    let ref mut fresh19 = *Av.as_mut_ptr().offset(2);
     *fresh19 = Avbuf.as_mut_ptr().offset(j as isize);
     while *buf.offset(i as isize) != 0 {
         if *buf.offset(i as isize) as i32 == ' ' as i32 {
@@ -1606,7 +1597,7 @@ pub unsafe extern "C" fn findmne(mut str: *mut i8) -> *mut _MNE {
     let mut c: i8 = 0;
     let mut mne: *mut _MNE = 0 as *mut _MNE;
     let mut buf: [i8; 64] = [0; 64];
-    if *str.offset(0 as isize) as i32 == '.' as i32 {
+    if *str.offset(0) as i32 == '.' as i32 {
         /* Allow .OP for OP */
         str = str.offset(1)
     }
@@ -1678,7 +1669,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut i8,
                      unsafe extern "C" fn(_: *mut i8,
                                           _: *mut _MACRO) -> ());
         (*mac).name =
-            strcpy(permalloc(strlen(str).wrapping_add(1 as u64) as i32), str);
+            strcpy(permalloc(strlen(str).wrapping_add(1) as i32), str);
         (*mac).flags = 0x8 as i32 as u8;
         (*mac).defpass = state.execution.pass as i32;
         let ref mut fresh22 = *MHash.as_mut_ptr().offset(i as isize);
@@ -1700,9 +1691,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut i8,
         (*pIncfile).lineno = (*pIncfile).lineno.wrapping_add(1);
         comment = cleanup(buf.as_mut_ptr(), true);
         mne = parse(buf.as_mut_ptr());
-        if *(*Av.as_mut_ptr().offset(1 as
-                                         isize)).offset(0 as
-                                                            isize) != 0 {
+        if *(*Av.as_mut_ptr().offset(1)).offset(0) != 0 {
             if !mne.is_null() &&
                    (*mne).flags as i32 & 0x80 as i32 != 0 {
                 if defined == 0 { (*mac).strlist = base }
@@ -1714,7 +1703,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut i8,
         }
         if defined == 0 {
             sl =
-                permalloc((::std::mem::size_of::<*mut _STRLIST>() as u64).wrapping_add(1 as u64).wrapping_add(strlen(buf.as_mut_ptr())) as i32) as *mut _STRLIST;
+                permalloc((::std::mem::size_of::<*mut _STRLIST>() as u64).wrapping_add(1).wrapping_add(strlen(buf.as_mut_ptr())) as i32) as *mut _STRLIST;
             strcpy((*sl).buf.as_mut_ptr(), buf.as_mut_ptr());
             *slp = sl;
             slp = &mut (*sl).next
@@ -1782,7 +1771,7 @@ pub unsafe extern "C" fn pushinclude(mut str: *mut i8) {
             zmalloc(::std::mem::size_of::<_INCFILE>() as u64 as i32) as *mut _INCFILE;
         (*inf).next = pIncfile;
         (*inf).name =
-            strcpy(ckmalloc(strlen(str).wrapping_add(1 as u64) as i32), str);
+            strcpy(ckmalloc(strlen(str).wrapping_add(1) as i32), str);
         (*inf).fi = fi;
         (*inf).lineno = 0;
         pIncfile = inf;
@@ -1922,9 +1911,9 @@ pub unsafe extern "C" fn permalloc(mut bytes: i32)
     let mut ptr: *mut i8 = 0 as *mut i8;
     /* Assume sizeof(union align) is a power of 2 */
     bytes =
-        ((bytes as u64).wrapping_add(::std::mem::size_of::<align>() as u64).wrapping_sub(1 as i32 as u64)
+        ((bytes as u64).wrapping_add(::std::mem::size_of::<align>() as u64).wrapping_sub(1)
              &
-             !(::std::mem::size_of::<align>() as u64).wrapping_sub(1 as u64)) as i32;
+             !(::std::mem::size_of::<align>() as u64).wrapping_sub(1)) as i32;
     if bytes > left {
         buf =
             malloc(ALLOC_SIZE as i32 as u64) as

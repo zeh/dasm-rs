@@ -94,18 +94,18 @@ unsafe fn main_0(mut ac: i32, mut av: *mut *mut i8)
         println!("Copyright (c) 1988-2008 by various authors (see file AUTHORS).");
         std::process::exit(1);
     }
-    format = atoi(*av.offset(1 as isize));
+    format = atoi(*av.offset(1));
     if format < 1 || format > 3 {
         exit_with_error("specify infile format 1, 2, or 3");
     }
     infile =
-        fopen(*av.offset(2 as isize), b"r\x00" as *const u8 as *const i8);
+        fopen(*av.offset(2), b"r\x00" as *const u8 as *const i8);
     if infile.is_null() {
         exit_with_error("unable to open input file");
     }
     outfile =
-        if !(*av.offset(3 as isize)).is_null() {
-            fopen(*av.offset(3 as isize), b"w\x00" as *const u8 as *const i8)
+        if !(*av.offset(3)).is_null() {
+            fopen(*av.offset(3), b"w\x00" as *const u8 as *const i8)
         } else { stdout };
     if outfile.is_null() {
         exit_with_error("unable to open output file");
@@ -169,7 +169,7 @@ pub unsafe extern "C" fn convert(mut format: i32, mut in_0: *mut FILE,
             putc('0' as i32, out);
             chk =
                 idx.wrapping_add(org >>
-                                     8 as i32).wrapping_add(org &
+                                     8).wrapping_add(org &
                                                                        0xff as i32 as u32) as u8;
             i = 0;
             while i < idx {

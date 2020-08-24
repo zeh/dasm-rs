@@ -171,7 +171,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
             }
             37 => {
                 if state.expressions.lastWasOp {
-                    str = pushbin(str.offset(1 as isize))
+                    str = pushbin(str.offset(1))
                 } else {
                     doop(
                         ::std::mem::transmute::<Option<unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32)-> ()>, opfunc_t>(
@@ -236,7 +236,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                     );
                     str = str.offset(1)
                 } else {
-                    if *str.offset(1 as isize) as i32 == '>' as i32 {
+                    if *str.offset(1) as i32 == '>' as i32 {
                         doop(
                             ::std::mem::transmute::<Option<unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32)-> ()>, opfunc_t>(
                                 Some(op_shiftright as unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32) -> ())
@@ -244,7 +244,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                             18
                         );
                         str = str.offset(1)
-                    } else if *str.offset(1 as isize) as i32 == '=' as i32 {
+                    } else if *str.offset(1) as i32 == '=' as i32 {
                         doop(
                             ::std::mem::transmute::<Option<unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32)-> ()>, opfunc_t>(
                                 Some(op_greatereq as unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32) -> ())
@@ -274,14 +274,14 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                     );
                     str = str.offset(1)
                 } else {
-                    if *str.offset(1 as isize) as i32 == '<' as i32 {
+                    if *str.offset(1) as i32 == '<' as i32 {
                         doop(
                             ::std::mem::transmute::<Option<unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32)-> ()>, opfunc_t>(
                                 Some(op_shiftleft as unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32) -> ())),
                             18
                         );
                         str = str.offset(1)
-                    } else if *str.offset(1 as isize) as i32 == '=' as i32 {
+                    } else if *str.offset(1) as i32 == '=' as i32 {
                         doop(
                             ::std::mem::transmute::<Option<unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32)-> ()>, opfunc_t>(
                                 Some(op_smallereq as unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32) -> ())
@@ -303,7 +303,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
             }
             61 => {
                 /*  16: ==  (= same as ==)      */
-                if *str.offset(1 as isize) as i32 == '=' as i32 {
+                if *str.offset(1) as i32 == '=' as i32 {
                     str = str.offset(1)
                 }
                 doop(
@@ -338,7 +338,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
             }
             38 => {
                 /*  15: &   12: &&              */
-                if *str.offset(1 as isize) as i32 == '&' as i32 {
+                if *str.offset(1) as i32 == '&' as i32 {
                     doop(
                         ::std::mem::transmute::<Option<unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32)-> ()>, opfunc_t>(
                             Some(op_andand as unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32) -> ())
@@ -370,7 +370,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
             }
             124 => {
                 /*  13: |   11: ||              */
-                if *str.offset(1 as isize) as i32 == '|' as i32 {
+                if *str.offset(1) as i32 == '|' as i32 {
                     doop(
                         ::std::mem::transmute::<Option<unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32)-> ()>, opfunc_t>(
                             Some(op_oror as unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32) -> ())
@@ -402,12 +402,12 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                 if wantmode != 0 {
                     if (*cur).addrmode as i32 ==
                         AddressModes::IndWord as i32 &&
-                           *str.offset(1 as isize) as i32 == ',' as i32 &&
-                           *str.offset(2 as isize) as i32 | 0x20 as i32 == 'y' as i32
+                           *str.offset(1) as i32 == ',' as i32 &&
+                           *str.offset(2) as i32 | 0x20 as i32 == 'y' as i32
                        {
                         (*cur).addrmode =
                             AddressModes::IndByteY as u8;
-                        str = str.offset(2 as isize)
+                        str = str.offset(2)
                     }
                     //FIX: detect illegal opc (zp),x syntax...
                     if (*cur).addrmode as u8 == AddressModes::IndByteY as u8 && *str.offset(1) as u8 == ',' as u8 && *str.offset(2) as u8 | 0x20 == 'x' as u8 {
@@ -439,7 +439,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                 while state.expressions.opIndex != state.expressions.opIndexBase { evaltop(); }
                 state.expressions.lastWasOp = true;
                 scr =
-                    *str.offset(1 as isize) as i32 |
+                    *str.offset(1) as i32 |
                         0x20 as i32;
                 if (*cur).addrmode == AddressModes::IndWord as u8 && scr == 'x' as i32 && !is_alpha_num(*str.offset(2) as u8 as char) {
                     (*cur).addrmode = AddressModes::IndByteX as u8;
@@ -512,15 +512,15 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                 current_block_184 = 3166194604430448652;
             }
             36 => {
-                str = pushhex(str.offset(1 as isize));
+                str = pushhex(str.offset(1));
                 current_block_184 = 3166194604430448652;
             }
             39 => {
-                str = pushchar(str.offset(1 as isize));
+                str = pushchar(str.offset(1));
                 current_block_184 = 3166194604430448652;
             }
             34 => {
-                str = pushstr(str.offset(1 as isize));
+                str = pushstr(str.offset(1));
                 current_block_184 = 3166194604430448652;
             }
             _ => {
