@@ -40,9 +40,6 @@ extern "C" {
     fn fopen(__filename: *const i8, __modes: *const i8)
      -> *mut FILE;
     #[no_mangle]
-    fn snprintf(_: *mut i8, _: u64,
-                _: *const i8, _: ...) -> i32;
-    #[no_mangle]
     fn fread(__ptr: *mut libc::c_void, __size: size_t, __n: size_t,
              __stream: *mut FILE) -> size_t;
     #[no_mangle]
@@ -1269,39 +1266,31 @@ pub unsafe extern "C" fn v_set(mut str: *mut i8,
                 }
             } else {
                 // this argument is a symbol to be evaluated
-                let mut t: i32 = 0;
-                let mut tempbuf: [i8; 257] = [0; 257];
-                let mut tempval: [i8; 257] = [0; 257];
+                // FIXME: this is very similar to some code in main/parse(); extract or reuse?
+                let mut t: usize = 0;
+                let mut temp_buffer = String::new();
+                let mut buffer = transient::str_pointer_to_string(str);
                 let mut symarg: *mut _SYMBOL = 0 as *mut _SYMBOL;
-                strncpy(tempbuf.as_mut_ptr(),
-                        str.offset(i as
-                                       isize).offset(1 as
-                                                         isize),
-                        256 as i32 as u64);
-                tempbuf[256 as i32 as usize] =
-                    0;
-                t = 0;
-                while (t as u64) < strlen(tempbuf.as_mut_ptr()) {
-                    if tempbuf[t as usize] as i32 == ',' as i32 {
-                        tempbuf[t as usize] = 0
+                temp_buffer.push_str(&buffer[i + 1..]);
+                temp_buffer.truncate(256);
+
+                while t < temp_buffer.len() {
+                    if temp_buffer.as_bytes()[t] == ',' as u8 {
+                        temp_buffer.truncate(t);
                     }
-                    t += 1
+                    t += 1;
                 }
-                symarg = eval(tempbuf.as_mut_ptr(), 0);
+                symarg = eval(transient::string_to_str_pointer(temp_buffer), 0);
                 if !symarg.is_null() {
-                    if (*symarg).flags as i32 & 0x1 as i32 !=
-                           0 {
-                        // one of the arguments isn't defined yet
+                    if (*symarg).flags & SymbolTypes::Unknown != 0 {
+                        // One of the arguments isn't defined yet
+                        // Ensure the set doesn't actually happen
                         setundefined += 1
                     } else {
-                        snprintf(tempval.as_mut_ptr(),
-                                 256 as i32 as u64,
-                                 b"%d\x00" as *const u8 as
-                                     *const i8,
-                                 (*symarg).value as u32); // ensure the set doesn't actually happen
-                        strcpy(dynamicname.as_mut_ptr().offset(j as isize),
-                               tempval.as_mut_ptr());
-                        j = (j).wrapping_add(strlen(tempval.as_mut_ptr()) as usize);
+                        let mut temp_value = format!("{}", (*symarg).value);
+                        let temp_value_len = temp_value.len();
+                        strcpy(dynamicname.as_mut_ptr().offset(j as isize), transient::string_to_str_pointer(temp_value));
+                        j += temp_value_len;
                     }
                 }
                 i += 1;
@@ -1346,12 +1335,10 @@ pub unsafe extern "C" fn v_set(mut str: *mut i8,
     FreeSymbolList(sym);
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_setstr(mut symstr: *mut i8,
-                                  mut dummy: *mut _MNE) {
-    let mut str: [i8; 1024] = [0; 1024];
-    snprintf(str.as_mut_ptr(), 1024 as i32 as u64,
-             b"\"%s\"\x00" as *const u8 as *const i8, symstr);
-    v_set(str.as_mut_ptr(), dummy);
+pub unsafe extern "C" fn v_setstr(mut symstr: *mut i8, mut dummy: *mut _MNE) {
+    let mut str = format!("\"{}\"", transient::str_pointer_to_string(symstr));
+    str.truncate(1024);
+    v_set(transient::string_to_str_pointer(str), dummy);
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_execmac(mut str: *mut i8,

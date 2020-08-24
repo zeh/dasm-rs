@@ -45,6 +45,7 @@ use types::flags:: {
     FileFlags,
     ReasonCodes,
     SegmentTypes,
+    SymbolTypes,
 };
 use types::enums::{
     AddressModes,
@@ -81,9 +82,6 @@ extern "C" {
     #[no_mangle]
     fn fopen(__filename: *const i8, __modes: *const i8)
      -> *mut FILE;
-    #[no_mangle]
-    fn snprintf(_: *mut i8, _: u64,
-                _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn fgets(__s: *mut i8, __n: i32, __stream: *mut FILE)
      -> *mut i8;
@@ -1430,12 +1428,10 @@ pub unsafe extern "C" fn rmnode(mut base: *mut *mut libc::c_void,
 */
 #[no_mangle]
 pub unsafe extern "C" fn parse(mut buf: *mut i8) -> *mut _MNE {
-    let mut i: i32 = 0;
-    let mut j: i32 = 0;
+    let mut i: usize = 0;
+    let mut j: usize = 1;
     let mut mne: *mut _MNE = 0 as *mut _MNE;
     let mut labelundefined: i32 = 0;
-    i = 0;
-    j = 1;
     /*
         If the first non-space is a ^, skip all further spaces too.
         This means what follows is a label.
@@ -1489,40 +1485,30 @@ pub unsafe extern "C" fn parse(mut buf: *mut i8) -> *mut _MNE {
                 }
             } else {
                 // or else it's a symbol to be evaluated, and added to the label
-                let mut t: i32 = 0;
-                let mut tempbuf: [i8; 257] = [0; 257];
-                let mut tempval: [i8; 257] = [0; 257];
+                let mut t: usize = 0;
+                let mut temp_buffer = String::new();
+                let mut buffer = transient::str_pointer_to_string(buf);
                 let mut symarg: *mut _SYMBOL = 0 as *mut _SYMBOL;
-                strncpy(tempbuf.as_mut_ptr(),
-                        buf.offset(i as
-                                       isize).offset(1 as
-                                                         isize),
-                        256 as i32 as u64);
-                tempbuf[256 as i32 as usize] =
-                    0;
-                t = 0;
-                while (t as u64) < strlen(tempbuf.as_mut_ptr()) {
-                    if tempbuf[t as usize] as i32 == ',' as i32 {
-                        tempbuf[t as usize] = 0
+                temp_buffer.push_str(&buffer[i + 1..]);
+                temp_buffer.truncate(256);
+
+                while t < temp_buffer.len() {
+                    if temp_buffer.as_bytes()[t] == ',' as u8 {
+                        temp_buffer.truncate(t);
                     }
-                    t += 1
+                    t += 1;
                 }
-                symarg = eval(tempbuf.as_mut_ptr(), 0);
+                symarg = eval(transient::string_to_str_pointer(temp_buffer), 0);
                 if !symarg.is_null() {
-                    if (*symarg).flags as i32 & 0x1 as i32 !=
-                           0 {
-                        // one of the arguments isn't defined yet
+                    if (*symarg).flags & SymbolTypes::Unknown != 0 {
+                        // One of the arguments isn't defined yet
+                        // Ensure the label we're creating doesn't get used
                         labelundefined += 1
                     } else {
-                        snprintf(tempval.as_mut_ptr(),
-                                 256 as i32 as u64,
-                                 b"%d\x00" as *const u8 as
-                                     *const i8,
-                                 (*symarg).value as u32); // ensure the label we're creating doesn't get used
-                        strcpy(Avbuf.as_mut_ptr().offset(j as isize),
-                               tempval.as_mut_ptr());
-                        j =
-                            (j as u64).wrapping_add(strlen(tempval.as_mut_ptr())) as i32
+                        let mut temp_value = format!("{}", (*symarg).value);
+                        let temp_value_len = temp_value.len();
+                        strcpy(Avbuf.as_mut_ptr().offset(j as isize), transient::string_to_str_pointer(temp_value));
+                        j += temp_value_len;
                     }
                 }
                 i += 1;
