@@ -15,6 +15,7 @@ pub mod transient;
 pub mod comparing;
 pub mod filesystem;
 pub mod formatting;
+pub mod parsing;
 
 /**
  * Creates a simple hash for a string.
