@@ -1,5 +1,3 @@
-use libc;
-
 use crate::globals::state;
 use crate::types::flags::{
     ReasonCodes,
@@ -20,20 +18,8 @@ extern "C" {
     fn strcasecmp(_: *const i8, _: *const i8)
      -> i32;
     #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8)
-     -> *mut i8;
-    #[no_mangle]
-    fn strcat(_: *mut i8, _: *const i8)
-     -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
-    #[no_mangle]
     fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8)
      -> i32;
-    #[no_mangle]
-    fn ckmalloc(bytes: i32) -> *mut i8;
     #[no_mangle]
     fn FreeSymbolList(sym: *mut _SYMBOL);
     #[no_mangle]
@@ -129,14 +115,11 @@ unsafe extern "C" fn f8err(mut err: AsmErrorEquates,
                            mut mnename: *const i8,
                            mut opstring: *const i8,
                            mut bAbort: bool) {
-    let mut buf: *mut i8 = 0 as *mut i8;
-    buf =
-        ckmalloc(strlen(mnename).wrapping_add(strlen(opstring)).wrapping_add(64 as i32 as u64) as i32);
-    strcpy(buf, mnename);
-    strcat(buf, b" \x00" as *const u8 as *const i8);
-    strcat(buf, opstring);
-    asmerr(err, bAbort, buf);
-    free(buf as *mut libc::c_void);
+    let mut buffer = String::new();
+    buffer.push_str(transient::str_pointer_to_string(mnename).as_str());
+    buffer.push_str(" ");
+    buffer.push_str(transient::str_pointer_to_string(opstring).as_str());
+    asmerr(err, bAbort, transient::string_to_str_pointer(buffer));
 }
 /*
  * emits a one byte opcode.
