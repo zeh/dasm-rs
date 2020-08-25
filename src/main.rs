@@ -931,9 +931,7 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
                                 } else if (*Ifstack).xtrue as i32 != 0
                                               &&
                                               (*Ifstack).acctrue as i32 != 0 {
-                                    asmerr(AsmErrorEquates::UnknownMnemonic,
-                                           false,
-                                           *Av.as_mut_ptr().offset(1));
+                                    asmerr(AsmErrorEquates::UnknownMnemonic, false, transient::str_pointer_to_string(*Av.as_mut_ptr().offset(1)).as_str());
                                 }
                             } else if (*Ifstack).xtrue as i32 != 0 &&
                                           (*Ifstack).acctrue as i32 !=
@@ -1005,7 +1003,7 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
                         state.execution.pass += 1;
                         if state.execution.pass > state.parameters.maxPasses {
                             let buffer = format!("{}", state.execution.pass);
-                            return asmerr(AsmErrorEquates::TooManyPasses, false, transient::string_to_str_pointer(buffer));
+                            return asmerr(AsmErrorEquates::TooManyPasses, false, buffer.as_str());
                         } else {
                             operations::clear_passbuffer(&mut state.output.passBufferErrors);
                             operations::clear_passbuffer(&mut state.output.passBufferMessages);
@@ -1200,8 +1198,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut i8, mut bDisable: bool)
                     str = str.offset(1)
                 }
                 if *str as i32 != '\"' as i32 {
-                    asmerr(AsmErrorEquates::SyntaxError,
-                           false, buf);
+                    asmerr(AsmErrorEquates::SyntaxError, false, transient::str_pointer_to_string(buf).as_str());
                     str = str.offset(-1)
                 }
             }
@@ -1282,9 +1279,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut i8, mut bDisable: bool)
                             str = str.offset(-1)
                             /*  for loop increments string    */
                         } else {
-                            asmerr(AsmErrorEquates::NotEnoughArgumentsPassedToMacro,
-                                   false,
-                                   0 as *const i8);
+                            asmerr(AsmErrorEquates::NotEnoughArgumentsPassedToMacro, false, "");
                             break ;
                         }
                     }
@@ -1443,8 +1438,7 @@ pub unsafe extern "C" fn parse(mut buf: *mut i8) -> *mut _MNE {
                     i += 1
                 } else {
                     labelundefined += 1;
-                    asmerr(AsmErrorEquates::SyntaxError,
-                           false, buf);
+                    asmerr(AsmErrorEquates::SyntaxError, false, transient::str_pointer_to_string(buf).as_str());
                 }
             } else {
                 // or else it's a symbol to be evaluated, and added to the label
@@ -1659,8 +1653,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut i8,
         mac = mne as *mut _MACRO;
         if state.parameters.strictMode && !mac.is_null() &&
                (*mac).defpass == state.execution.pass as i32 {
-            asmerr(AsmErrorEquates::MacroRepeated, true,
-                   str);
+            asmerr(AsmErrorEquates::MacroRepeated, true, transient::str_pointer_to_string(str).as_str());
         }
     }
     while !fgets(buf.as_mut_ptr(), MAX_LINES as i32,
@@ -1690,8 +1683,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut i8,
             slp = &mut (*sl).next
         }
     }
-    asmerr(AsmErrorEquates::PrematureEOF, true,
-           0 as *const i8);
+    asmerr(AsmErrorEquates::PrematureEOF, true, "");
 }
 #[no_mangle]
 pub unsafe extern "C" fn addhashtable(mut mne: *mut _MNE) {
@@ -1760,11 +1752,12 @@ pub unsafe extern "C" fn pushinclude(mut str: *mut i8) {
     }
     println!("Warning: Unable to open '{}'", transient::str_pointer_to_string(str));
 }
+// FIXME: move to a new "errors" module
 #[no_mangle]
-pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut abort: bool, mut sText: *const i8) -> AsmErrorEquates {
+pub unsafe extern "C" fn asmerr(err: AsmErrorEquates, abort: bool, text: &str) -> AsmErrorEquates {
     let mut errorOutput: String = String::new();
     let mut pincfile: *mut _INCFILE = 0 as *mut _INCFILE;
-    /* file pointer we print error messages to */
+    // File pointer we print error messages to
     let errorToFile = !state.parameters.listFile.is_empty();
     let mut errorFile = &mut state.output.listFile;
     if find_error_definition(err).fatal {
@@ -1839,8 +1832,8 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut abort: bool, mut s
     // This is a bit of a hack: since we can't use variables as the template in format!(),
     // we simply replace "{}" in the template with the expected string. This works well,
     // but it means the template only supports a single {}, and no other formatting directive.
-    if !sText.is_null() {
-        errorDescription = errorDescription.replace("{}", transient::str_pointer_to_string(sText).as_str());
+    if text.len() > 0 {
+        errorDescription = errorDescription.replace("{}", text);
     }
     if errorToFile {
         /* print second part of message, always the same for now */
@@ -1862,7 +1855,7 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut abort: bool, mut s
         operations::output_passbuffer(&mut state.output.passBufferErrors);
         std::process::exit(1);
     }
-    return err;
+    err
 }
 #[no_mangle]
 pub unsafe extern "C" fn zmalloc(mut bytes: i32)

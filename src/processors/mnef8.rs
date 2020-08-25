@@ -30,8 +30,7 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8)
-     -> i32;
+    fn asmerr(err: AsmErrorEquates, abort: bool, text: &str) -> AsmErrorEquates;
     #[no_mangle]
     fn ckmalloc(bytes: i32) -> *mut i8;
     #[no_mangle]
@@ -135,7 +134,7 @@ unsafe extern "C" fn f8err(mut err: AsmErrorEquates,
     strcpy(buf, mnename);
     strcat(buf, b" \x00" as *const u8 as *const i8);
     strcat(buf, opstring);
-    asmerr(err, bAbort, buf);
+    asmerr(err, bAbort, transient::str_pointer_to_string(buf).as_str());
     free(buf as *mut libc::c_void);
 }
 /*
@@ -222,9 +221,8 @@ unsafe extern "C" fn parse_value(mut str: *mut i8,
     let mut result: i32 = 0;
     *value = 0;
     sym = eval(str, 0);
-    if !(*sym).next.is_null() ||
-           AddressModes::ByteAdr as i32 != (*sym).addrmode as i32 {
-        asmerr(AsmErrorEquates::SyntaxError, true, str);
+    if !(*sym).next.is_null() || AddressModes::ByteAdr as i32 != (*sym).addrmode as i32 {
+        asmerr(AsmErrorEquates::SyntaxError, true, transient::str_pointer_to_string(str).as_str());
     } else if (*sym).flags as i32 & 0x1 as i32 != 0 {
         state.execution.redoIndex += 1;
         state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved;
@@ -299,8 +297,7 @@ unsafe extern "C" fn parse_scratchpad_register(mut str: *mut i8,
         /* unresolved expr */
     } else {
         if regnum > 14 {
-            asmerr(AsmErrorEquates::ValueMustBeLowerThanF,
-                   true, str);
+            asmerr(AsmErrorEquates::ValueMustBeLowerThanF, true, transient::str_pointer_to_string(str).as_str());
         }
         *reg = regnum as u8;
         return 0
@@ -618,7 +615,7 @@ unsafe extern "C" fn generate_branch(mut opcode: u8,
         disp = target_adr.wrapping_sub(getPC() as u64).wrapping_sub(1) as i64;
         if disp > 127 || disp < -128{
             let buffer = format!("{}", disp);
-            asmerr(AsmErrorEquates::BranchOutOfRange, false, transient::string_to_str_pointer(buffer));
+            asmerr(AsmErrorEquates::BranchOutOfRange, false, buffer.as_str());
         }
     } else {
         /* unknown pc, will be (hopefully) resolved in future passes */

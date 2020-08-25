@@ -84,8 +84,7 @@ extern "C" {
     #[no_mangle]
     fn findext(str: *mut i8);
     #[no_mangle]
-    fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8)
-     -> i32;
+    fn asmerr(err: AsmErrorEquates, abort: bool, text: &str) -> AsmErrorEquates;
     #[no_mangle]
     fn rmnode(base: *mut *mut libc::c_void, bytes: i32);
     #[no_mangle]
@@ -295,13 +294,13 @@ pub unsafe extern "C" fn v_processor(mut str: *mut i8,
             state.execution.processor = Processors::FAIRCHILD_F8;
         },
         _ => {
-            asmerr(AsmErrorEquates::ProcessorNotSupported, true, str);
+            asmerr(AsmErrorEquates::ProcessorNotSupported, true, transient::str_pointer_to_string(str).as_str());
         }
     }
 
     called = true;
     if previousProcessor != Processors::None && state.execution.processor != previousProcessor {
-        asmerr(AsmErrorEquates::OnlyOneProcessorSupported, true, str);
+        asmerr(AsmErrorEquates::OnlyOneProcessorSupported, true, transient::str_pointer_to_string(str).as_str());
     };
 }
 #[no_mangle]
@@ -370,7 +369,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut i8,
             transient::str_pointer_to_string((*mne).name),
             transient::str_pointer_to_string(str),
         );
-        asmerr(AsmErrorEquates::IllegalAddressingMode, false, transient::string_to_str_pointer(buffer));
+        asmerr(AsmErrorEquates::IllegalAddressingMode, false, buffer.as_str());
         FreeSymbolList(symbase);
         //FIX
         state.execution.redoIndex += 1;
@@ -381,7 +380,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut i8,
         /*	Force	*/
         addressMode = state.execution.modeNext;
         if (*mne).okmask & ((1) << addressMode as u8) as u64 == 0 {
-            asmerr(AsmErrorEquates::IllegalForcedAddressingMode, false, (*mne).name);
+            asmerr(AsmErrorEquates::IllegalForcedAddressingMode, false, transient::str_pointer_to_string((*mne).name).as_str());
             FreeSymbolList(symbase);
             //FIX: Cause assembly to fail when an invalid mode is used for an opcode...
             state.execution.redoIndex += 1;
@@ -408,7 +407,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut i8,
                     transient::str_pointer_to_string((*mne).name),
                     transient::str_pointer_to_string(str),
                 );
-                asmerr(AsmErrorEquates::AddressMustBeLowerThan100, false, transient::string_to_str_pointer(buffer));
+                asmerr(AsmErrorEquates::AddressMustBeLowerThan100, false, buffer.as_str());
                 break;
             }
         } else {
@@ -427,13 +426,13 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut i8,
         AddressModes::BitMod => {
             sym = (*symbase).next;
             if (*sym).flags as i32 & 0x1 as i32 == 0 && (*sym).value >= 0x100 as i32 as i64 {
-                asmerr(AsmErrorEquates::AddressMustBeLowerThan100, false, 0 as *const i8);
+                asmerr(AsmErrorEquates::AddressMustBeLowerThan100, false, "");
             }
             state.output.generated[opidx] = (*sym).value as u8;
             opidx = opidx + 1;
             if (*symbase).flags as i32 & 0x1 as i32 == 0 {
                 if (*symbase).value > 7 {
-                    asmerr(AsmErrorEquates::IllegalBitSpecification, false, str);
+                    asmerr(AsmErrorEquates::IllegalBitSpecification, false, transient::str_pointer_to_string(str).as_str());
                 } else {
                     state.output.generated[0] = (
                         state.output.generated[0] as i64 +
@@ -445,8 +444,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut i8,
         AddressModes::BitBraMod => {
             if (*symbase).flags as i32 & 0x1 as i32 == 0 {
                 if (*symbase).value > 7 {
-                    asmerr(AsmErrorEquates::IllegalBitSpecification,
-                           false, str);
+                    asmerr(AsmErrorEquates::IllegalBitSpecification, false, transient::str_pointer_to_string(str).as_str());
                 } else {
                     state.output.generated[0] = (
                         state.output.generated[0] as i64 +
@@ -457,8 +455,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut i8,
             sym = (*symbase).next;
             if (*sym).flags as i32 & 0x1 as i32 == 0 &&
                    (*sym).value >= 0x100 as i32 as i64 {
-                asmerr(AsmErrorEquates::AddressMustBeLowerThan100,
-                       false, 0 as *const i8);
+                asmerr(AsmErrorEquates::AddressMustBeLowerThan100, false, "");
             }
             state.output.generated[opidx] = (*sym).value as u8;
             opidx = opidx + 1;
@@ -486,19 +483,19 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut i8,
     if (*mne).flags & 0x10 != 0 {
         if !sym.is_null() {
             if (*sym).flags & SymbolTypes::Unknown == 0 && (*sym).value >= 0x100 as i32 as i64 {
-                asmerr(AsmErrorEquates::AddressMustBeLowerThan100, false, 0 as *const i8);
+                asmerr(AsmErrorEquates::AddressMustBeLowerThan100, false, "");
             }
             state.output.generated[opidx as usize] = (*sym).value as u8;
             sym = (*sym).next
         } else {
-            asmerr(AsmErrorEquates::NotEnoughArgs, true, 0 as *const i8);
+            asmerr(AsmErrorEquates::NotEnoughArgs, true, "");
         }
         opidx += 1
     }
     if (*mne).flags & 0x20 != 0 || addressMode == AddressModes::Rel {
         opidx += 1;
         if sym.is_null() {
-            asmerr(AsmErrorEquates::NotEnoughArgs, true, 0 as *const i8);
+            asmerr(AsmErrorEquates::NotEnoughArgs, true, "");
         } else if (*sym).flags & SymbolTypes::Unknown == 0 {
             let mut pc: u64 = 0;
             let mut pcf: u8 = 0;
@@ -523,7 +520,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut i8,
                     //     pushing for Redo so assembly won't actually be succesfull until the branch
                     //     actually works.
                     let buffer = format!("{}", dest);
-                    asmerr(AsmErrorEquates::BranchOutOfRange, false, transient::string_to_str_pointer(buffer));
+                    asmerr(AsmErrorEquates::BranchOutOfRange, false, buffer.as_str());
                     state.execution.redoIndex += 1;
                     state.execution.redoWhy |= ReasonCodes::BranchOutOfRange;
                     (*sym).flags = ((*sym).flags as i32 | 0x1 as i32) as u8;
@@ -716,7 +713,7 @@ pub unsafe extern "C" fn gethexdig(mut c: i32) -> i32 {
         return c - 'A' as i32 + 10
     }
     let buffer = format!("Bad Hex Digit {}", c as u8 as char);
-    asmerr(AsmErrorEquates::SyntaxError, false, transient::string_to_str_pointer(buffer));
+    asmerr(AsmErrorEquates::SyntaxError, false, buffer.as_str());
     println!("(Must be a valid hex digit)");
     filesystem::writeln_to_file_maybe(&mut state.output.listFile, "(Must be a valid hex digit)");
     return 0;
@@ -725,8 +722,7 @@ pub unsafe extern "C" fn gethexdig(mut c: i32) -> i32 {
 pub unsafe extern "C" fn v_err(mut _str: *mut i8,
                                mut _dummy: *mut _MNE) {
     programlabel();
-    asmerr(AsmErrorEquates::ErrPseudoOpEncountered,
-           true, 0 as *const i8);
+    asmerr(AsmErrorEquates::ErrPseudoOpEncountered, true, "");
     std::process::exit(1);
 }
 #[no_mangle]
@@ -877,7 +873,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut i8,
                             transient::str_pointer_to_string((*mne).name),
                             value,
                         );
-                        asmerr(AsmErrorEquates::AddressMustBeLowerThan10000, false, transient::string_to_str_pointer(buffer));
+                        asmerr(AsmErrorEquates::AddressMustBeLowerThan10000, false, buffer.as_str());
                     }
                     if state.execution.bitOrder != BitOrder::LeastMost {
                         state.output.generated[state.output.generatedLength] = (value >> 8 & 0xff) as u8;
@@ -920,7 +916,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut i8,
                             transient::str_pointer_to_string((*mne).name),
                             value,
                         );
-                        asmerr(AsmErrorEquates::AddressMustBeLowerThan100, false, transient::string_to_str_pointer(buffer));
+                        asmerr(AsmErrorEquates::AddressMustBeLowerThan100, false, buffer.as_str());
                     }
                     state.output.generated[state.output.generatedLength] = (value & 0xff) as u8;
                     state.output.generatedLength += 1;
@@ -978,7 +974,7 @@ pub unsafe extern "C" fn v_org(mut str: *mut i8,
     if !(*sym).next.is_null() {
         state.output.orgFill = (*(*sym).next).value as u8;
         if (*(*sym).next).flags & SegmentTypes::Unknown != 0 {
-            asmerr(AsmErrorEquates::ValueUndefined, true, 0 as *const i8);
+            asmerr(AsmErrorEquates::ValueUndefined, true, "");
         }
     }
     programlabel();
@@ -1102,7 +1098,7 @@ pub unsafe extern "C" fn v_equ(mut str: *mut i8,
             state.execution.redoIndex += 1;
             state.execution.redoWhy |= ReasonCodes::EquNotResolved
         } else if (*lab).value != (*sym).value {
-            asmerr(AsmErrorEquates::EquValueMismatch, false, 0 as *const i8);
+            asmerr(AsmErrorEquates::EquValueMismatch, false, "");
             println!(
                 "INFO: Label '{}' changed from ${:04x} to ${:04x}",
                 transient::str_pointer_to_string(*Av.as_mut_ptr().offset(0)),
@@ -1239,7 +1235,7 @@ pub unsafe extern "C" fn v_set(mut str: *mut i8,
                     dynamicname[j as usize] = 0;
                     i += 1
                 } else {
-                    asmerr(AsmErrorEquates::SyntaxError, false, str);
+                    asmerr(AsmErrorEquates::SyntaxError, false, transient::str_pointer_to_string(str).as_str());
                 }
             } else {
                 // this argument is a symbol to be evaluated
@@ -1492,8 +1488,7 @@ pub unsafe extern "C" fn v_repeat(mut str: *mut i8,
     if (*sym).value < 0 {
         pushif(false);
         FreeSymbolList(sym);
-        asmerr(AsmErrorEquates::RepeatNegative, false,
-               0 as *const i8);
+        asmerr(AsmErrorEquates::RepeatNegative, false, "");
         return
     }
     rp =
@@ -1617,9 +1612,7 @@ pub unsafe extern "C" fn generate() {
                             formatting::segment_address_to_string(currentSegment.org, currentSegment.flags),
                             org
                         );
-                        asmerr(AsmErrorEquates::OriginReverseIndexed,
-                               true,
-                               0 as *const i8);
+                        asmerr(AsmErrorEquates::OriginReverseIndexed, true, "");
                         std::process::exit(1);
                     }
                     while currentSegment.org != org {

@@ -27,8 +27,7 @@ extern "C" {
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
      -> *mut libc::c_void;
     #[no_mangle]
-    fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8)
-     -> i32;
+    fn asmerr(err: AsmErrorEquates, abot: bool, text: &str) -> AsmErrorEquates;
     #[no_mangle]
     fn ckmalloc(bytes: i32) -> *mut i8;
     #[no_mangle]
@@ -139,8 +138,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                         128
                     );
                 } else {
-                    asmerr(AsmErrorEquates::SyntaxError,
-                           false, pLine);
+                    asmerr(AsmErrorEquates::SyntaxError, false, transient::str_pointer_to_string(pLine).as_str());
                 }
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
@@ -413,7 +411,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                     if (*cur).addrmode as u8 == AddressModes::IndByteY as u8 && *str.offset(1) as u8 == ',' as u8 && *str.offset(2) as u8 | 0x20 == 'x' as u8 {
                         // FIXME: strangely, this is never used, so we have it here but commented out
                         // let buffer: String = transient::str_pointer_to_string(str);
-                        asmerr(AsmErrorEquates::IllegalAddressingMode, false, pLine);
+                        asmerr(AsmErrorEquates::IllegalAddressingMode, false, transient::str_pointer_to_string(pLine).as_str());
                         state.execution.redoIndex += 1;
                         state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved
                         //we treat the opcode as valid to allow passes to continue, which should
@@ -447,7 +445,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                 } else if (*cur).addrmode as u8 == AddressModes::IndWord as u8 && scr == 'y' as i32 && *str.offset(2) as u8 == ')' as u8 && wantmode != 0 {
                     // FIXME: strangely, this is never used, so we have it here but commented out
                     // let buffer: String = transient::str_pointer_to_string(str);
-                    asmerr(AsmErrorEquates::IllegalAddressingMode, false, pLine);
+                    asmerr(AsmErrorEquates::IllegalAddressingMode, false, transient::str_pointer_to_string(pLine).as_str());
                     state.execution.redoIndex += 1;
                     state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved;
                     //FIX: detect illegal opc (zp,y) syntax...
@@ -487,12 +485,10 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                     (*cur).next = pNewSymbol;
                     state.expressions.argIndex -= 1;
                     if state.expressions.argIndex < state.expressions.argIndexBase {
-                        asmerr(AsmErrorEquates::SyntaxError,
-                               false, pLine);
+                        asmerr(AsmErrorEquates::SyntaxError, false, transient::str_pointer_to_string(pLine).as_str());
                     }
                     if state.expressions.argIndex > state.expressions.argIndexBase {
-                        asmerr(AsmErrorEquates::SyntaxError,
-                               false, pLine);
+                        asmerr(AsmErrorEquates::SyntaxError, false, transient::str_pointer_to_string(pLine).as_str());
                     }
                     (*cur).value = state.expressions.argStack[state.expressions.argIndex];
                     (*cur).flags = state.expressions.argFlags[state.expressions.argIndex];
@@ -599,8 +595,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
         }
     }
     if state.expressions.argIndex != state.expressions.argIndexBase || state.expressions.opIndex != state.expressions.opIndexBase {
-        asmerr(AsmErrorEquates::SyntaxError, false,
-               pLine);
+        asmerr(AsmErrorEquates::SyntaxError, false, transient::str_pointer_to_string(pLine).as_str());
     }
     state.expressions.argIndex = state.expressions.argIndexBase;
     state.expressions.opIndex = state.expressions.opIndexBase;
@@ -614,16 +609,14 @@ pub unsafe extern "C" fn evaltop() {
         println!("evaltop @(A,O) {} {}", state.expressions.argIndex, state.expressions.opIndex);
     }
     if state.expressions.opIndex <= state.expressions.opIndexBase {
-        asmerr(AsmErrorEquates::SyntaxError, false,
-               0 as *const i8);
+        asmerr(AsmErrorEquates::SyntaxError, false, "");
         state.expressions.opIndex = state.expressions.opIndexBase;
         return
     }
     state.expressions.opIndex -= 1;
     if state.expressions.opPri[state.expressions.opIndex] == 128 {
         if state.expressions.argIndex < state.expressions.argIndexBase + 1 {
-            asmerr(AsmErrorEquates::SyntaxError, false,
-                   0 as *const i8);
+            asmerr(AsmErrorEquates::SyntaxError, false, "");
             state.expressions.argIndex = state.expressions.argIndexBase;
             return
         }
@@ -640,8 +633,7 @@ pub unsafe extern "C" fn evaltop() {
             );
     } else {
         if state.expressions.argIndex < state.expressions.argIndexBase + 2 {
-            asmerr(AsmErrorEquates::SyntaxError, false,
-                   0 as *const i8);
+            asmerr(AsmErrorEquates::SyntaxError, false, "");
             state.expressions.argIndex = state.expressions.argIndexBase;
             return
         }
@@ -771,8 +763,7 @@ pub unsafe extern "C" fn op_div(mut v1: i64, mut v2: i64,
         return
     }
     if v2 == 0 {
-        asmerr(AsmErrorEquates::DivisionByZero, true,
-               0 as *const i8);
+        asmerr(AsmErrorEquates::DivisionByZero, true, "");
         stackarg(0, 0,
                  0 as *const i8);
     } else { stackarg(v1 / v2, 0, 0 as *const i8); };
@@ -1016,7 +1007,7 @@ pub unsafe extern "C" fn pushsymbol(mut str: *const i8) -> *const i8 {
         ptr = ptr.offset(1)
     }
     if ptr == str {
-        asmerr(AsmErrorEquates::IllegalCharacter, false, str);
+        asmerr(AsmErrorEquates::IllegalCharacter, false, transient::str_pointer_to_string(str).as_str());
         println!("char = '{}' {} (-1: {})",
             transient::str_pointer_to_string(str),
             transient::str_pointer_to_string(str).as_bytes()[0],

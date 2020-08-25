@@ -37,8 +37,7 @@ extern "C" {
     #[no_mangle]
     static mut Av: [*mut i8; 0];
     #[no_mangle]
-    fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8)
-     -> i32;
+    fn asmerr(err: AsmErrorEquates, abort: bool, text: &str) -> AsmErrorEquates;
     #[no_mangle]
     fn permalloc(bytes: i32) -> *mut i8;
 }
@@ -270,7 +269,7 @@ pub unsafe extern "C" fn programlabel() {
                         transient::str_pointer_to_string((*sym).name),
                         formatting::segment_address_to_string((*sym).value as u64, 0),
                     );
-                    asmerr(AsmErrorEquates::LabelMismatch, false, transient::string_to_str_pointer(buffer));
+                    asmerr(AsmErrorEquates::LabelMismatch, false, buffer.as_str());
                 }
                 state.execution.redoIndex += 1;
                 state.execution.redoWhy |= ReasonCodes::PhaseError
