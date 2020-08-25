@@ -657,8 +657,7 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
             let mut str: *mut i8 =
                 (*av.offset(i as isize)).offset(2);
             // FIXME: use better strings for parsing chars. These are temporary.
-            let str_rs_1 = &[*str as u8];
-            let str_rs = std::str::from_utf8(str_rs_1).unwrap();
+            let str_rs = transient::str_pointer_to_string(str);
             match *(*av.offset(i as isize)).offset(1) as u8 as char {
                 'E' => {
                     /* TODO: need to improve option parsing and errors for it */
@@ -689,11 +688,8 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
                 'd' => {
-                    state.parameters.debug = strtol(
-                        str,
-                        0 as *mut libc::c_void as *mut *mut i8,
-                        10
-                    ) as i32 != 0;
+                    let digit = str_rs.parse::<u8>().unwrap_or(0);
+                    state.parameters.debug = digit != 0;
                     println!("Debug trace {}", if state.parameters.debug { "ON" } else { "OFF" });
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
@@ -790,12 +786,7 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
                 /* fall through to 'p' */
                 /*  F_passes   */
                 {
-                    state.parameters.maxPasses =
-                        strtol(
-                            str,
-                            0 as *mut libc::c_void as *mut *mut i8,
-                            10
-                        ) as u8;
+                    state.parameters.maxPasses = str_rs.parse::<u8>().unwrap_or(0);
                     current_block = 17788412896529399552;
                 }
                 _ => { }
@@ -1210,13 +1201,13 @@ unsafe extern "C" fn cleanup(mut buf: *mut i8, mut bDisable: bool)
                     if state.parameters.debug {
                         println!("macro tail: '{}'", transient::str_pointer_to_string(str));
                     }
-                    arg =
-                        strtol(str.offset(1),
-                               0 as *mut libc::c_void as
-                                   *mut *mut i8, 10) as i32;
+                    // FIXME: this should be:
+                    //   arg = transient::str_pointer_to_string(str.offset(1)).parse::<i32>().unwrap_or(0);
+                    // But somehow it's creating problems below. It parses correctly but
+                    // truncates the strlist string?!
+                    arg = strtol(str.offset(1), 0 as *mut libc::c_void as *mut *mut i8, 10) as i32;
                     add = 0;
-                    while *str as i32 != 0 &&
-                              *str as i32 != '}' as i32 {
+                    while *str as i32 != 0 && *str as i32 != '}' as i32 {
                         add -= 1;
                         str = str.offset(1)
                     }
@@ -1235,8 +1226,7 @@ unsafe extern "C" fn cleanup(mut buf: *mut i8, mut bDisable: bool)
                             strlist = (*strlist).next
                         }
                         if !strlist.is_null() {
-                            add =
-                                (add as u64).wrapping_add(strlen((*strlist).buf.as_mut_ptr())) as i32 as i32;
+                            add = (add as u64).wrapping_add(strlen((*strlist).buf.as_mut_ptr())) as i32;
                             if state.parameters.debug {
                                 println!(
                                     "strlist: '{}' {}",
