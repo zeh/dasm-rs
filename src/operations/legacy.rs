@@ -1120,23 +1120,19 @@ pub unsafe extern "C" fn v_equ(mut str: *mut i8,
 pub unsafe extern "C" fn v_eqm(mut str: *mut i8,
                                mut _dummy: *mut _MNE) {
     let mut lab: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut len: i32 =
-        strlen(*Av.as_mut_ptr().offset(0)) as i32;
+    let str_rs = transient::str_pointer_to_string(str);
+    let mut len: i32 = strlen(*Av.as_mut_ptr().offset(0)) as i32;
     lab = findsymbol(*Av.as_mut_ptr().offset(0), len);
     if !lab.is_null() {
-        if (*lab).flags as i32 & 0x8 as i32 != 0 {
+        if (*lab).flags & SymbolTypes::StringResult != 0 {
             free((*lab).string as *mut libc::c_void);
         }
     } else {
-        lab =
-            CreateSymbol(*Av.as_mut_ptr().offset(0),
-                         len)
+        lab = CreateSymbol(*Av.as_mut_ptr().offset(0), len)
     }
     (*lab).value = 0;
-    (*lab).flags =
-        (0x8 as i32 | 0x10 as i32 | 0x20 as i32) as u8;
-    (*lab).string =
-        strcpy(ckmalloc(strlen(str).wrapping_add(1) as i32), str);
+    (*lab).flags = SymbolTypes::StringResult | SymbolTypes::Set | SymbolTypes::Macro;
+    (*lab).string = transient::string_to_str_pointer(str_rs);
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_echo(mut str: *mut i8,
