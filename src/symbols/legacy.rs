@@ -29,8 +29,6 @@ extern "C" {
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void,
               _: u64) -> i32;
     #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     static mut SHash: [*mut _SYMBOL; 0];
@@ -204,10 +202,7 @@ unsafe extern "C" fn hash1(mut str: *const i8, mut len: i32)
 */
 #[no_mangle]
 pub unsafe extern "C" fn programlabel() {
-    let mut len: i32 = 0;
-    let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let currentSegment = &state.other.segments[state.other.currentSegment];
-    let mut str: *mut i8 = 0 as *mut i8;
     let mut rorg: u8 = currentSegment.flags & SegmentTypes::RelocatableOrigin;
     let mut cflags: u8 = if rorg != 0 {
         currentSegment.rflags
@@ -221,13 +216,15 @@ pub unsafe extern "C" fn programlabel() {
     };
     state.execution.programOrg = currentSegment.org;
     state.execution.programFlags = currentSegment.flags;
-    str = *Av.as_mut_ptr().offset(0);
-    if *str as i32 == 0 { return }
-    len = strlen(str) as i32;
-    if *str.offset((len - 1) as isize) as i32 == ':' as i32 {
+    let str = transient::str_pointer_to_string(*Av.as_mut_ptr());
+    let mut len = str.len();
+    if len == 0 {
+        return;
+    }
+    if str.ends_with(":") {
         len -= 1
     }
-    if *str.offset(0) as i32 != '.' as i32 && *str.offset((len - 1) as isize) as i32 != '$' as i32 {
+    if !str.starts_with(".") && !str.ends_with("$") {
         state.execution.lastLocalDollarIndex += 1;
         state.execution.localDollarIndex = state.execution.lastLocalDollarIndex;
     }
@@ -236,7 +233,7 @@ pub unsafe extern "C" fn programlabel() {
     *		referenced and origin not known
     *		known and phase error	 (origin known)
     */
-    sym = findsymbol(str, len);
+    let mut sym: *mut _SYMBOL = findsymbol(transient::string_to_str_pointer(str.clone()), len as i32);
     if !sym.is_null() {
         if (*sym).flags & (SymbolTypes::Unknown | SymbolTypes::Referenced) == SymbolTypes::Unknown | SymbolTypes::Referenced {
             state.execution.redoIndex += 1;
@@ -255,9 +252,9 @@ pub unsafe extern "C" fn programlabel() {
         } else if cflags & SymbolTypes::Unknown == 0 && (*sym).flags & SymbolTypes::Unknown == 0 {
             if pc != (*sym).value as u64 {
                 /*
-            * If we had an unevaluated IF expression in the
-            * previous pass, don't complain about phase errors
-            * too loudly.
+                * If we had an unevaluated IF expression in the
+                * previous pass, don't complain about phase errors
+                * too loudly.
                 */
                 //FIX: calling asmerr with ERROR_LABEL_MISMATCH is fatal. The clause
                 //     below was causing aborts if verbosity was up, even when the
@@ -276,9 +273,11 @@ pub unsafe extern "C" fn programlabel() {
                 state.execution.redoWhy |= ReasonCodes::PhaseError
             }
         }
-    } else { sym = CreateSymbol(str, len) }
+    } else {
+        sym = CreateSymbol(transient::string_to_str_pointer(str), len as i32);
+    }
     (*sym).value = pc as i64;
-    (*sym).flags = ((*sym).flags & !(SymbolTypes::Unknown) | cflags & SymbolTypes::Unknown) as u8;
+    (*sym).flags = (*sym).flags & !(SymbolTypes::Unknown) | cflags & SymbolTypes::Unknown;
 }
 #[no_mangle]
 pub static mut SymAlloc: *mut _SYMBOL = 0 as *const _SYMBOL as *mut _SYMBOL;
