@@ -22,6 +22,7 @@ use std::fs::File;
 
 pub mod constants;
 pub mod expressions;
+pub mod errors;
 pub mod globals;
 pub mod operations;
 pub mod processors;
@@ -61,7 +62,6 @@ use types::structs::{
 };
 use utils::{
     filesystem,
-    find_error_definition,
     formatting,
     hash_string,
     panic,
