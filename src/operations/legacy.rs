@@ -1661,17 +1661,17 @@ pub unsafe extern "C" fn closegenerate() {
 pub unsafe extern "C" fn genfill(mut fill: i64,
                                  mut entries: i64,
                                  mut size: i32) {
-    let mut bytes: i64 = entries;
-    let mut i: i32 = 0;
-    let mut c3: u8 = 0;
-    let mut c2: u8 = 0;
-    let mut c1: u8 = 0;
-    let mut c0: u8 = 0;
-    if bytes == 0 { return }
-    c3 = (fill >> 24) as u8;
-    c2 = (fill >> 16) as u8;
-    c1 = (fill >> 8) as u8;
-    c0 = fill as u8;
+    if entries == 0 {
+        return;
+    }
+
+    let mut bytes: usize = entries as usize;
+    let mut c3 = (fill >> 24) as u8;
+    let mut c2 = (fill >> 16) as u8;
+    let mut c1 = (fill >> 8) as u8;
+    let mut c0 = fill as u8;
+
+    let mut i: usize = 0;
     match size {
         1 => {
             memset(state.output.generated.as_mut_ptr() as *mut libc::c_void, c0 as i32,
@@ -1679,9 +1679,7 @@ pub unsafe extern "C" fn genfill(mut fill: i64,
         }
         2 => {
             bytes <<= 1;
-            i = 0;
-            while (i as u64) <
-                      ::std::mem::size_of::<[u8; 1024]>() as u64 {
+            while i < state.output.generated.len() {
                 if state.execution.bitOrder != BitOrder::LeastMost {
                     state.output.generated[(i + 0) as usize] = c1;
                     state.output.generated[(i + 1) as usize] = c0
@@ -1694,9 +1692,7 @@ pub unsafe extern "C" fn genfill(mut fill: i64,
         }
         4 => {
             bytes <<= 2;
-            i = 0;
-            while (i as u64) <
-                      ::std::mem::size_of::<[u8; 1024]>() as u64 {
+            while i < state.output.generated.len() {
                 if state.execution.bitOrder != BitOrder::LeastMost {
                     state.output.generated[(i + 0) as usize] = c3;
                     state.output.generated[(i + 1) as usize] = c2;
@@ -1713,13 +1709,12 @@ pub unsafe extern "C" fn genfill(mut fill: i64,
         }
         _ => { }
     }
-    state.output.generatedLength = ::std::mem::size_of::<[u8; 1024]>();
-    while bytes as u64 > ::std::mem::size_of::<[u8; 1024]>() as u64 {
+    state.output.generatedLength = state.output.generated.len();
+    while bytes > state.output.generated.len() {
         generate();
-        bytes = (bytes as u64)
-            .wrapping_sub(::std::mem::size_of::<[u8; 1024]>() as u64) as i64 as i64
+        bytes = bytes - state.output.generated.len();
     }
-    state.output.generatedLength = bytes as usize;
+    state.output.generatedLength = bytes;
     generate();
 }
 #[no_mangle]
