@@ -76,30 +76,6 @@ pub struct _MNE {
     pub opcode: [u32; 21],
 }
 /*      accumulatively true (not incl this one) */
-/*      ORG unknown            */
-/*      ORG referenced        */
-/*      uninitialized area (U flag)    */
-/*      relocatable origin active    */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct _SEGMENT {
-    pub next: *mut _SEGMENT,
-    pub name: *mut i8,
-    pub flags: u8,
-    pub rflags: u8,
-    pub org: u64,
-    pub rorg: u64,
-    pub initorg: u64,
-    pub initrorg: u64,
-    pub initflags: u8,
-    pub initrflags: u8,
-}
-/*      value unknown     */
-/*      referenced        */
-/*      result is a string    */
-/*      SET instruction used    */
-/*      symbol is a macro    */
-/*      master reference    */
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _SYMBOL {

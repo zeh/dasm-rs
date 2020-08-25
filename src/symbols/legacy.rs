@@ -44,20 +44,6 @@ extern "C" {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct _SEGMENT {
-    pub next: *mut _SEGMENT,
-    pub name: *mut i8,
-    pub flags: u8,
-    pub rflags: u8,
-    pub org: u64,
-    pub rorg: u64,
-    pub initorg: u64,
-    pub initrorg: u64,
-    pub initflags: u8,
-    pub initrflags: u8,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
 pub struct _SYMBOL {
     pub next: *mut _SYMBOL,
     pub name: *mut i8,
