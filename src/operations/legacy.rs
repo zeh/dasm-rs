@@ -567,23 +567,6 @@ pub unsafe extern "C" fn v_list(mut str: *mut i8,
         state.execution.listMode = ListMode::List
     };
 }
-unsafe extern "C" fn getfilename(mut str: *mut i8)
- -> *mut i8 {
-    if *str as i32 == '\"' as i32 {
-        let mut buf: *mut i8 = 0 as *mut i8;
-        str = str.offset(1);
-        buf =
-            ckmalloc(strlen(str).wrapping_add(1) as i32);
-        strcpy(buf, str);
-        str = buf;
-        while *str as i32 != 0 && *str as i32 != '\"' as i32 {
-            str = str.offset(1)
-        }
-        *str = 0;
-        return buf
-    }
-    return str;
-}
 /* -T option [phf] */
 /* -E option [phf] */
 /*extern unsigned int _fmode;*/
@@ -606,26 +589,24 @@ pub unsafe extern "C" fn v_include(mut str: *mut i8,
        {
         pushinclude((*sym).string);
     } else {
-        let mut buf: *mut i8 = 0 as *mut i8;
-        buf = getfilename(str);
-        pushinclude(buf);
-        if buf != str { free(buf as *mut libc::c_void); }
+        let str_rs = transient::str_pointer_to_string(str);
+        let buffer = get_filename(str_rs.as_str());
+        pushinclude(transient::string_to_str_pointer(String::from(buffer)));
     }
     if !sym.is_null() { FreeSymbolList(sym); };
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_incbin(mut str: *mut i8,
                                   mut _dummy: *mut _MNE) {
-    let mut buf: *mut i8 = 0 as *mut i8;
     let mut binfile: *mut FILE = 0 as *mut FILE;
     programlabel();
-    buf = getfilename(str);
-    binfile = pfopen(buf, b"rb\x00" as *const u8 as *const i8);
+    let str_rs = transient::str_pointer_to_string(str);
+    let buffer = get_filename(str_rs.as_str());
+    binfile = pfopen(transient::string_to_str_pointer(String::from(buffer)), b"rb\x00" as *const u8 as *const i8);
     if !binfile.is_null() {
         if state.execution.redoIndex != 0 {
             /* optimize: don't actually read the file if not needed */
-            fseek(binfile, 0,
-                  2);
+            fseek(binfile, 0, 2);
             state.output.generatedLength = ftell(binfile) as usize;
             generate();
             /* does not access state.output.generated[] if Redo is set */
@@ -646,9 +627,8 @@ pub unsafe extern "C" fn v_incbin(mut str: *mut i8,
         }
         fclose(binfile);
     } else {
-        println!("unable to open {}", transient::str_pointer_to_string(buf));
+        println!("unable to open {}", buffer);
     }
-    if buf != str { free(buf as *mut libc::c_void); }
     state.output.generatedLength = 0;
     /* don't list hexdump */
 }
