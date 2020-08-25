@@ -580,7 +580,7 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut i8,
                                                         _: *mut _MNE) -> ()),
                       name: b"mac\x00" as *const u8 as *const i8,
-                      flags: 0x4 as i32 as u8,
+                      flags: 0x4,
                       okmask: 0,
                       opcode:
                           [0, 0, 0, 0, 0, 0, 0,
@@ -595,7 +595,7 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut i8,
                                                         _: *mut _MNE) -> ()),
                       name: b"endm\x00" as *const u8 as *const i8,
-                      flags: 0x80 as i32 as u8,
+                      flags: 0x80,
                       okmask: 0,
                       opcode:
                           [0, 0, 0, 0, 0, 0, 0,
@@ -626,7 +626,7 @@ pub static mut Ops: [_MNE; 39] =
                                                         _: *mut _MNE) -> ()),
                       name:
                           b"ifconst\x00" as *const u8 as *const i8,
-                      flags: 0x4 as i32 as u8,
+                      flags: 0x4,
                       okmask: 0,
                       opcode:
                           [0, 0, 0, 0, 0, 0, 0,
@@ -642,7 +642,7 @@ pub static mut Ops: [_MNE; 39] =
                                                         _: *mut _MNE) -> ()),
                       name:
                           b"ifnconst\x00" as *const u8 as *const i8,
-                      flags: 0x4 as i32 as u8,
+                      flags: 0x4,
                       okmask: 0,
                       opcode:
                           [0, 0, 0, 0, 0, 0, 0,
@@ -657,7 +657,7 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut i8,
                                                         _: *mut _MNE) -> ()),
                       name: b"if\x00" as *const u8 as *const i8,
-                      flags: 0x4 as i32 as u8,
+                      flags: 0x4,
                       okmask: 0,
                       opcode:
                           [0, 0, 0, 0, 0, 0, 0,
@@ -672,7 +672,7 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut i8,
                                                         _: *mut _MNE) -> ()),
                       name: b"else\x00" as *const u8 as *const i8,
-                      flags: 0x4 as i32 as u8,
+                      flags: 0x4,
                       okmask: 0,
                       opcode:
                           [0, 0, 0, 0, 0, 0, 0,
@@ -687,7 +687,7 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut i8,
                                                         _: *mut _MNE) -> ()),
                       name: b"endif\x00" as *const u8 as *const i8,
-                      flags: 0x4 as i32 as u8,
+                      flags: 0x4,
                       okmask: 0,
                       opcode:
                           [0, 0, 0, 0, 0, 0, 0,
@@ -702,7 +702,7 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut i8,
                                                         _: *mut _MNE) -> ()),
                       name: b"eif\x00" as *const u8 as *const i8,
-                      flags: 0x4 as i32 as u8,
+                      flags: 0x4,
                       okmask: 0,
                       opcode:
                           [0, 0, 0, 0, 0, 0, 0,
@@ -717,7 +717,7 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut i8,
                                                         _: *mut _MNE) -> ()),
                       name: b"repeat\x00" as *const u8 as *const i8,
-                      flags: 0x4 as i32 as u8,
+                      flags: 0x4,
                       okmask: 0,
                       opcode:
                           [0, 0, 0, 0, 0, 0, 0,
@@ -732,7 +732,7 @@ pub static mut Ops: [_MNE; 39] =
                                    unsafe extern "C" fn(_: *mut i8,
                                                         _: *mut _MNE) -> ()),
                       name: b"repend\x00" as *const u8 as *const i8,
-                      flags: 0x4 as i32 as u8,
+                      flags: 0x4,
                       okmask: 0,
                       opcode:
                           [0, 0, 0, 0, 0, 0, 0,

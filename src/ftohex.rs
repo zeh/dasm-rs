@@ -163,14 +163,14 @@ pub unsafe extern "C" fn convert(mut format: i32, mut in_0: *mut FILE,
             putc(':' as i32, out);
             puth(idx as u8, out);
             puth((org >> 8) as u8, out);
-            puth((org & 0xff as i32 as u32) as u8,
+            puth((org & 0xff) as u8,
                  out);
             putc('0' as i32, out);
             putc('0' as i32, out);
             chk =
                 idx.wrapping_add(org >>
                                      8).wrapping_add(org &
-                                                                       0xff as i32 as u32) as u8;
+                                                                       0xff) as u8;
             i = 0;
             while i < idx {
                 chk =

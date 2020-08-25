@@ -265,32 +265,32 @@ unsafe extern "C" fn parse_scratchpad_register(mut str: *mut i8,
     if strcasecmp(b"s\x00" as *const u8 as *const i8, str) == 0 ||
            strcasecmp(b"(is)\x00" as *const u8 as *const i8, str) ==
                0 {
-        *reg = 0xc as i32 as u8;
+        *reg = 0xc;
         return 0
     }
     if strcasecmp(b"i\x00" as *const u8 as *const i8, str) == 0 ||
            strcasecmp(b"(is)+\x00" as *const u8 as *const i8, str)
                == 0 {
-        *reg = 0xd as i32 as u8;
+        *reg = 0xd;
         return 0
     }
     if strcasecmp(b"d\x00" as *const u8 as *const i8, str) == 0 ||
            strcasecmp(b"(is)-\x00" as *const u8 as *const i8, str)
                == 0 {
-        *reg = 0xe as i32 as u8;
+        *reg = 0xe;
         return 0
     }
     /* parse aliases for scratchpad registers */
     if strcasecmp(b"j\x00" as *const u8 as *const i8, str) == 0 {
-        *reg = 0x9 as i32 as u8;
+        *reg = 0x9;
         return 0
     }
     if strcasecmp(b"hu\x00" as *const u8 as *const i8, str) == 0 {
-        *reg = 0xa as i32 as u8;
+        *reg = 0xa;
         return 0
     }
     if strcasecmp(b"hl\x00" as *const u8 as *const i8, str) == 0 {
-        *reg = 0xb as i32 as u8;
+        *reg = 0xb;
         return 0
     }
     /* parse register number */
@@ -401,7 +401,7 @@ unsafe extern "C" fn v_lis(mut str: *mut i8, mut mne: *mut _MNE) {
         f8err(AsmErrorEquates::ValueMustBeLowerThan10, (*mne).name, str,
               false);
     }
-    emit_opcode1((0x70 as i32 as u64 |
+    emit_opcode1((0x70 |
                       operand & 15) as u8);
 }
 unsafe extern "C" fn v_lisu_lisl(mut str: *mut i8,
@@ -700,14 +700,14 @@ unsafe extern "C" fn v_wordop(mut str: *mut i8,
     let mut value: u64 = 0;
     programlabel();
     parse_value(str, &mut value);
-    if value > 0xffff as i32 as u64 {
+    if value > 0xffff {
         f8err(AsmErrorEquates::ValueMustBeLowerThan10000, (*mne).name, str,
               false);
     }
     emit_opcode3((*mne).opcode[0] as u8,
                  (value >> 8 &
-                      0xff as i32 as u64) as u8,
-                 (value & 0xff as i32 as u64) as u8);
+                      0xff) as u8,
+                 (value & 0xff) as u8);
 }
 /*
  * handles instructions that take a byte operand:
@@ -718,12 +718,12 @@ unsafe extern "C" fn v_byteop(mut str: *mut i8,
     let mut value: u64 = 0;
     programlabel();
     parse_value(str, &mut value);
-    if value > 0xff as i32 as u64 {
+    if value > 0xff {
         f8err(AsmErrorEquates::AddressMustBeLowerThan100, (*mne).name, str,
               false);
     }
     emit_opcode2((*mne).opcode[0] as u8,
-                 (value & 0xff as i32 as u64) as u8);
+                 (value & 0xff) as u8);
 }
 #[no_mangle]
 pub static mut MneF8: [_MNE; 59] =
@@ -799,7 +799,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x8e as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x8e, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -815,7 +815,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x24 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x24, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -831,7 +831,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x88 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x88, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -847,7 +847,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x89 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x89, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -863,7 +863,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0xc0 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xc0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -879,7 +879,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0xd0 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xd0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -895,7 +895,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x82 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x82, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -911,7 +911,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x90 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x90, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -927,7 +927,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x91 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x91, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -943,7 +943,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x92 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x92, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -959,7 +959,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x98 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x98, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -975,7 +975,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x94 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x94, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -991,7 +991,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x81 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x81, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1007,7 +1007,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x90 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x90, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1023,7 +1023,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x8f as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x8f, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1039,7 +1039,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x80 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x80, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1055,7 +1055,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x84 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x84, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1071,7 +1071,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x25 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x25, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1087,7 +1087,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x70 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x70, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1103,7 +1103,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x8d as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x8d, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1119,7 +1119,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x18 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x18, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1135,7 +1135,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x2a as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x2a, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1151,7 +1151,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x1a as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x1a, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1167,7 +1167,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x30 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x30, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1183,7 +1183,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x1b as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x1b, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1199,7 +1199,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x26 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x26, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1215,7 +1215,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x1f as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x1f, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1231,7 +1231,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0xa0 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xa0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1247,7 +1247,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x29 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x29, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1263,7 +1263,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x20 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x20, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1294,7 +1294,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x68 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x68, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1310,7 +1310,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x60 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x60, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1326,7 +1326,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x16 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x16, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1342,7 +1342,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x19 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x19, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1373,7 +1373,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x21 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x21, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1389,7 +1389,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x8a as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x8a, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1405,7 +1405,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x2b as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x2b, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1421,7 +1421,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0xf0 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xf0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1437,7 +1437,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x22 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x22, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1453,7 +1453,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x8b as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x8b, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1469,7 +1469,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x27 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x27, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1485,7 +1485,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0xb0 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xb0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1501,7 +1501,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x28 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x28, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1517,7 +1517,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0xc as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xc, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1533,7 +1533,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x1c as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x1c, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1549,7 +1549,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x13 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x13, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1565,7 +1565,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x12 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x12, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1581,7 +1581,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x17 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x17, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1597,7 +1597,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x2c as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x2c, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1613,7 +1613,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x23 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x23, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1629,7 +1629,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x8c as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x8c, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1645,7 +1645,7 @@ pub static mut MneF8: [_MNE; 59] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0xe0 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xe0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },

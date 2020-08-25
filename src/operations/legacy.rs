@@ -344,7 +344,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut i8,
         }
     }
     addressMode = AddressModes::try_from((*sym).addrmode).unwrap();
-    if (*sym).flags & SymbolTypes::Unknown != 0 || (*sym).value >= 0x100 as i32 as i64 {
+    if (*sym).flags & SymbolTypes::Unknown != 0 || (*sym).value >= 0x100 {
         opsize = 2
     } else {
         opsize = if (*sym).value != 0 {
@@ -426,7 +426,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut i8,
     match addressMode {
         AddressModes::BitMod => {
             sym = (*symbase).next;
-            if (*sym).flags as i32 & 0x1 as i32 == 0 && (*sym).value >= 0x100 as i32 as i64 {
+            if (*sym).flags as i32 & 0x1 as i32 == 0 && (*sym).value >= 0x100 {
                 asmerr(AsmErrorEquates::AddressMustBeLowerThan100, false, 0 as *const i8);
             }
             state.output.generated[opidx] = (*sym).value as u8;
@@ -456,7 +456,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut i8,
             }
             sym = (*symbase).next;
             if (*sym).flags as i32 & 0x1 as i32 == 0 &&
-                   (*sym).value >= 0x100 as i32 as i64 {
+                   (*sym).value >= 0x100 {
                 asmerr(AsmErrorEquates::AddressMustBeLowerThan100,
                        false, 0 as *const i8);
             }
@@ -485,7 +485,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut i8,
     }
     if (*mne).flags & 0x10 != 0 {
         if !sym.is_null() {
-            if (*sym).flags & SymbolTypes::Unknown == 0 && (*sym).value >= 0x100 as i32 as i64 {
+            if (*sym).flags & SymbolTypes::Unknown == 0 && (*sym).value >= 0x100 {
                 asmerr(AsmErrorEquates::AddressMustBeLowerThan100, false, 0 as *const i8);
             }
             state.output.generated[opidx as usize] = (*sym).value as u8;
@@ -1104,7 +1104,7 @@ pub unsafe extern "C" fn v_equ(mut str: *mut i8,
     /* List the value */
     let mut v: u64 = (*lab).value as u64;
     state.output.generatedLength = 0;
-    if v > 0xffff as i32 as u64 {
+    if v > 0xffff {
         state.output.generated[state.output.generatedLength] = (v >> 24) as u8;
         state.output.generatedLength += 1;
         state.output.generated[state.output.generatedLength] = (v >> 16) as u8;
@@ -1346,7 +1346,7 @@ pub unsafe extern "C" fn v_execmac(mut str: *mut i8,
     (*inc).name = (*mac).name;
     (*inc).fi = (*pIncfile).fi;
     (*inc).lineno = 0;
-    (*inc).flags = 0x1 as i32 as u8;
+    (*inc).flags = 0x1;
     (*inc).saveidx = state.execution.localIndex;
     (*inc).savedolidx = state.execution.localDollarIndex;
     (*inc).strlist = (*mac).strlist;

@@ -48,14 +48,14 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::IndByteY as i32) as u64,
                       opcode:
-                          [0x69 as i32 as u32,
-                           0x65 as i32 as u32,
-                           0x75 as i32 as u32,
-                           0x6d as i32 as u32,
-                           0x7d as i32 as u32,
-                           0x79 as i32 as u32,
-                           0x61 as i32 as u32,
-                           0x71 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x69,
+                           0x65,
+                           0x75,
+                           0x6d,
+                           0x7d,
+                           0x79,
+                           0x61,
+                           0x71, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -71,7 +71,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imm8 as i32) as u64,
                       opcode:
-                          [0xb as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xb, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -101,14 +101,14 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::IndByteY as i32) as u64,
                       opcode:
-                          [0x29 as i32 as u32,
-                           0x25 as i32 as u32,
-                           0x35 as i32 as u32,
-                           0x2d as i32 as u32,
-                           0x3d as i32 as u32,
-                           0x39 as i32 as u32,
-                           0x21 as i32 as u32,
-                           0x31 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x29,
+                           0x25,
+                           0x35,
+                           0x2d,
+                           0x3d,
+                           0x39,
+                           0x21,
+                           0x31, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -124,7 +124,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imm8 as i32) as u64,
                       opcode:
-                          [0x8b as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x8b, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -140,7 +140,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imm8 as i32) as u64,
                       opcode:
-                          [0x6b as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x6b, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -164,11 +164,11 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::WordAdrX as i32) as u64,
                       opcode:
-                          [0xa as i32 as u32,
-                           0x6 as i32 as u32,
-                           0x16 as i32 as u32,
-                           0xe as i32 as u32,
-                           0x1e as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xa,
+                           0x6,
+                           0x16,
+                           0xe,
+                           0x1e, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -184,7 +184,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imm8 as i32) as u64,
                       opcode:
-                          [0x4b as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x4b, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -200,7 +200,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Rel as i32) as u64,
                       opcode:
-                          [0x90 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x90, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -216,7 +216,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Rel as i32) as u64,
                       opcode:
-                          [0xb0 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xb0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -232,7 +232,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Rel as i32) as u64,
                       opcode:
-                          [0xf0 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xf0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -250,8 +250,8 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::WordAdr as i32) as u64,
                       opcode:
-                          [0x24 as i32 as u32,
-                           0x2c as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x24,
+                           0x2c, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -267,7 +267,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Rel as i32) as u64,
                       opcode:
-                          [0x30 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x30, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -283,7 +283,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Rel as i32) as u64,
                       opcode:
-                          [0xd0 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xd0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -299,7 +299,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Rel as i32) as u64,
                       opcode:
-                          [0x10 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x10, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -331,7 +331,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Rel as i32) as u64,
                       opcode:
-                          [0x50 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x50, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -347,7 +347,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Rel as i32) as u64,
                       opcode:
-                          [0x70 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x70, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -363,7 +363,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x18 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x18, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -379,7 +379,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0xd8 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xd8, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -395,7 +395,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x58 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x58, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -411,7 +411,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0xb8 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xb8, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -441,14 +441,14 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::IndByteY as i32) as u64,
                       opcode:
-                          [0xc9 as i32 as u32,
-                           0xc5 as i32 as u32,
-                           0xd5 as i32 as u32,
-                           0xcd as i32 as u32,
-                           0xdd as i32 as u32,
-                           0xd9 as i32 as u32,
-                           0xc1 as i32 as u32,
-                           0xd1 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xc9,
+                           0xc5,
+                           0xd5,
+                           0xcd,
+                           0xdd,
+                           0xd9,
+                           0xc1,
+                           0xd1, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -468,9 +468,9 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::WordAdr as i32) as u64,
                       opcode:
-                          [0xe0 as i32 as u32,
-                           0xe4 as i32 as u32,
-                           0xec as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xe0,
+                           0xe4,
+                           0xec, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -490,9 +490,9 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::WordAdr as i32) as u64,
                       opcode:
-                          [0xc0 as i32 as u32,
-                           0xc4 as i32 as u32,
-                           0xcc as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xc0,
+                           0xc4,
+                           0xcc, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -520,13 +520,13 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::IndByteY as i32) as u64,
                       opcode:
-                          [0xc7 as i32 as u32,
-                           0xd7 as i32 as u32,
-                           0xcf as i32 as u32,
-                           0xdf as i32 as u32,
-                           0xdb as i32 as u32,
-                           0xc3 as i32 as u32,
-                           0xd3 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xc7,
+                           0xd7,
+                           0xcf,
+                           0xdf,
+                           0xdb,
+                           0xc3,
+                           0xd3, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -548,10 +548,10 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::WordAdrX as i32) as u64,
                       opcode:
-                          [0xc6 as i32 as u32,
-                           0xd6 as i32 as u32,
-                           0xce as i32 as u32,
-                           0xde as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xc6,
+                           0xd6,
+                           0xce,
+                           0xde, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -567,7 +567,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0xca as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xca, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -583,7 +583,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x88 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x88, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -613,14 +613,14 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::IndByteY as i32) as u64,
                       opcode:
-                          [0x49 as i32 as u32,
-                           0x45 as i32 as u32,
-                           0x55 as i32 as u32,
-                           0x4d as i32 as u32,
-                           0x5d as i32 as u32,
-                           0x59 as i32 as u32,
-                           0x41 as i32 as u32,
-                           0x51 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x49,
+                           0x45,
+                           0x55,
+                           0x4d,
+                           0x5d,
+                           0x59,
+                           0x41,
+                           0x51, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -642,10 +642,10 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::WordAdrX as i32) as u64,
                       opcode:
-                          [0xe6 as i32 as u32,
-                           0xf6 as i32 as u32,
-                           0xee as i32 as u32,
-                           0xfe as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xe6,
+                           0xf6,
+                           0xee,
+                           0xfe, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -661,7 +661,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0xe8 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xe8, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -677,7 +677,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0xc8 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xc8, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -705,13 +705,13 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::IndByteY as i32) as u64,
                       opcode:
-                          [0xe7 as i32 as u32,
-                           0xf7 as i32 as u32,
-                           0xef as i32 as u32,
-                           0xff as i32 as u32,
-                           0xfb as i32 as u32,
-                           0xe3 as i32 as u32,
-                           0xf3 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xe7,
+                           0xf7,
+                           0xef,
+                           0xff,
+                           0xfb,
+                           0xe3,
+                           0xf3, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -729,8 +729,8 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::IndWord as i32) as u64,
                       opcode:
-                          [0x4c as i32 as u32,
-                           0x6c as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x4c,
+                           0x6c, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -746,7 +746,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::WordAdr as i32) as u64,
                       opcode:
-                          [0x20 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x20, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -762,7 +762,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::WordAdrY as i32) as u64,
                       opcode:
-                          [0xbb as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xbb, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -788,12 +788,12 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::IndByteY as i32) as u64,
                       opcode:
-                          [0xa7 as i32 as u32,
-                           0xb7 as i32 as u32,
-                           0xaf as i32 as u32,
-                           0xbf as i32 as u32,
-                           0xa3 as i32 as u32,
-                           0xb3 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xa7,
+                           0xb7,
+                           0xaf,
+                           0xbf,
+                           0xa3,
+                           0xb3, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -823,14 +823,14 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::IndByteY as i32) as u64,
                       opcode:
-                          [0xa9 as i32 as u32,
-                           0xa5 as i32 as u32,
-                           0xb5 as i32 as u32,
-                           0xad as i32 as u32,
-                           0xbd as i32 as u32,
-                           0xb9 as i32 as u32,
-                           0xa1 as i32 as u32,
-                           0xb1 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xa9,
+                           0xa5,
+                           0xb5,
+                           0xad,
+                           0xbd,
+                           0xb9,
+                           0xa1,
+                           0xb1, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -854,11 +854,11 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::WordAdrY as i32) as u64,
                       opcode:
-                          [0xa2 as i32 as u32,
-                           0xa6 as i32 as u32,
-                           0xb6 as i32 as u32,
-                           0xae as i32 as u32,
-                           0xbe as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xa2,
+                           0xa6,
+                           0xb6,
+                           0xae,
+                           0xbe, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -882,11 +882,11 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::WordAdrX as i32) as u64,
                       opcode:
-                          [0xa0 as i32 as u32,
-                           0xa4 as i32 as u32,
-                           0xb4 as i32 as u32,
-                           0xac as i32 as u32,
-                           0xbc as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xa0,
+                           0xa4,
+                           0xb4,
+                           0xac,
+                           0xbc, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -910,11 +910,11 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::WordAdrX as i32) as u64,
                       opcode:
-                          [0x4a as i32 as u32,
-                           0x46 as i32 as u32,
-                           0x56 as i32 as u32,
-                           0x4e as i32 as u32,
-                           0x5e as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x4a,
+                           0x46,
+                           0x56,
+                           0x4e,
+                           0x5e, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -930,7 +930,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imm8 as i32) as u64,
                       opcode:
-                          [0xab as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xab, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -955,12 +955,12 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::WordAdrX as i32) as u64,
                       opcode:
-                          [0xea as i32 as u32,
-                           0x80 as i32 as u32,
-                           0x4 as i32 as u32,
-                           0x14 as i32 as u32,
-                           0xc as i32 as u32,
-                           0x1c as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xea,
+                           0x80,
+                           0x4,
+                           0x14,
+                           0xc,
+                           0x1c, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -990,14 +990,14 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::IndByteY as i32) as u64,
                       opcode:
-                          [0x9 as i32 as u32,
-                           0x5 as i32 as u32,
-                           0x15 as i32 as u32,
-                           0xd as i32 as u32,
-                           0x1d as i32 as u32,
-                           0x19 as i32 as u32,
-                           0x1 as i32 as u32,
-                           0x11 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x9,
+                           0x5,
+                           0x15,
+                           0xd,
+                           0x1d,
+                           0x19,
+                           0x1,
+                           0x11, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1013,7 +1013,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x48 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x48, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1029,7 +1029,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x8 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x8, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1045,7 +1045,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x68 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x68, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1061,7 +1061,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x28 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x28, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1089,13 +1089,13 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::IndByteY as i32) as u64,
                       opcode:
-                          [0x27 as i32 as u32,
-                           0x37 as i32 as u32,
-                           0x2f as i32 as u32,
-                           0x3f as i32 as u32,
-                           0x3b as i32 as u32,
-                           0x23 as i32 as u32,
-                           0x33 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x27,
+                           0x37,
+                           0x2f,
+                           0x3f,
+                           0x3b,
+                           0x23,
+                           0x33, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1119,11 +1119,11 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::WordAdrX as i32) as u64,
                       opcode:
-                          [0x2a as i32 as u32,
-                           0x26 as i32 as u32,
-                           0x36 as i32 as u32,
-                           0x2e as i32 as u32,
-                           0x3e as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x2a,
+                           0x26,
+                           0x36,
+                           0x2e,
+                           0x3e, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1147,11 +1147,11 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::WordAdrX as i32) as u64,
                       opcode:
-                          [0x6a as i32 as u32,
-                           0x66 as i32 as u32,
-                           0x76 as i32 as u32,
-                           0x6e as i32 as u32,
-                           0x7e as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x6a,
+                           0x66,
+                           0x76,
+                           0x6e,
+                           0x7e, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1179,13 +1179,13 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::IndByteY as i32) as u64,
                       opcode:
-                          [0x67 as i32 as u32,
-                           0x77 as i32 as u32,
-                           0x6f as i32 as u32,
-                           0x7f as i32 as u32,
-                           0x7b as i32 as u32,
-                           0x63 as i32 as u32,
-                           0x73 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x67,
+                           0x77,
+                           0x6f,
+                           0x7f,
+                           0x7b,
+                           0x63,
+                           0x73, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1201,7 +1201,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x40 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x40, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1217,7 +1217,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x60 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x60, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1239,10 +1239,10 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::IndByteX as i32) as u64,
                       opcode:
-                          [0x87 as i32 as u32,
-                           0x97 as i32 as u32,
-                           0x8f as i32 as u32,
-                           0x83 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x87,
+                           0x97,
+                           0x8f,
+                           0x83, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1272,14 +1272,14 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::IndByteY as i32) as u64,
                       opcode:
-                          [0xe9 as i32 as u32,
-                           0xe5 as i32 as u32,
-                           0xf5 as i32 as u32,
-                           0xed as i32 as u32,
-                           0xfd as i32 as u32,
-                           0xf9 as i32 as u32,
-                           0xe1 as i32 as u32,
-                           0xf1 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xe9,
+                           0xe5,
+                           0xf5,
+                           0xed,
+                           0xfd,
+                           0xf9,
+                           0xe1,
+                           0xf1, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1295,7 +1295,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imm8 as i32) as u64,
                       opcode:
-                          [0xcb as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xcb, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1311,7 +1311,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x38 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x38, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1327,7 +1327,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0xf8 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xf8, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1343,7 +1343,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x78 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x78, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1361,8 +1361,8 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::IndByteY as i32) as u64,
                       opcode:
-                          [0x9f as i32 as u32,
-                           0x93 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x9f,
+                           0x93, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1378,7 +1378,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::WordAdrY as i32) as u64,
                       opcode:
-                          [0x9b as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x9b, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1394,7 +1394,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::WordAdrY as i32) as u64,
                       opcode:
-                          [0x9e as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x9e, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1410,7 +1410,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::WordAdrX as i32) as u64,
                       opcode:
-                          [0x9c as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x9c, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1438,13 +1438,13 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::IndByteY as i32) as u64,
                       opcode:
-                          [0x7 as i32 as u32,
-                           0x17 as i32 as u32,
-                           0xf as i32 as u32,
-                           0x1f as i32 as u32,
-                           0x1b as i32 as u32,
-                           0x3 as i32 as u32,
-                           0x13 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x7,
+                           0x17,
+                           0xf,
+                           0x1f,
+                           0x1b,
+                           0x3,
+                           0x13, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1472,13 +1472,13 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::IndByteY as i32) as u64,
                       opcode:
-                          [0x47 as i32 as u32,
-                           0x57 as i32 as u32,
-                           0x4f as i32 as u32,
-                           0x5f as i32 as u32,
-                           0x5b as i32 as u32,
-                           0x43 as i32 as u32,
-                           0x53 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x47,
+                           0x57,
+                           0x4f,
+                           0x5f,
+                           0x5b,
+                           0x43,
+                           0x53, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1506,13 +1506,13 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::IndByteY as i32) as u64,
                       opcode:
-                          [0x85 as i32 as u32,
-                           0x95 as i32 as u32,
-                           0x8d as i32 as u32,
-                           0x9d as i32 as u32,
-                           0x99 as i32 as u32,
-                           0x81 as i32 as u32,
-                           0x91 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x85,
+                           0x95,
+                           0x8d,
+                           0x9d,
+                           0x99,
+                           0x81,
+                           0x91, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1532,9 +1532,9 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::WordAdr as i32) as u64,
                       opcode:
-                          [0x86 as i32 as u32,
-                           0x96 as i32 as u32,
-                           0x8e as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x86,
+                           0x96,
+                           0x8e, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1554,9 +1554,9 @@ pub static mut Mne6502: [_MNE; 76] =
                                (1) <<
                                    AddressModes::WordAdr as i32) as u64,
                       opcode:
-                          [0x84 as i32 as u32,
-                           0x94 as i32 as u32,
-                           0x8c as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x84,
+                           0x94,
+                           0x8c, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1572,7 +1572,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0xaa as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xaa, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1588,7 +1588,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0xa8 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xa8, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1604,7 +1604,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0xba as i32 as u32, 0, 0, 0, 0, 0,
+                          [0xba, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1620,7 +1620,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x8a as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x8a, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1636,7 +1636,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x9a as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x9a, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
@@ -1652,7 +1652,7 @@ pub static mut Mne6502: [_MNE; 76] =
                       okmask:
                           ((1) << AddressModes::Imp as i32) as u64,
                       opcode:
-                          [0x98 as i32 as u32, 0, 0, 0, 0, 0,
+                          [0x98, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },

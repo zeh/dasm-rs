@@ -738,7 +738,7 @@ pub unsafe extern "C" fn op_takelsb(mut v1: i64,
 #[no_mangle]
 pub unsafe extern "C" fn op_takemsb(mut v1: i64,
                                     mut f1: i32) {
-    stackarg(v1 >> 8 & 0xff as i32 as i64, f1,
+    stackarg(v1 >> 8 & 0xff, f1,
              0 as *const i8);
 }
 #[no_mangle]

@@ -176,7 +176,7 @@ pub unsafe extern "C" fn CreateSymbol(mut str: *const i8,
     (*sym).namelen = len as u32;
     h1 = hash1(str, len);
     (*sym).next = *SHash.as_mut_ptr().offset(h1 as isize);
-    (*sym).flags = 0x1 as i32 as u8;
+    (*sym).flags = 0x1;
     let ref mut fresh0 = *SHash.as_mut_ptr().offset(h1 as isize);
     *fresh0 = sym;
     return sym;

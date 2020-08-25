@@ -823,7 +823,7 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
                 let mut ifs: *mut _IFSTACK =
                     zmalloc(::std::mem::size_of::<_IFSTACK>() as u64 as i32) as *mut _IFSTACK;
                 (*ifs).file = 0 as *mut _INCFILE;
-                (*ifs).flags = 0x4 as i32 as u8;
+                (*ifs).flags = 0x4;
                 (*ifs).acctrue = 1;
                 (*ifs).xtrue = 1;
                 Ifstack = ifs;
@@ -1641,7 +1641,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut i8,
                                           _: *mut _MACRO) -> ());
         (*mac).name =
             strcpy(permalloc(strlen(str).wrapping_add(1) as i32), str);
-        (*mac).flags = 0x8 as i32 as u8;
+        (*mac).flags = 0x8;
         (*mac).defpass = state.execution.pass as i32;
         let ref mut fresh22 = *MHash.as_mut_ptr().offset(i as isize);
         *fresh22 = mac as *mut _MNE
