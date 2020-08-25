@@ -6,6 +6,7 @@ use crate::constants::{
     MAX_MACRO_LEVEL,
 };
 use crate::globals::state;
+use crate::operations;
 use crate::types::flags::{
     FileFlags,
     ReasonCodes,
@@ -97,8 +98,6 @@ extern "C" {
     fn zmalloc(bytes: i32) -> *mut i8;
     #[no_mangle]
     fn ckmalloc(bytes: i32) -> *mut i8;
-    #[no_mangle]
-    fn addmsg(message: *mut i8);
     #[no_mangle]
     fn setspecial(value: i32, flags: i32);
     #[no_mangle]
@@ -1192,12 +1191,12 @@ pub unsafe extern "C" fn v_echo(mut str: *mut i8,
                 &mut state.output.listFile,
                 format!(" {}", buffer).as_str(),
             );
-            addmsg(b" \x00" as *const u8 as *const i8 as *mut i8); // -FXQ supress output until final pass
-            addmsg(transient::string_to_str_pointer(buffer));
+            operations::update_passbuffer(&mut state.output.passBufferMessages, " ");
+            operations::update_passbuffer(&mut state.output.passBufferMessages, buffer.as_str());
         }
         s = (*s).next
     }
-    addmsg(b"\n\x00" as *const u8 as *const i8 as *mut i8);
+    operations::update_passbuffer(&mut state.output.passBufferMessages, "\n");
     filesystem::writeln_to_file_maybe(&mut state.output.listFile, "");
 }
 #[no_mangle]

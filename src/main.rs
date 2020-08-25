@@ -1073,11 +1073,6 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
     println!("Report bugs on https://github.com/dasm-assembler/dasm please!");
     return AsmErrorEquates::CommandLine;
 }
-#[no_mangle]
-pub unsafe extern "C" fn addmsg(mut message: *mut i8) {
-    // add to message buffer (FXQ)
-    operations::update_passbuffer(&mut state.output.passBufferMessages, transient::str_pointer_to_string(message).as_str());
-}
 unsafe extern "C" fn outlistfile(mut comment: *const i8) {
     let mut xtrue: char = 0 as char;
     let mut c: char = 0 as char;
