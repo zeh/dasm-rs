@@ -17,6 +17,9 @@ use crate::types::enums::{
 	SortMode,
 	Verbosity,
 };
+use crate::types::legacy::{
+	_INCFILE,
+};
 
 // In original C code, both "ERRORSTRUCT" and "ERROR_DEFINITION"
 #[derive(Clone)]
@@ -67,6 +70,7 @@ pub struct OtherMainState {
 pub struct ExecutionState {
 	pub bitOrder: BitOrder,
 	pub extraString: String,
+	pub ifs: Vec<StackIf>, // IF/ELSE/ENDIF stack
 	pub includeDirList: Vec<String>,
 	pub isClear: bool,
 	pub lastLocalDollarIndex: u64,
@@ -122,4 +126,13 @@ pub struct Segment {
 	pub initrorg: u64,
 	pub initflags: u8,
 	pub initrflags: u8,
+}
+
+// In original C code, "_IFSTACK" and used as a linked list
+pub struct StackIf {
+	// FIXME: temporary, move to a new IncludeFile struct when possible
+	pub file: *mut _INCFILE,
+	pub flags: u8, // IfFlags
+	pub result: bool,
+	pub result_acc: bool,
 }

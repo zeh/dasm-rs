@@ -9,6 +9,7 @@ use crate::globals::state;
 use crate::operations;
 use crate::types::flags::{
     FileFlags,
+    IfFlags,
     ReasonCodes,
     SegmentTypes,
     SymbolTypes,
@@ -22,7 +23,6 @@ use crate::types::enums::{
     Processors,
 };
 use crate::types::legacy::{
-    _IFSTACK,
     _INCFILE,
     _MACRO,
     _MNE,
@@ -34,6 +34,7 @@ use crate::types::legacy::{
 };
 use crate::types::structs::{
     Segment,
+    StackIf,
 };
 use crate::utils::{
     filesystem,
@@ -81,8 +82,6 @@ extern "C" {
     static mut pIncfile: *mut _INCFILE;
     #[no_mangle]
     static mut Reploop: *mut _REPLOOP;
-    #[no_mangle]
-    static mut Ifstack: *mut _IFSTACK;
     #[no_mangle]
     static mut Av: [*mut i8; 0];
     #[no_mangle]
@@ -1308,10 +1307,10 @@ pub unsafe extern "C" fn v_ifnconst(mut str: *mut i8,
     FreeSymbolList(sym);
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_if(mut str: *mut i8,
-                              mut _dummy: *mut _MNE) {
+pub unsafe extern "C" fn v_if(mut str: *mut i8, mut _dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    if (*Ifstack).xtrue == 0 || (*Ifstack).acctrue == 0 {
+    let current_if = &mut state.execution.ifs.last_mut().unwrap();
+    if !current_if.result || !current_if.result_acc {
         pushif(false);
         return
     }
@@ -1321,38 +1320,39 @@ pub unsafe extern "C" fn v_if(mut str: *mut i8,
         state.execution.redoIndex += 1;
         state.execution.redoWhy |= ReasonCodes::IfNotResolved;
         pushif(false);
-        (*Ifstack).acctrue = 0;
+        current_if.result_acc = false;
         state.execution.redoIf |= 1
     } else { pushif((*sym).value != 0); }
     FreeSymbolList(sym);
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_else(mut _str: *mut i8,
-                                mut _dummy: *mut _MNE) {
-    if (*Ifstack).acctrue as i32 != 0 &&
-           (*Ifstack).flags as i32 & 0x4 as i32 == 0 {
+pub unsafe extern "C" fn v_else(mut _str: *mut i8, mut _dummy: *mut _MNE) {
+    let current_if = &mut state.execution.ifs.last_mut().unwrap();
+    if current_if.result_acc && (current_if.flags & IfFlags::Base == 0) {
         programlabel();
-        (*Ifstack).xtrue =
-            ((*Ifstack).xtrue == 0) as i32 as u8
+        current_if.result = !current_if.result;
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_endif(mut _str: *mut i8,
-                                 mut _dummy: *mut _MNE) {
-    let mut ifs: *mut _IFSTACK = Ifstack;
-    if (*ifs).flags as i32 & 0x4 as i32 == 0 {
-        if (*ifs).acctrue != 0 { programlabel(); }
-        if (*ifs).file != pIncfile {
+pub unsafe extern "C" fn v_endif(mut _str: *mut i8, mut _dummy: *mut _MNE) {
+    let current_if = &state.execution.ifs.last().unwrap();
+    if current_if.flags & IfFlags::Base == 0 {
+        if current_if.result_acc {
+            programlabel();
+        }
+        if current_if.file != pIncfile {
             println!("too many endif\'s");
-        } else { Ifstack = (*ifs).next; free(ifs as *mut libc::c_void); }
+        } else {
+            &state.execution.ifs.pop();
+        }
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_repeat(mut str: *mut i8,
-                                  mut _dummy: *mut _MNE) {
+pub unsafe extern "C" fn v_repeat(mut str: *mut i8, mut _dummy: *mut _MNE) {
     let mut rp: *mut _REPLOOP = 0 as *mut _REPLOOP;
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    if (*Ifstack).xtrue == 0 || (*Ifstack).acctrue == 0 {
+    let current_if = &state.execution.ifs.last().unwrap();
+    if !current_if.result || !current_if.result_acc {
         pushif(false);
         return
     }
@@ -1390,11 +1390,11 @@ pub unsafe extern "C" fn v_repeat(mut str: *mut i8,
     pushif(true);
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_repend(mut _str: *mut i8,
-                                  mut _dummy: *mut _MNE) {
-    if (*Ifstack).xtrue == 0 || (*Ifstack).acctrue == 0 {
+pub unsafe extern "C" fn v_repend(mut _str: *mut i8, mut _dummy: *mut _MNE) {
+    let current_if = &state.execution.ifs.last().unwrap();
+    if !current_if.result || !current_if.result_acc {
         v_endif(0 as *mut i8, 0 as *mut _MNE);
-        return
+        return;
     }
     if !Reploop.is_null() && (*Reploop).file == pIncfile {
         if (*Reploop).flags as i32 == 0 &&
@@ -1405,8 +1405,7 @@ pub unsafe extern "C" fn v_repend(mut _str: *mut i8,
             if (*pIncfile).flags as i32 & 0x1 as i32 != 0 {
                 (*pIncfile).strlist = (*Reploop).seek as *mut _STRLIST
             } else {
-                fseek((*pIncfile).fi, (*Reploop).seek as i64,
-                      0);
+                fseek((*pIncfile).fi, (*Reploop).seek as i64, 0);
             }
             (*pIncfile).lineno = (*Reploop).lineno
         } else {
@@ -1614,14 +1613,13 @@ pub unsafe extern "C" fn genfill(mut fill: i64,
 }
 #[no_mangle]
 pub unsafe extern "C" fn pushif(mut xbool: bool) {
-    let mut ifs: *mut _IFSTACK =
-        zmalloc(::std::mem::size_of::<_IFSTACK>() as u64 as i32) as *mut _IFSTACK;
-    (*ifs).next = Ifstack;
-    (*ifs).file = pIncfile;
-    (*ifs).flags = 0;
-    (*ifs).xtrue = xbool as u8;
-    (*ifs).acctrue =
-        ((*Ifstack).acctrue as i32 != 0 &&
-             (*Ifstack).xtrue as i32 != 0) as i32 as u8;
-    Ifstack = ifs;
+    let current_if = &state.execution.ifs.last().unwrap();
+    &state.execution.ifs.push(
+        StackIf {
+            file: pIncfile,
+            flags: 0,
+            result: xbool,
+            result_acc: current_if.result_acc && current_if.result,
+        }
+    );
 }

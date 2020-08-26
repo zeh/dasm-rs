@@ -55,3 +55,9 @@ pub mod MnemonicsFlags {
 	pub const InstructionMod: u8 = 0b0100_0000;     // 0x40: Instruction byte mod
 	pub const EndMnemonic: u8 = 0b1000_0000;        // 0x80: Is v_endm
 }
+
+// In original C code, used for flags as "IFF_*" but without a clear enum
+pub mod IfFlags {
+	pub const Unknown: u8 = 0b0000_0001;            // 0x01: Value Uknown
+	pub const Base: u8 = 0b0000_0100;				// 0x04
+}

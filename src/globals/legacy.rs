@@ -3,7 +3,6 @@ use crate::constants::{
     S_HASH_SIZE,
 };
 use crate::types::legacy::{
-    _IFSTACK,
     _INCFILE,
     _MNE,
     _REPLOOP,
@@ -94,9 +93,6 @@ pub static mut pIncfile: *mut _INCFILE =
 #[no_mangle]
 pub static mut Reploop: *mut _REPLOOP = 0 as *const _REPLOOP as *mut _REPLOOP;
 /*	repeat loop stack   */
-#[no_mangle]
-pub static mut Ifstack: *mut _IFSTACK = 0 as *const _IFSTACK as *mut _IFSTACK;
-/*	IF/ELSE/ENDIF stack */
 #[no_mangle]
 pub static mut Av: [*mut i8; 256] =
     [0 as *const i8 as *mut i8; 256];

@@ -43,6 +43,7 @@ use segments::{
 };
 use types::flags:: {
     FileFlags,
+    IfFlags,
     ReasonCodes,
     SegmentTypes,
     SymbolTypes,
@@ -58,7 +59,6 @@ use types::enums::{
 };
 use types::legacy::{
     __compar_fn_t,
-    _IFSTACK,
     _INCFILE,
     _MACRO,
     _MNE,
@@ -71,6 +71,7 @@ use types::legacy::{
 };
 use types::structs::{
     Segment,
+    StackIf,
 };
 use utils::{
     filesystem,
@@ -134,8 +135,6 @@ extern "C" {
     static mut pIncfile: *mut _INCFILE;
     #[no_mangle]
     static mut Reploop: *mut _REPLOOP;
-    #[no_mangle]
-    static mut Ifstack: *mut _IFSTACK;
     #[no_mangle]
     static mut Av: [*mut i8; 0];
     #[no_mangle]
@@ -710,15 +709,18 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
                 state.other.segments.clear();
                 state.other.segments.push(seg);
                 state.other.currentSegment = 0;
-                /*    TOP LEVEL IF    */
-                let mut ifs: *mut _IFSTACK =
-                    zmalloc(::std::mem::size_of::<_IFSTACK>() as u64 as i32) as *mut _IFSTACK;
-                (*ifs).file = 0 as *mut _INCFILE;
-                (*ifs).flags = 0x4;
-                (*ifs).acctrue = 1;
-                (*ifs).xtrue = 1;
-                Ifstack = ifs;
-                // ready error and message buffer...
+
+                // Top level IF
+                state.execution.ifs.push(
+                    StackIf {
+                        file: 0 as *mut _INCFILE,
+                        flags: IfFlags::Base,
+                        result_acc: true,
+                        result: true,
+                    }
+                );
+
+                // Ready error and message buffer...
                 operations::clear_passbuffer(&mut state.output.passBufferErrors);
                 operations::clear_passbuffer(&mut state.output.passBufferMessages);
                 loop  {
@@ -799,43 +801,32 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
                             (*pIncfile).lineno =
                                 (*pIncfile).lineno.wrapping_add(1);
                             mne = parse(buf.as_mut_ptr());
-                            if *(*Av.as_mut_ptr().offset(1)).offset(0)
-                                   != 0 {
+                            let current_if = &state.execution.ifs.last().unwrap();
+                            if *(*Av.as_mut_ptr().offset(1)).offset(0) != 0 {
                                 if !mne.is_null() {
-                                    if (*mne).flags as i32 &
-                                           0x4 as i32 != 0 ||
-                                           (*Ifstack).xtrue as i32 !=
-                                               0 &&
-                                               (*Ifstack).acctrue as i32 != 0 {
-                                        Some((*mne).vect.expect("non-null function pointer")).expect("non-null function pointer")(*Av.as_mut_ptr().offset(2),
-                                                                                                                                  mne);
+                                    if (*mne).flags as i32 & 0x4 as i32 != 0 || current_if.result && current_if.result_acc {
+                                        Some((*mne).vect.expect("non-null function pointer")).expect("non-null function pointer")(
+                                            *Av.as_mut_ptr().offset(2),
+                                            mne
+                                        );
                                     }
-                                } else if (*Ifstack).xtrue as i32 != 0
-                                              &&
-                                              (*Ifstack).acctrue as i32 != 0 {
-                                    asmerr(AsmErrorEquates::UnknownMnemonic,
-                                           false,
-                                           *Av.as_mut_ptr().offset(1));
+                                } else if current_if.result && current_if.result_acc {
+                                    asmerr(AsmErrorEquates::UnknownMnemonic, false, *Av.as_mut_ptr().offset(1));
                                 }
-                            } else if (*Ifstack).xtrue as i32 != 0 &&
-                                          (*Ifstack).acctrue as i32 !=
-                                              0 {
+                            } else if current_if.result && current_if.result_acc {
                                 programlabel();
                             }
                             if !state.parameters.listFile.is_empty() && state.execution.listMode != ListMode::None {
                                 outlistfile(comment);
                             }
                         }
-                        while !Reploop.is_null() &&
-                                  (*Reploop).file == pIncfile {
+                        while !Reploop.is_null() && (*Reploop).file == pIncfile {
                             rmnode(&mut Reploop as *mut *mut _REPLOOP as
                                        *mut *mut libc::c_void,
                                    ::std::mem::size_of::<_REPLOOP>() as u64 as i32);
                         }
-                        while (*Ifstack).file == pIncfile {
-                            rmnode(&mut Ifstack as *mut *mut _IFSTACK as
-                                       *mut *mut libc::c_void,
-                                   ::std::mem::size_of::<_IFSTACK>() as u64 as i32);
+                        while state.execution.ifs.len() > 0 && state.execution.ifs.last().unwrap().file == pIncfile {
+                            state.execution.ifs.pop();
                         }
                         fclose((*pIncfile).fi);
                         free((*pIncfile).name as *mut libc::c_void);
@@ -942,6 +933,7 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
     return AsmErrorEquates::CommandLine;
 }
 unsafe extern "C" fn outlistfile(mut comment: *const i8) {
+    let current_if = &state.execution.ifs.last().unwrap();
     let mut xtrue: char = 0 as char;
     let mut c: char = 0 as char;
     let mut buffer: String = String::new();
@@ -949,7 +941,7 @@ unsafe extern "C" fn outlistfile(mut comment: *const i8) {
     if (*pIncfile).flags & FileFlags::NoList != 0 {
         return;
     }
-    xtrue = if (*Ifstack).xtrue as u8 != 0 && (*Ifstack).acctrue as u8 != 0 {
+    xtrue = if current_if.result && current_if.result_acc {
         ' '
     } else {
         '-'
@@ -1488,8 +1480,7 @@ pub unsafe extern "C" fn findmne(mut str: *mut i8) -> *mut _MNE {
 #[no_mangle]
 pub unsafe extern "C" fn v_macro(mut str: *mut i8,
                                  mut _dummy: *mut _MNE) {
-    let mut base: *mut _STRLIST =
-        0 as *mut _STRLIST; /* slp, mac: might be used uninitialised */
+    let mut base: *mut _STRLIST = 0 as *mut _STRLIST; /* slp, mac: might be used uninitialised */
     let mut defined: i32 = 0; /* not really needed */
     let mut slp: *mut *mut _STRLIST = 0 as *mut *mut _STRLIST;
     let mut sl: *mut _STRLIST = 0 as *mut _STRLIST;
@@ -1497,9 +1488,9 @@ pub unsafe extern "C" fn v_macro(mut str: *mut i8,
     let mut mne: *mut _MNE = 0 as *mut _MNE;
     let mut i: u16 = 0;
     let mut buf: [i8; MAX_LINES] = [0; MAX_LINES];
-    let mut skipit: i32 =
-        !((*Ifstack).xtrue as i32 != 0 &&
-              (*Ifstack).acctrue as i32 != 0) as i32;
+
+    let current_if = &state.execution.ifs.last().unwrap();
+    let skipit = !current_if.result || !current_if.result_acc;
 
     // Updates the *str in memory.
     // This could have been just...
@@ -1511,7 +1502,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut i8,
     transient::update_str_pointer_in_place(str, newStr.as_str());
 
     mne = findmne(str);
-    if skipit != 0 {
+    if skipit {
         defined = 1
     } else {
         defined = (mne != 0 as *mut libc::c_void as *mut _MNE) as i32;
@@ -1522,30 +1513,22 @@ pub unsafe extern "C" fn v_macro(mut str: *mut i8,
     if defined == 0 {
         base = 0 as *mut _STRLIST;
         slp = &mut base;
-        mac =
-            permalloc(::std::mem::size_of::<_MACRO>() as u64 as i32) as *mut _MACRO;
+        mac = permalloc(::std::mem::size_of::<_MACRO>() as u64 as i32) as *mut _MACRO;
         i = hash_string(transient::str_pointer_to_string(str));
         (*mac).next = *MHash.as_mut_ptr().offset(i as isize) as *mut _MACRO;
-        (*mac).vect =
-            Some(v_execmac as
-                     unsafe extern "C" fn(_: *mut i8,
-                                          _: *mut _MACRO) -> ());
-        (*mac).name =
-            strcpy(permalloc(strlen(str).wrapping_add(1) as i32), str);
+        (*mac).vect = Some(v_execmac as unsafe extern "C" fn(_: *mut i8, _: *mut _MACRO) -> ());
+        (*mac).name = strcpy(permalloc(strlen(str).wrapping_add(1) as i32), str);
         (*mac).flags = 0x8;
         (*mac).defpass = state.execution.pass as i32;
         let ref mut fresh22 = *MHash.as_mut_ptr().offset(i as isize);
         *fresh22 = mac as *mut _MNE
     } else {
         mac = mne as *mut _MACRO;
-        if state.parameters.strictMode && !mac.is_null() &&
-               (*mac).defpass == state.execution.pass as i32 {
-            asmerr(AsmErrorEquates::MacroRepeated, true,
-                   str);
+        if state.parameters.strictMode && !mac.is_null() && (*mac).defpass == state.execution.pass as i32 {
+            asmerr(AsmErrorEquates::MacroRepeated, true, str);
         }
     }
-    while !fgets(buf.as_mut_ptr(), MAX_LINES as i32,
-                 (*pIncfile).fi).is_null() {
+    while !fgets(buf.as_mut_ptr(), MAX_LINES as i32, (*pIncfile).fi).is_null() {
         let mut comment: *const i8 = 0 as *const i8;
         if state.parameters.debug {
             println!("{:08x} {}", pIncfile as u64, transient::str_pointer_to_string(buf.as_mut_ptr()));
@@ -1560,12 +1543,11 @@ pub unsafe extern "C" fn v_macro(mut str: *mut i8,
                 return
             }
         }
-        if skipit == 0 && !state.parameters.listFile.is_empty() && state.execution.listMode != ListMode::None {
+        if !skipit && !state.parameters.listFile.is_empty() && state.execution.listMode != ListMode::None {
             outlistfile(comment);
         }
         if defined == 0 {
-            sl =
-                permalloc((::std::mem::size_of::<*mut _STRLIST>() as u64).wrapping_add(1).wrapping_add(strlen(buf.as_mut_ptr())) as i32) as *mut _STRLIST;
+            sl = permalloc((::std::mem::size_of::<*mut _STRLIST>() as u64).wrapping_add(1).wrapping_add(strlen(buf.as_mut_ptr())) as i32) as *mut _STRLIST;
             strcpy((*sl).buf.as_mut_ptr(), buf.as_mut_ptr());
             *slp = sl;
             slp = &mut (*sl).next

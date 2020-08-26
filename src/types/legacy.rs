@@ -74,16 +74,6 @@ pub struct _REPLOOP {
 
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct _IFSTACK {
-	pub next: *mut _IFSTACK,
-	pub file: *mut _INCFILE,
-	pub flags: u8,
-	pub xtrue: u8,
-	pub acctrue: u8,
-}
-
-#[derive(Copy, Clone)]
-#[repr(C)]
 pub struct _SYMBOL {
 	pub next: *mut _SYMBOL,
 	pub name: *mut i8,

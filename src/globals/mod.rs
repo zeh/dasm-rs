@@ -18,6 +18,7 @@ use crate::types::structs::{
 	OutputState,
 	ParametersState,
 	Segment,
+	StackIf,
 };
 
 // FIXME: remove legacy module once it's all translated or moved somewhere else
@@ -49,6 +50,7 @@ pub static mut state: GlobalState = GlobalState {
 	execution: ExecutionState {
 		bitOrder: BitOrder::MostLeast,
 		extraString: String::new(),
+		ifs: Vec::<StackIf>::new(),
 		includeDirList: Vec::<String>::new(),
 		isClear: false,
 		lastLocalDollarIndex: 0,
