@@ -1,2 +1,2 @@
-
-Complete.
+thread 'main' panicked at 'index out of bounds: the len is 4 but the index is 6', src/operations/legacy.rs:1233:9
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace.
