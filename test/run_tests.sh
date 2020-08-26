@@ -62,6 +62,11 @@ for i in *.asm; do
   # Obfuscate memory addresses (they change every time)
   sed -i -r 's/^[0-9a-f]{12} /0MEMORYADDR0 /g' "$NAME.stdout-debug.txt$SUFFIX"
 
+  # Obfuscate line numbers for error messages (useless)
+  sed -i -r 's/.rs:[0-9]+:[0-9]+$/.rs:0000:0/g' "$NAME.stdout.txt$SUFFIX"
+  sed -i -r 's/.rs:[0-9]+:[0-9]+$/.rs:0000:0/g' "$NAME.stdout-verbose.txt$SUFFIX"
+  sed -i -r 's/.rs:[0-9]+:[0-9]+$/.rs:0000:0/g' "$NAME.stdout-debug.txt$SUFFIX"
+
   # Generate .hex file from .bin
   $FTOHEX 1 "$NAME.bin$SUFFIX" "$NAME.hex$SUFFIX"
 
@@ -152,6 +157,11 @@ for i in *.fail; do
 
   # Obfuscate memory addresses (they change every time)
   sed -i -r 's/^[0-9a-f]{12} /0MEMORYADDR0 /g' "$NAME.stdout-debug.strict.txt$SUFFIX"
+
+  # Obfuscate line numbers for error messages (useless)
+  sed -i -r 's/.rs:[0-9]+:[0-9]+$/.rs:0000:0/g' "$NAME.stdout.strict.txt$SUFFIX"
+  sed -i -r 's/.rs:[0-9]+:[0-9]+$/.rs:0000:0/g' "$NAME.stdout-verbose.strict.txt$SUFFIX"
+  sed -i -r 's/.rs:[0-9]+:[0-9]+$/.rs:0000:0/g' "$NAME.stdout-debug.strict.txt$SUFFIX"
 
   # Display results
   echo -ne "  * ${NAME}: "
@@ -255,6 +265,11 @@ for ((i = 0; i < ${#custom_files[@]}; i++)); do
 
   # Obfuscate memory addresses (they change every time)
   sed -i -r 's/^[0-9a-f]{12} /0MEMORYADDR0 /g' "$NAME.stdout-debug.txt$SUFFIX"
+
+  # Obfuscate line numbers for error messages (useless)
+  sed -i -r 's/.rs:[0-9]+:[0-9]+$/.rs:0000:0/g' "$NAME.stdout.txt$SUFFIX"
+  sed -i -r 's/.rs:[0-9]+:[0-9]+$/.rs:0000:0/g' "$NAME.stdout-verbose.txt$SUFFIX"
+  sed -i -r 's/.rs:[0-9]+:[0-9]+$/.rs:0000:0/g' "$NAME.stdout-debug.txt$SUFFIX"
 
   # Generate .hex file from .bin
   $FTOHEX 1 "$NAME.bin$SUFFIX" "$NAME.hex$SUFFIX"
