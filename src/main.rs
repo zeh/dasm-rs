@@ -66,7 +66,6 @@ use types::legacy::{
     _SYMBOL,
     align,
     FILE,
-    size_t,
 };
 use types::structs::{
     Segment,
@@ -124,8 +123,7 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn qsort(__base: *mut libc::c_void, __nmemb: size_t, __size: size_t,
-             __compar: __compar_fn_t);
+    fn qsort(__base: *mut libc::c_void, __nmemb: u64, __size: u64, __compar: __compar_fn_t);
     #[no_mangle]
     static mut SHash: [*mut _SYMBOL; 0];
     #[no_mangle]
@@ -318,7 +316,7 @@ unsafe fn generate_resolved_symbols_list(sorted: bool) -> String {
             result.push_str(" (sorted by address)\n");
             qsort(
                 symArray as *mut libc::c_void,
-                nPtr as size_t,
+                nPtr as u64,
                 ::std::mem::size_of::<*mut _SYMBOL>() as u64,
                 Some(
                     CompareAddress as unsafe extern "C" fn(
@@ -332,7 +330,7 @@ unsafe fn generate_resolved_symbols_list(sorted: bool) -> String {
             result.push_str(" (sorted by symbol)\n");
             qsort(
                 symArray as *mut libc::c_void,
-                nPtr as size_t,
+                nPtr as u64,
                 ::std::mem::size_of::<*mut _SYMBOL>() as u64,
                 Some(
                     CompareAlpha as unsafe extern "C" fn(

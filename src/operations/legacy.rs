@@ -29,7 +29,6 @@ use crate::types::legacy::{
     _STRLIST,
     _SYMBOL,
     FILE,
-    size_t,
 };
 use crate::types::structs::{
     Segment,
@@ -50,8 +49,7 @@ extern "C" {
     fn fopen(__filename: *const i8, __modes: *const i8)
      -> *mut FILE;
     #[no_mangle]
-    fn fread(__ptr: *mut libc::c_void, __size: size_t, __n: size_t,
-             __stream: *mut FILE) -> size_t;
+    fn fread(__ptr: *mut libc::c_void, __size: u64, __n: u64, __stream: *mut FILE) -> u64;
     #[no_mangle]
     fn fseek(__stream: *mut FILE, __off: i64, __whence: i32)
      -> i32;

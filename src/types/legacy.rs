@@ -7,9 +7,6 @@ extern "C" {
 	pub type _IO_marker;
 }
 
-pub type size_t = u64;
-pub type __off_t = i64;
-pub type __off64_t = i64;
 pub type __compar_fn_t = Option<unsafe extern "C" fn(_: *const libc::c_void, _: *const libc::c_void) -> i32>;
 
 #[derive(Copy, Clone)]
@@ -100,17 +97,17 @@ pub struct _IO_FILE {
 	pub _chain: *mut _IO_FILE,
 	pub _fileno: i32,
 	pub _flags2: i32,
-	pub _old_offset: __off_t,
+	pub _old_offset: i64,
 	pub _cur_column: u16,
 	pub _vtable_offset: i8,
 	pub _shortbuf: [i8; 1],
 	pub _lock: *mut libc::c_void,
-	pub _offset: __off64_t,
+	pub _offset: i64,
 	pub _codecvt: *mut _IO_codecvt,
 	pub _wide_data: *mut _IO_wide_data,
 	pub _freeres_list: *mut _IO_FILE,
 	pub _freeres_buf: *mut libc::c_void,
-	pub __pad5: size_t,
+	pub __pad5: u64,
 	pub _mode: i32,
 	pub _unused2: [i8; 20],
 }

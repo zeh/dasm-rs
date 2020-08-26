@@ -25,8 +25,7 @@ extern "C" {
     #[no_mangle]
     fn fclose(__stream: *mut FILE) -> i32;
     #[no_mangle]
-    fn fopen(__filename: *const i8, __modes: *const i8)
-     -> *mut FILE;
+    fn fopen(__filename: *const i8, __modes: *const i8) -> *mut FILE;
     #[no_mangle]
     fn fprintf(_: *mut FILE, _: *const i8, _: ...) -> i32;
     #[no_mangle]
@@ -34,11 +33,9 @@ extern "C" {
     #[no_mangle]
     fn putc(__c: i32, __stream: *mut FILE) -> i32;
     #[no_mangle]
-    fn fread(__ptr: *mut libc::c_void, __size: size_t, __n: size_t,
-             __stream: *mut FILE) -> size_t;
+    fn fread(__ptr: *mut libc::c_void, __size: u64, __n: u64, __stream: *mut FILE) -> u64;
     #[no_mangle]
-    fn fseek(__stream: *mut FILE, __off: i64, __whence: i32)
-     -> i32;
+    fn fseek(__stream: *mut FILE, __off: i64, __whence: i32) -> i32;
     #[no_mangle]
     fn ftell(__stream: *mut FILE) -> i64;
     #[no_mangle]
@@ -46,9 +43,6 @@ extern "C" {
     #[no_mangle]
     fn atoi(__nptr: *const i8) -> i32;
 }
-pub type size_t = u64;
-pub type __off_t = i64;
-pub type __off64_t = i64;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _IO_FILE {
@@ -68,17 +62,17 @@ pub struct _IO_FILE {
     pub _chain: *mut _IO_FILE,
     pub _fileno: i32,
     pub _flags2: i32,
-    pub _old_offset: __off_t,
+    pub _old_offset: i64,
     pub _cur_column: u16,
     pub _vtable_offset: i8,
     pub _shortbuf: [i8; 1],
     pub _lock: *mut libc::c_void,
-    pub _offset: __off64_t,
+    pub _offset: i64,
     pub _codecvt: *mut _IO_codecvt,
     pub _wide_data: *mut _IO_wide_data,
     pub _freeres_list: *mut _IO_FILE,
     pub _freeres_buf: *mut libc::c_void,
-    pub __pad5: size_t,
+    pub __pad5: u64,
     pub _mode: i32,
     pub _unused2: [i8; 20],
 }
@@ -158,8 +152,7 @@ pub unsafe extern "C" fn convert(mut format: i32, mut in_0: *mut FILE,
                 if len > 16 {
                     16
                 } else { len } as u32;
-            fread(buf.as_mut_ptr() as *mut libc::c_void, idx as size_t,
-                  1 as size_t, in_0);
+            fread(buf.as_mut_ptr() as *mut libc::c_void, idx as u64, 1, in_0);
             putc(':' as i32, out);
             puth(idx as u8, out);
             puth((org >> 8) as u8, out);
