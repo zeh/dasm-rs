@@ -7,6 +7,10 @@ use crate::types::enums::{
     AddressModes,
     AsmErrorEquates,
 };
+use crate::types::legacy::{
+    _MNE,
+    _SYMBOL,
+};
 use crate::utils::{
     transient,
 };
@@ -50,29 +54,6 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct _MNE {
-    pub next: *mut _MNE,
-    pub vect: Option<unsafe extern "C" fn(_: *mut i8, _: *mut _MNE)
-                         -> ()>,
-    pub name: *const i8,
-    pub flags: u8,
-    pub okmask: u64,
-    pub opcode: [u32; 21],
-}
-/*      accumulatively true (not incl this one) */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct _SYMBOL {
-    pub next: *mut _SYMBOL,
-    pub name: *mut i8,
-    pub string: *mut i8,
-    pub flags: u8,
-    pub addrmode: u8,
-    pub value: i64,
-    pub namelen: u32,
-}
 /*
  *  MNEF8.C
  *

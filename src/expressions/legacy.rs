@@ -8,6 +8,9 @@ use crate::types::enums::{
     AddressModes,
     AsmErrorEquates,
 };
+use crate::types::legacy::{
+    _SYMBOL,
+};
 use crate::utils::{
     filesystem,
     transient,
@@ -20,9 +23,6 @@ pub const MAX_OPS: usize = 32;
 pub const MAX_ARGS: usize = 64;
 
 extern "C" {
-    pub type _IO_wide_data;
-    pub type _IO_codecvt;
-    pub type _IO_marker;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
      -> *mut libc::c_void;
@@ -40,54 +40,6 @@ extern "C" {
      -> *mut _SYMBOL;
     #[no_mangle]
     fn FreeSymbolList(sym: *mut _SYMBOL);
-}
-pub type size_t = u64;
-pub type __off_t = i64;
-pub type __off64_t = i64;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct _IO_FILE {
-    pub _flags: i32,
-    pub _IO_read_ptr: *mut i8,
-    pub _IO_read_end: *mut i8,
-    pub _IO_read_base: *mut i8,
-    pub _IO_write_base: *mut i8,
-    pub _IO_write_ptr: *mut i8,
-    pub _IO_write_end: *mut i8,
-    pub _IO_buf_base: *mut i8,
-    pub _IO_buf_end: *mut i8,
-    pub _IO_save_base: *mut i8,
-    pub _IO_backup_base: *mut i8,
-    pub _IO_save_end: *mut i8,
-    pub _markers: *mut _IO_marker,
-    pub _chain: *mut _IO_FILE,
-    pub _fileno: i32,
-    pub _flags2: i32,
-    pub _old_offset: __off_t,
-    pub _cur_column: u16,
-    pub _vtable_offset: i8,
-    pub _shortbuf: [i8; 1],
-    pub _lock: *mut libc::c_void,
-    pub _offset: __off64_t,
-    pub _codecvt: *mut _IO_codecvt,
-    pub _wide_data: *mut _IO_wide_data,
-    pub _freeres_list: *mut _IO_FILE,
-    pub _freeres_buf: *mut libc::c_void,
-    pub __pad5: size_t,
-    pub _mode: i32,
-    pub _unused2: [i8; 20],
-}
-pub type FILE = _IO_FILE;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct _SYMBOL {
-    pub next: *mut _SYMBOL,
-    pub name: *mut i8,
-    pub string: *mut i8,
-    pub flags: u8,
-    pub addrmode: u8,
-    pub value: i64,
-    pub namelen: u32,
 }
 /*
  *  EXP.C

@@ -13,6 +13,9 @@ use crate::types::flags::{
 use crate::types::enums::{
     AsmErrorEquates,
 };
+use crate::types::legacy::{
+    _SYMBOL,
+};
 use crate::utils::{
     formatting,
     transient,
@@ -39,17 +42,6 @@ extern "C" {
      -> i32;
     #[no_mangle]
     fn permalloc(bytes: i32) -> *mut i8;
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct _SYMBOL {
-    pub next: *mut _SYMBOL,
-    pub name: *mut i8,
-    pub string: *mut i8,
-    pub flags: u8,
-    pub addrmode: u8,
-    pub value: i64,
-    pub namelen: u32,
 }
 static mut org: _SYMBOL =
     _SYMBOL{next: 0 as *const _SYMBOL as *mut _SYMBOL,

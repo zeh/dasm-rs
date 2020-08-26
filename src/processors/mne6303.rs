@@ -1,21 +1,13 @@
 use crate::types::enums::{
     AddressModes,
 };
+use crate::types::legacy::{
+    _MNE,
+};
 
 extern "C" {
     #[no_mangle]
     fn v_mnemonic(str: *mut i8, mne: *mut _MNE);
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct _MNE {
-    pub next: *mut _MNE,
-    pub vect: Option<unsafe extern "C" fn(_: *mut i8, _: *mut _MNE)
-                         -> ()>,
-    pub name: *const i8,
-    pub flags: u8,
-    pub okmask: u64,
-    pub opcode: [u32; 21],
 }
 /*
  *  MNE6303.C
