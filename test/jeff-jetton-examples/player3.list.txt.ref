@@ -1,0 +1,121 @@
+------- FILE jeff-jetton-examples/player3.asm LEVEL 1 PASS 3
+      1  10000 ????						;---------------------------------------------------------------
+      2  10000 ????						;
+      3  10000 ????						; Using the "player" registers, part III
+      4  10000 ????						;
+      5  10000 ????						; Displaying the player by referencing a lookup table in memory
+      6  10000 ????						;
+      7  10000 ????						;---------------------------------------------------------------
+      8  10000 ????
+      9  10000 ????				       processor	6502
+     10  10000 ????
+     11  10000 ????				       include	"../_includes/vcs.h"
+     12  10000 ????				       include	"../_includes/macro.h"
+     13  10000 ????
+     14  10000 ????						; Constants
+     15  10000 ????		00 22	    MyBGCol    equ	$22
+     16  10000 ????		00 1e	    MyP0Col    equ	$1E
+     17  10000 ????		00 09	    PHeight    equ	9	; Height of player data (including blank line)
+     18  10000 ????
+     19  10000 ????
+     20  10000 ????
+     21  f000					      org	$F000
+jeff-jetton-examples/player3.asm (22): error: Unknown Mnemonic 'CLEAN_START'.
+     22  f000				   Start      CLEAN_START
+     23  f000
+     24  f000							; Set up colors for background and player
+     25  f000		       a9 22		      lda	#MyBGCol
+     26  f002		       8d 00 00 	      sta	COLUBK
+     27  f005		       a9 1e		      lda	#MyP0Col
+     28  f007		       8d 00 00 	      sta	COLUP0
+     29  f00a
+     30  f00a
+     31  f00a							; Main display kernel starts here ----------------------------------------------
+     32  f00a
+     33  f00a							; Vertical sync
+     34  f00a		       a9 02		      lda	#2
+     35  f00c		       8d 00 00 	      sta	VBLANK
+     36  f00f		       8d 00 00    Frame      sta	VSYNC
+     37  f012		       8d 00 00 	      sta	WSYNC
+     38  f015		       8d 00 00 	      sta	WSYNC
+     39  f018		       8d 00 00 	      sta	WSYNC
+     40  f01b		       8a		      txa
+     41  f01c		       8d 00 00 	      sta	VSYNC
+     42  f01f
+     43  f01f							; Remainder of vertical blanking period
+     44  f01f		       a2 25		      ldx	#37
+     45  f021		       8d 00 00    VertBl     sta	WSYNC
+     46  f024		       ca		      dex
+     47  f025		       d0 fa		      bne	VertBl
+     48  f027		       8d 00 00 	      sta	VBLANK
+     49  f02a
+     50  f02a
+     51  f02a							; Visible area of frame -----------------
+     52  f02a							; Top 90 lines
+     53  f02a		       a2 5a		      ldx	#90
+     54  f02c		       8d 00 00    Chunk1     sta	WSYNC
+     55  f02f		       ca		      dex
+     56  f030		       d0 fa		      bne	Chunk1
+     57  f032
+     58  f032
+     59  f032
+     60  f032							; Draw player sprite by cycling (backwards)
+     61  f032							; through the image data. Set X up so that the last
+     62  f032							; byte of data is at X=1
+     63  f032		       a2 09		      ldx	#PHeight	; Start index at maximum offset
+     64  f034
+     65  f034		       8d 00 00    PLoop      sta	WSYNC
+     66  f037		       bd 57 f0 	      lda	Sprite-1,x	; Offset address "Sprite" (defined below) by
+     67  f03a							; the current value of X. Take whatever's
+     68  f03a							; in the resulting location and load into A.
+     69  f03a							; We'll offset from Sprite - 1 so that X=1
+     70  f03a							; is the first byte (the blank line). The loop
+     71  f03a							; doesn't actually load anything when X=0,
+     72  f03a							; so we'll need to make sure we've read
+     73  f03a							; all the data by then.
+     74  f03a
+     75  f03a		       8d 00 00 	      sta	GRP0	; Shove A out to the P0 register.
+     76  f03d
+     77  f03d		       ca		      dex		; Bump our X index down by one
+     78  f03e		       d0 f4		      bne	PLoop	; Is X zero? Loop back up if not.
+     79  f040
+     80  f040
+     81  f040
+     82  f040							; Final lines of visible area
+     83  f040		       a2 5d		      ldx	#(192 - 90 - PHeight)	; This math is done at compile-time
+     84  f042		       8d 00 00    Chunk2     sta	WSYNC
+     85  f045		       ca		      dex
+     86  f046		       d0 fa		      bne	Chunk2
+     87  f048
+     88  f048
+     89  f048							; Overscan portion
+     90  f048		       a9 02		      lda	#2
+     91  f04a		       8d 00 00 	      sta	VBLANK
+     92  f04d		       a2 1e		      ldx	#30
+     93  f04f		       8d 00 00    OvScan     sta	WSYNC
+     94  f052		       ca		      dex
+     95  f053		       d0 fa		      bne	OvScan
+     96  f055
+     97  f055		       4c 0f f0 	      jmp	Frame
+     98  f058
+     99  f058
+    100  f058
+    101  f058							; Data for drawing our player sprite
+    102  f058		       00	   Sprite     .byte.b	#0	; Zero at end to clear out player register
+    103  f059		       3c		      .byte.b	#%00111100
+    104  f05a		       62		      .byte.b	#%01100010
+    105  f05b		       dd		      .byte.b	#%11011101
+    106  f05c		       ff		      .byte.b	#%11111111
+    107  f05d		       eb		      .byte.b	#%11101011
+    108  f05e		       c9		      .byte.b	#%11001001
+    109  f05f		       7e		      .byte.b	#%01111110
+    110  f060		       3c		      .byte.b	#%00111100
+    111  f061
+    112  f061
+    113  fffc					      org	$FFFC
+    114  fffc		       00 00		      .word.w	Start
+    115  fffe		       00 00		      .word.w	Start
+    116  10000
+    117  10000
+    118  10000
+    119  10000

@@ -1,0 +1,96 @@
+------- FILE jeff-jetton-examples/player1.asm LEVEL 1 PASS 2
+      1  10000 ????						;---------------------------------------------------------------
+      2  10000 ????						;
+      3  10000 ????						; Using the "player" registers, part I
+      4  10000 ????						;
+      5  10000 ????						; Basic output:
+      6  10000 ????						;
+      7  10000 ????						;     Blue player shows joystick input
+      8  10000 ????						;     Orange player shows console switch settings
+      9  10000 ????						;
+     10  10000 ????						;---------------------------------------------------------------
+     11  10000 ????
+     12  10000 ????				       processor	6502
+     13  10000 ????				       include	"../_includes/vcs.h"
+     14  10000 ????				       include	"../_includes/macro.h"
+     15  10000 ????
+     16  10000 ????
+     17  10000 ????						; Color contants
+     18  10000 ????		00 00	    MyBGCol    equ	$00	; Black for background
+     19  10000 ????		00 9a	    MyP0Col    equ	$9A
+     20  10000 ????		00 2a	    MyP1Col    equ	$2A
+     21  10000 ????
+     22  10000 ????
+     23  10000 ????
+     24  f000					      org	$F000
+jeff-jetton-examples/player1.asm (25): error: Unknown Mnemonic 'CLEAN_START'.
+     25  f000				   Start      CLEAN_START
+     26  f000
+     27  f000							; Set up colors for background and players
+     28  f000		       a9 00		      lda	#MyBGCol
+     29  f002		       8d 00 00 	      sta	COLUBK
+     30  f005		       a9 9a		      lda	#MyP0Col
+     31  f007		       8d 00 00 	      sta	COLUP0
+     32  f00a		       a9 2a		      lda	#MyP1Col
+     33  f00c		       8d 00 00 	      sta	COLUP1
+     34  f00f
+     35  f00f
+     36  f00f							; Main display kernel starts here ---------------------------------------------
+     37  f00f
+     38  f00f							; Vertical sync
+     39  f00f		       a9 02		      lda	#2
+     40  f011		       8d 00 00 	      sta	VBLANK
+     41  f014		       8d 00 00    Frame      sta	VSYNC
+     42  f017		       8d 00 00 	      sta	WSYNC
+     43  f01a		       8d 00 00 	      sta	WSYNC
+     44  f01d		       8d 00 00 	      sta	WSYNC
+     45  f020		       8a		      txa		; X will contain 0 at first iteration.
+     46  f021		       8d 00 00 	      sta	VSYNC
+     47  f024
+     48  f024							; Uncomment this next block if the players overlap:
+     49  f024							; sta RESP0
+     50  f024							; SLEEP 50
+     51  f024							; sta RESP1
+     52  f024
+     53  f024							; Remainder of vertical blanking period
+     54  f024		       a2 25		      ldx	#37
+     55  f026		       8d 00 00    VertBl     sta	WSYNC
+     56  f029		       ca		      dex
+     57  f02a		       d0 fa		      bne	VertBl
+     58  f02c		       8d 00 00 	      sta	VBLANK
+     59  f02f
+     60  f02f
+     61  f02f
+     62  f02f							; Set up the player register.
+     63  f02f							; Joystick input register goes into player "zero"
+     64  f02f		       ad 00 00 	      lda	SWCHA
+     65  f032		       8d 00 00 	      sta	GRP0
+     66  f035							; Console switch settings goes into player "one"
+     67  f035		       ad 00 00 	      lda	SWCHB
+     68  f038		       8d 00 00 	      sta	GRP1
+     69  f03b
+     70  f03b
+     71  f03b
+     72  f03b							; Visible area of frame
+     73  f03b		       a2 c0		      ldx	#192
+     74  f03d		       8d 00 00    VisArea    sta	WSYNC
+     75  f040		       ca		      dex
+     76  f041		       d0 fa		      bne	VisArea
+     77  f043
+     78  f043
+     79  f043
+     80  f043							; Overscan portion
+     81  f043		       a9 02		      lda	#2
+     82  f045		       8d 00 00 	      sta	VBLANK
+     83  f048		       a2 1e		      ldx	#30
+     84  f04a		       8d 00 00    OvScan     sta	WSYNC
+     85  f04d		       ca		      dex
+     86  f04e		       d0 fa		      bne	OvScan
+     87  f050
+     88  f050		       4c 14 f0 	      jmp	Frame	; Note that x=0 at this point, ready for next frame
+     89  f053							; Also, VBLANK mode is still in effect
+     90  f053
+     91  fffc					      org	$FFFC
+     92  fffc		       00 00		      .word.w	Start
+     93  fffe		       00 00		      .word.w	Start
+     94  10000

@@ -1,0 +1,122 @@
+------- FILE jeff-jetton-examples/scan1.asm LEVEL 1 PASS 2
+      1  10000 ????						;---------------------------------------------------------------
+      2  10000 ????						;
+      3  10000 ????						; Our first attempt to deal with scanlines and create a
+      4  10000 ????						; genuine stable frame
+      5  10000 ????						;
+      6  10000 ????						; Display the playfield on just one horizontal line
+      7  10000 ????						; (Instead of all the way down the screen)
+      8  10000 ????						; NTSC/PAL autodetect should now work!
+      9  10000 ????						;
+     10  10000 ????						;---------------------------------------------------------------
+     11  10000 ????
+     12  10000 ????				       processor	6502
+     13  10000 ????				       include	"../_includes/vcs.h"
+     14  10000 ????				       include	"../_includes/macro.h"
+     15  10000 ????
+     16  10000 ????
+     17  10000 ????						; Define our colors
+     18  10000 ????		00 72	    MyBGCol    equ	$72
+     19  10000 ????		00 18	    MyPFCol    equ	$18
+     20  10000 ????
+     21  10000 ????
+     22  f000					      org	$F000
+     23  f000
+jeff-jetton-examples/scan1.asm (24): error: Unknown Mnemonic 'CLEAN_START'.
+     24  f000				   Start      CLEAN_START
+     25  f000
+     26  f000							; Set colors
+     27  f000		       a9 72		      lda	#MyBGCol
+     28  f002		       8d 00 00 	      sta	COLUBK
+     29  f005		       a9 18		      lda	#MyPFCol
+     30  f007		       8d 00 00 	      sta	COLUPF
+     31  f00a
+     32  f00a							; Configure playfield to mirror rather than copy
+     33  f00a		       a9 01		      lda	#%00000001	; Controlled by the rightmost bit
+     34  f00c		       8d 00 00 	      sta	CTRLPF
+     35  f00f
+     36  f00f
+     37  f00f				   Frame
+     38  f00f							; Begin a frame by telling the TIA to send a "vertical sync"
+     39  f00f							; signal to the TV, which instructs the TV to move the beam
+     40  f00f							; back up to the top of the screen.
+     41  f00f							; The VSYNC signal is sort of a special version of the
+     42  f00f							; signal the TIA already puts at the end of every line.
+     43  f00f							; We just need to tell the TIA to switch over to the
+     44  f00f							; mode where it outputs this variant signal instead of the
+     45  f00f							; regular one. Do this by setting the second-from-left bit
+     46  f00f							; of the VSYNC register address to 1
+     47  f00f		       a9 02		      lda	#%00000010
+     48  f011		       8d 00 00 	      sta	VSYNC
+     49  f014
+     50  f014							; We are required to send the VSYNC signal for the
+     51  f014							; equivalent of three scanlines worth of time.
+     52  f014							; Anything stored in WSYNC will trigger a wait until
+     53  f014							; the end of the current scanline. We'll do three of 'em.
+     54  f014		       8d 00 00 	      sta	WSYNC
+     55  f017		       8d 00 00 	      sta	WSYNC
+     56  f01a		       8d 00 00 	      sta	WSYNC
+     57  f01d
+     58  f01d							; We've now correctly told the TV that it's time to
+     59  f01d							; move back up to the top. So turn VSYNC mode off...
+     60  f01d		       a9 00		      lda	#0
+     61  f01f		       8d 00 00 	      sta	VSYNC
+     62  f022
+     63  f022
+     64  f022							; NTSC frames last a total of 262 scanlines worth of time.
+     65  f022							; For PAL systems, it's 312. We've already used up three for
+     66  f022							; the VSYNC portion. We'll divide the remaining 259 (or 309)
+     67  f022							; into three chunks:
+     68  f022
+     69  f022							; First, wait for 100 scanlines worth of time.
+     70  f022							; During this period, the playfield registers are not set,
+     71  f022							; so only the background will show.
+     72  f022		       a2 64		      ldx	#100
+     73  f024		       8d 00 00    Chunk1     sta	WSYNC	; Wait for horizontal sync at end of line
+     74  f027		       ca		      dex
+     75  f028		       d0 fa		      bne	Chunk1
+     76  f02a
+     77  f02a							; At this point, the TV's beam will be scanning somewhere
+     78  f02a							; near the middle-ish part of the screen.
+     79  f02a
+     80  f02a							; Now set some playfield bits
+     81  f02a		       a9 aa		      lda	#%10101010
+     82  f02c		       8d 00 00 	      sta	PF0
+     83  f02f		       8d 00 00 	      sta	PF1
+     84  f032		       8d 00 00 	      sta	PF2
+     85  f035
+     86  f035							; Continue displaying the playfield for 8 lines
+     87  f035		       a2 08		      ldx	#8
+     88  f037		       8d 00 00    Chunk2     sta	WSYNC
+     89  f03a		       ca		      dex
+     90  f03b		       d0 fa		      bne	Chunk2
+     91  f03d
+     92  f03d							; Zero out the playfield registers
+     93  f03d							; Note that X still contains zero at this point
+     94  f03d		       8a		      txa		; Transfer X to A
+     95  f03e		       8d 00 00 	      sta	PF0
+     96  f041		       8d 00 00 	      sta	PF1
+     97  f044		       8d 00 00 	      sta	PF2
+     98  f047
+     99  f047							; Wait around while the last 151 (NTSC) or
+    100  f047							; 201 (PAL) scanlines are drawn
+    101  f047		       a2 97		      ldx	#151
+    102  f049							;ldx #201	 ; Uncomment for PAL
+    103  f049		       8d 00 00    Chunk3     sta	WSYNC
+    104  f04c		       ca		      dex
+    105  f04d		       d0 fa		      bne	Chunk3
+    106  f04f
+    107  f04f		       4c 0f f0 	      jmp	Frame	; We're ready to start the next frame
+    108  f052
+    109  f052
+    110  fffc					      org	$FFFC
+    111  fffc		       00 00		      .word.w	Start
+    112  fffe		       00 00		      .word.w	Start
+    113  10000
+    114  10000
+    115  10000
+    116  10000
+    117  10000
+    118  10000
+    119  10000
+    120  10000

@@ -1,0 +1,75 @@
+
+START OF PASS: 1
+ Including file "jeff-jetton-examples/rudout2.asm"
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         f000                            f000                           
+----------------------------------------------------------------------
+5 references to unknown symbols.
+5 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+ - Expression in a DC not resolved.
+
+--- Symbol List (sorted by symbol)
+COLUBK                   0000 ????         (R )
+COLUPF                   0000 ????         (R )
+DoMath                   f00a              (R )
+INEEPROM                 0000                  
+MyBGCol                  0006              (R )
+MyPFCol                  0046              (R )
+PF1                      0000 ????         (R )
+Start                    0000 ????         (R )
+--- End of Symbol List.
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF1                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+Start                    0000 ????         (R )
+--- 4 Unresolved Symbols
+
+
+START OF PASS: 2
+ Including file "jeff-jetton-examples/rudout2.asm"
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         f000                            f000                           
+----------------------------------------------------------------------
+5 references to unknown symbols.
+5 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+ - Expression in a DC not resolved.
+
+--- Symbol List (sorted by symbol)
+COLUBK                   0000 ????         (R )
+COLUPF                   0000 ????         (R )
+DoMath                   f00a              (R )
+INEEPROM                 0000                  
+MyBGCol                  0006              (R )
+MyPFCol                  0046              (R )
+PF1                      0000 ????         (R )
+Start                    0000 ????         (R )
+--- End of Symbol List.
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF1                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+Start                    0000 ????         (R )
+--- 4 Unresolved Symbols
+
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF1                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+Start                    0000 ????         (R )
+--- 4 Unresolved Symbols
+
+
+jeff-jetton-examples/rudout2.asm (24): error: Unknown Mnemonic 'CLEAN_START'.
+
+Fatal assembly error: Source is not resolvable.

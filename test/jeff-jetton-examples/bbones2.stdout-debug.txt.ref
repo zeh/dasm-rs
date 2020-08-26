@@ -1,0 +1,74 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ; In dasm (and most other assemblers) comments look like this
+
+0MEMORYADDR0 ; They start with a semicolon and continue to the end of the line
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Create a new symbol (COLUBK) that "equates" to value $09
+
+0MEMORYADDR0 COLUBK  equ $09
+
+char '$'
+stackarg 9 (@0)
+0MEMORYADDR0 ; Do the same for our color value
+
+0MEMORYADDR0 MyBGCol equ $3C
+
+char '$'
+stackarg 60 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 Start   lda #MyBGCol    ; Load a new color value into register A
+
+char '#'
+char 'M'
+stackarg 60 (@0)
+0MEMORYADDR0                         ; Note that we've marked the location of this
+
+0MEMORYADDR0                         ; instruction with the label "Start".
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         sta COLUBK      ; Store A in whatever address COLUBK refers to
+
+char 'C'
+stackarg 9 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp Start       ; Jump to whatever address Start refers to
+
+char 'S'
+stackarg 61440 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start     ; Begin at the "Start" location when reset
+
+char 'S'
+stackarg 61440 (@0)
+0MEMORYADDR0         .word Start     ; Use that same address for interrupts
+
+char 'S'
+stackarg 61440 (@0)
+
+Complete.

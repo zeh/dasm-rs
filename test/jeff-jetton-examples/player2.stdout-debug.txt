@@ -1,0 +1,793 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Using the "player" registers, part II
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Displaying a player sprite image using hardcoded instructions
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Color constants
+
+0MEMORYADDR0 MyBGCol equ $C2
+
+char '$'
+stackarg 194 (@0)
+0MEMORYADDR0 MyP0Col equ $1E
+
+char '$'
+stackarg 30 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 Start   CLEAN_START
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set up colors for background and player
+
+0MEMORYADDR0         lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 194 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #MyP0Col
+
+char '#'
+char 'M'
+stackarg 30 (@0)
+0MEMORYADDR0         sta COLUP0
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 		
+
+0MEMORYADDR0         
+
+0MEMORYADDR0 ; Main display kernel starts here ---------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Vertical sync
+
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 Frame   sta VSYNC
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         txa
+
+0MEMORYADDR0         sta VSYNC
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; Remainder of vertical blanking period
+
+0MEMORYADDR0         ldx #37
+
+char '#'
+char '3'
+stackarg 37 (@0)
+0MEMORYADDR0 VertBl  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne VertBl
+
+char 'V'
+stackarg 61473 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0        
+
+0MEMORYADDR0         ; Visible area of frame -----------------
+
+0MEMORYADDR0         ; Draw first 90 lines with no player info set
+
+0MEMORYADDR0         ; (just background)
+
+0MEMORYADDR0         ldx #90
+
+char '#'
+char '9'
+stackarg 90 (@0)
+0MEMORYADDR0 Chunk1  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne Chunk1
+
+char 'C'
+stackarg 61484 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Draw player sprite, one line at a time...
+
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #%00111100
+
+char '#'
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #%01111110
+
+char '#'
+char '%'
+stackarg 126 (@0)
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #%11001001
+
+char '#'
+char '%'
+stackarg 201 (@0)
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #%11101011
+
+char '#'
+char '%'
+stackarg 235 (@0)
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #%11111111
+
+char '#'
+char '%'
+stackarg 255 (@0)
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #%11011101
+
+char '#'
+char '%'
+stackarg 221 (@0)
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #%01100010
+
+char '#'
+char '%'
+stackarg 98 (@0)
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #%00111100
+
+char '#'
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0         ; Don't forget to clear out the last line!
+
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         stx GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Final lines of visible area:
+
+0MEMORYADDR0         ; 
+
+0MEMORYADDR0         ;   Visible lines:    192
+
+0MEMORYADDR0         ;   Chunk1            -90
+
+0MEMORYADDR0         ;   Player sprite      -8
+
+0MEMORYADDR0         ;   "Clear out" line   -1
+
+0MEMORYADDR0         ;   ---------------------
+
+0MEMORYADDR0         ;   Remaining lines =  93
+
+0MEMORYADDR0         ; 
+
+0MEMORYADDR0         ldx #93
+
+char '#'
+char '9'
+stackarg 93 (@0)
+0MEMORYADDR0 Chunk2  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne Chunk2 
+
+char 'C'
+stackarg 61562 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Overscan portion
+
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         ldx #30
+
+char '#'
+char '3'
+stackarg 30 (@0)
+0MEMORYADDR0 OvScan  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne OvScan
+
+char 'O'
+stackarg 61575 (@0)
+0MEMORYADDR0 		
+
+0MEMORYADDR0         jmp Frame
+
+char 'F'
+stackarg 61455 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Using the "player" registers, part II
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Displaying a player sprite image using hardcoded instructions
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Color constants
+
+0MEMORYADDR0 MyBGCol equ $C2
+
+char '$'
+stackarg 194 (@0)
+0MEMORYADDR0 MyP0Col equ $1E
+
+char '$'
+stackarg 30 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 Start   CLEAN_START
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set up colors for background and player
+
+0MEMORYADDR0         lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 194 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #MyP0Col
+
+char '#'
+char 'M'
+stackarg 30 (@0)
+0MEMORYADDR0         sta COLUP0
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 		
+
+0MEMORYADDR0         
+
+0MEMORYADDR0 ; Main display kernel starts here ---------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Vertical sync
+
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 Frame   sta VSYNC
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         txa
+
+0MEMORYADDR0         sta VSYNC
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; Remainder of vertical blanking period
+
+0MEMORYADDR0         ldx #37
+
+char '#'
+char '3'
+stackarg 37 (@0)
+0MEMORYADDR0 VertBl  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne VertBl
+
+char 'V'
+stackarg 61473 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0        
+
+0MEMORYADDR0         ; Visible area of frame -----------------
+
+0MEMORYADDR0         ; Draw first 90 lines with no player info set
+
+0MEMORYADDR0         ; (just background)
+
+0MEMORYADDR0         ldx #90
+
+char '#'
+char '9'
+stackarg 90 (@0)
+0MEMORYADDR0 Chunk1  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne Chunk1
+
+char 'C'
+stackarg 61484 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Draw player sprite, one line at a time...
+
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #%00111100
+
+char '#'
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #%01111110
+
+char '#'
+char '%'
+stackarg 126 (@0)
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #%11001001
+
+char '#'
+char '%'
+stackarg 201 (@0)
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #%11101011
+
+char '#'
+char '%'
+stackarg 235 (@0)
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #%11111111
+
+char '#'
+char '%'
+stackarg 255 (@0)
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #%11011101
+
+char '#'
+char '%'
+stackarg 221 (@0)
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #%01100010
+
+char '#'
+char '%'
+stackarg 98 (@0)
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #%00111100
+
+char '#'
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0         ; Don't forget to clear out the last line!
+
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         stx GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Final lines of visible area:
+
+0MEMORYADDR0         ; 
+
+0MEMORYADDR0         ;   Visible lines:    192
+
+0MEMORYADDR0         ;   Chunk1            -90
+
+0MEMORYADDR0         ;   Player sprite      -8
+
+0MEMORYADDR0         ;   "Clear out" line   -1
+
+0MEMORYADDR0         ;   ---------------------
+
+0MEMORYADDR0         ;   Remaining lines =  93
+
+0MEMORYADDR0         ; 
+
+0MEMORYADDR0         ldx #93
+
+char '#'
+char '9'
+stackarg 93 (@0)
+0MEMORYADDR0 Chunk2  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne Chunk2 
+
+char 'C'
+stackarg 61562 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Overscan portion
+
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         ldx #30
+
+char '#'
+char '3'
+stackarg 30 (@0)
+0MEMORYADDR0 OvScan  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne OvScan
+
+char 'O'
+stackarg 61575 (@0)
+0MEMORYADDR0 		
+
+0MEMORYADDR0         jmp Frame
+
+char 'F'
+stackarg 61455 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+COLUP0                   0000 ????         (R )
+VBLANK                   0000 ????         (R )
+GRP0                     0000 ????         (R )
+Start                    0000 ????         (R )
+VSYNC                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+--- 7 Unresolved Symbols
+
+
+jeff-jetton-examples/player2.asm (21): error: Unknown Mnemonic 'CLEAN_START'.
+
+Fatal assembly error: Source is not resolvable.

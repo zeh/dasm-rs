@@ -1,0 +1,80 @@
+
+START OF PASS: 1
+ Including file "jeff-jetton-examples/rudin1.asm"
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         f000                            f000                           
+----------------------------------------------------------------------
+6 references to unknown symbols.
+6 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+ - Expression in a DC not resolved.
+
+--- Symbol List (sorted by symbol)
+COLUBK                   0000 ????         (R )
+COLUPF                   0000 ????         (R )
+INEEPROM                 0000                  
+Main                     f00a              (R )
+MyBGCol                  0072              (R )
+MyPFCol                  0018              (R )
+PF1                      0000 ????         (R )
+Start                    0000 ????         (R )
+SWCHB                    0000 ????         (R )
+--- End of Symbol List.
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF1                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+Start                    0000 ????         (R )
+SWCHB                    0000 ????         (R )
+--- 5 Unresolved Symbols
+
+
+START OF PASS: 2
+ Including file "jeff-jetton-examples/rudin1.asm"
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         f000                            f000                           
+----------------------------------------------------------------------
+6 references to unknown symbols.
+6 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+ - Expression in a DC not resolved.
+
+--- Symbol List (sorted by symbol)
+COLUBK                   0000 ????         (R )
+COLUPF                   0000 ????         (R )
+INEEPROM                 0000                  
+Main                     f00a              (R )
+MyBGCol                  0072              (R )
+MyPFCol                  0018              (R )
+PF1                      0000 ????         (R )
+Start                    0000 ????         (R )
+SWCHB                    0000 ????         (R )
+--- End of Symbol List.
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF1                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+Start                    0000 ????         (R )
+SWCHB                    0000 ????         (R )
+--- 5 Unresolved Symbols
+
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF1                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+Start                    0000 ????         (R )
+SWCHB                    0000 ????         (R )
+--- 5 Unresolved Symbols
+
+
+jeff-jetton-examples/rudin1.asm (21): error: Unknown Mnemonic 'CLEAN_START'.
+
+Fatal assembly error: Source is not resolvable.

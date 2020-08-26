@@ -1,0 +1,118 @@
+
+START OF PASS: 1
+ Including file "jeff-jetton-examples/player1.asm"
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         f000                            f000                           
+----------------------------------------------------------------------
+20 references to unknown symbols.
+20 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+ - Expression in a DC not resolved.
+
+--- Symbol List (sorted by symbol)
+COLUBK                   0000 ????         (R )
+COLUP0                   0000 ????         (R )
+COLUP1                   0000 ????         (R )
+Frame                    f014              (R )
+GRP0                     0000 ????         (R )
+GRP1                     0000 ????         (R )
+INEEPROM                 0000                  
+MyBGCol                  0000              (R )
+MyP0Col                  009a              (R )
+MyP1Col                  002a              (R )
+OvScan                   f04a              (R )
+Start                    0000 ????         (R )
+SWCHA                    0000 ????         (R )
+SWCHB                    0000 ????         (R )
+VBLANK                   0000 ????         (R )
+VertBl                   f026              (R )
+VisArea                  f03d              (R )
+VSYNC                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+--- End of Symbol List.
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+COLUP0                   0000 ????         (R )
+COLUP1                   0000 ????         (R )
+VBLANK                   0000 ????         (R )
+GRP0                     0000 ????         (R )
+GRP1                     0000 ????         (R )
+Start                    0000 ????         (R )
+VSYNC                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+SWCHA                    0000 ????         (R )
+SWCHB                    0000 ????         (R )
+--- 11 Unresolved Symbols
+
+
+START OF PASS: 2
+ Including file "jeff-jetton-examples/player1.asm"
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         f000                            f000                           
+----------------------------------------------------------------------
+20 references to unknown symbols.
+20 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+ - Expression in a DC not resolved.
+
+--- Symbol List (sorted by symbol)
+COLUBK                   0000 ????         (R )
+COLUP0                   0000 ????         (R )
+COLUP1                   0000 ????         (R )
+Frame                    f014              (R )
+GRP0                     0000 ????         (R )
+GRP1                     0000 ????         (R )
+INEEPROM                 0000                  
+MyBGCol                  0000              (R )
+MyP0Col                  009a              (R )
+MyP1Col                  002a              (R )
+OvScan                   f04a              (R )
+Start                    0000 ????         (R )
+SWCHA                    0000 ????         (R )
+SWCHB                    0000 ????         (R )
+VBLANK                   0000 ????         (R )
+VertBl                   f026              (R )
+VisArea                  f03d              (R )
+VSYNC                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+--- End of Symbol List.
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+COLUP0                   0000 ????         (R )
+COLUP1                   0000 ????         (R )
+VBLANK                   0000 ????         (R )
+GRP0                     0000 ????         (R )
+GRP1                     0000 ????         (R )
+Start                    0000 ????         (R )
+VSYNC                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+SWCHA                    0000 ????         (R )
+SWCHB                    0000 ????         (R )
+--- 11 Unresolved Symbols
+
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+COLUP0                   0000 ????         (R )
+COLUP1                   0000 ????         (R )
+VBLANK                   0000 ????         (R )
+GRP0                     0000 ????         (R )
+GRP1                     0000 ????         (R )
+Start                    0000 ????         (R )
+VSYNC                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+SWCHA                    0000 ????         (R )
+SWCHB                    0000 ????         (R )
+--- 11 Unresolved Symbols
+
+
+jeff-jetton-examples/player1.asm (25): error: Unknown Mnemonic 'CLEAN_START'.
+
+Fatal assembly error: Source is not resolvable.

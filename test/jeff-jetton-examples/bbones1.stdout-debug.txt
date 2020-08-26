@@ -1,0 +1,44 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org  $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         lda #$CE
+
+char '#'
+char '$'
+stackarg 206 (@0)
+0MEMORYADDR0         sta $09
+
+char '$'
+stackarg 9 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0         .word $F000
+
+char '$'
+stackarg 61440 (@0)
+
+Complete.

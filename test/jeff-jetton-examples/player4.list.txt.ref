@@ -1,0 +1,145 @@
+------- FILE jeff-jetton-examples/player4.asm LEVEL 1 PASS 3
+      1  10000 ????						;---------------------------------------------------------------
+      2  10000 ????						;
+      3  10000 ????						; Using the "player" registers, part IV
+      4  10000 ????						;
+      5  10000 ????						; Displaying the player image at an arbitrary vertical position
+      6  10000 ????						;
+      7  10000 ????						;---------------------------------------------------------------
+      8  10000 ????
+      9  10000 ????				       processor	6502
+     10  10000 ????
+     11  10000 ????				       include	"../_includes/vcs.h"
+     12  10000 ????				       include	"../_includes/macro.h"
+     13  10000 ????
+     14  10000 ????						; Constants
+     15  10000 ????		00 22	    MyBGCol    equ	$22
+     16  10000 ????		00 1e	    MyP0Col    equ	$1E
+     17  10000 ????		00 09	    PHeight    equ	9	; Height of player data (including blank line)
+     18  10000 ????		00 b4	    StartY     equ	180	; Starting y position of player
+     19  10000 ????
+     20  10000 ????
+     21  10000 ????						; Variables
+     22  10000 ????		00 80	    YPos       equ	$80	; Storage location for the player's y-position. The value
+     23  10000 ????						; contained here represents the position in terms of the
+     24  10000 ????						; number of lines measured from bottom.
+     25  10000 ????
+     26  10000 ????
+     27  10000 ????
+     28  10000 ????
+     29  f000					      org	$F000
+jeff-jetton-examples/player4.asm (30): error: Unknown Mnemonic 'CLEAN_START'.
+     30  f000				   Start      CLEAN_START
+     31  f000
+     32  f000							; Set up colors and variable
+     33  f000		       a9 22		      lda	#MyBGCol
+     34  f002		       8d 00 00 	      sta	COLUBK
+     35  f005		       a9 1e		      lda	#MyP0Col
+     36  f007		       8d 00 00 	      sta	COLUP0
+     37  f00a		       a9 b4		      lda	#StartY
+     38  f00c		       85 80		      sta	YPos
+     39  f00e
+     40  f00e
+     41  f00e
+     42  f00e							; Main display kernel starts here ---------------------------------------------
+     43  f00e
+     44  f00e							; Vertical sync
+     45  f00e		       a9 02		      lda	#2
+     46  f010		       8d 00 00 	      sta	VBLANK
+     47  f013		       8d 00 00    Frame      sta	VSYNC
+     48  f016		       8d 00 00 	      sta	WSYNC
+     49  f019		       8d 00 00 	      sta	WSYNC
+     50  f01c		       8d 00 00 	      sta	WSYNC
+     51  f01f		       8a		      txa
+     52  f020		       8d 00 00 	      sta	VSYNC
+     53  f023
+     54  f023							; Remainder of vertical blanking period
+     55  f023		       a2 25		      ldx	#37
+     56  f025		       8d 00 00    VertBl     sta	WSYNC
+     57  f028		       ca		      dex
+     58  f029		       d0 fa		      bne	VertBl
+     59  f02b		       8d 00 00 	      sta	VBLANK
+     60  f02e
+     61  f02e
+     62  f02e							; Visible area of frame -----------------
+     63  f02e
+     64  f02e							; Rather than dividing our line displays into "chunks",
+     65  f02e							; We'll always write *something* to GRP0 on every line.
+     66  f02e							; On lines where there's no player, we'll write a zero.
+     67  f02e							; But we'll include logic to "turn on" reading from
+     68  f02e							; the lookup table of image data, based on which line
+     69  f02e							; we're on (compared to the desired y position)
+     70  f02e
+     71  f02e		       a2 c0		      ldx	#192	; X is our counter: Number of lines from bottom
+     72  f030
+     73  f030		       8d 00 00    VizArea    sta	WSYNC
+     74  f033							; How many lines above the bottom of our player (YPos) are we?
+     75  f033							; To calculate, just subtract YPos from current line num
+     76  f033		       8a		      txa
+     77  f034		       38		      sec		; Prepare for subtraction by setting carry flag
+     78  f035		       e5 80		      sbc	YPos
+     79  f037
+     80  f037							; If that number of lines within our player height, use that
+     81  f037							; number as an offset index for the player image data.
+     82  f037		       c9 09		      cmp	#PHeight	; This subtracts player height from A but
+     83  f039							; doesn't store the result. Just sets flags.
+     84  f039
+     85  f039							; After the cmp, the carry flag (C) is only set if A is
+     86  f039							; greater than or equal to PHeight. It will be clear if
+     87  f039							; A is less than PHeight, in which case we branch directly
+     88  f039							; to the part that reads in the image data at offset A.
+     89  f039		       90 02		      bcc	DrawP0
+     90  f03b
+     91  f03b							; At this point, the bcc was false, so we'll ensure the
+     92  f03b							; offset value used is zero--giving us the first row of
+     93  f03b							; image data (which is a blank row)
+     94  f03b		       a9 00		      lda	#0
+     95  f03d
+     96  f03d				   DrawP0		; Okay, we can't use A as offset directly, and X is
+     97  f03d							; tied up with keeping track of lines. So we'll use Y.
+     98  f03d							; Remember that, at this point, A will contain either
+     99  f03d							; zero (if we're not in the range to draw the player)
+    100  f03d							; or the offset index of the data to draw.
+    101  f03d		       a8		      tay
+    102  f03e		       b9 59 f0 	      lda	Sprite,y
+    103  f041		       8d 00 00 	      sta	GRP0
+    104  f044
+    105  f044
+    106  f044							; Phew! Okay, move to next line...
+    107  f044		       ca		      dex
+    108  f045		       d0 e9		      bne	VizArea
+    109  f047
+    110  f047
+    111  f047
+    112  f047							; Overscan portion
+    113  f047		       a9 02		      lda	#2
+    114  f049		       8d 00 00 	      sta	VBLANK
+    115  f04c		       c6 80		      dec	YPos	; Move the player down one line each frame
+    116  f04e		       a2 1e	   FinOvr     ldx	#30
+    117  f050		       8d 00 00    OvScan     sta	WSYNC
+    118  f053		       ca		      dex
+    119  f054		       d0 fa		      bne	OvScan
+    120  f056
+    121  f056		       4c 13 f0 	      jmp	Frame
+    122  f059
+    123  f059
+    124  f059
+    125  f059							; Data for drawing our player sprite
+    126  f059		       00	   Sprite     .byte.b	#0	; Zero at end to clear out player register
+    127  f05a		       3c		      .byte.b	#%00111100
+    128  f05b		       62		      .byte.b	#%01100010
+    129  f05c		       dd		      .byte.b	#%11011101
+    130  f05d		       ff		      .byte.b	#%11111111
+    131  f05e		       eb		      .byte.b	#%11101011
+    132  f05f		       c9		      .byte.b	#%11001001
+    133  f060		       7e		      .byte.b	#%01111110
+    134  f061		       3c		      .byte.b	#%00111100
+    135  f062
+    136  f062
+    137  fffc					      org	$FFFC
+    138  fffc		       00 00		      .word.w	Start
+    139  fffe		       00 00		      .word.w	Start
+    140  10000
+    141  10000
+    142  10000
+    143  10000

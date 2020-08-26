@@ -1,0 +1,165 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ;-------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Bare-Bones Program #4
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Initialize VCS memory and registers before starting
+
+0MEMORYADDR0 ; (Using methods that are more idiomatic to assembler)
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;-------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 COLUBK  equ $09
+
+char '$'
+stackarg 9 (@0)
+0MEMORYADDR0 MyBGCol equ $D0
+
+char '$'
+stackarg 208 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Basic set-up
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 Start   sei         ; Prevent interrupts
+
+0MEMORYADDR0         cld         ; Clear "decimal" mode
+
+0MEMORYADDR0         ldx #$FF    ; Set the...
+
+char '#'
+char '$'
+stackarg 255 (@0)
+0MEMORYADDR0         txs         ; ...stack pointer
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Initialize the "zero-page"
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         lda  #0     ; Keep a zero in the A register
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0                     ; The value in X is still $FF
+
+0MEMORYADDR0                     ; from the above ldx instruction
+
+0MEMORYADDR0                     
+
+0MEMORYADDR0         ; Our loop goes backwards from
+
+0MEMORYADDR0         ; $FF down to $00
+
+0MEMORYADDR0 Init    sta  0,x    ; Put A's zero into address $00 + X
+
+char '0'
+stackarg 0 (@0)
+char ','
+0MEMORYADDR0         dex         ; Decrement X
+
+0MEMORYADDR0         bne  Init   ; Loop as long as X isn't zero.
+
+char 'I'
+stackarg 61447 (@0)
+0MEMORYADDR0                     ; Notice that, unlike last time, we
+
+0MEMORYADDR0                     ; didn't do a cmp ("CoMPare") before
+
+0MEMORYADDR0                     ; our bne ("Branch if Not Equal")
+
+0MEMORYADDR0                     ; operation. Really, all bne does
+
+0MEMORYADDR0                     ; is check the "zero flag". So
+
+0MEMORYADDR0                     ; you can also translate it to
+
+0MEMORYADDR0                     ; "Branch (if the last math operation
+
+0MEMORYADDR0                     ; gave a result that is) Not Equal
+
+0MEMORYADDR0                     ; (to zero)"
+
+0MEMORYADDR0         
+
+0MEMORYADDR0         sta  $00    ; A final zero into address $00
+
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Init section now takes 9 bytes and 2,045
+
+0MEMORYADDR0         ; cycles. A savings of 5 bytes (36% smaller)
+
+0MEMORYADDR0         ; and 1,022 cycles (33% faster). Not bad!
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Main loop
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 SetTIA  lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 208 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 9 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp SetTIA
+
+char 'S'
+stackarg 61454 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 61440 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 61440 (@0)
+0MEMORYADDR0 
+
+
+Complete.

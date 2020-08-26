@@ -1,0 +1,204 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ;--------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Bare-Bones Program #5
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Using includes to save ourselves a lot of bother
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;--------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         include vcs.h   ; Standard definitions
+
+char 'v'
+stackarg 0 (@0)
+Warning: Unable to open 'vcs.h'
+0MEMORYADDR0                         ; for VCS code
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         include macro.h ; Useful common macros
+
+char 'm'
+stackarg 0 (@0)
+Warning: Unable to open 'macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 MyBGCol equ $88
+
+char '$'
+stackarg 136 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 Start   CLEAN_START     ; Macro for efficient initialization
+
+0MEMORYADDR0                         ; Actual code comes from macro.h
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Main loop
+
+0MEMORYADDR0 SetTIA  lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 136 (@0)
+0MEMORYADDR0         sta COLUBK      ; Note that we didn't define COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0                         ; in this file. It's defined in vch.h
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp SetTIA
+
+char 'S'
+stackarg 61440 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;--------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Bare-Bones Program #5
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Using includes to save ourselves a lot of bother
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;--------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         include vcs.h   ; Standard definitions
+
+char 'v'
+stackarg 0 (@0)
+Warning: Unable to open 'vcs.h'
+0MEMORYADDR0                         ; for VCS code
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         include macro.h ; Useful common macros
+
+char 'm'
+stackarg 0 (@0)
+Warning: Unable to open 'macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 MyBGCol equ $88
+
+char '$'
+stackarg 136 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 Start   CLEAN_START     ; Macro for efficient initialization
+
+0MEMORYADDR0                         ; Actual code comes from macro.h
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Main loop
+
+0MEMORYADDR0 SetTIA  lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 136 (@0)
+0MEMORYADDR0         sta COLUBK      ; Note that we didn't define COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0                         ; in this file. It's defined in vch.h
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp SetTIA
+
+char 'S'
+stackarg 61440 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+vcs.h                    0000 ????         (R )
+macro.h                  0000 ????         (R )
+Start                    0000 ????         (R )
+--- 4 Unresolved Symbols
+
+
+jeff-jetton-examples/bbones5.asm (22): error: Unknown Mnemonic 'CLEAN_START'.
+
+Fatal assembly error: Source is not resolvable.

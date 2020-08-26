@@ -1,0 +1,19 @@
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF1                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+Start                    0000 ????         (R )
+INPT4                    0000 ????         (R )
+SWCHA                    0000 ????         (R )
+--- 6 Unresolved Symbols
+
+
+jeff-jetton-examples/rudin2.asm (22): error: Unknown Mnemonic 'CLEAN_START'.
+
+Fatal assembly error: Source is not resolvable.

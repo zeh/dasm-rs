@@ -1,0 +1,577 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Using the "player" registers, part I
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ; Basic output:
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ;     Blue player shows joystick input
+
+0MEMORYADDR0 ;     Orange player shows console switch settings
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Color contants
+
+0MEMORYADDR0 MyBGCol equ $00         ; Black for background
+
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 MyP0Col equ $9A
+
+char '$'
+stackarg 154 (@0)
+0MEMORYADDR0 MyP1Col equ $2A
+
+char '$'
+stackarg 42 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 Start   CLEAN_START
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set up colors for background and players
+
+0MEMORYADDR0         lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 0 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #MyP0Col
+
+char '#'
+char 'M'
+stackarg 154 (@0)
+0MEMORYADDR0         sta COLUP0
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #MyP1Col
+
+char '#'
+char 'M'
+stackarg 42 (@0)
+0MEMORYADDR0         sta COLUP1
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Main display kernel starts here ---------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Vertical sync
+
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 Frame   sta VSYNC
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         txa             ; X will contain 0 at first iteration.
+
+0MEMORYADDR0         sta VSYNC
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Uncomment this next block if the players overlap:
+
+0MEMORYADDR0         ; sta RESP0
+
+0MEMORYADDR0         ; SLEEP 50
+
+0MEMORYADDR0         ; sta RESP1
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Remainder of vertical blanking period
+
+0MEMORYADDR0         ldx #37
+
+char '#'
+char '3'
+stackarg 37 (@0)
+0MEMORYADDR0 VertBl  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne VertBl
+
+char 'V'
+stackarg 61478 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set up the player register.
+
+0MEMORYADDR0         ; Joystick input register goes into player "zero"
+
+0MEMORYADDR0         lda SWCHA
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0         ; Console switch settings goes into player "one"
+
+0MEMORYADDR0         lda SWCHB
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         sta GRP1
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Visible area of frame
+
+0MEMORYADDR0         ldx #192
+
+char '#'
+char '1'
+stackarg 192 (@0)
+0MEMORYADDR0 VisArea sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne VisArea
+
+char 'V'
+stackarg 61501 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Overscan portion
+
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         ldx #30
+
+char '#'
+char '3'
+stackarg 30 (@0)
+0MEMORYADDR0 OvScan  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne OvScan
+
+char 'O'
+stackarg 61514 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp Frame       ; Note that x=0 at this point, ready for next frame
+
+char 'F'
+stackarg 61460 (@0)
+0MEMORYADDR0                         ; Also, VBLANK mode is still in effect
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Using the "player" registers, part I
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ; Basic output:
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ;     Blue player shows joystick input
+
+0MEMORYADDR0 ;     Orange player shows console switch settings
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Color contants
+
+0MEMORYADDR0 MyBGCol equ $00         ; Black for background
+
+char '$'
+stackarg 0 (@0)
+0MEMORYADDR0 MyP0Col equ $9A
+
+char '$'
+stackarg 154 (@0)
+0MEMORYADDR0 MyP1Col equ $2A
+
+char '$'
+stackarg 42 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 Start   CLEAN_START
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set up colors for background and players
+
+0MEMORYADDR0         lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 0 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #MyP0Col
+
+char '#'
+char 'M'
+stackarg 154 (@0)
+0MEMORYADDR0         sta COLUP0
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #MyP1Col
+
+char '#'
+char 'M'
+stackarg 42 (@0)
+0MEMORYADDR0         sta COLUP1
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Main display kernel starts here ---------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Vertical sync
+
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 Frame   sta VSYNC
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         txa             ; X will contain 0 at first iteration.
+
+0MEMORYADDR0         sta VSYNC
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Uncomment this next block if the players overlap:
+
+0MEMORYADDR0         ; sta RESP0
+
+0MEMORYADDR0         ; SLEEP 50
+
+0MEMORYADDR0         ; sta RESP1
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Remainder of vertical blanking period
+
+0MEMORYADDR0         ldx #37
+
+char '#'
+char '3'
+stackarg 37 (@0)
+0MEMORYADDR0 VertBl  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne VertBl
+
+char 'V'
+stackarg 61478 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set up the player register.
+
+0MEMORYADDR0         ; Joystick input register goes into player "zero"
+
+0MEMORYADDR0         lda SWCHA
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0         ; Console switch settings goes into player "one"
+
+0MEMORYADDR0         lda SWCHB
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         sta GRP1
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Visible area of frame
+
+0MEMORYADDR0         ldx #192
+
+char '#'
+char '1'
+stackarg 192 (@0)
+0MEMORYADDR0 VisArea sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne VisArea
+
+char 'V'
+stackarg 61501 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Overscan portion
+
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         ldx #30
+
+char '#'
+char '3'
+stackarg 30 (@0)
+0MEMORYADDR0 OvScan  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne OvScan
+
+char 'O'
+stackarg 61514 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp Frame       ; Note that x=0 at this point, ready for next frame
+
+char 'F'
+stackarg 61460 (@0)
+0MEMORYADDR0                         ; Also, VBLANK mode is still in effect
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+COLUP0                   0000 ????         (R )
+COLUP1                   0000 ????         (R )
+VBLANK                   0000 ????         (R )
+GRP0                     0000 ????         (R )
+GRP1                     0000 ????         (R )
+Start                    0000 ????         (R )
+VSYNC                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+SWCHA                    0000 ????         (R )
+SWCHB                    0000 ????         (R )
+--- 11 Unresolved Symbols
+
+
+jeff-jetton-examples/player1.asm (25): error: Unknown Mnemonic 'CLEAN_START'.
+
+Fatal assembly error: Source is not resolvable.

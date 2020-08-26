@@ -1,0 +1,22 @@
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+COLUP0                   0000 ????         (R )
+VBLANK                   0000 ????         (R )
+Frame                    0000 ????         (R )
+GRP0                     0000 ????         (R )
+Start                    0000 ????         (R )
+RESP0                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+--- 8 Unresolved Symbols
+
+
+jeff-jetton-examples/hpos1.asm (29): error: Unknown Mnemonic 'CLEAN_START'.
+jeff-jetton-examples/hpos1.asm (46): error: Unknown Mnemonic 'VERTICAL_SYNC'.
+
+Fatal assembly error: Source is not resolvable.

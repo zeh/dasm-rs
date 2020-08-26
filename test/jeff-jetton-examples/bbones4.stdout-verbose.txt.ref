@@ -1,0 +1,21 @@
+
+START OF PASS: 1
+ Including file "jeff-jetton-examples/bbones4.asm"
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         f000                            f000                           
+----------------------------------------------------------------------
+0 references to unknown symbols.
+0 events requiring another assembler pass.
+
+--- Symbol List (sorted by symbol)
+COLUBK                   0009              (R )
+INEEPROM                 0000                  
+Init                     f007              (R )
+MyBGCol                  00d0              (R )
+SetTIA                   f00e              (R )
+Start                    f000              (R )
+--- End of Symbol List.
+
+Complete.

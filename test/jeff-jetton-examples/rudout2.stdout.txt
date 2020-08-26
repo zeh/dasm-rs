@@ -1,0 +1,15 @@
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF1                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+Start                    0000 ????         (R )
+--- 4 Unresolved Symbols
+
+
+jeff-jetton-examples/rudout2.asm (24): error: Unknown Mnemonic 'CLEAN_START'.
+
+Fatal assembly error: Source is not resolvable.

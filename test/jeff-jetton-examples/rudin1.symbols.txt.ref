@@ -1,0 +1,11 @@
+--- Symbol List (sorted by symbol)
+COLUBK                   0000 ????         (R )
+COLUPF                   0000 ????         (R )
+INEEPROM                 0000                  
+Main                     f00a              (R )
+MyBGCol                  0072              (R )
+MyPFCol                  0018              (R )
+PF1                      0000 ????         (R )
+Start                    0000 ????         (R )
+SWCHB                    0000 ????         (R )
+--- End of Symbol List.

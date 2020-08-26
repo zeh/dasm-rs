@@ -1,0 +1,165 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ;-------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Bare-Bones Program #3
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Initialize VCS memory and registers before starting
+
+0MEMORYADDR0 ; (In a style similar to how a high-level language
+
+0MEMORYADDR0 ; might do it)
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;-------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 COLUBK  equ $09
+
+char '$'
+stackarg 9 (@0)
+0MEMORYADDR0 MyBGCol equ $2A
+
+char '$'
+stackarg 42 (@0)
+0MEMORYADDR0    
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Basic set up
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 Start   sei         ; Prevent interrupts
+
+0MEMORYADDR0         cld         ; Clear "binary-coded decimal" mode
+
+0MEMORYADDR0         ldx #$FF    ; Take the highest address in RAM...
+
+char '#'
+char '$'
+stackarg 255 (@0)
+0MEMORYADDR0         txs         ; ...and put it in the stack pointer
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Initialize the "zero-page" (inefficient, for now)
+
+0MEMORYADDR0         
+
+0MEMORYADDR0         ldx #0      ; Use X for the index of our current
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0                     ; address. Start at zero.
+
+0MEMORYADDR0         ldy #0      ; Put a zero in Y. This is the zero
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0                     ; we'll use to clear out addresses.
+
+0MEMORYADDR0         
+
+0MEMORYADDR0 Init    sty 0,x     ; Store Y's zero into 0 offset by X
+
+char '0'
+stackarg 0 (@0)
+char ','
+0MEMORYADDR0                     ; (We can't just sty x... it has to
+
+0MEMORYADDR0                     ; be X relative to a base value)
+
+0MEMORYADDR0         inx         ; Increment X to next address
+
+0MEMORYADDR0 
+
+0MEMORYADDR0                     ; Is x at the end yet?
+
+0MEMORYADDR0         cpx #$FF    ; Compare it the value $FF
+
+char '#'
+char '$'
+stackarg 255 (@0)
+0MEMORYADDR0         bne  Init   ; Branch (if that comparison
+
+char 'I'
+stackarg 61449 (@0)
+0MEMORYADDR0                     ; resulted in) Not Equal
+
+0MEMORYADDR0         
+
+0MEMORYADDR0                     ; If x is equal to $FF, we don't branch
+
+0MEMORYADDR0                     ; and drop down to here instead
+
+0MEMORYADDR0         sty 0       ; Final zero in that last address
+
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Init section takes 13 bytes and 2,882 cycles
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Set up the graphics, such as they are...
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 SetTIA  lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 42 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 9 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp SetTIA
+
+char 'S'
+stackarg 61458 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 61440 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 61440 (@0)
+0MEMORYADDR0 
+
+
+Complete.

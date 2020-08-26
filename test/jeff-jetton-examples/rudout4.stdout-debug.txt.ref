@@ -1,0 +1,327 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Rudimentary output, part 4
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ; Using the timer to cycle through binary numbers
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Timer constants (adjust to taste)
+
+0MEMORYADDR0 Timer   equ T1024T     ; Use the 1024 cycles-per-tick timer
+
+char 'T'
+stackarg 0 (@0)
+0MEMORYADDR0 Ticks   equ $FF        ; Interval is 255 ticks
+
+char '$'
+stackarg 255 (@0)
+0MEMORYADDR0                        ;
+
+0MEMORYADDR0                        ; 255 * 1024 = 261,120 cycles!
+
+0MEMORYADDR0                        ; That's as slow as we can time in one
+
+0MEMORYADDR0                        ; single timer shot, yet it's still
+
+0MEMORYADDR0                        ; under 1/4 of a second
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0 Start   CLEAN_START 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Black background
+
+0MEMORYADDR0         lda #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; We'll track our displayed number in Y
+
+0MEMORYADDR0         ; Start it out at zero
+
+0MEMORYADDR0         ldy #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         
+
+0MEMORYADDR0 ShowNum ; Load current number into playfield
+
+0MEMORYADDR0         sty PF1
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         ; Set playfield color to that number too
+
+0MEMORYADDR0         sty COLUPF
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Init timer
+
+0MEMORYADDR0         lda #Ticks
+
+char '#'
+char 'T'
+stackarg 255 (@0)
+0MEMORYADDR0         sta Timer
+
+char 'T'
+stackarg 0 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Timer done?
+
+0MEMORYADDR0 TimWait lda INTIM
+
+char 'I'
+stackarg 0 (@0)
+0MEMORYADDR0         bne TimWait     ; Nope? Keep checking
+
+char 'T'
+stackarg 61458 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Finally done! Increment Y and loop
+
+0MEMORYADDR0         iny
+
+0MEMORYADDR0         jmp ShowNum
+
+char 'S'
+stackarg 61447 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Rudimentary output, part 4
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ; Using the timer to cycle through binary numbers
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Timer constants (adjust to taste)
+
+0MEMORYADDR0 Timer   equ T1024T     ; Use the 1024 cycles-per-tick timer
+
+char 'T'
+stackarg 0 (@0)
+0MEMORYADDR0 Ticks   equ $FF        ; Interval is 255 ticks
+
+char '$'
+stackarg 255 (@0)
+0MEMORYADDR0                        ;
+
+0MEMORYADDR0                        ; 255 * 1024 = 261,120 cycles!
+
+0MEMORYADDR0                        ; That's as slow as we can time in one
+
+0MEMORYADDR0                        ; single timer shot, yet it's still
+
+0MEMORYADDR0                        ; under 1/4 of a second
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0 Start   CLEAN_START 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Black background
+
+0MEMORYADDR0         lda #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; We'll track our displayed number in Y
+
+0MEMORYADDR0         ; Start it out at zero
+
+0MEMORYADDR0         ldy #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         
+
+0MEMORYADDR0 ShowNum ; Load current number into playfield
+
+0MEMORYADDR0         sty PF1
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         ; Set playfield color to that number too
+
+0MEMORYADDR0         sty COLUPF
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Init timer
+
+0MEMORYADDR0         lda #Ticks
+
+char '#'
+char 'T'
+stackarg 255 (@0)
+0MEMORYADDR0         sta Timer
+
+char 'T'
+stackarg 0 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Timer done?
+
+0MEMORYADDR0 TimWait lda INTIM
+
+char 'I'
+stackarg 0 (@0)
+0MEMORYADDR0         bne TimWait     ; Nope? Keep checking
+
+char 'T'
+stackarg 61458 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Finally done! Increment Y and loop
+
+0MEMORYADDR0         iny
+
+0MEMORYADDR0         jmp ShowNum
+
+char 'S'
+stackarg 61447 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF1                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+Timer                    0000 ????         (R )
+Start                    0000 ????         (R )
+T1024T                   0000 ????         (R )
+INTIM                    0000 ????         (R )
+--- 7 Unresolved Symbols
+
+
+jeff-jetton-examples/rudout4.asm (25): error: Unknown Mnemonic 'CLEAN_START'.
+
+Fatal assembly error: Source is not resolvable.

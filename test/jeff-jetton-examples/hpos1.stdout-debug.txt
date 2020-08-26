@@ -1,0 +1,1143 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Horizontal positioning of player graphics, part I
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Basic, timing-based coarse positioning
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Constants
+
+0MEMORYADDR0 MyBGCol equ $8E
+
+char '$'
+stackarg 142 (@0)
+0MEMORYADDR0 MyP0Col equ $50
+
+char '$'
+stackarg 80 (@0)
+0MEMORYADDR0 PHeight equ 9       ; Height of player data (including blank line)
+
+char '9'
+stackarg 9 (@0)
+0MEMORYADDR0 StartY  equ 100     ; Starting y position of player
+
+char '1'
+stackarg 100 (@0)
+0MEMORYADDR0 StartX  equ 10      ; Starting x position of player, as measured in the
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0                     ; number of processor cycles since the last WSYNC
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Variables
+
+0MEMORYADDR0 YPos    equ $80     ; Player y-position (vertical location)
+
+char '$'
+stackarg 128 (@0)
+0MEMORYADDR0 XPos    equ $81     ; Player x-position (horizontal location)
+
+char '$'
+stackarg 129 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 Start   CLEAN_START
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set up colors and variables
+
+0MEMORYADDR0         lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 142 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #MyP0Col
+
+char '#'
+char 'M'
+stackarg 80 (@0)
+0MEMORYADDR0         sta COLUP0
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #StartY
+
+char '#'
+char 'S'
+stackarg 100 (@0)
+0MEMORYADDR0         sta YPos
+
+char 'Y'
+stackarg 128 (@0)
+0MEMORYADDR0         lda #StartX
+
+char '#'
+char 'S'
+stackarg 10 (@0)
+0MEMORYADDR0         sta XPos
+
+char 'X'
+stackarg 129 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Main display kernel starts here ---------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Use the standard vsync macro
+
+0MEMORYADDR0 Frame   VERTICAL_SYNC
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; RESP0 is "reset player 0". It causes the player's horizontal position
+
+0MEMORYADDR0         ; to be set at whatever location the beam is on at the exact moment the
+
+0MEMORYADDR0         ; instruction is executed.
+
+0MEMORYADDR0         ldx XPos
+
+char 'X'
+stackarg 129 (@0)
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0 HLoop   dex
+
+0MEMORYADDR0         bne HLoop
+
+char 'H'
+stackarg 61465 (@0)
+0MEMORYADDR0         sta RESP0
+
+char 'R'
+stackarg 0 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Remainder of vertical blanking period
+
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         ldx #35
+
+char '#'
+char '3'
+stackarg 35 (@0)
+0MEMORYADDR0 VertBl  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne VertBl
+
+char 'V'
+stackarg 61476 (@0)
+0MEMORYADDR0         lda #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Visible area of frame -----------------
+
+0MEMORYADDR0         ldx #192
+
+char '#'
+char '1'
+stackarg 192 (@0)
+0MEMORYADDR0 VizArea sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Draw player data?
+
+0MEMORYADDR0         txa
+
+0MEMORYADDR0         sec
+
+0MEMORYADDR0         sbc YPos
+
+char 'Y'
+stackarg 128 (@0)
+0MEMORYADDR0         cmp #PHeight
+
+char '#'
+char 'P'
+stackarg 9 (@0)
+0MEMORYADDR0         bcc DrawP0
+
+char 'D'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 DrawP0  tay
+
+redo 13: 'DrawP0' 0045 0004
+0MEMORYADDR0         lda Sprite,y
+
+char 'S'
+stackarg 0 (@0)
+char ','
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Next scanline...
+
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne VizArea
+
+char 'V'
+stackarg 61489 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Overscan portion
+
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         ldx #29
+
+char '#'
+char '2'
+stackarg 29 (@0)
+0MEMORYADDR0 OvScan  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne OvScan
+
+char 'O'
+stackarg 61522 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp Frame
+
+char 'F'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Data for drawing our player sprite
+
+0MEMORYADDR0 Sprite  .byte #0            ; Zero at end to clear out player register
+
+redo 13: 'Sprite' 0045 0004
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         .byte #%00111100
+
+char '#'
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0         .byte #%01100010
+
+char '#'
+char '%'
+stackarg 98 (@0)
+0MEMORYADDR0         .byte #%11011101
+
+char '#'
+char '%'
+stackarg 221 (@0)
+0MEMORYADDR0         .byte #%11111111
+
+char '#'
+char '%'
+stackarg 255 (@0)
+0MEMORYADDR0         .byte #%11101011
+
+char '#'
+char '%'
+stackarg 235 (@0)
+0MEMORYADDR0         .byte #%11001001     
+
+char '#'
+char '%'
+stackarg 201 (@0)
+0MEMORYADDR0         .byte #%01111110
+
+char '#'
+char '%'
+stackarg 126 (@0)
+0MEMORYADDR0         .byte #%00111100
+
+char '#'
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Horizontal positioning of player graphics, part I
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Basic, timing-based coarse positioning
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Constants
+
+0MEMORYADDR0 MyBGCol equ $8E
+
+char '$'
+stackarg 142 (@0)
+0MEMORYADDR0 MyP0Col equ $50
+
+char '$'
+stackarg 80 (@0)
+0MEMORYADDR0 PHeight equ 9       ; Height of player data (including blank line)
+
+char '9'
+stackarg 9 (@0)
+0MEMORYADDR0 StartY  equ 100     ; Starting y position of player
+
+char '1'
+stackarg 100 (@0)
+0MEMORYADDR0 StartX  equ 10      ; Starting x position of player, as measured in the
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0                     ; number of processor cycles since the last WSYNC
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Variables
+
+0MEMORYADDR0 YPos    equ $80     ; Player y-position (vertical location)
+
+char '$'
+stackarg 128 (@0)
+0MEMORYADDR0 XPos    equ $81     ; Player x-position (horizontal location)
+
+char '$'
+stackarg 129 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 Start   CLEAN_START
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set up colors and variables
+
+0MEMORYADDR0         lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 142 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #MyP0Col
+
+char '#'
+char 'M'
+stackarg 80 (@0)
+0MEMORYADDR0         sta COLUP0
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #StartY
+
+char '#'
+char 'S'
+stackarg 100 (@0)
+0MEMORYADDR0         sta YPos
+
+char 'Y'
+stackarg 128 (@0)
+0MEMORYADDR0         lda #StartX
+
+char '#'
+char 'S'
+stackarg 10 (@0)
+0MEMORYADDR0         sta XPos
+
+char 'X'
+stackarg 129 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Main display kernel starts here ---------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Use the standard vsync macro
+
+0MEMORYADDR0 Frame   VERTICAL_SYNC
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; RESP0 is "reset player 0". It causes the player's horizontal position
+
+0MEMORYADDR0         ; to be set at whatever location the beam is on at the exact moment the
+
+0MEMORYADDR0         ; instruction is executed.
+
+0MEMORYADDR0         ldx XPos
+
+char 'X'
+stackarg 129 (@0)
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0 HLoop   dex
+
+0MEMORYADDR0         bne HLoop
+
+char 'H'
+stackarg 61465 (@0)
+0MEMORYADDR0         sta RESP0
+
+char 'R'
+stackarg 0 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Remainder of vertical blanking period
+
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         ldx #35
+
+char '#'
+char '3'
+stackarg 35 (@0)
+0MEMORYADDR0 VertBl  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne VertBl
+
+char 'V'
+stackarg 61476 (@0)
+0MEMORYADDR0         lda #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Visible area of frame -----------------
+
+0MEMORYADDR0         ldx #192
+
+char '#'
+char '1'
+stackarg 192 (@0)
+0MEMORYADDR0 VizArea sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Draw player data?
+
+0MEMORYADDR0         txa
+
+0MEMORYADDR0         sec
+
+0MEMORYADDR0         sbc YPos
+
+char 'Y'
+stackarg 128 (@0)
+0MEMORYADDR0         cmp #PHeight
+
+char '#'
+char 'P'
+stackarg 9 (@0)
+0MEMORYADDR0         bcc DrawP0
+
+char 'D'
+stackarg 61502 (@0)
+0MEMORYADDR0         lda #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 DrawP0  tay
+
+0MEMORYADDR0         lda Sprite,y
+
+char 'S'
+stackarg 61531 (@0)
+char ','
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Next scanline...
+
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne VizArea
+
+char 'V'
+stackarg 61489 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Overscan portion
+
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         ldx #29
+
+char '#'
+char '2'
+stackarg 29 (@0)
+0MEMORYADDR0 OvScan  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne OvScan
+
+char 'O'
+stackarg 61522 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp Frame
+
+char 'F'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Data for drawing our player sprite
+
+0MEMORYADDR0 Sprite  .byte #0            ; Zero at end to clear out player register
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         .byte #%00111100
+
+char '#'
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0         .byte #%01100010
+
+char '#'
+char '%'
+stackarg 98 (@0)
+0MEMORYADDR0         .byte #%11011101
+
+char '#'
+char '%'
+stackarg 221 (@0)
+0MEMORYADDR0         .byte #%11111111
+
+char '#'
+char '%'
+stackarg 255 (@0)
+0MEMORYADDR0         .byte #%11101011
+
+char '#'
+char '%'
+stackarg 235 (@0)
+0MEMORYADDR0         .byte #%11001001     
+
+char '#'
+char '%'
+stackarg 201 (@0)
+0MEMORYADDR0         .byte #%01111110
+
+char '#'
+char '%'
+stackarg 126 (@0)
+0MEMORYADDR0         .byte #%00111100
+
+char '#'
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Horizontal positioning of player graphics, part I
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Basic, timing-based coarse positioning
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Constants
+
+0MEMORYADDR0 MyBGCol equ $8E
+
+char '$'
+stackarg 142 (@0)
+0MEMORYADDR0 MyP0Col equ $50
+
+char '$'
+stackarg 80 (@0)
+0MEMORYADDR0 PHeight equ 9       ; Height of player data (including blank line)
+
+char '9'
+stackarg 9 (@0)
+0MEMORYADDR0 StartY  equ 100     ; Starting y position of player
+
+char '1'
+stackarg 100 (@0)
+0MEMORYADDR0 StartX  equ 10      ; Starting x position of player, as measured in the
+
+char '1'
+stackarg 10 (@0)
+0MEMORYADDR0                     ; number of processor cycles since the last WSYNC
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Variables
+
+0MEMORYADDR0 YPos    equ $80     ; Player y-position (vertical location)
+
+char '$'
+stackarg 128 (@0)
+0MEMORYADDR0 XPos    equ $81     ; Player x-position (horizontal location)
+
+char '$'
+stackarg 129 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 Start   CLEAN_START
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set up colors and variables
+
+0MEMORYADDR0         lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 142 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #MyP0Col
+
+char '#'
+char 'M'
+stackarg 80 (@0)
+0MEMORYADDR0         sta COLUP0
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #StartY
+
+char '#'
+char 'S'
+stackarg 100 (@0)
+0MEMORYADDR0         sta YPos
+
+char 'Y'
+stackarg 128 (@0)
+0MEMORYADDR0         lda #StartX
+
+char '#'
+char 'S'
+stackarg 10 (@0)
+0MEMORYADDR0         sta XPos
+
+char 'X'
+stackarg 129 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Main display kernel starts here ---------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Use the standard vsync macro
+
+0MEMORYADDR0 Frame   VERTICAL_SYNC
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; RESP0 is "reset player 0". It causes the player's horizontal position
+
+0MEMORYADDR0         ; to be set at whatever location the beam is on at the exact moment the
+
+0MEMORYADDR0         ; instruction is executed.
+
+0MEMORYADDR0         ldx XPos
+
+char 'X'
+stackarg 129 (@0)
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0 HLoop   dex
+
+0MEMORYADDR0         bne HLoop
+
+char 'H'
+stackarg 61465 (@0)
+0MEMORYADDR0         sta RESP0
+
+char 'R'
+stackarg 0 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Remainder of vertical blanking period
+
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         ldx #35
+
+char '#'
+char '3'
+stackarg 35 (@0)
+0MEMORYADDR0 VertBl  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne VertBl
+
+char 'V'
+stackarg 61476 (@0)
+0MEMORYADDR0         lda #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Visible area of frame -----------------
+
+0MEMORYADDR0         ldx #192
+
+char '#'
+char '1'
+stackarg 192 (@0)
+0MEMORYADDR0 VizArea sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Draw player data?
+
+0MEMORYADDR0         txa
+
+0MEMORYADDR0         sec
+
+0MEMORYADDR0         sbc YPos
+
+char 'Y'
+stackarg 128 (@0)
+0MEMORYADDR0         cmp #PHeight
+
+char '#'
+char 'P'
+stackarg 9 (@0)
+0MEMORYADDR0         bcc DrawP0
+
+char 'D'
+stackarg 61502 (@0)
+0MEMORYADDR0         lda #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 DrawP0  tay
+
+0MEMORYADDR0         lda Sprite,y
+
+char 'S'
+stackarg 61531 (@0)
+char ','
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Next scanline...
+
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne VizArea
+
+char 'V'
+stackarg 61489 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Overscan portion
+
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         ldx #29
+
+char '#'
+char '2'
+stackarg 29 (@0)
+0MEMORYADDR0 OvScan  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne OvScan
+
+char 'O'
+stackarg 61522 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp Frame
+
+char 'F'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Data for drawing our player sprite
+
+0MEMORYADDR0 Sprite  .byte #0            ; Zero at end to clear out player register
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         .byte #%00111100
+
+char '#'
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0         .byte #%01100010
+
+char '#'
+char '%'
+stackarg 98 (@0)
+0MEMORYADDR0         .byte #%11011101
+
+char '#'
+char '%'
+stackarg 221 (@0)
+0MEMORYADDR0         .byte #%11111111
+
+char '#'
+char '%'
+stackarg 255 (@0)
+0MEMORYADDR0         .byte #%11101011
+
+char '#'
+char '%'
+stackarg 235 (@0)
+0MEMORYADDR0         .byte #%11001001     
+
+char '#'
+char '%'
+stackarg 201 (@0)
+0MEMORYADDR0         .byte #%01111110
+
+char '#'
+char '%'
+stackarg 126 (@0)
+0MEMORYADDR0         .byte #%00111100
+
+char '#'
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+COLUP0                   0000 ????         (R )
+VBLANK                   0000 ????         (R )
+Frame                    0000 ????         (R )
+GRP0                     0000 ????         (R )
+Start                    0000 ????         (R )
+RESP0                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+--- 8 Unresolved Symbols
+
+
+jeff-jetton-examples/hpos1.asm (29): error: Unknown Mnemonic 'CLEAN_START'.
+jeff-jetton-examples/hpos1.asm (46): error: Unknown Mnemonic 'VERTICAL_SYNC'.
+
+Fatal assembly error: Source is not resolvable.

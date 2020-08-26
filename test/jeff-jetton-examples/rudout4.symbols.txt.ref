@@ -1,0 +1,13 @@
+--- Symbol List (sorted by symbol)
+COLUBK                   0000 ????         (R )
+COLUPF                   0000 ????         (R )
+INEEPROM                 0000                  
+INTIM                    0000 ????         (R )
+PF1                      0000 ????         (R )
+ShowNum                  f007              (R )
+Start                    0000 ????         (R )
+T1024T                   0000 ????         (R )
+Ticks                    00ff              (R )
+Timer                    0000 ????         (R )
+TimWait                  f012              (R )
+--- End of Symbol List.

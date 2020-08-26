@@ -1,0 +1,58 @@
+------- FILE jeff-jetton-examples/rudout4.asm LEVEL 1 PASS 2
+      1  10000 ????						;---------------------------------------------------------------
+      2  10000 ????						;
+      3  10000 ????						; Rudimentary output, part 4
+      4  10000 ????						;
+      5  10000 ????						; Using the timer to cycle through binary numbers
+      6  10000 ????						;
+      7  10000 ????						;---------------------------------------------------------------
+      8  10000 ????
+      9  10000 ????				       processor	6502
+     10  10000 ????				       include	"../_includes/vcs.h"
+     11  10000 ????				       include	"../_includes/macro.h"
+     12  10000 ????
+     13  10000 ????
+     14  10000 ????						; Timer constants (adjust to taste)
+     15  10000 ????		00 00	    Timer      equ	T1024T	; Use the 1024 cycles-per-tick timer
+     16  10000 ????		00 ff	    Ticks      equ	$FF	; Interval is 255 ticks
+     17  10000 ????						;
+     18  10000 ????						; 255 * 1024 = 261,120 cycles!
+     19  10000 ????						; That's as slow as we can time in one
+     20  10000 ????						; single timer shot, yet it's still
+     21  10000 ????						; under 1/4 of a second
+     22  10000 ????
+     23  f000					      org	$F000
+     24  f000
+jeff-jetton-examples/rudout4.asm (25): error: Unknown Mnemonic 'CLEAN_START'.
+     25  f000				   Start      CLEAN_START
+     26  f000
+     27  f000							; Black background
+     28  f000		       a9 00		      lda	#0
+     29  f002		       8d 00 00 	      sta	COLUBK
+     30  f005
+     31  f005							; We'll track our displayed number in Y
+     32  f005							; Start it out at zero
+     33  f005		       a0 00		      ldy	#0
+     34  f007
+     35  f007
+     36  f007				   ShowNum		; Load current number into playfield
+     37  f007		       8c 00 00 	      sty	PF1
+     38  f00a							; Set playfield color to that number too
+     39  f00a		       8c 00 00 	      sty	COLUPF
+     40  f00d
+     41  f00d							; Init timer
+     42  f00d		       a9 ff		      lda	#Ticks
+     43  f00f		       8d 00 00 	      sta	Timer
+     44  f012
+     45  f012							; Timer done?
+     46  f012		       ad 00 00    TimWait    lda	INTIM
+     47  f015		       d0 fb		      bne	TimWait	; Nope? Keep checking
+     48  f017
+     49  f017							; Finally done! Increment Y and loop
+     50  f017		       c8		      iny
+     51  f018		       4c 07 f0 	      jmp	ShowNum
+     52  f01b
+     53  f01b
+     54  fffc					      org	$FFFC
+     55  fffc		       00 00		      .word.w	Start
+     56  fffe		       00 00		      .word.w	Start

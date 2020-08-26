@@ -1,0 +1,262 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Rudimentary output, part 1
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ; Display a static number in binary using playfield graphics
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Standard includes
+
+0MEMORYADDR0         include vcs.h
+
+char 'v'
+stackarg 0 (@0)
+Warning: Unable to open 'vcs.h'
+0MEMORYADDR0         include macro.h
+
+char 'm'
+stackarg 0 (@0)
+Warning: Unable to open 'macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; Define some color constants
+
+0MEMORYADDR0 MyBGCol equ $04
+
+char '$'
+stackarg 4 (@0)
+0MEMORYADDR0 MyPFCol equ $46
+
+char '$'
+stackarg 70 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Standard initialization
+
+0MEMORYADDR0 Start   CLEAN_START 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set colors
+
+0MEMORYADDR0         lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 4 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #MyPFCol
+
+char '#'
+char 'M'
+stackarg 70 (@0)
+0MEMORYADDR0         sta COLUPF
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 LoadA   ; Load A with the number we want
+
+0MEMORYADDR0         ; and show it in a playfield
+
+0MEMORYADDR0         lda #%10110111
+
+char '#'
+char '%'
+stackarg 183 (@0)
+0MEMORYADDR0         sta PF1
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp LoadA       ; Do it all over again
+
+char 'L'
+stackarg 61450 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Rudimentary output, part 1
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ; Display a static number in binary using playfield graphics
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Standard includes
+
+0MEMORYADDR0         include vcs.h
+
+char 'v'
+stackarg 0 (@0)
+Warning: Unable to open 'vcs.h'
+0MEMORYADDR0         include macro.h
+
+char 'm'
+stackarg 0 (@0)
+Warning: Unable to open 'macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; Define some color constants
+
+0MEMORYADDR0 MyBGCol equ $04
+
+char '$'
+stackarg 4 (@0)
+0MEMORYADDR0 MyPFCol equ $46
+
+char '$'
+stackarg 70 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Standard initialization
+
+0MEMORYADDR0 Start   CLEAN_START 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set colors
+
+0MEMORYADDR0         lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 4 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #MyPFCol
+
+char '#'
+char 'M'
+stackarg 70 (@0)
+0MEMORYADDR0         sta COLUPF
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 LoadA   ; Load A with the number we want
+
+0MEMORYADDR0         ; and show it in a playfield
+
+0MEMORYADDR0         lda #%10110111
+
+char '#'
+char '%'
+stackarg 183 (@0)
+0MEMORYADDR0         sta PF1
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp LoadA       ; Do it all over again
+
+char 'L'
+stackarg 61450 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF1                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+vcs.h                    0000 ????         (R )
+macro.h                  0000 ????         (R )
+Start                    0000 ????         (R )
+--- 6 Unresolved Symbols
+
+
+jeff-jetton-examples/rudout1.asm (24): error: Unknown Mnemonic 'CLEAN_START'.
+
+Fatal assembly error: Source is not resolvable.

@@ -1,0 +1,66 @@
+------- FILE jeff-jetton-examples/rudout5.asm LEVEL 1 PASS 3
+      1  10000 ????						;---------------------------------------------------------------
+      2  10000 ????						;
+      3  10000 ????						; Rudimentary output, part 5
+      4  10000 ????						;
+      5  10000 ????						; Running multiple shots of the timer by using a subroutine
+      6  10000 ????						;
+      7  10000 ????						;---------------------------------------------------------------
+      8  10000 ????
+      9  10000 ????				       processor	6502
+     10  10000 ????				       include	"../_includes/vcs.h"
+     11  10000 ????				       include	"../_includes/macro.h"
+     12  10000 ????
+     13  10000 ????
+     14  10000 ????						; Timer constants (adjust to taste)
+     15  10000 ????		00 00	    Timer      equ	T1024T	; Use the 1024 cycles-per-tick timer
+     16  10000 ????		00 ff	    Ticks      equ	$FF	; Interval is 255 ticks
+     17  10000 ????
+     18  10000 ????
+     19  f000					      org	$F000
+     20  f000
+jeff-jetton-examples/rudout5.asm (21): error: Unknown Mnemonic 'CLEAN_START'.
+     21  f000				   Start      CLEAN_START
+     22  f000
+     23  f000							; Black background
+     24  f000		       a9 00		      lda	#0
+     25  f002		       8d 00 00 	      sta	COLUBK
+     26  f005
+     27  f005							; Start count at zero
+     28  f005		       a8		      tay
+     29  f006
+     30  f006
+     31  f006				   ShowNum		; Load current number into playfield
+     32  f006		       8c 00 00 	      sty	PF1
+     33  f009							; Set playfield color to that number too
+     34  f009		       8c 00 00 	      sty	COLUPF
+     35  f00c
+     36  f00c							; Call the timer subroutine four times
+     37  f00c		       20 1c f0 	      jsr	OneShot
+     38  f00f		       20 1c f0 	      jsr	OneShot
+     39  f012		       20 1c f0 	      jsr	OneShot
+     40  f015		       20 1c f0 	      jsr	OneShot
+     41  f018
+     42  f018							; Increment Y and loop back up
+     43  f018		       c8		      iny
+     44  f019		       4c 06 f0 	      jmp	ShowNum
+     45  f01c
+     46  f01c
+     47  f01c
+     48  f01c
+     49  f01c				   OneShot		; The timer subroutine:
+     50  f01c		       a9 ff		      lda	#Ticks
+     51  f01e		       8d 00 00 	      sta	Timer
+     52  f021
+     53  f021		       ad 00 00    TimWait    lda	INTIM
+     54  f024		       d0 fb		      bne	TimWait
+     55  f026
+     56  f026							; Done? Go back from whence we came...
+     57  f026		       60		      rts
+     58  f027
+     59  f027
+     60  f027
+     61  fffc					      org	$FFFC
+     62  fffc		       00 00		      .word.w	Start
+     63  fffe		       00 00		      .word.w	Start
+     64  10000

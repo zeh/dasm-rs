@@ -1,0 +1,21 @@
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF0                      0000 ????         (R )
+PF1                      0000 ????         (R )
+PF2                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+VBLANK                   0000 ????         (R )
+CTRLPF                   0000 ????         (R )
+Start                    0000 ????         (R )
+VSYNC                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+--- 10 Unresolved Symbols
+
+
+jeff-jetton-examples/scan2.asm (20): error: Unknown Mnemonic 'CLEAN_START'.
+
+Fatal assembly error: Source is not resolvable.

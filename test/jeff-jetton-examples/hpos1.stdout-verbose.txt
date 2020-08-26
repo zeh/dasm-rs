@@ -1,0 +1,167 @@
+
+START OF PASS: 1
+ Including file "jeff-jetton-examples/hpos1.asm"
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         f000                            f000                           
+----------------------------------------------------------------------
+17 references to unknown symbols.
+19 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+ - Expression in a DC not resolved.
+ - Label defined after it has been referenced (forward reference).
+
+--- Symbol List (sorted by symbol)
+COLUBK                   0000 ????         (R )
+COLUP0                   0000 ????         (R )
+DrawP0                   f03e              (R )
+Frame                    0000 ????         (R )
+GRP0                     0000 ????         (R )
+HLoop                    f019              (R )
+INEEPROM                 0000                  
+MyBGCol                  008e              (R )
+MyP0Col                  0050              (R )
+OvScan                   f052              (R )
+PHeight                  0009              (R )
+RESP0                    0000 ????         (R )
+Sprite                   f05b              (R )
+Start                    0000 ????         (R )
+StartX                   000a              (R )
+StartY                   0064              (R )
+VBLANK                   0000 ????         (R )
+VertBl                   f024              (R )
+VizArea                  f031              (R )
+WSYNC                    0000 ????         (R )
+XPos                     0081              (R )
+YPos                     0080              (R )
+--- End of Symbol List.
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+COLUP0                   0000 ????         (R )
+VBLANK                   0000 ????         (R )
+Frame                    0000 ????         (R )
+GRP0                     0000 ????         (R )
+Start                    0000 ????         (R )
+RESP0                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+--- 8 Unresolved Symbols
+
+
+START OF PASS: 2
+ Including file "jeff-jetton-examples/hpos1.asm"
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         f000                            f000                           
+----------------------------------------------------------------------
+15 references to unknown symbols.
+15 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+ - Expression in a DC not resolved.
+
+--- Symbol List (sorted by symbol)
+COLUBK                   0000 ????         (R )
+COLUP0                   0000 ????         (R )
+DrawP0                   f03e              (R )
+Frame                    0000 ????         (R )
+GRP0                     0000 ????         (R )
+HLoop                    f019              (R )
+INEEPROM                 0000                  
+MyBGCol                  008e              (R )
+MyP0Col                  0050              (R )
+OvScan                   f052              (R )
+PHeight                  0009              (R )
+RESP0                    0000 ????         (R )
+Sprite                   f05b              (R )
+Start                    0000 ????         (R )
+StartX                   000a              (R )
+StartY                   0064              (R )
+VBLANK                   0000 ????         (R )
+VertBl                   f024              (R )
+VizArea                  f031              (R )
+WSYNC                    0000 ????         (R )
+XPos                     0081              (R )
+YPos                     0080              (R )
+--- End of Symbol List.
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+COLUP0                   0000 ????         (R )
+VBLANK                   0000 ????         (R )
+Frame                    0000 ????         (R )
+GRP0                     0000 ????         (R )
+Start                    0000 ????         (R )
+RESP0                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+--- 8 Unresolved Symbols
+
+
+START OF PASS: 3
+ Including file "jeff-jetton-examples/hpos1.asm"
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         f000                            f000                           
+----------------------------------------------------------------------
+15 references to unknown symbols.
+15 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+ - Expression in a DC not resolved.
+
+--- Symbol List (sorted by symbol)
+COLUBK                   0000 ????         (R )
+COLUP0                   0000 ????         (R )
+DrawP0                   f03e              (R )
+Frame                    0000 ????         (R )
+GRP0                     0000 ????         (R )
+HLoop                    f019              (R )
+INEEPROM                 0000                  
+MyBGCol                  008e              (R )
+MyP0Col                  0050              (R )
+OvScan                   f052              (R )
+PHeight                  0009              (R )
+RESP0                    0000 ????         (R )
+Sprite                   f05b              (R )
+Start                    0000 ????         (R )
+StartX                   000a              (R )
+StartY                   0064              (R )
+VBLANK                   0000 ????         (R )
+VertBl                   f024              (R )
+VizArea                  f031              (R )
+WSYNC                    0000 ????         (R )
+XPos                     0081              (R )
+YPos                     0080              (R )
+--- End of Symbol List.
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+COLUP0                   0000 ????         (R )
+VBLANK                   0000 ????         (R )
+Frame                    0000 ????         (R )
+GRP0                     0000 ????         (R )
+Start                    0000 ????         (R )
+RESP0                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+--- 8 Unresolved Symbols
+
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+COLUP0                   0000 ????         (R )
+VBLANK                   0000 ????         (R )
+Frame                    0000 ????         (R )
+GRP0                     0000 ????         (R )
+Start                    0000 ????         (R )
+RESP0                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+--- 8 Unresolved Symbols
+
+
+jeff-jetton-examples/hpos1.asm (29): error: Unknown Mnemonic 'CLEAN_START'.
+jeff-jetton-examples/hpos1.asm (46): error: Unknown Mnemonic 'VERTICAL_SYNC'.
+
+Fatal assembly error: Source is not resolvable.

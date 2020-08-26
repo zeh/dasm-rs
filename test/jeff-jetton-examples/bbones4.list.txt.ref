@@ -1,0 +1,65 @@
+------- FILE jeff-jetton-examples/bbones4.asm LEVEL 1 PASS 1
+      1  0000 ????						;-------------------------------------------------------
+      2  0000 ????						;
+      3  0000 ????						; Bare-Bones Program #4
+      4  0000 ????						;
+      5  0000 ????						; Initialize VCS memory and registers before starting
+      6  0000 ????						; (Using methods that are more idiomatic to assembler)
+      7  0000 ????						;
+      8  0000 ????						;-------------------------------------------------------
+      9  0000 ????
+     10  0000 ????				      processor	6502
+     11  0000 ????
+     12  0000 ????	       00 09	   COLUBK     equ	$09
+     13  0000 ????	       00 d0	   MyBGCol    equ	$D0
+     14  0000 ????
+     15  f000					      org	$F000
+     16  f000
+     17  f000
+     18  f000							; Basic set-up
+     19  f000
+     20  f000		       78	   Start      sei		; Prevent interrupts
+     21  f001		       d8		      cld		; Clear "decimal" mode
+     22  f002		       a2 ff		      ldx	#$FF	; Set the...
+     23  f004		       9a		      txs		; ...stack pointer
+     24  f005
+     25  f005
+     26  f005							; Initialize the "zero-page"
+     27  f005
+     28  f005		       a9 00		      lda	#0	; Keep a zero in the A register
+     29  f007							; The value in X is still $FF
+     30  f007							; from the above ldx instruction
+     31  f007
+     32  f007							; Our loop goes backwards from
+     33  f007							; $FF down to $00
+     34  f007		       95 00	   Init       sta	0,x	; Put A's zero into address $00 + X
+     35  f009		       ca		      dex		; Decrement X
+     36  f00a		       d0 fb		      bne	Init	; Loop as long as X isn't zero.
+     37  f00c							; Notice that, unlike last time, we
+     38  f00c							; didn't do a cmp ("CoMPare") before
+     39  f00c							; our bne ("Branch if Not Equal")
+     40  f00c							; operation. Really, all bne does
+     41  f00c							; is check the "zero flag". So
+     42  f00c							; you can also translate it to
+     43  f00c							; "Branch (if the last math operation
+     44  f00c							; gave a result that is) Not Equal
+     45  f00c							; (to zero)"
+     46  f00c
+     47  f00c		       85 00		      sta	$00	; A final zero into address $00
+     48  f00e
+     49  f00e							; Init section now takes 9 bytes and 2,045
+     50  f00e							; cycles. A savings of 5 bytes (36% smaller)
+     51  f00e							; and 1,022 cycles (33% faster). Not bad!
+     52  f00e
+     53  f00e
+     54  f00e							; Main loop
+     55  f00e
+     56  f00e		       a9 d0	   SetTIA     lda	#MyBGCol
+     57  f010		       85 09		      sta	COLUBK
+     58  f012
+     59  f012		       4c 0e f0 	      jmp	SetTIA
+     60  f015
+     61  fffc					      org	$FFFC
+     62  fffc		       00 f0		      .word.w	Start
+     63  fffe		       00 f0		      .word.w	Start
+     64  10000

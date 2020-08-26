@@ -35,6 +35,9 @@ if [[ -z "$SUFFIX" ]]; then
   rm -r ./channel-f/*.txt
   rm -r ./channel-f/*.bin
   rm -r ./channel-f/*.hex
+  rm -r ./jeff-jetton-examples/*.txt
+  rm -r ./jeff-jetton-examples/*.bin
+  rm -r ./jeff-jetton-examples/*.hex
 else
   echo "... Removing all previously generated files with suffix $SUFFIX"
   rm *$SUFFIX
@@ -242,95 +245,100 @@ custom_files=(
   "atari7800/spritesample.asm"
   "channel-f/lights.asm"
   "channel-f/tetris.asm"
+  "jeff-jetton-examples/*.asm"
 )
 custom_params=(
   "-f3 -I../machines/atari2600/"
   "-f3 -I../machines/atari7800/"
   "-f3 -I../../machines/channel-f/"
   "-f3 -I../../machines/channel-f/"
+  "-f3"
 )
 
 errors=0
 
 for ((i = 0; i < ${#custom_files[@]}; i++)); do
-  FILE="${custom_files[i]}"
-  NAME="${FILE//.asm/}"
+  FILE_MASK="${custom_files[i]}"
 
-  # Compile .asm into .bin, .list.txt, and symbols.txt
-  $DASM "$NAME.asm" ${custom_params[i]} -o"$NAME.bin$SUFFIX" -l"$NAME.list.txt$SUFFIX" -s"$NAME.symbols.txt$SUFFIX" -DINEEPROM 2>&1 | \
-    tee "$NAME.stdout.txt$SUFFIX" >/dev/null
-    # | \grep -vE 'error|Complete|Fatal|Warning^?'
-  $DASM "$NAME.asm" -v4 ${custom_params[i]} -o/dev/null -DINEEPROM > "$NAME.stdout-verbose.txt$SUFFIX" 2>&1
-  $DASM "$NAME.asm" -d1 ${custom_params[i]} -o/dev/null -DINEEPROM > "$NAME.stdout-debug.txt$SUFFIX" 2>&1
+  for j in ${FILE_MASK}; do
+    NAME="${j//.asm/}"
 
-  # Obfuscate memory addresses (they change every time)
-  sed -i -r 's/^[0-9a-f]{12} /0MEMORYADDR0 /g' "$NAME.stdout-debug.txt$SUFFIX"
+    # Compile .asm into .bin, .list.txt, and symbols.txt
+    $DASM "$NAME.asm" ${custom_params[i]} -o"$NAME.bin$SUFFIX" -l"$NAME.list.txt$SUFFIX" -s"$NAME.symbols.txt$SUFFIX" -DINEEPROM 2>&1 | \
+      tee "$NAME.stdout.txt$SUFFIX" >/dev/null
+      # | \grep -vE 'error|Complete|Fatal|Warning^?'
+    $DASM "$NAME.asm" -v4 ${custom_params[i]} -o/dev/null -DINEEPROM > "$NAME.stdout-verbose.txt$SUFFIX" 2>&1
+    $DASM "$NAME.asm" -d1 ${custom_params[i]} -o/dev/null -DINEEPROM > "$NAME.stdout-debug.txt$SUFFIX" 2>&1
 
-  # Obfuscate line numbers for error messages (useless)
-  sed -i -r 's/.rs:[0-9]+:[0-9]+$/.rs:0000:0/g' "$NAME.stdout.txt$SUFFIX"
-  sed -i -r 's/.rs:[0-9]+:[0-9]+$/.rs:0000:0/g' "$NAME.stdout-verbose.txt$SUFFIX"
-  sed -i -r 's/.rs:[0-9]+:[0-9]+$/.rs:0000:0/g' "$NAME.stdout-debug.txt$SUFFIX"
+    # Obfuscate memory addresses (they change every time)
+    sed -i -r 's/^[0-9a-f]{12} /0MEMORYADDR0 /g' "$NAME.stdout-debug.txt$SUFFIX"
 
-  # Generate .hex file from .bin
-  $FTOHEX 1 "$NAME.bin$SUFFIX" "$NAME.hex$SUFFIX"
+    # Obfuscate line numbers for error messages (useless)
+    sed -i -r 's/.rs:[0-9]+:[0-9]+$/.rs:0000:0/g' "$NAME.stdout.txt$SUFFIX"
+    sed -i -r 's/.rs:[0-9]+:[0-9]+$/.rs:0000:0/g' "$NAME.stdout-verbose.txt$SUFFIX"
+    sed -i -r 's/.rs:[0-9]+:[0-9]+$/.rs:0000:0/g' "$NAME.stdout-debug.txt$SUFFIX"
 
-  # Display results
-  echo -ne "  * ${NAME}: "
+    # Generate .hex file from .bin
+    $FTOHEX 1 "$NAME.bin$SUFFIX" "$NAME.hex$SUFFIX"
 
-  if [[ -z "$SUFFIX" ]]; then
-    cmp -s "$NAME.bin" "$NAME.bin.ref"
-    if [ $? == 0 ]; then
-      echo -ne "bin pass; "
+    # Display results
+    echo -ne "  * ${NAME}: "
+
+    if [[ -z "$SUFFIX" ]]; then
+      cmp -s "$NAME.bin" "$NAME.bin.ref"
+      if [ $? == 0 ]; then
+        echo -ne "bin pass; "
+      else
+        echo -ne "bin $FAIL_LABEL; "
+        errors=$((errors + 1))
+      fi
+      cmp -s "$NAME.hex" "$NAME.hex.ref"
+      if [ $? == 0 ]; then
+        echo -ne "hex pass; "
+      else
+        echo -ne "hex $FAIL_LABEL; "
+        errors=$((errors + 1))
+      fi
+      cmp -s "$NAME.list.txt" "$NAME.list.txt.ref"
+      if [ $? == 0 ]; then
+        echo -ne "list pass; "
+      else
+        echo -ne "list $FAIL_LABEL; "
+        errors=$((errors + 1))
+      fi
+      cmp -s "$NAME.symbols.txt" "$NAME.symbols.txt.ref"
+      if [ $? == 0 ]; then
+        echo -ne "symbols pass; "
+      else
+        echo -ne "symbols $FAIL_LABEL; "
+        errors=$((errors + 1))
+      fi
+      cmp -s "$NAME.stdout.txt" "$NAME.stdout.txt.ref"
+      if [ $? == 0 ]; then
+        echo -ne "stdout pass; "
+      else
+        echo -ne "stdout $FAIL_LABEL; "
+        errors=$((errors + 1))
+      fi
+      cmp -s "$NAME.stdout-verbose.txt" "$NAME.stdout-verbose.txt.ref"
+      if [ $? == 0 ]; then
+        echo -ne "stdout-verbose pass; "
+      else
+        echo -ne "stdout-verbose $FAIL_LABEL; "
+        errors=$((errors + 1))
+      fi
+      cmp -s "$NAME.stdout-debug.txt" "$NAME.stdout-debug.txt.ref"
+      if [ $? == 0 ]; then
+        echo -ne "stdout-debug pass. "
+      else
+        echo -ne "stdout-debug $FAIL_LABEL. "
+        errors=$((errors + 1))
+      fi
     else
-      echo -ne "bin $FAIL_LABEL; "
-      errors=$((errors + 1))
+      echo -ne "generated with suffix $SUFFIX"
     fi
-    cmp -s "$NAME.hex" "$NAME.hex.ref"
-    if [ $? == 0 ]; then
-      echo -ne "hex pass; "
-    else
-      echo -ne "hex $FAIL_LABEL; "
-      errors=$((errors + 1))
-    fi
-    cmp -s "$NAME.list.txt" "$NAME.list.txt.ref"
-    if [ $? == 0 ]; then
-      echo -ne "list pass; "
-    else
-      echo -ne "list $FAIL_LABEL; "
-      errors=$((errors + 1))
-    fi
-    cmp -s "$NAME.symbols.txt" "$NAME.symbols.txt.ref"
-    if [ $? == 0 ]; then
-      echo -ne "symbols pass; "
-    else
-      echo -ne "symbols $FAIL_LABEL; "
-      errors=$((errors + 1))
-    fi
-    cmp -s "$NAME.stdout.txt" "$NAME.stdout.txt.ref"
-    if [ $? == 0 ]; then
-      echo -ne "stdout pass; "
-    else
-      echo -ne "stdout $FAIL_LABEL; "
-      errors=$((errors + 1))
-    fi
-    cmp -s "$NAME.stdout-verbose.txt" "$NAME.stdout-verbose.txt.ref"
-    if [ $? == 0 ]; then
-      echo -ne "stdout-verbose pass; "
-    else
-      echo -ne "stdout-verbose $FAIL_LABEL; "
-      errors=$((errors + 1))
-    fi
-    cmp -s "$NAME.stdout-debug.txt" "$NAME.stdout-debug.txt.ref"
-    if [ $? == 0 ]; then
-      echo -ne "stdout-debug pass. "
-    else
-      echo -ne "stdout-debug $FAIL_LABEL. "
-      errors=$((errors + 1))
-    fi
-  else
-    echo -ne "generated with suffix $SUFFIX"
-  fi
-  echo
+    echo
+  done
 done
 
 echo

@@ -1,0 +1,46 @@
+------- FILE jeff-jetton-examples/rudout1.asm LEVEL 1 PASS 2
+      1  10000 ????						;---------------------------------------------------------------
+      2  10000 ????						;
+      3  10000 ????						; Rudimentary output, part 1
+      4  10000 ????						;
+      5  10000 ????						; Display a static number in binary using playfield graphics
+      6  10000 ????						;
+      7  10000 ????						;---------------------------------------------------------------
+      8  10000 ????
+      9  10000 ????				       processor	6502
+     10  10000 ????
+     11  10000 ????						; Standard includes
+     12  10000 ????				       include	vcs.h
+     13  10000 ????				       include	macro.h
+     14  10000 ????
+     15  10000 ????
+     16  10000 ????						; Define some color constants
+     17  10000 ????		00 04	    MyBGCol    equ	$04
+     18  10000 ????		00 46	    MyPFCol    equ	$46
+     19  10000 ????
+     20  10000 ????
+     21  f000					      org	$F000
+     22  f000
+     23  f000							; Standard initialization
+jeff-jetton-examples/rudout1.asm (24): error: Unknown Mnemonic 'CLEAN_START'.
+     24  f000				   Start      CLEAN_START
+     25  f000
+     26  f000							; Set colors
+     27  f000		       a9 04		      lda	#MyBGCol
+     28  f002		       8d 00 00 	      sta	COLUBK
+     29  f005		       a9 46		      lda	#MyPFCol
+     30  f007		       8d 00 00 	      sta	COLUPF
+     31  f00a
+     32  f00a				   LoadA		; Load A with the number we want
+     33  f00a							; and show it in a playfield
+     34  f00a		       a9 b7		      lda	#%10110111
+     35  f00c		       8d 00 00 	      sta	PF1
+     36  f00f
+     37  f00f		       4c 0a f0 	      jmp	LoadA	; Do it all over again
+     38  f012
+     39  fffc					      org	$FFFC
+     40  fffc		       00 00		      .word.w	Start
+     41  fffe		       00 00		      .word.w	Start
+     42  10000
+     43  10000
+     44  10000

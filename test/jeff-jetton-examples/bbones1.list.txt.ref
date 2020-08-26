@@ -1,0 +1,13 @@
+------- FILE jeff-jetton-examples/bbones1.asm LEVEL 1 PASS 1
+      1  0000					      processor	6502
+      2  0000 ????
+      3  f000					      org	$F000
+      4  f000
+      5  f000		       a9 ce		      lda	#$CE
+      6  f002		       85 09		      sta	$09
+      7  f004
+      8  f004		       4c 00 f0 	      jmp	$F000
+      9  f007
+     10  fffc					      org	$FFFC
+     11  fffc		       00 f0		      .word.w	$F000
+     12  fffe		       00 f0		      .word.w	$F000

@@ -1,0 +1,470 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Rudimentary input, part 2
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ; Display joystick input
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; Color constants
+
+0MEMORYADDR0 BG_Norm equ $72
+
+char '$'
+stackarg 114 (@0)
+0MEMORYADDR0 BG_Fire equ $2A
+
+char '$'
+stackarg 42 (@0)
+0MEMORYADDR0 MyPFCol equ $18
+
+char '$'
+stackarg 24 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0 Start   CLEAN_START 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set playfield color
+
+0MEMORYADDR0         lda #MyPFCol
+
+char '#'
+char 'M'
+stackarg 24 (@0)
+0MEMORYADDR0         sta COLUPF
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 Main    lda SWCHA       ; Put joystick directional state (port A) into A
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         sta PF1         ; Store it in playfield
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         lda INPT4       ; Store trigger state for player 0 in A
+
+char 'I'
+stackarg 0 (@0)
+0MEMORYADDR0                         ; Normally the high bit (bit 7) is set, which
+
+0MEMORYADDR0                         ; the 6502 flag register considers to be the
+
+0MEMORYADDR0                         ; indicator of a negative number.
+
+0MEMORYADDR0                         ; When the trigger is pressed, bit 7 clears,
+
+0MEMORYADDR0                         ; making the byte "positive"
+
+0MEMORYADDR0                         
+
+0MEMORYADDR0         bpl TrigOn      ; Branch if it's positive (negative flag clear)
+
+char 'T'
+stackarg 0 (@0)
+0MEMORYADDR0         lda BG_Norm     ; ...otherwise, use normal background color
+
+char 'B'
+stackarg 114 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         jmp Main
+
+char 'M'
+stackarg 61445 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0 TrigOn  lda BG_Fire     ; Use the "fire" background color
+
+redo 13: 'TrigOn' 0045 0004
+char 'B'
+stackarg 42 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         jmp Main        ; Loop back up again
+
+char 'M'
+stackarg 61445 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Rudimentary input, part 2
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ; Display joystick input
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; Color constants
+
+0MEMORYADDR0 BG_Norm equ $72
+
+char '$'
+stackarg 114 (@0)
+0MEMORYADDR0 BG_Fire equ $2A
+
+char '$'
+stackarg 42 (@0)
+0MEMORYADDR0 MyPFCol equ $18
+
+char '$'
+stackarg 24 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0 Start   CLEAN_START 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set playfield color
+
+0MEMORYADDR0         lda #MyPFCol
+
+char '#'
+char 'M'
+stackarg 24 (@0)
+0MEMORYADDR0         sta COLUPF
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 Main    lda SWCHA       ; Put joystick directional state (port A) into A
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         sta PF1         ; Store it in playfield
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         lda INPT4       ; Store trigger state for player 0 in A
+
+char 'I'
+stackarg 0 (@0)
+0MEMORYADDR0                         ; Normally the high bit (bit 7) is set, which
+
+0MEMORYADDR0                         ; the 6502 flag register considers to be the
+
+0MEMORYADDR0                         ; indicator of a negative number.
+
+0MEMORYADDR0                         ; When the trigger is pressed, bit 7 clears,
+
+0MEMORYADDR0                         ; making the byte "positive"
+
+0MEMORYADDR0                         
+
+0MEMORYADDR0         bpl TrigOn      ; Branch if it's positive (negative flag clear)
+
+char 'T'
+stackarg 61464 (@0)
+0MEMORYADDR0         lda BG_Norm     ; ...otherwise, use normal background color
+
+char 'B'
+stackarg 114 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         jmp Main
+
+char 'M'
+stackarg 61445 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0 TrigOn  lda BG_Fire     ; Use the "fire" background color
+
+char 'B'
+stackarg 42 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         jmp Main        ; Loop back up again
+
+char 'M'
+stackarg 61445 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Rudimentary input, part 2
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ; Display joystick input
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; Color constants
+
+0MEMORYADDR0 BG_Norm equ $72
+
+char '$'
+stackarg 114 (@0)
+0MEMORYADDR0 BG_Fire equ $2A
+
+char '$'
+stackarg 42 (@0)
+0MEMORYADDR0 MyPFCol equ $18
+
+char '$'
+stackarg 24 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0 Start   CLEAN_START 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set playfield color
+
+0MEMORYADDR0         lda #MyPFCol
+
+char '#'
+char 'M'
+stackarg 24 (@0)
+0MEMORYADDR0         sta COLUPF
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 Main    lda SWCHA       ; Put joystick directional state (port A) into A
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         sta PF1         ; Store it in playfield
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         lda INPT4       ; Store trigger state for player 0 in A
+
+char 'I'
+stackarg 0 (@0)
+0MEMORYADDR0                         ; Normally the high bit (bit 7) is set, which
+
+0MEMORYADDR0                         ; the 6502 flag register considers to be the
+
+0MEMORYADDR0                         ; indicator of a negative number.
+
+0MEMORYADDR0                         ; When the trigger is pressed, bit 7 clears,
+
+0MEMORYADDR0                         ; making the byte "positive"
+
+0MEMORYADDR0                         
+
+0MEMORYADDR0         bpl TrigOn      ; Branch if it's positive (negative flag clear)
+
+char 'T'
+stackarg 61464 (@0)
+0MEMORYADDR0         lda BG_Norm     ; ...otherwise, use normal background color
+
+char 'B'
+stackarg 114 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         jmp Main
+
+char 'M'
+stackarg 61445 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0 TrigOn  lda BG_Fire     ; Use the "fire" background color
+
+char 'B'
+stackarg 42 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         jmp Main        ; Loop back up again
+
+char 'M'
+stackarg 61445 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF1                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+Start                    0000 ????         (R )
+INPT4                    0000 ????         (R )
+SWCHA                    0000 ????         (R )
+--- 6 Unresolved Symbols
+
+
+jeff-jetton-examples/rudin2.asm (22): error: Unknown Mnemonic 'CLEAN_START'.
+
+Fatal assembly error: Source is not resolvable.

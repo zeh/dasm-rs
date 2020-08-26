@@ -1,0 +1,132 @@
+
+START OF PASS: 1
+ Including file "jeff-jetton-examples/rudout5.asm"
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         f000                            f000                           
+----------------------------------------------------------------------
+12 references to unknown symbols.
+12 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+ - Expression in a DC not resolved.
+ - Label defined after it has been referenced (forward reference).
+
+--- Symbol List (sorted by symbol)
+COLUBK                   0000 ????         (R )
+COLUPF                   0000 ????         (R )
+INEEPROM                 0000                  
+INTIM                    0000 ????         (R )
+OneShot                  f01c              (R )
+PF1                      0000 ????         (R )
+ShowNum                  f006              (R )
+Start                    0000 ????         (R )
+T1024T                   0000 ????         (R )
+Ticks                    00ff              (R )
+Timer                    0000 ????         (R )
+TimWait                  f021              (R )
+--- End of Symbol List.
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF1                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+Timer                    0000 ????         (R )
+Start                    0000 ????         (R )
+T1024T                   0000 ????         (R )
+INTIM                    0000 ????         (R )
+--- 7 Unresolved Symbols
+
+
+START OF PASS: 2
+ Including file "jeff-jetton-examples/rudout5.asm"
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         f000                            f000                           
+----------------------------------------------------------------------
+8 references to unknown symbols.
+7 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+ - Expression in a DC not resolved.
+
+--- Symbol List (sorted by symbol)
+COLUBK                   0000 ????         (R )
+COLUPF                   0000 ????         (R )
+INEEPROM                 0000                  
+INTIM                    0000 ????         (R )
+OneShot                  f01c              (R )
+PF1                      0000 ????         (R )
+ShowNum                  f006              (R )
+Start                    0000 ????         (R )
+T1024T                   0000 ????         (R )
+Ticks                    00ff              (R )
+Timer                    0000 ????         (R )
+TimWait                  f021              (R )
+--- End of Symbol List.
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF1                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+Timer                    0000 ????         (R )
+Start                    0000 ????         (R )
+T1024T                   0000 ????         (R )
+INTIM                    0000 ????         (R )
+--- 7 Unresolved Symbols
+
+
+START OF PASS: 3
+ Including file "jeff-jetton-examples/rudout5.asm"
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         f000                            f000                           
+----------------------------------------------------------------------
+8 references to unknown symbols.
+7 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+ - Expression in a DC not resolved.
+
+--- Symbol List (sorted by symbol)
+COLUBK                   0000 ????         (R )
+COLUPF                   0000 ????         (R )
+INEEPROM                 0000                  
+INTIM                    0000 ????         (R )
+OneShot                  f01c              (R )
+PF1                      0000 ????         (R )
+ShowNum                  f006              (R )
+Start                    0000 ????         (R )
+T1024T                   0000 ????         (R )
+Ticks                    00ff              (R )
+Timer                    0000 ????         (R )
+TimWait                  f021              (R )
+--- End of Symbol List.
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF1                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+Timer                    0000 ????         (R )
+Start                    0000 ????         (R )
+T1024T                   0000 ????         (R )
+INTIM                    0000 ????         (R )
+--- 7 Unresolved Symbols
+
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF1                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+Timer                    0000 ????         (R )
+Start                    0000 ????         (R )
+T1024T                   0000 ????         (R )
+INTIM                    0000 ????         (R )
+--- 7 Unresolved Symbols
+
+
+jeff-jetton-examples/rudout5.asm (21): error: Unknown Mnemonic 'CLEAN_START'.
+
+Fatal assembly error: Source is not resolvable.

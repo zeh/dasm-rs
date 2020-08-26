@@ -1,0 +1,38 @@
+------- FILE jeff-jetton-examples/bbones5.asm LEVEL 1 PASS 2
+      1  10000 ????						;--------------------------------------------------------------
+      2  10000 ????						;
+      3  10000 ????						; Bare-Bones Program #5
+      4  10000 ????						;
+      5  10000 ????						; Using includes to save ourselves a lot of bother
+      6  10000 ????						;
+      7  10000 ????						;--------------------------------------------------------------
+      8  10000 ????
+      9  10000 ????				       processor	6502
+     10  10000 ????
+     11  10000 ????				       include	vcs.h	; Standard definitions
+     12  10000 ????						; for VCS code
+     13  10000 ????
+     14  10000 ????				       include	macro.h	; Useful common macros
+     15  10000 ????
+     16  10000 ????
+     17  10000 ????
+     18  10000 ????		00 88	    MyBGCol    equ	$88
+     19  10000 ????
+     20  f000					      org	$F000
+     21  f000
+jeff-jetton-examples/bbones5.asm (22): error: Unknown Mnemonic 'CLEAN_START'.
+     22  f000				   Start      CLEAN_START		; Macro for efficient initialization
+     23  f000							; Actual code comes from macro.h
+     24  f000
+     25  f000							; Main loop
+     26  f000		       a9 88	   SetTIA     lda	#MyBGCol
+     27  f002		       8d 00 00 	      sta	COLUBK	; Note that we didn't define COLUBK
+     28  f005							; in this file. It's defined in vch.h
+     29  f005
+     30  f005		       4c 00 f0 	      jmp	SetTIA
+     31  f008
+     32  f008
+     33  fffc					      org	$FFFC
+     34  fffc		       00 00		      .word.w	Start
+     35  fffe		       00 00		      .word.w	Start
+     36  10000

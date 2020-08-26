@@ -1,0 +1,677 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Our first attempt to deal with scanlines and create a
+
+0MEMORYADDR0 ; genuine stable frame
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ; Display the playfield on just one horizontal line
+
+0MEMORYADDR0 ; (Instead of all the way down the screen)
+
+0MEMORYADDR0 ; NTSC/PAL autodetect should now work!
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Define our colors
+
+0MEMORYADDR0 MyBGCol equ $72
+
+char '$'
+stackarg 114 (@0)
+0MEMORYADDR0 MyPFCol equ $18
+
+char '$'
+stackarg 24 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0 Start   CLEAN_START
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set colors
+
+0MEMORYADDR0         lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 114 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #MyPFCol
+
+char '#'
+char 'M'
+stackarg 24 (@0)
+0MEMORYADDR0         sta COLUPF
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; Configure playfield to mirror rather than copy
+
+0MEMORYADDR0         lda #%00000001  ; Controlled by the rightmost bit
+
+char '#'
+char '%'
+stackarg 1 (@0)
+0MEMORYADDR0         sta CTRLPF
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0 		
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 Frame
+
+0MEMORYADDR0         ; Begin a frame by telling the TIA to send a "vertical sync"
+
+0MEMORYADDR0         ; signal to the TV, which instructs the TV to move the beam
+
+0MEMORYADDR0         ; back up to the top of the screen.
+
+0MEMORYADDR0         ; The VSYNC signal is sort of a special version of the
+
+0MEMORYADDR0         ; signal the TIA already puts at the end of every line.
+
+0MEMORYADDR0         ; We just need to tell the TIA to switch over to the
+
+0MEMORYADDR0         ; mode where it outputs this variant signal instead of the 
+
+0MEMORYADDR0         ; regular one. Do this by setting the second-from-left bit
+
+0MEMORYADDR0         ; of the VSYNC register address to 1
+
+0MEMORYADDR0         lda #%00000010
+
+char '#'
+char '%'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VSYNC
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; We are required to send the VSYNC signal for the
+
+0MEMORYADDR0         ; equivalent of three scanlines worth of time.
+
+0MEMORYADDR0         ; Anything stored in WSYNC will trigger a wait until
+
+0MEMORYADDR0         ; the end of the current scanline. We'll do three of 'em.
+
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; We've now correctly told the TV that it's time to
+
+0MEMORYADDR0         ; move back up to the top. So turn VSYNC mode off...
+
+0MEMORYADDR0         lda #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         sta VSYNC
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 		
+
+0MEMORYADDR0         
+
+0MEMORYADDR0 ; NTSC frames last a total of 262 scanlines worth of time.
+
+0MEMORYADDR0 ; For PAL systems, it's 312. We've already used up three for
+
+0MEMORYADDR0 ; the VSYNC portion. We'll divide the remaining 259 (or 309)
+
+0MEMORYADDR0 ; into three chunks:
+
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; First, wait for 100 scanlines worth of time.
+
+0MEMORYADDR0         ; During this period, the playfield registers are not set,
+
+0MEMORYADDR0         ; so only the background will show.
+
+0MEMORYADDR0         ldx #100
+
+char '#'
+char '1'
+stackarg 100 (@0)
+0MEMORYADDR0 Chunk1  sta WSYNC       ; Wait for horizontal sync at end of line
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne Chunk1
+
+char 'C'
+stackarg 61476 (@0)
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; At this point, the TV's beam will be scanning somewhere
+
+0MEMORYADDR0         ; near the middle-ish part of the screen.
+
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; Now set some playfield bits
+
+0MEMORYADDR0         lda #%10101010
+
+char '#'
+char '%'
+stackarg 170 (@0)
+0MEMORYADDR0         sta PF0
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         sta PF1
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         sta PF2
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; Continue displaying the playfield for 8 lines
+
+0MEMORYADDR0         ldx #8
+
+char '#'
+char '8'
+stackarg 8 (@0)
+0MEMORYADDR0 Chunk2  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne Chunk2
+
+char 'C'
+stackarg 61495 (@0)
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; Zero out the playfield registers
+
+0MEMORYADDR0         ; Note that X still contains zero at this point
+
+0MEMORYADDR0         txa             ; Transfer X to A
+
+0MEMORYADDR0         sta PF0
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         sta PF1
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         sta PF2
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; Wait around while the last 151 (NTSC) or
+
+0MEMORYADDR0         ; 201 (PAL) scanlines are drawn
+
+0MEMORYADDR0         ldx #151
+
+char '#'
+char '1'
+stackarg 151 (@0)
+0MEMORYADDR0         ;ldx #201       ; Uncomment for PAL
+
+0MEMORYADDR0 Chunk3  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne Chunk3
+
+char 'C'
+stackarg 61513 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp Frame       ; We're ready to start the next frame
+
+char 'F'
+stackarg 61455 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 		
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Our first attempt to deal with scanlines and create a
+
+0MEMORYADDR0 ; genuine stable frame
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ; Display the playfield on just one horizontal line
+
+0MEMORYADDR0 ; (Instead of all the way down the screen)
+
+0MEMORYADDR0 ; NTSC/PAL autodetect should now work!
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Define our colors
+
+0MEMORYADDR0 MyBGCol equ $72
+
+char '$'
+stackarg 114 (@0)
+0MEMORYADDR0 MyPFCol equ $18
+
+char '$'
+stackarg 24 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0 Start   CLEAN_START
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set colors
+
+0MEMORYADDR0         lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 114 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #MyPFCol
+
+char '#'
+char 'M'
+stackarg 24 (@0)
+0MEMORYADDR0         sta COLUPF
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; Configure playfield to mirror rather than copy
+
+0MEMORYADDR0         lda #%00000001  ; Controlled by the rightmost bit
+
+char '#'
+char '%'
+stackarg 1 (@0)
+0MEMORYADDR0         sta CTRLPF
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0 		
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 Frame
+
+0MEMORYADDR0         ; Begin a frame by telling the TIA to send a "vertical sync"
+
+0MEMORYADDR0         ; signal to the TV, which instructs the TV to move the beam
+
+0MEMORYADDR0         ; back up to the top of the screen.
+
+0MEMORYADDR0         ; The VSYNC signal is sort of a special version of the
+
+0MEMORYADDR0         ; signal the TIA already puts at the end of every line.
+
+0MEMORYADDR0         ; We just need to tell the TIA to switch over to the
+
+0MEMORYADDR0         ; mode where it outputs this variant signal instead of the 
+
+0MEMORYADDR0         ; regular one. Do this by setting the second-from-left bit
+
+0MEMORYADDR0         ; of the VSYNC register address to 1
+
+0MEMORYADDR0         lda #%00000010
+
+char '#'
+char '%'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VSYNC
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; We are required to send the VSYNC signal for the
+
+0MEMORYADDR0         ; equivalent of three scanlines worth of time.
+
+0MEMORYADDR0         ; Anything stored in WSYNC will trigger a wait until
+
+0MEMORYADDR0         ; the end of the current scanline. We'll do three of 'em.
+
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; We've now correctly told the TV that it's time to
+
+0MEMORYADDR0         ; move back up to the top. So turn VSYNC mode off...
+
+0MEMORYADDR0         lda #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         sta VSYNC
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 		
+
+0MEMORYADDR0         
+
+0MEMORYADDR0 ; NTSC frames last a total of 262 scanlines worth of time.
+
+0MEMORYADDR0 ; For PAL systems, it's 312. We've already used up three for
+
+0MEMORYADDR0 ; the VSYNC portion. We'll divide the remaining 259 (or 309)
+
+0MEMORYADDR0 ; into three chunks:
+
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; First, wait for 100 scanlines worth of time.
+
+0MEMORYADDR0         ; During this period, the playfield registers are not set,
+
+0MEMORYADDR0         ; so only the background will show.
+
+0MEMORYADDR0         ldx #100
+
+char '#'
+char '1'
+stackarg 100 (@0)
+0MEMORYADDR0 Chunk1  sta WSYNC       ; Wait for horizontal sync at end of line
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne Chunk1
+
+char 'C'
+stackarg 61476 (@0)
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; At this point, the TV's beam will be scanning somewhere
+
+0MEMORYADDR0         ; near the middle-ish part of the screen.
+
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; Now set some playfield bits
+
+0MEMORYADDR0         lda #%10101010
+
+char '#'
+char '%'
+stackarg 170 (@0)
+0MEMORYADDR0         sta PF0
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         sta PF1
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         sta PF2
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; Continue displaying the playfield for 8 lines
+
+0MEMORYADDR0         ldx #8
+
+char '#'
+char '8'
+stackarg 8 (@0)
+0MEMORYADDR0 Chunk2  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne Chunk2
+
+char 'C'
+stackarg 61495 (@0)
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; Zero out the playfield registers
+
+0MEMORYADDR0         ; Note that X still contains zero at this point
+
+0MEMORYADDR0         txa             ; Transfer X to A
+
+0MEMORYADDR0         sta PF0
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         sta PF1
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         sta PF2
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; Wait around while the last 151 (NTSC) or
+
+0MEMORYADDR0         ; 201 (PAL) scanlines are drawn
+
+0MEMORYADDR0         ldx #151
+
+char '#'
+char '1'
+stackarg 151 (@0)
+0MEMORYADDR0         ;ldx #201       ; Uncomment for PAL
+
+0MEMORYADDR0 Chunk3  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne Chunk3
+
+char 'C'
+stackarg 61513 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp Frame       ; We're ready to start the next frame
+
+char 'F'
+stackarg 61455 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 		
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF0                      0000 ????         (R )
+PF1                      0000 ????         (R )
+PF2                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+CTRLPF                   0000 ????         (R )
+Start                    0000 ????         (R )
+VSYNC                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+--- 9 Unresolved Symbols
+
+
+jeff-jetton-examples/scan1.asm (24): error: Unknown Mnemonic 'CLEAN_START'.
+
+Fatal assembly error: Source is not resolvable.

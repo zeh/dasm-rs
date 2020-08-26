@@ -1,0 +1,38 @@
+------- FILE jeff-jetton-examples/rudin1.asm LEVEL 1 PASS 2
+      1  10000 ????						;---------------------------------------------------------------
+      2  10000 ????						;
+      3  10000 ????						; Rudimentary input, part 1
+      4  10000 ????						;
+      5  10000 ????						; Display the console switch register
+      6  10000 ????						;
+      7  10000 ????						;---------------------------------------------------------------
+      8  10000 ????
+      9  10000 ????				       processor	6502
+     10  10000 ????				       include	"../_includes/vcs.h"
+     11  10000 ????				       include	"../_includes/macro.h"
+     12  10000 ????
+     13  10000 ????
+     14  10000 ????						; Color constants
+     15  10000 ????		00 72	    MyBGCol    equ	$72
+     16  10000 ????		00 18	    MyPFCol    equ	$18
+     17  10000 ????
+     18  10000 ????
+     19  f000					      org	$F000
+     20  f000
+jeff-jetton-examples/rudin1.asm (21): error: Unknown Mnemonic 'CLEAN_START'.
+     21  f000				   Start      CLEAN_START
+     22  f000
+     23  f000							; Set colors
+     24  f000		       a9 72		      lda	#MyBGCol
+     25  f002		       8d 00 00 	      sta	COLUBK
+     26  f005		       a9 18		      lda	#MyPFCol
+     27  f007		       8d 00 00 	      sta	COLUPF
+     28  f00a
+     29  f00a
+     30  f00a		       ad 00 00    Main       lda	SWCHB	; Put console state (port B) into A
+     31  f00d		       8d 00 00 	      sta	PF1	; Store it in playfield
+     32  f010		       4c 0a f0 	      jmp	Main
+     33  f013
+     34  fffc					      org	$FFFC
+     35  fffc		       00 00		      .word.w	Start
+     36  fffe		       00 00		      .word.w	Start

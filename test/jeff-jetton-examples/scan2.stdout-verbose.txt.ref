@@ -1,0 +1,115 @@
+
+START OF PASS: 1
+ Including file "jeff-jetton-examples/scan2.asm"
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         f000                            f000                           
+----------------------------------------------------------------------
+24 references to unknown symbols.
+24 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+ - Expression in a DC not resolved.
+
+--- Symbol List (sorted by symbol)
+Blank                    f027              (R )
+Chunk1                   f034              (R )
+Chunk2                   f048              (R )
+Chunk3                   f05b              (R )
+COLUBK                   0000 ????         (R )
+COLUPF                   0000 ????         (R )
+CTRLPF                   0000 ????         (R )
+Frame                    f00f              (R )
+INEEPROM                 0000                  
+MyBGCol                  00b0              (R )
+MyPFCol                  00bc              (R )
+OverSc                   f068              (R )
+PF0                      0000 ????         (R )
+PF1                      0000 ????         (R )
+PF2                      0000 ????         (R )
+Start                    0000 ????         (R )
+VBLANK                   0000 ????         (R )
+VSYNC                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+--- End of Symbol List.
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF0                      0000 ????         (R )
+PF1                      0000 ????         (R )
+PF2                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+VBLANK                   0000 ????         (R )
+CTRLPF                   0000 ????         (R )
+Start                    0000 ????         (R )
+VSYNC                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+--- 10 Unresolved Symbols
+
+
+START OF PASS: 2
+ Including file "jeff-jetton-examples/scan2.asm"
+Warning: Unable to open '../_includes/vcs.h'
+Warning: Unable to open '../_includes/macro.h'
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         f000                            f000                           
+----------------------------------------------------------------------
+24 references to unknown symbols.
+24 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+ - Expression in a DC not resolved.
+
+--- Symbol List (sorted by symbol)
+Blank                    f027              (R )
+Chunk1                   f034              (R )
+Chunk2                   f048              (R )
+Chunk3                   f05b              (R )
+COLUBK                   0000 ????         (R )
+COLUPF                   0000 ????         (R )
+CTRLPF                   0000 ????         (R )
+Frame                    f00f              (R )
+INEEPROM                 0000                  
+MyBGCol                  00b0              (R )
+MyPFCol                  00bc              (R )
+OverSc                   f068              (R )
+PF0                      0000 ????         (R )
+PF1                      0000 ????         (R )
+PF2                      0000 ????         (R )
+Start                    0000 ????         (R )
+VBLANK                   0000 ????         (R )
+VSYNC                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+--- End of Symbol List.
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF0                      0000 ????         (R )
+PF1                      0000 ????         (R )
+PF2                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+VBLANK                   0000 ????         (R )
+CTRLPF                   0000 ????         (R )
+Start                    0000 ????         (R )
+VSYNC                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+--- 10 Unresolved Symbols
+
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF0                      0000 ????         (R )
+PF1                      0000 ????         (R )
+PF2                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+VBLANK                   0000 ????         (R )
+CTRLPF                   0000 ????         (R )
+Start                    0000 ????         (R )
+VSYNC                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+--- 10 Unresolved Symbols
+
+
+jeff-jetton-examples/scan2.asm (20): error: Unknown Mnemonic 'CLEAN_START'.
+
+Fatal assembly error: Source is not resolvable.

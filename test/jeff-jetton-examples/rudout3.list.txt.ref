@@ -1,0 +1,54 @@
+------- FILE jeff-jetton-examples/rudout3.asm LEVEL 1 PASS 2
+      1  10000 ????						;---------------------------------------------------------------
+      2  10000 ????						;
+      3  10000 ????						; Rudimentary output, part 3
+      4  10000 ????						;
+      5  10000 ????						; Display the result of a math operation (using RAM this time!)
+      6  10000 ????						;
+      7  10000 ????						;---------------------------------------------------------------
+      8  10000 ????
+      9  10000 ????				       processor	6502
+     10  10000 ????				       include	"../_includes/vcs.h"
+     11  10000 ????				       include	"../_includes/macro.h"
+     12  10000 ????
+     13  10000 ????
+     14  10000 ????						; Color constants
+     15  10000 ????		00 06	    MyBGCol    equ	$06
+     16  10000 ????		00 46	    MyPFCol    equ	$46
+     17  10000 ????
+     18  10000 ????						; Define two memory locations
+     19  10000 ????		00 80	    Num1       equ	$80
+     20  10000 ????		00 81	    Num2       equ	$81
+     21  10000 ????
+     22  10000 ????
+     23  f000					      org	$F000
+     24  f000
+jeff-jetton-examples/rudout3.asm (25): error: Unknown Mnemonic 'CLEAN_START'.
+     25  f000				   Start      CLEAN_START
+     26  f000
+     27  f000							; Set colors
+     28  f000		       a9 06		      lda	#MyBGCol
+     29  f002		       8d 00 00 	      sta	COLUBK
+     30  f005		       a9 46		      lda	#MyPFCol
+     31  f007		       8d 00 00 	      sta	COLUPF
+     32  f00a
+     33  f00a							; Load first number into memory
+     34  f00a		       a9 04		      lda	#4	; Load A with 2
+     35  f00c		       85 80		      sta	Num1	; Store contents of A in address Num1
+     36  f00e
+     37  f00e							; Load second number into memory
+     38  f00e		       a9 05		      lda	#5
+     39  f010		       85 81		      sta	Num2
+     40  f012
+     41  f012							; We can add 4 & 5 by referencing memory:
+     42  f012		       a5 80		      lda	Num1	; Put Num1 in A
+     43  f014		       18		      clc		; ALWAYS clear carry before an add!
+     44  f015		       65 81		      adc	Num2	; Add Num2 to A
+     45  f017		       8d 00 00 	      sta	PF1	; Show the binary result
+     46  f01a
+     47  f01a		       ea	   Endless    nop
+     48  f01b		       4c 1a f0 	      jmp	Endless
+     49  f01e
+     50  fffc					      org	$FFFC
+     51  fffc		       00 00		      .word.w	Start
+     52  fffe		       00 00		      .word.w	Start

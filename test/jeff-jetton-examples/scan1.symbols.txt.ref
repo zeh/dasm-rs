@@ -1,0 +1,18 @@
+--- Symbol List (sorted by symbol)
+Chunk1                   f024              (R )
+Chunk2                   f037              (R )
+Chunk3                   f049              (R )
+COLUBK                   0000 ????         (R )
+COLUPF                   0000 ????         (R )
+CTRLPF                   0000 ????         (R )
+Frame                    f00f              (R )
+INEEPROM                 0000                  
+MyBGCol                  0072              (R )
+MyPFCol                  0018              (R )
+PF0                      0000 ????         (R )
+PF1                      0000 ????         (R )
+PF2                      0000 ????         (R )
+Start                    0000 ????         (R )
+VSYNC                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+--- End of Symbol List.

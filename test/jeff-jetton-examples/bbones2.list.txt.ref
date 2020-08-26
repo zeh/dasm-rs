@@ -1,0 +1,26 @@
+------- FILE jeff-jetton-examples/bbones2.asm LEVEL 1 PASS 1
+      1  0000 ????						; In dasm (and most other assemblers) comments look like this
+      2  0000 ????						; They start with a semicolon and continue to the end of the line
+      3  0000 ????
+      4  0000 ????				      processor	6502
+      5  0000 ????
+      6  0000 ????						; Create a new symbol (COLUBK) that "equates" to value $09
+      7  0000 ????	       00 09	   COLUBK     equ	$09
+      8  0000 ????						; Do the same for our color value
+      9  0000 ????	       00 3c	   MyBGCol    equ	$3C
+     10  0000 ????
+     11  0000 ????
+     12  f000					      org	$F000
+     13  f000
+     14  f000		       a9 3c	   Start      lda	#MyBGCol	; Load a new color value into register A
+     15  f002							; Note that we've marked the location of this
+     16  f002							; instruction with the label "Start".
+     17  f002
+     18  f002		       85 09		      sta	COLUBK	; Store A in whatever address COLUBK refers to
+     19  f004
+     20  f004		       4c 00 f0 	      jmp	Start	; Jump to whatever address Start refers to
+     21  f007
+     22  f007
+     23  fffc					      org	$FFFC
+     24  fffc		       00 f0		      .word.w	Start	; Begin at the "Start" location when reset
+     25  fffe		       00 f0		      .word.w	Start	; Use that same address for interrupts

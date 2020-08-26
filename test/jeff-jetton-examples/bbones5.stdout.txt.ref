@@ -1,0 +1,15 @@
+Warning: Unable to open 'vcs.h'
+Warning: Unable to open 'macro.h'
+Warning: Unable to open 'vcs.h'
+Warning: Unable to open 'macro.h'
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+vcs.h                    0000 ????         (R )
+macro.h                  0000 ????         (R )
+Start                    0000 ????         (R )
+--- 4 Unresolved Symbols
+
+
+jeff-jetton-examples/bbones5.asm (22): error: Unknown Mnemonic 'CLEAN_START'.
+
+Fatal assembly error: Source is not resolvable.

@@ -1,0 +1,62 @@
+------- FILE jeff-jetton-examples/bbones3.asm LEVEL 1 PASS 1
+      1  0000 ????						;-------------------------------------------------------
+      2  0000 ????						;
+      3  0000 ????						; Bare-Bones Program #3
+      4  0000 ????						;
+      5  0000 ????						; Initialize VCS memory and registers before starting
+      6  0000 ????						; (In a style similar to how a high-level language
+      7  0000 ????						; might do it)
+      8  0000 ????						;
+      9  0000 ????						;-------------------------------------------------------
+     10  0000 ????
+     11  0000 ????				      processor	6502
+     12  0000 ????
+     13  0000 ????	       00 09	   COLUBK     equ	$09
+     14  0000 ????	       00 2a	   MyBGCol    equ	$2A
+     15  0000 ????
+     16  0000 ????
+     17  f000					      org	$F000
+     18  f000
+     19  f000							; Basic set up
+     20  f000
+     21  f000		       78	   Start      sei		; Prevent interrupts
+     22  f001		       d8		      cld		; Clear "binary-coded decimal" mode
+     23  f002		       a2 ff		      ldx	#$FF	; Take the highest address in RAM...
+     24  f004		       9a		      txs		; ...and put it in the stack pointer
+     25  f005
+     26  f005
+     27  f005							; Initialize the "zero-page" (inefficient, for now)
+     28  f005
+     29  f005		       a2 00		      ldx	#0	; Use X for the index of our current
+     30  f007							; address. Start at zero.
+     31  f007		       a0 00		      ldy	#0	; Put a zero in Y. This is the zero
+     32  f009							; we'll use to clear out addresses.
+     33  f009
+     34  f009		       94 00	   Init       sty	0,x	; Store Y's zero into 0 offset by X
+     35  f00b							; (We can't just sty x... it has to
+     36  f00b							; be X relative to a base value)
+     37  f00b		       e8		      inx		; Increment X to next address
+     38  f00c
+     39  f00c							; Is x at the end yet?
+     40  f00c		       e0 ff		      cpx	#$FF	; Compare it the value $FF
+     41  f00e		       d0 f9		      bne	Init	; Branch (if that comparison
+     42  f010							; resulted in) Not Equal
+     43  f010
+     44  f010							; If x is equal to $FF, we don't branch
+     45  f010							; and drop down to here instead
+     46  f010		       84 00		      sty	0	; Final zero in that last address
+     47  f012
+     48  f012							; Init section takes 13 bytes and 2,882 cycles
+     49  f012
+     50  f012
+     51  f012							; Set up the graphics, such as they are...
+     52  f012
+     53  f012		       a9 2a	   SetTIA     lda	#MyBGCol
+     54  f014		       85 09		      sta	COLUBK
+     55  f016
+     56  f016		       4c 12 f0 	      jmp	SetTIA
+     57  f019
+     58  fffc					      org	$FFFC
+     59  fffc		       00 f0		      .word.w	Start
+     60  fffe		       00 f0		      .word.w	Start
+     61  10000

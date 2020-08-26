@@ -1,0 +1,120 @@
+------- FILE jeff-jetton-examples/hpos1.asm LEVEL 1 PASS 3
+      1  10000 ????						;---------------------------------------------------------------
+      2  10000 ????						;
+      3  10000 ????						; Horizontal positioning of player graphics, part I
+      4  10000 ????						;
+      5  10000 ????						; Basic, timing-based coarse positioning
+      6  10000 ????						;
+      7  10000 ????						;---------------------------------------------------------------
+      8  10000 ????
+      9  10000 ????				       processor	6502
+     10  10000 ????
+     11  10000 ????				       include	"../_includes/vcs.h"
+     12  10000 ????				       include	"../_includes/macro.h"
+     13  10000 ????
+     14  10000 ????						; Constants
+     15  10000 ????		00 8e	    MyBGCol    equ	$8E
+     16  10000 ????		00 50	    MyP0Col    equ	$50
+     17  10000 ????		00 09	    PHeight    equ	9	; Height of player data (including blank line)
+     18  10000 ????		00 64	    StartY     equ	100	; Starting y position of player
+     19  10000 ????		00 0a	    StartX     equ	10	; Starting x position of player, as measured in the
+     20  10000 ????						; number of processor cycles since the last WSYNC
+     21  10000 ????
+     22  10000 ????
+     23  10000 ????						; Variables
+     24  10000 ????		00 80	    YPos       equ	$80	; Player y-position (vertical location)
+     25  10000 ????		00 81	    XPos       equ	$81	; Player x-position (horizontal location)
+     26  10000 ????
+     27  10000 ????
+     28  f000					      org	$F000
+jeff-jetton-examples/hpos1.asm (29): error: Unknown Mnemonic 'CLEAN_START'.
+     29  f000				   Start      CLEAN_START
+     30  f000
+     31  f000							; Set up colors and variables
+     32  f000		       a9 8e		      lda	#MyBGCol
+     33  f002		       8d 00 00 	      sta	COLUBK
+     34  f005		       a9 50		      lda	#MyP0Col
+     35  f007		       8d 00 00 	      sta	COLUP0
+     36  f00a		       a9 64		      lda	#StartY
+     37  f00c		       85 80		      sta	YPos
+     38  f00e		       a9 0a		      lda	#StartX
+     39  f010		       85 81		      sta	XPos
+     40  f012
+     41  f012
+     42  f012
+     43  f012							; Main display kernel starts here ---------------------------------------------
+     44  f012
+     45  f012							; Use the standard vsync macro
+jeff-jetton-examples/hpos1.asm (46): error: Unknown Mnemonic 'VERTICAL_SYNC'.
+     46  f012				   Frame      VERTICAL_SYNC
+     47  f012
+     48  f012							; RESP0 is "reset player 0". It causes the player's horizontal position
+     49  f012							; to be set at whatever location the beam is on at the exact moment the
+     50  f012							; instruction is executed.
+     51  f012		       a6 81		      ldx	XPos
+     52  f014		       a9 02		      lda	#2
+     53  f016		       8d 00 00 	      sta	WSYNC
+     54  f019		       ca	   HLoop      dex
+     55  f01a		       d0 fd		      bne	HLoop
+     56  f01c		       8d 00 00 	      sta	RESP0
+     57  f01f
+     58  f01f							; Remainder of vertical blanking period
+     59  f01f		       8d 00 00 	      sta	WSYNC
+     60  f022		       a2 23		      ldx	#35
+     61  f024		       8d 00 00    VertBl     sta	WSYNC
+     62  f027		       ca		      dex
+     63  f028		       d0 fa		      bne	VertBl
+     64  f02a		       a9 00		      lda	#0
+     65  f02c		       8d 00 00 	      sta	VBLANK
+     66  f02f
+     67  f02f							; Visible area of frame -----------------
+     68  f02f		       a2 c0		      ldx	#192
+     69  f031		       8d 00 00    VizArea    sta	WSYNC
+     70  f034
+     71  f034							; Draw player data?
+     72  f034		       8a		      txa
+     73  f035		       38		      sec
+     74  f036		       e5 80		      sbc	YPos
+     75  f038		       c9 09		      cmp	#PHeight
+     76  f03a		       90 02		      bcc	DrawP0
+     77  f03c		       a9 00		      lda	#0
+     78  f03e		       a8	   DrawP0     tay
+     79  f03f		       b9 5b f0 	      lda	Sprite,y
+     80  f042		       8d 00 00 	      sta	GRP0
+     81  f045
+     82  f045							; Next scanline...
+     83  f045		       ca		      dex
+     84  f046		       d0 e9		      bne	VizArea
+     85  f048
+     86  f048							; Overscan portion
+     87  f048		       8d 00 00 	      sta	WSYNC
+     88  f04b		       a9 02		      lda	#2
+     89  f04d		       8d 00 00 	      sta	VBLANK
+     90  f050		       a2 1d		      ldx	#29
+     91  f052		       8d 00 00    OvScan     sta	WSYNC
+     92  f055		       ca		      dex
+     93  f056		       d0 fa		      bne	OvScan
+     94  f058
+     95  f058		       4c 00 00 	      jmp	Frame
+     96  f05b
+     97  f05b
+     98  f05b
+     99  f05b							; Data for drawing our player sprite
+    100  f05b		       00	   Sprite     .byte.b	#0	; Zero at end to clear out player register
+    101  f05c		       3c		      .byte.b	#%00111100
+    102  f05d		       62		      .byte.b	#%01100010
+    103  f05e		       dd		      .byte.b	#%11011101
+    104  f05f		       ff		      .byte.b	#%11111111
+    105  f060		       eb		      .byte.b	#%11101011
+    106  f061		       c9		      .byte.b	#%11001001
+    107  f062		       7e		      .byte.b	#%01111110
+    108  f063		       3c		      .byte.b	#%00111100
+    109  f064
+    110  f064
+    111  fffc					      org	$FFFC
+    112  fffc		       00 00		      .word.w	Start
+    113  fffe		       00 00		      .word.w	Start
+    114  10000
+    115  10000
+    116  10000
+    117  10000

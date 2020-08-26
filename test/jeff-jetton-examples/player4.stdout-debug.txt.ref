@@ -1,0 +1,1267 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Using the "player" registers, part IV
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Displaying the player image at an arbitrary vertical position   
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Constants
+
+0MEMORYADDR0 MyBGCol equ $22
+
+char '$'
+stackarg 34 (@0)
+0MEMORYADDR0 MyP0Col equ $1E
+
+char '$'
+stackarg 30 (@0)
+0MEMORYADDR0 PHeight equ 9       ; Height of player data (including blank line)
+
+char '9'
+stackarg 9 (@0)
+0MEMORYADDR0 StartY  equ 180     ; Starting y position of player
+
+char '1'
+stackarg 180 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Variables
+
+0MEMORYADDR0 YPos    equ $80     ; Storage location for the player's y-position. The value
+
+char '$'
+stackarg 128 (@0)
+0MEMORYADDR0                     ; contained here represents the position in terms of the
+
+0MEMORYADDR0                     ; number of lines measured from bottom.
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 Start   CLEAN_START
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set up colors and variable
+
+0MEMORYADDR0         lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 34 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #MyP0Col
+
+char '#'
+char 'M'
+stackarg 30 (@0)
+0MEMORYADDR0         sta COLUP0
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #StartY
+
+char '#'
+char 'S'
+stackarg 180 (@0)
+0MEMORYADDR0         sta YPos
+
+char 'Y'
+stackarg 128 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Main display kernel starts here ---------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Vertical sync
+
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 Frame   sta VSYNC
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         txa
+
+0MEMORYADDR0         sta VSYNC
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Remainder of vertical blanking period
+
+0MEMORYADDR0         ldx #37
+
+char '#'
+char '3'
+stackarg 37 (@0)
+0MEMORYADDR0 VertBl  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne VertBl
+
+char 'V'
+stackarg 61477 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Visible area of frame -----------------
+
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Rather than dividing our line displays into "chunks",
+
+0MEMORYADDR0         ; We'll always write *something* to GRP0 on every line.
+
+0MEMORYADDR0         ; On lines where there's no player, we'll write a zero.
+
+0MEMORYADDR0         ; But we'll include logic to "turn on" reading from
+
+0MEMORYADDR0         ; the lookup table of image data, based on which line
+
+0MEMORYADDR0         ; we're on (compared to the desired y position)
+
+0MEMORYADDR0         
+
+0MEMORYADDR0         ldx #192    ; X is our counter: Number of lines from bottom
+
+char '#'
+char '1'
+stackarg 192 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 VizArea sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         ; How many lines above the bottom of our player (YPos) are we?
+
+0MEMORYADDR0         ; To calculate, just subtract YPos from current line num 
+
+0MEMORYADDR0         txa
+
+0MEMORYADDR0         sec         ; Prepare for subtraction by setting carry flag
+
+0MEMORYADDR0         sbc YPos
+
+char 'Y'
+stackarg 128 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; If that number of lines within our player height, use that
+
+0MEMORYADDR0         ; number as an offset index for the player image data.
+
+0MEMORYADDR0         cmp #PHeight    ; This subtracts player height from A but
+
+char '#'
+char 'P'
+stackarg 9 (@0)
+0MEMORYADDR0                         ; doesn't store the result. Just sets flags.
+
+0MEMORYADDR0                         
+
+0MEMORYADDR0         ; After the cmp, the carry flag (C) is only set if A is
+
+0MEMORYADDR0         ; greater than or equal to PHeight. It will be clear if
+
+0MEMORYADDR0         ; A is less than PHeight, in which case we branch directly
+
+0MEMORYADDR0         ; to the part that reads in the image data at offset A.
+
+0MEMORYADDR0         bcc DrawP0
+
+char 'D'
+stackarg 0 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; At this point, the bcc was false, so we'll ensure the
+
+0MEMORYADDR0         ; offset value used is zero--giving us the first row of
+
+0MEMORYADDR0         ; image data (which is a blank row)
+
+0MEMORYADDR0         lda #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 DrawP0  ; Okay, we can't use A as offset directly, and X is
+
+redo 13: 'DrawP0' 0045 0004
+0MEMORYADDR0         ; tied up with keeping track of lines. So we'll use Y.
+
+0MEMORYADDR0         ; Remember that, at this point, A will contain either
+
+0MEMORYADDR0         ; zero (if we're not in the range to draw the player)
+
+0MEMORYADDR0         ; or the offset index of the data to draw.
+
+0MEMORYADDR0         tay
+
+0MEMORYADDR0         lda Sprite,y
+
+char 'S'
+stackarg 0 (@0)
+char ','
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Phew! Okay, move to next line...
+
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne VizArea
+
+char 'V'
+stackarg 61488 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Overscan portion
+
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         dec YPos    ; Move the player down one line each frame
+
+char 'Y'
+stackarg 128 (@0)
+0MEMORYADDR0 FinOvr  ldx #30
+
+char '#'
+char '3'
+stackarg 30 (@0)
+0MEMORYADDR0 OvScan  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne OvScan
+
+char 'O'
+stackarg 61520 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp Frame
+
+char 'F'
+stackarg 61459 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Data for drawing our player sprite
+
+0MEMORYADDR0 Sprite  .byte #0            ; Zero at end to clear out player register
+
+redo 13: 'Sprite' 0045 0004
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         .byte #%00111100
+
+char '#'
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0         .byte #%01100010
+
+char '#'
+char '%'
+stackarg 98 (@0)
+0MEMORYADDR0         .byte #%11011101
+
+char '#'
+char '%'
+stackarg 221 (@0)
+0MEMORYADDR0         .byte #%11111111
+
+char '#'
+char '%'
+stackarg 255 (@0)
+0MEMORYADDR0         .byte #%11101011
+
+char '#'
+char '%'
+stackarg 235 (@0)
+0MEMORYADDR0         .byte #%11001001     
+
+char '#'
+char '%'
+stackarg 201 (@0)
+0MEMORYADDR0         .byte #%01111110
+
+char '#'
+char '%'
+stackarg 126 (@0)
+0MEMORYADDR0         .byte #%00111100
+
+char '#'
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Using the "player" registers, part IV
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Displaying the player image at an arbitrary vertical position   
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Constants
+
+0MEMORYADDR0 MyBGCol equ $22
+
+char '$'
+stackarg 34 (@0)
+0MEMORYADDR0 MyP0Col equ $1E
+
+char '$'
+stackarg 30 (@0)
+0MEMORYADDR0 PHeight equ 9       ; Height of player data (including blank line)
+
+char '9'
+stackarg 9 (@0)
+0MEMORYADDR0 StartY  equ 180     ; Starting y position of player
+
+char '1'
+stackarg 180 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Variables
+
+0MEMORYADDR0 YPos    equ $80     ; Storage location for the player's y-position. The value
+
+char '$'
+stackarg 128 (@0)
+0MEMORYADDR0                     ; contained here represents the position in terms of the
+
+0MEMORYADDR0                     ; number of lines measured from bottom.
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 Start   CLEAN_START
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set up colors and variable
+
+0MEMORYADDR0         lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 34 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #MyP0Col
+
+char '#'
+char 'M'
+stackarg 30 (@0)
+0MEMORYADDR0         sta COLUP0
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #StartY
+
+char '#'
+char 'S'
+stackarg 180 (@0)
+0MEMORYADDR0         sta YPos
+
+char 'Y'
+stackarg 128 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Main display kernel starts here ---------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Vertical sync
+
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 Frame   sta VSYNC
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         txa
+
+0MEMORYADDR0         sta VSYNC
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Remainder of vertical blanking period
+
+0MEMORYADDR0         ldx #37
+
+char '#'
+char '3'
+stackarg 37 (@0)
+0MEMORYADDR0 VertBl  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne VertBl
+
+char 'V'
+stackarg 61477 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Visible area of frame -----------------
+
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Rather than dividing our line displays into "chunks",
+
+0MEMORYADDR0         ; We'll always write *something* to GRP0 on every line.
+
+0MEMORYADDR0         ; On lines where there's no player, we'll write a zero.
+
+0MEMORYADDR0         ; But we'll include logic to "turn on" reading from
+
+0MEMORYADDR0         ; the lookup table of image data, based on which line
+
+0MEMORYADDR0         ; we're on (compared to the desired y position)
+
+0MEMORYADDR0         
+
+0MEMORYADDR0         ldx #192    ; X is our counter: Number of lines from bottom
+
+char '#'
+char '1'
+stackarg 192 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 VizArea sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         ; How many lines above the bottom of our player (YPos) are we?
+
+0MEMORYADDR0         ; To calculate, just subtract YPos from current line num 
+
+0MEMORYADDR0         txa
+
+0MEMORYADDR0         sec         ; Prepare for subtraction by setting carry flag
+
+0MEMORYADDR0         sbc YPos
+
+char 'Y'
+stackarg 128 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; If that number of lines within our player height, use that
+
+0MEMORYADDR0         ; number as an offset index for the player image data.
+
+0MEMORYADDR0         cmp #PHeight    ; This subtracts player height from A but
+
+char '#'
+char 'P'
+stackarg 9 (@0)
+0MEMORYADDR0                         ; doesn't store the result. Just sets flags.
+
+0MEMORYADDR0                         
+
+0MEMORYADDR0         ; After the cmp, the carry flag (C) is only set if A is
+
+0MEMORYADDR0         ; greater than or equal to PHeight. It will be clear if
+
+0MEMORYADDR0         ; A is less than PHeight, in which case we branch directly
+
+0MEMORYADDR0         ; to the part that reads in the image data at offset A.
+
+0MEMORYADDR0         bcc DrawP0
+
+char 'D'
+stackarg 61501 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; At this point, the bcc was false, so we'll ensure the
+
+0MEMORYADDR0         ; offset value used is zero--giving us the first row of
+
+0MEMORYADDR0         ; image data (which is a blank row)
+
+0MEMORYADDR0         lda #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 DrawP0  ; Okay, we can't use A as offset directly, and X is
+
+0MEMORYADDR0         ; tied up with keeping track of lines. So we'll use Y.
+
+0MEMORYADDR0         ; Remember that, at this point, A will contain either
+
+0MEMORYADDR0         ; zero (if we're not in the range to draw the player)
+
+0MEMORYADDR0         ; or the offset index of the data to draw.
+
+0MEMORYADDR0         tay
+
+0MEMORYADDR0         lda Sprite,y
+
+char 'S'
+stackarg 61529 (@0)
+char ','
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Phew! Okay, move to next line...
+
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne VizArea
+
+char 'V'
+stackarg 61488 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Overscan portion
+
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         dec YPos    ; Move the player down one line each frame
+
+char 'Y'
+stackarg 128 (@0)
+0MEMORYADDR0 FinOvr  ldx #30
+
+char '#'
+char '3'
+stackarg 30 (@0)
+0MEMORYADDR0 OvScan  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne OvScan
+
+char 'O'
+stackarg 61520 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp Frame
+
+char 'F'
+stackarg 61459 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Data for drawing our player sprite
+
+0MEMORYADDR0 Sprite  .byte #0            ; Zero at end to clear out player register
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         .byte #%00111100
+
+char '#'
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0         .byte #%01100010
+
+char '#'
+char '%'
+stackarg 98 (@0)
+0MEMORYADDR0         .byte #%11011101
+
+char '#'
+char '%'
+stackarg 221 (@0)
+0MEMORYADDR0         .byte #%11111111
+
+char '#'
+char '%'
+stackarg 255 (@0)
+0MEMORYADDR0         .byte #%11101011
+
+char '#'
+char '%'
+stackarg 235 (@0)
+0MEMORYADDR0         .byte #%11001001     
+
+char '#'
+char '%'
+stackarg 201 (@0)
+0MEMORYADDR0         .byte #%01111110
+
+char '#'
+char '%'
+stackarg 126 (@0)
+0MEMORYADDR0         .byte #%00111100
+
+char '#'
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Using the "player" registers, part IV
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Displaying the player image at an arbitrary vertical position   
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Constants
+
+0MEMORYADDR0 MyBGCol equ $22
+
+char '$'
+stackarg 34 (@0)
+0MEMORYADDR0 MyP0Col equ $1E
+
+char '$'
+stackarg 30 (@0)
+0MEMORYADDR0 PHeight equ 9       ; Height of player data (including blank line)
+
+char '9'
+stackarg 9 (@0)
+0MEMORYADDR0 StartY  equ 180     ; Starting y position of player
+
+char '1'
+stackarg 180 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Variables
+
+0MEMORYADDR0 YPos    equ $80     ; Storage location for the player's y-position. The value
+
+char '$'
+stackarg 128 (@0)
+0MEMORYADDR0                     ; contained here represents the position in terms of the
+
+0MEMORYADDR0                     ; number of lines measured from bottom.
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 Start   CLEAN_START
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set up colors and variable
+
+0MEMORYADDR0         lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 34 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #MyP0Col
+
+char '#'
+char 'M'
+stackarg 30 (@0)
+0MEMORYADDR0         sta COLUP0
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #StartY
+
+char '#'
+char 'S'
+stackarg 180 (@0)
+0MEMORYADDR0         sta YPos
+
+char 'Y'
+stackarg 128 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; Main display kernel starts here ---------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Vertical sync
+
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 Frame   sta VSYNC
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         txa
+
+0MEMORYADDR0         sta VSYNC
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Remainder of vertical blanking period
+
+0MEMORYADDR0         ldx #37
+
+char '#'
+char '3'
+stackarg 37 (@0)
+0MEMORYADDR0 VertBl  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne VertBl
+
+char 'V'
+stackarg 61477 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Visible area of frame -----------------
+
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Rather than dividing our line displays into "chunks",
+
+0MEMORYADDR0         ; We'll always write *something* to GRP0 on every line.
+
+0MEMORYADDR0         ; On lines where there's no player, we'll write a zero.
+
+0MEMORYADDR0         ; But we'll include logic to "turn on" reading from
+
+0MEMORYADDR0         ; the lookup table of image data, based on which line
+
+0MEMORYADDR0         ; we're on (compared to the desired y position)
+
+0MEMORYADDR0         
+
+0MEMORYADDR0         ldx #192    ; X is our counter: Number of lines from bottom
+
+char '#'
+char '1'
+stackarg 192 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 VizArea sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         ; How many lines above the bottom of our player (YPos) are we?
+
+0MEMORYADDR0         ; To calculate, just subtract YPos from current line num 
+
+0MEMORYADDR0         txa
+
+0MEMORYADDR0         sec         ; Prepare for subtraction by setting carry flag
+
+0MEMORYADDR0         sbc YPos
+
+char 'Y'
+stackarg 128 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; If that number of lines within our player height, use that
+
+0MEMORYADDR0         ; number as an offset index for the player image data.
+
+0MEMORYADDR0         cmp #PHeight    ; This subtracts player height from A but
+
+char '#'
+char 'P'
+stackarg 9 (@0)
+0MEMORYADDR0                         ; doesn't store the result. Just sets flags.
+
+0MEMORYADDR0                         
+
+0MEMORYADDR0         ; After the cmp, the carry flag (C) is only set if A is
+
+0MEMORYADDR0         ; greater than or equal to PHeight. It will be clear if
+
+0MEMORYADDR0         ; A is less than PHeight, in which case we branch directly
+
+0MEMORYADDR0         ; to the part that reads in the image data at offset A.
+
+0MEMORYADDR0         bcc DrawP0
+
+char 'D'
+stackarg 61501 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; At this point, the bcc was false, so we'll ensure the
+
+0MEMORYADDR0         ; offset value used is zero--giving us the first row of
+
+0MEMORYADDR0         ; image data (which is a blank row)
+
+0MEMORYADDR0         lda #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 DrawP0  ; Okay, we can't use A as offset directly, and X is
+
+0MEMORYADDR0         ; tied up with keeping track of lines. So we'll use Y.
+
+0MEMORYADDR0         ; Remember that, at this point, A will contain either
+
+0MEMORYADDR0         ; zero (if we're not in the range to draw the player)
+
+0MEMORYADDR0         ; or the offset index of the data to draw.
+
+0MEMORYADDR0         tay
+
+0MEMORYADDR0         lda Sprite,y
+
+char 'S'
+stackarg 61529 (@0)
+char ','
+0MEMORYADDR0         sta GRP0
+
+char 'G'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Phew! Okay, move to next line...
+
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne VizArea
+
+char 'V'
+stackarg 61488 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Overscan portion
+
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         dec YPos    ; Move the player down one line each frame
+
+char 'Y'
+stackarg 128 (@0)
+0MEMORYADDR0 FinOvr  ldx #30
+
+char '#'
+char '3'
+stackarg 30 (@0)
+0MEMORYADDR0 OvScan  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne OvScan
+
+char 'O'
+stackarg 61520 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp Frame
+
+char 'F'
+stackarg 61459 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Data for drawing our player sprite
+
+0MEMORYADDR0 Sprite  .byte #0            ; Zero at end to clear out player register
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         .byte #%00111100
+
+char '#'
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0         .byte #%01100010
+
+char '#'
+char '%'
+stackarg 98 (@0)
+0MEMORYADDR0         .byte #%11011101
+
+char '#'
+char '%'
+stackarg 221 (@0)
+0MEMORYADDR0         .byte #%11111111
+
+char '#'
+char '%'
+stackarg 255 (@0)
+0MEMORYADDR0         .byte #%11101011
+
+char '#'
+char '%'
+stackarg 235 (@0)
+0MEMORYADDR0         .byte #%11001001     
+
+char '#'
+char '%'
+stackarg 201 (@0)
+0MEMORYADDR0         .byte #%01111110
+
+char '#'
+char '%'
+stackarg 126 (@0)
+0MEMORYADDR0         .byte #%00111100
+
+char '#'
+char '%'
+stackarg 60 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+COLUP0                   0000 ????         (R )
+VBLANK                   0000 ????         (R )
+GRP0                     0000 ????         (R )
+Start                    0000 ????         (R )
+VSYNC                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+--- 7 Unresolved Symbols
+
+
+jeff-jetton-examples/player4.asm (30): error: Unknown Mnemonic 'CLEAN_START'.
+
+Fatal assembly error: Source is not resolvable.

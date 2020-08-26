@@ -1,0 +1,274 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Rudimentary output, part 2
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ; Display the result of a math operation
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Standard includes
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; Color constants
+
+0MEMORYADDR0 MyBGCol equ $06
+
+char '$'
+stackarg 6 (@0)
+0MEMORYADDR0 MyPFCol equ $46
+
+char '$'
+stackarg 70 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Standard initialization
+
+0MEMORYADDR0 Start   CLEAN_START 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set colors
+
+0MEMORYADDR0         lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 6 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #MyPFCol
+
+char '#'
+char 'M'
+stackarg 70 (@0)
+0MEMORYADDR0         sta COLUPF
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; What's 2 + 3?
+
+0MEMORYADDR0 DoMath  lda #2      ; Load A with 2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         clc         ; Alway clear carry flag before adding
+
+0MEMORYADDR0         adc #3      ; Add 3 to whatever's in A
+
+char '#'
+char '3'
+stackarg 3 (@0)
+0MEMORYADDR0         sta PF1     ; Show the result (in binary)
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp DoMath
+
+char 'D'
+stackarg 61450 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Rudimentary output, part 2
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ; Display the result of a math operation
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Standard includes
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 		
+
+0MEMORYADDR0         ; Color constants
+
+0MEMORYADDR0 MyBGCol equ $06
+
+char '$'
+stackarg 6 (@0)
+0MEMORYADDR0 MyPFCol equ $46
+
+char '$'
+stackarg 70 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0         ; Standard initialization
+
+0MEMORYADDR0 Start   CLEAN_START 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set colors
+
+0MEMORYADDR0         lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 6 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #MyPFCol
+
+char '#'
+char 'M'
+stackarg 70 (@0)
+0MEMORYADDR0         sta COLUPF
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; What's 2 + 3?
+
+0MEMORYADDR0 DoMath  lda #2      ; Load A with 2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         clc         ; Alway clear carry flag before adding
+
+0MEMORYADDR0         adc #3      ; Add 3 to whatever's in A
+
+char '#'
+char '3'
+stackarg 3 (@0)
+0MEMORYADDR0         sta PF1     ; Show the result (in binary)
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp DoMath
+
+char 'D'
+stackarg 61450 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF1                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+Start                    0000 ????         (R )
+--- 4 Unresolved Symbols
+
+
+jeff-jetton-examples/rudout2.asm (24): error: Unknown Mnemonic 'CLEAN_START'.
+
+Fatal assembly error: Source is not resolvable.

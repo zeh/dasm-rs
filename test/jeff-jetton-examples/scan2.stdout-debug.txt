@@ -1,0 +1,782 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ; A "more correct" way to deal with scanlines. Takes the
+
+0MEMORYADDR0 ; vertical blank and overscan periods into account.
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Define colors
+
+0MEMORYADDR0 MyBGCol equ $B0
+
+char '$'
+stackarg 176 (@0)
+0MEMORYADDR0 MyPFCol equ $BC
+
+char '$'
+stackarg 188 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 Start   CLEAN_START
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set colors and playfield config
+
+0MEMORYADDR0         lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 176 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #MyPFCol
+
+char '#'
+char 'M'
+stackarg 188 (@0)
+0MEMORYADDR0         sta COLUPF
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #1
+
+char '#'
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0         sta CTRLPF
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 Frame
+
+0MEMORYADDR0         ; We don't want the viewer to see the beam as it
+
+0MEMORYADDR0         ; traces its way back up from the bottom-right to
+
+0MEMORYADDR0         ; the top left. So we should really be setting up
+
+0MEMORYADDR0         ; each new frame by turning off the beam. As with
+
+0MEMORYADDR0         ; VSYNC, we just write 1 in the next-to-last bit
+
+0MEMORYADDR0         ; to enable "vertical blanking" mode in VBLANK
+
+0MEMORYADDR0         lda #2          ; Same as $%00000010 of course
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK      ; Turn on blanking
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Now we turn on VSYNC for three lines, as before
+
+0MEMORYADDR0         sta VSYNC       ; Register A still has the 2 in it
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         sta VSYNC
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; At this point we've told the TV to move the beam back up
+
+0MEMORYADDR0         ; but this move is done over a certain period of time--
+
+0MEMORYADDR0         ; it's not instantaneous. Obviously, we don't want to beam
+
+0MEMORYADDR0         ; to be displayed while the move is occuring, so we can't
+
+0MEMORYADDR0         ; turn it back on just yet. The standard method on the
+
+0MEMORYADDR0         ; VCS is to wait another 37 scanlines worth of time...
+
+0MEMORYADDR0         ldx #37
+
+char '#'
+char '3'
+stackarg 37 (@0)
+0MEMORYADDR0 Blank   sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne Blank
+
+char 'B'
+stackarg 61479 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; NOW we can turn blanking off (i.e., turn the display on)
+
+0MEMORYADDR0         lda #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Note that the entire vertical blanking period--the phase
+
+0MEMORYADDR0         ; during which the beam is off during the beginning of
+
+0MEMORYADDR0         ; each frame--is a total of 40 scanlines of time.
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; The standard "visible" portion of the frame is 192 scanlines
+
+0MEMORYADDR0 ; for NTSC (242 for PAL).
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Wait for, oh. let's say 40 scanlines of visible screen
+
+0MEMORYADDR0         ; before displaying anything (other than the background)
+
+0MEMORYADDR0         ldx #40
+
+char '#'
+char '4'
+stackarg 40 (@0)
+0MEMORYADDR0 Chunk1  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne Chunk1
+
+char 'C'
+stackarg 61492 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Playfield for 8 lines, as before
+
+0MEMORYADDR0         lda #%10011101
+
+char '#'
+char '%'
+stackarg 157 (@0)
+0MEMORYADDR0         sta PF0
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         sta PF1
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         sta PF2
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         lda #8
+
+char '#'
+char '8'
+stackarg 8 (@0)
+0MEMORYADDR0         tax
+
+0MEMORYADDR0 Chunk2  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne Chunk2
+
+char 'C'
+stackarg 61512 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Zero out the playfield registers
+
+0MEMORYADDR0         txa
+
+0MEMORYADDR0         sta PF0
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         sta PF1
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         sta PF2
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Bottom chunk of frame fills out the remaining
+
+0MEMORYADDR0         ; visible scanlines (192 - 40 - 8 = 144)
+
+0MEMORYADDR0         lda #144
+
+char '#'
+char '1'
+stackarg 144 (@0)
+0MEMORYADDR0         ;lda #194       ; Uncomment for PAL
+
+0MEMORYADDR0         tax
+
+0MEMORYADDR0 Chunk3  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne Chunk3
+
+char 'C'
+stackarg 61531 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; We wrap up by turning the beam OFF again and doing
+
+0MEMORYADDR0         ; a final 30 scanlines of "overscan". This leaves
+
+0MEMORYADDR0         ; some empty space at the bottom of the image, to
+
+0MEMORYADDR0         ; accomodate differences in where the CRT TVs of the
+
+0MEMORYADDR0         ; VCS-era would stop displaying.
+
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         ldx #30
+
+char '#'
+char '3'
+stackarg 30 (@0)
+0MEMORYADDR0 OverSc  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne OverSc
+
+char 'O'
+stackarg 61544 (@0)
+0MEMORYADDR0 	
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp Frame   
+
+char 'F'
+stackarg 61455 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ; A "more correct" way to deal with scanlines. Takes the
+
+0MEMORYADDR0 ; vertical blank and overscan periods into account.
+
+0MEMORYADDR0 ; 
+
+0MEMORYADDR0 ;---------------------------------------------------------------
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         processor 6502
+
+0MEMORYADDR0         include "../_includes/vcs.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/vcs.h
+Warning: Unable to open '../_includes/vcs.h'
+0MEMORYADDR0         include "../_includes/macro.h"
+
+char '"'
+stackarg 0 (@0)
+STRING: ../_includes/macro.h
+Warning: Unable to open '../_includes/macro.h'
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Define colors
+
+0MEMORYADDR0 MyBGCol equ $B0
+
+char '$'
+stackarg 176 (@0)
+0MEMORYADDR0 MyPFCol equ $BC
+
+char '$'
+stackarg 188 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $F000
+
+char '$'
+stackarg 61440 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 Start   CLEAN_START
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Set colors and playfield config
+
+0MEMORYADDR0         lda #MyBGCol
+
+char '#'
+char 'M'
+stackarg 176 (@0)
+0MEMORYADDR0         sta COLUBK
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #MyPFCol
+
+char '#'
+char 'M'
+stackarg 188 (@0)
+0MEMORYADDR0         sta COLUPF
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #1
+
+char '#'
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0         sta CTRLPF
+
+char 'C'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 Frame
+
+0MEMORYADDR0         ; We don't want the viewer to see the beam as it
+
+0MEMORYADDR0         ; traces its way back up from the bottom-right to
+
+0MEMORYADDR0         ; the top left. So we should really be setting up
+
+0MEMORYADDR0         ; each new frame by turning off the beam. As with
+
+0MEMORYADDR0         ; VSYNC, we just write 1 in the next-to-last bit
+
+0MEMORYADDR0         ; to enable "vertical blanking" mode in VBLANK
+
+0MEMORYADDR0         lda #2          ; Same as $%00000010 of course
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK      ; Turn on blanking
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Now we turn on VSYNC for three lines, as before
+
+0MEMORYADDR0         sta VSYNC       ; Register A still has the 2 in it
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         lda #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         sta VSYNC
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; At this point we've told the TV to move the beam back up
+
+0MEMORYADDR0         ; but this move is done over a certain period of time--
+
+0MEMORYADDR0         ; it's not instantaneous. Obviously, we don't want to beam
+
+0MEMORYADDR0         ; to be displayed while the move is occuring, so we can't
+
+0MEMORYADDR0         ; turn it back on just yet. The standard method on the
+
+0MEMORYADDR0         ; VCS is to wait another 37 scanlines worth of time...
+
+0MEMORYADDR0         ldx #37
+
+char '#'
+char '3'
+stackarg 37 (@0)
+0MEMORYADDR0 Blank   sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne Blank
+
+char 'B'
+stackarg 61479 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; NOW we can turn blanking off (i.e., turn the display on)
+
+0MEMORYADDR0         lda #0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Note that the entire vertical blanking period--the phase
+
+0MEMORYADDR0         ; during which the beam is off during the beginning of
+
+0MEMORYADDR0         ; each frame--is a total of 40 scanlines of time.
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 ; The standard "visible" portion of the frame is 192 scanlines
+
+0MEMORYADDR0 ; for NTSC (242 for PAL).
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Wait for, oh. let's say 40 scanlines of visible screen
+
+0MEMORYADDR0         ; before displaying anything (other than the background)
+
+0MEMORYADDR0         ldx #40
+
+char '#'
+char '4'
+stackarg 40 (@0)
+0MEMORYADDR0 Chunk1  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne Chunk1
+
+char 'C'
+stackarg 61492 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Playfield for 8 lines, as before
+
+0MEMORYADDR0         lda #%10011101
+
+char '#'
+char '%'
+stackarg 157 (@0)
+0MEMORYADDR0         sta PF0
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         sta PF1
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         sta PF2
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         lda #8
+
+char '#'
+char '8'
+stackarg 8 (@0)
+0MEMORYADDR0         tax
+
+0MEMORYADDR0 Chunk2  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne Chunk2
+
+char 'C'
+stackarg 61512 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Zero out the playfield registers
+
+0MEMORYADDR0         txa
+
+0MEMORYADDR0         sta PF0
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         sta PF1
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0         sta PF2
+
+char 'P'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; Bottom chunk of frame fills out the remaining
+
+0MEMORYADDR0         ; visible scanlines (192 - 40 - 8 = 144)
+
+0MEMORYADDR0         lda #144
+
+char '#'
+char '1'
+stackarg 144 (@0)
+0MEMORYADDR0         ;lda #194       ; Uncomment for PAL
+
+0MEMORYADDR0         tax
+
+0MEMORYADDR0 Chunk3  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne Chunk3
+
+char 'C'
+stackarg 61531 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0         ; We wrap up by turning the beam OFF again and doing
+
+0MEMORYADDR0         ; a final 30 scanlines of "overscan". This leaves
+
+0MEMORYADDR0         ; some empty space at the bottom of the image, to
+
+0MEMORYADDR0         ; accomodate differences in where the CRT TVs of the
+
+0MEMORYADDR0         ; VCS-era would stop displaying.
+
+0MEMORYADDR0         lda #2
+
+char '#'
+char '2'
+stackarg 2 (@0)
+0MEMORYADDR0         sta VBLANK
+
+char 'V'
+stackarg 0 (@0)
+0MEMORYADDR0         ldx #30
+
+char '#'
+char '3'
+stackarg 30 (@0)
+0MEMORYADDR0 OverSc  sta WSYNC
+
+char 'W'
+stackarg 0 (@0)
+0MEMORYADDR0         dex
+
+0MEMORYADDR0         bne OverSc
+
+char 'O'
+stackarg 61544 (@0)
+0MEMORYADDR0 	
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         jmp Frame   
+
+char 'F'
+stackarg 61455 (@0)
+0MEMORYADDR0         
+
+0MEMORYADDR0 
+
+0MEMORYADDR0         org $FFFC
+
+char '$'
+stackarg 65532 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0         .word Start
+
+char 'S'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 
+
+--- Unresolved Symbol List
+COLUBK                   0000 ????         (R )
+PF0                      0000 ????         (R )
+PF1                      0000 ????         (R )
+PF2                      0000 ????         (R )
+COLUPF                   0000 ????         (R )
+VBLANK                   0000 ????         (R )
+CTRLPF                   0000 ????         (R )
+Start                    0000 ????         (R )
+VSYNC                    0000 ????         (R )
+WSYNC                    0000 ????         (R )
+--- 10 Unresolved Symbols
+
+
+jeff-jetton-examples/scan2.asm (20): error: Unknown Mnemonic 'CLEAN_START'.
+
+Fatal assembly error: Source is not resolvable.

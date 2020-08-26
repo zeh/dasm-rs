@@ -1,0 +1,135 @@
+------- FILE jeff-jetton-examples/scan2.asm LEVEL 1 PASS 2
+      1  10000 ????						;---------------------------------------------------------------
+      2  10000 ????						;
+      3  10000 ????						; A "more correct" way to deal with scanlines. Takes the
+      4  10000 ????						; vertical blank and overscan periods into account.
+      5  10000 ????						;
+      6  10000 ????						;---------------------------------------------------------------
+      7  10000 ????
+      8  10000 ????				       processor	6502
+      9  10000 ????				       include	"../_includes/vcs.h"
+     10  10000 ????				       include	"../_includes/macro.h"
+     11  10000 ????
+     12  10000 ????
+     13  10000 ????						; Define colors
+     14  10000 ????		00 b0	    MyBGCol    equ	$B0
+     15  10000 ????		00 bc	    MyPFCol    equ	$BC
+     16  10000 ????
+     17  10000 ????
+     18  f000					      org	$F000
+     19  f000
+jeff-jetton-examples/scan2.asm (20): error: Unknown Mnemonic 'CLEAN_START'.
+     20  f000				   Start      CLEAN_START
+     21  f000
+     22  f000
+     23  f000							; Set colors and playfield config
+     24  f000		       a9 b0		      lda	#MyBGCol
+     25  f002		       8d 00 00 	      sta	COLUBK
+     26  f005		       a9 bc		      lda	#MyPFCol
+     27  f007		       8d 00 00 	      sta	COLUPF
+     28  f00a		       a9 01		      lda	#1
+     29  f00c		       8d 00 00 	      sta	CTRLPF
+     30  f00f
+     31  f00f
+     32  f00f				   Frame
+     33  f00f							; We don't want the viewer to see the beam as it
+     34  f00f							; traces its way back up from the bottom-right to
+     35  f00f							; the top left. So we should really be setting up
+     36  f00f							; each new frame by turning off the beam. As with
+     37  f00f							; VSYNC, we just write 1 in the next-to-last bit
+     38  f00f							; to enable "vertical blanking" mode in VBLANK
+     39  f00f		       a9 02		      lda	#2	; Same as $%00000010 of course
+     40  f011		       8d 00 00 	      sta	VBLANK	; Turn on blanking
+     41  f014
+     42  f014							; Now we turn on VSYNC for three lines, as before
+     43  f014		       8d 00 00 	      sta	VSYNC	; Register A still has the 2 in it
+     44  f017		       8d 00 00 	      sta	WSYNC
+     45  f01a		       8d 00 00 	      sta	WSYNC
+     46  f01d		       8d 00 00 	      sta	WSYNC
+     47  f020		       a9 00		      lda	#0
+     48  f022		       8d 00 00 	      sta	VSYNC
+     49  f025
+     50  f025							; At this point we've told the TV to move the beam back up
+     51  f025							; but this move is done over a certain period of time--
+     52  f025							; it's not instantaneous. Obviously, we don't want to beam
+     53  f025							; to be displayed while the move is occuring, so we can't
+     54  f025							; turn it back on just yet. The standard method on the
+     55  f025							; VCS is to wait another 37 scanlines worth of time...
+     56  f025		       a2 25		      ldx	#37
+     57  f027		       8d 00 00    Blank      sta	WSYNC
+     58  f02a		       ca		      dex
+     59  f02b		       d0 fa		      bne	Blank
+     60  f02d
+     61  f02d							; NOW we can turn blanking off (i.e., turn the display on)
+     62  f02d		       a9 00		      lda	#0
+     63  f02f		       8d 00 00 	      sta	VBLANK
+     64  f032
+     65  f032							; Note that the entire vertical blanking period--the phase
+     66  f032							; during which the beam is off during the beginning of
+     67  f032							; each frame--is a total of 40 scanlines of time.
+     68  f032
+     69  f032
+     70  f032							; The standard "visible" portion of the frame is 192 scanlines
+     71  f032							; for NTSC (242 for PAL).
+     72  f032
+     73  f032							; Wait for, oh. let's say 40 scanlines of visible screen
+     74  f032							; before displaying anything (other than the background)
+     75  f032		       a2 28		      ldx	#40
+     76  f034		       8d 00 00    Chunk1     sta	WSYNC
+     77  f037		       ca		      dex
+     78  f038		       d0 fa		      bne	Chunk1
+     79  f03a
+     80  f03a
+     81  f03a							; Playfield for 8 lines, as before
+     82  f03a		       a9 9d		      lda	#%10011101
+     83  f03c		       8d 00 00 	      sta	PF0
+     84  f03f		       8d 00 00 	      sta	PF1
+     85  f042		       8d 00 00 	      sta	PF2
+     86  f045
+     87  f045		       a9 08		      lda	#8
+     88  f047		       aa		      tax
+     89  f048		       8d 00 00    Chunk2     sta	WSYNC
+     90  f04b		       ca		      dex
+     91  f04c		       d0 fa		      bne	Chunk2
+     92  f04e
+     93  f04e							; Zero out the playfield registers
+     94  f04e		       8a		      txa
+     95  f04f		       8d 00 00 	      sta	PF0
+     96  f052		       8d 00 00 	      sta	PF1
+     97  f055		       8d 00 00 	      sta	PF2
+     98  f058
+     99  f058							; Bottom chunk of frame fills out the remaining
+    100  f058							; visible scanlines (192 - 40 - 8 = 144)
+    101  f058		       a9 90		      lda	#144
+    102  f05a							;lda #194	 ; Uncomment for PAL
+    103  f05a		       aa		      tax
+    104  f05b		       8d 00 00    Chunk3     sta	WSYNC
+    105  f05e		       ca		      dex
+    106  f05f		       d0 fa		      bne	Chunk3
+    107  f061
+    108  f061							; We wrap up by turning the beam OFF again and doing
+    109  f061							; a final 30 scanlines of "overscan". This leaves
+    110  f061							; some empty space at the bottom of the image, to
+    111  f061							; accomodate differences in where the CRT TVs of the
+    112  f061							; VCS-era would stop displaying.
+    113  f061		       a9 02		      lda	#2
+    114  f063		       8d 00 00 	      sta	VBLANK
+    115  f066		       a2 1e		      ldx	#30
+    116  f068		       8d 00 00    OverSc     sta	WSYNC
+    117  f06b		       ca		      dex
+    118  f06c		       d0 fa		      bne	OverSc
+    119  f06e
+    120  f06e
+    121  f06e		       4c 0f f0 	      jmp	Frame
+    122  f071
+    123  f071
+    124  fffc					      org	$FFFC
+    125  fffc		       00 00		      .word.w	Start
+    126  fffe		       00 00		      .word.w	Start
+    127  10000
+    128  10000
+    129  10000
+    130  10000
+    131  10000
+    132  10000
+    133  10000

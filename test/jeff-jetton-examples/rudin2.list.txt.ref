@@ -1,0 +1,54 @@
+------- FILE jeff-jetton-examples/rudin2.asm LEVEL 1 PASS 3
+      1  10000 ????						;---------------------------------------------------------------
+      2  10000 ????						;
+      3  10000 ????						; Rudimentary input, part 2
+      4  10000 ????						;
+      5  10000 ????						; Display joystick input
+      6  10000 ????						;
+      7  10000 ????						;---------------------------------------------------------------
+      8  10000 ????
+      9  10000 ????				       processor	6502
+     10  10000 ????				       include	"../_includes/vcs.h"
+     11  10000 ????				       include	"../_includes/macro.h"
+     12  10000 ????
+     13  10000 ????
+     14  10000 ????						; Color constants
+     15  10000 ????		00 72	    BG_Norm    equ	$72
+     16  10000 ????		00 2a	    BG_Fire    equ	$2A
+     17  10000 ????		00 18	    MyPFCol    equ	$18
+     18  10000 ????
+     19  10000 ????
+     20  f000					      org	$F000
+     21  f000
+jeff-jetton-examples/rudin2.asm (22): error: Unknown Mnemonic 'CLEAN_START'.
+     22  f000				   Start      CLEAN_START
+     23  f000
+     24  f000							; Set playfield color
+     25  f000		       a9 18		      lda	#MyPFCol
+     26  f002		       8d 00 00 	      sta	COLUPF
+     27  f005
+     28  f005
+     29  f005		       ad 00 00    Main       lda	SWCHA	; Put joystick directional state (port A) into A
+     30  f008		       8d 00 00 	      sta	PF1	; Store it in playfield
+     31  f00b
+     32  f00b		       ad 00 00 	      lda	INPT4	; Store trigger state for player 0 in A
+     33  f00e							; Normally the high bit (bit 7) is set, which
+     34  f00e							; the 6502 flag register considers to be the
+     35  f00e							; indicator of a negative number.
+     36  f00e							; When the trigger is pressed, bit 7 clears,
+     37  f00e							; making the byte "positive"
+     38  f00e
+     39  f00e		       10 08		      bpl	TrigOn	; Branch if it's positive (negative flag clear)
+     40  f010		       a5 72		      lda	BG_Norm	; ...otherwise, use normal background color
+     41  f012		       8d 00 00 	      sta	COLUBK
+     42  f015		       4c 05 f0 	      jmp	Main
+     43  f018
+     44  f018		       a5 2a	   TrigOn     lda	BG_Fire	; Use the "fire" background color
+     45  f01a		       8d 00 00 	      sta	COLUBK
+     46  f01d		       4c 05 f0 	      jmp	Main	; Loop back up again
+     47  f020
+     48  f020
+     49  f020
+     50  fffc					      org	$FFFC
+     51  fffc		       00 00		      .word.w	Start
+     52  fffe		       00 00		      .word.w	Start
