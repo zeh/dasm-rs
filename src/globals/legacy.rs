@@ -5,7 +5,6 @@ use crate::constants::{
 use crate::types::legacy::{
     _INCFILE,
     _MNE,
-    _REPLOOP,
     _SYMBOL,
 };
 
@@ -90,9 +89,6 @@ pub static mut MHash: [*mut _MNE; M_HASH_SIZE] =
 pub static mut pIncfile: *mut _INCFILE =
     0 as *const _INCFILE as *mut _INCFILE;
 /*	include file stack  */
-#[no_mangle]
-pub static mut Reploop: *mut _REPLOOP = 0 as *const _REPLOOP as *mut _REPLOOP;
-/*	repeat loop stack   */
 #[no_mangle]
 pub static mut Av: [*mut i8; 256] =
     [0 as *const i8 as *mut i8; 256];

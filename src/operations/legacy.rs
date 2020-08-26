@@ -26,7 +26,6 @@ use crate::types::legacy::{
     _INCFILE,
     _MACRO,
     _MNE,
-    _REPLOOP,
     _STRLIST,
     _SYMBOL,
     FILE,
@@ -35,6 +34,7 @@ use crate::types::legacy::{
 use crate::types::structs::{
     Segment,
     StackIf,
+    StackRepeat,
 };
 use crate::utils::{
     filesystem,
@@ -80,8 +80,6 @@ extern "C" {
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     static mut pIncfile: *mut _INCFILE;
-    #[no_mangle]
-    static mut Reploop: *mut _REPLOOP;
     #[no_mangle]
     static mut Av: [*mut i8; 0];
     #[no_mangle]
@@ -1349,7 +1347,6 @@ pub unsafe extern "C" fn v_endif(mut _str: *mut i8, mut _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_repeat(mut str: *mut i8, mut _dummy: *mut _MNE) {
-    let mut rp: *mut _REPLOOP = 0 as *mut _REPLOOP;
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let current_if = &state.execution.ifs.last().unwrap();
     if !current_if.result || !current_if.result_acc {
@@ -1367,25 +1364,30 @@ pub unsafe extern "C" fn v_repeat(mut str: *mut i8, mut _dummy: *mut _MNE) {
     if (*sym).value < 0 {
         pushif(false);
         FreeSymbolList(sym);
-        asmerr(AsmErrorEquates::RepeatNegative, false,
-               0 as *const i8);
+        asmerr(AsmErrorEquates::RepeatNegative, false, 0 as *const i8);
         return
     }
-    rp =
-        zmalloc(::std::mem::size_of::<_REPLOOP>() as u64 as i32) as *mut _REPLOOP;
-    (*rp).next = Reploop;
-    (*rp).file = pIncfile;
-    if (*pIncfile).flags as i32 & 0x1 as i32 != 0 {
-        (*rp).seek = (*pIncfile).strlist as i64 as u64
-    } else { (*rp).seek = ftell((*pIncfile).fi) as u64 }
-    (*rp).lineno = (*pIncfile).lineno;
-    (*rp).count = (*sym).value as u64;
-    (*rp).flags = (*sym).flags;
-    if (*rp).flags as i32 != 0 {
+
+    let repeat = StackRepeat {
+        count: (*sym).value as u64,
+        file: pIncfile,
+        flags: (*sym).flags,
+        line_number: (*pIncfile).lineno,
+        // FIXME: ugh, change this
+        seek: if (*pIncfile).flags & FileFlags::Macro != 0 {
+            (*pIncfile).strlist as i64 as u64
+        } else {
+            ftell((*pIncfile).fi) as u64
+        }
+    };
+
+    if repeat.flags != 0 {
         state.execution.redoIndex += 1;
         state.execution.redoWhy |= ReasonCodes::RepeatNotResolved
     }
-    Reploop = rp;
+
+    state.execution.repeats.push(repeat);
+
     FreeSymbolList(sym);
     pushif(true);
 }
@@ -1396,25 +1398,26 @@ pub unsafe extern "C" fn v_repend(mut _str: *mut i8, mut _dummy: *mut _MNE) {
         v_endif(0 as *mut i8, 0 as *mut _MNE);
         return;
     }
-    if !Reploop.is_null() && (*Reploop).file == pIncfile {
-        if (*Reploop).flags as i32 == 0 &&
-               {
-                   (*Reploop).count = (*Reploop).count.wrapping_sub(1);
-                   ((*Reploop).count) != 0
-               } {
-            if (*pIncfile).flags as i32 & 0x1 as i32 != 0 {
-                (*pIncfile).strlist = (*Reploop).seek as *mut _STRLIST
+
+    if state.execution.repeats.len() > 0 {
+        let mut current_repeat = &mut state.execution.repeats.last_mut().unwrap();
+        if current_repeat.file == pIncfile {
+            if current_repeat.flags == 0 && {
+                current_repeat.count -= 1;
+                current_repeat.count != 0
+            } {
+                if (*pIncfile).flags & FileFlags::Macro != 0 {
+                    (*pIncfile).strlist = current_repeat.seek as *mut _STRLIST
+                } else {
+                    fseek((*pIncfile).fi, current_repeat.seek as i64, 0);
+                }
+                (*pIncfile).lineno = current_repeat.line_number
             } else {
-                fseek((*pIncfile).fi, (*Reploop).seek as i64, 0);
+                state.execution.repeats.pop();
+                v_endif(0 as *mut i8, 0 as *mut _MNE);
             }
-            (*pIncfile).lineno = (*Reploop).lineno
-        } else {
-            rmnode(&mut Reploop as *mut *mut _REPLOOP as
-                       *mut *mut libc::c_void,
-                   ::std::mem::size_of::<_REPLOOP>() as u64 as i32);
-            v_endif(0 as *mut i8, 0 as *mut _MNE);
+            return;
         }
-        return
     }
     println!("no repeat");
 }

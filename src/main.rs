@@ -62,7 +62,6 @@ use types::legacy::{
     _INCFILE,
     _MACRO,
     _MNE,
-    _REPLOOP,
     _STRLIST,
     _SYMBOL,
     align,
@@ -133,8 +132,6 @@ extern "C" {
     static mut MHash: [*mut _MNE; 0];
     #[no_mangle]
     static mut pIncfile: *mut _INCFILE;
-    #[no_mangle]
-    static mut Reploop: *mut _REPLOOP;
     #[no_mangle]
     static mut Av: [*mut i8; 0];
     #[no_mangle]
@@ -820,10 +817,8 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
                                 outlistfile(comment);
                             }
                         }
-                        while !Reploop.is_null() && (*Reploop).file == pIncfile {
-                            rmnode(&mut Reploop as *mut *mut _REPLOOP as
-                                       *mut *mut libc::c_void,
-                                   ::std::mem::size_of::<_REPLOOP>() as u64 as i32);
+                        while state.execution.repeats.len() > 0 && state.execution.repeats.last().unwrap().file == pIncfile {
+                            state.execution.repeats.pop();
                         }
                         while state.execution.ifs.len() > 0 && state.execution.ifs.last().unwrap().file == pIncfile {
                             state.execution.ifs.pop();

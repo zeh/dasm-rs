@@ -19,6 +19,7 @@ use crate::types::structs::{
 	ParametersState,
 	Segment,
 	StackIf,
+	StackRepeat,
 };
 
 // FIXME: remove legacy module once it's all translated or moved somewhere else
@@ -68,6 +69,7 @@ pub static mut state: GlobalState = GlobalState {
 		redoIf: 0,
 		redoIndex: 0,
 		redoWhy: 0,
+		repeats: Vec::<StackRepeat>::new(),
 		trace: false,
 	},
 

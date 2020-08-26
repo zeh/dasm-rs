@@ -88,6 +88,7 @@ pub struct ExecutionState {
 	pub redoIf: u64,
 	pub redoIndex: i32,
 	pub redoWhy: u64,
+	pub repeats: Vec<StackRepeat>, // Repeat loop stack
 	pub trace: bool,
 }
 
@@ -135,4 +136,15 @@ pub struct StackIf {
 	pub flags: u8, // IfFlags
 	pub result: bool,
 	pub result_acc: bool,
+}
+
+// In original C code, "_REPLOOP" and used as a linked list
+pub struct StackRepeat {
+	pub count: u64,
+	// FIXME: temporary, this seems to be a strlst or a file string pointer of some kind
+	pub seek: u64,
+	pub line_number: u64,
+	// FIXME: temporary, move to a new IncludeFile struct when possible
+	pub file: *mut _INCFILE,
+	pub flags: u8,
 }

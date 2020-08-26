@@ -63,17 +63,6 @@ pub struct _INCFILE {
 
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct _REPLOOP {
-	pub next: *mut _REPLOOP,
-	pub count: u64,
-	pub seek: u64,
-	pub lineno: u64,
-	pub file: *mut _INCFILE,
-	pub flags: u8,
-}
-
-#[derive(Copy, Clone)]
-#[repr(C)]
 pub struct _SYMBOL {
 	pub next: *mut _SYMBOL,
 	pub name: *mut i8,
