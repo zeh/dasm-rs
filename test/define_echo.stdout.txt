@@ -1,4 +1,0 @@
-define_echo.asm (4): error: Unknown Mnemonic 'IMPROPER_SYMBOL'.
-
-Unrecoverable error(s) in pass, aborting assembly!
-Complete.

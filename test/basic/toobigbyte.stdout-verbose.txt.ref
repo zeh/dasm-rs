@@ -1,0 +1,18 @@
+
+START OF PASS: 1
+ Including file "basic/toobigbyte.asm"
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         f800                            f800                           
+----------------------------------------------------------------------
+0 references to unknown symbols.
+0 events requiring another assembler pass.
+
+--- Symbol List (sorted by symbol)
+INEEPROM                 0000                  
+--- End of Symbol List.
+basic/toobigbyte.asm (7): error: Value in 'byte 256' must be <$100.
+
+Unrecoverable error(s) in pass, aborting assembly!
+Complete.

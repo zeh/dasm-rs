@@ -1,0 +1,11 @@
+------- FILE basic-strict/doublemacro.asm LEVEL 1 PASS 1
+      1  0000 ????						; Test case for double macros
+      2  0000 ????
+      3  0000 ????				      processor	6502
+      4  0000 ????
+      5  0000 ????				      MAC	testmac
+      6  0000 ????				      lda	#1
+      7  0000 ????				      ENDM
+      8  0000 ????				      MAC	testmac
+basic-strict/doublemacro.asm (8): error: Macro "testmac" definition is repeated.
+Aborting assembly

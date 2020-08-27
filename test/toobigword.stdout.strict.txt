@@ -1,4 +1,0 @@
-toobigword.asm (7): error: Value in 'word 65536' must be <$10000.
-
-Unrecoverable error(s) in pass, aborting assembly!
-Complete.

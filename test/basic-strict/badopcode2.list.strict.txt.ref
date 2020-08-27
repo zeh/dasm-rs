@@ -1,0 +1,9 @@
+------- FILE basic-strict/badopcode2.asm LEVEL 1 PASS 2
+      1  f800 ????						; Test case for bug in error handling.
+      2  f800 ????
+      3  f800 ????				      processor	6502
+      4  f800 ????
+      5  f800					      ORG	$f800
+basic-strict/badopcode2.asm (6): error: Illegal Addressing mode 'jsr ($1000)'.
+      6  f800					      jsr	($1000)
+      7  f800

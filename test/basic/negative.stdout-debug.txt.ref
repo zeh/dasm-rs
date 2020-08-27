@@ -1,0 +1,187 @@
+Debug trace ON
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ; Test negative literals.
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; This came about because of the "-1 bug" in 2.20.10 and
+
+0MEMORYADDR0 ; will hopefully ensure that no such bug ever returns to
+
+0MEMORYADDR0 ; haunt us again...
+
+0MEMORYADDR0 ;
+
+0MEMORYADDR0 ; Peter H. Froehlich
+
+0MEMORYADDR0 ; phf at acm dot org
+
+0MEMORYADDR0 
+
+0MEMORYADDR0 	.processor	6502
+
+0MEMORYADDR0 	.org		0
+
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	lda	#0
+
+char '#'
+char '0'
+stackarg 0 (@0)
+0MEMORYADDR0 ;	lda	#+0	;syntax error? needs a FIX as well :-)
+
+0MEMORYADDR0 	lda	#-0
+
+char '#'
+char '-'
+doop
+doop @ 0 unary
+char '0'
+stackarg 0 (@0)
+evaltop @(A,O) 1 1
+stackarg 0 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	lda	#1
+
+char '#'
+char '1'
+stackarg 1 (@0)
+0MEMORYADDR0 	lda	#-1
+
+char '#'
+char '-'
+doop
+doop @ 0 unary
+char '1'
+stackarg 1 (@0)
+evaltop @(A,O) 1 1
+stackarg -1 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	lda	#127
+
+char '#'
+char '1'
+stackarg 127 (@0)
+0MEMORYADDR0 	lda	#128
+
+char '#'
+char '1'
+stackarg 128 (@0)
+0MEMORYADDR0 	lda	#129
+
+char '#'
+char '1'
+stackarg 129 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	lda	#-127
+
+char '#'
+char '-'
+doop
+doop @ 0 unary
+char '1'
+stackarg 127 (@0)
+evaltop @(A,O) 1 1
+stackarg -127 (@0)
+0MEMORYADDR0 	lda	#-128
+
+char '#'
+char '-'
+doop
+doop @ 0 unary
+char '1'
+stackarg 128 (@0)
+evaltop @(A,O) 1 1
+stackarg -128 (@0)
+0MEMORYADDR0 	lda	#-129
+
+char '#'
+char '-'
+doop
+doop @ 0 unary
+char '1'
+stackarg 129 (@0)
+evaltop @(A,O) 1 1
+stackarg -129 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	lda	#254
+
+char '#'
+char '2'
+stackarg 254 (@0)
+0MEMORYADDR0 	lda	#255
+
+char '#'
+char '2'
+stackarg 255 (@0)
+0MEMORYADDR0 	lda	#256	; should fail? does fail!
+
+char '#'
+char '2'
+stackarg 256 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	lda	#-254
+
+char '#'
+char '-'
+doop
+doop @ 0 unary
+char '2'
+stackarg 254 (@0)
+evaltop @(A,O) 1 1
+stackarg -254 (@0)
+0MEMORYADDR0 	lda	#-255
+
+char '#'
+char '-'
+doop
+doop @ 0 unary
+char '2'
+stackarg 255 (@0)
+evaltop @(A,O) 1 1
+stackarg -255 (@0)
+0MEMORYADDR0 	lda	#-256	; should fail? does NOT yet fail?
+
+char '#'
+char '-'
+doop
+doop @ 0 unary
+char '2'
+stackarg 256 (@0)
+evaltop @(A,O) 1 1
+stackarg -256 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	lda	#1024	; should fail? does fail!
+
+char '#'
+char '1'
+stackarg 1024 (@0)
+0MEMORYADDR0 	lda	#-1024	; should fail? does NOT yet fail?
+
+char '#'
+char '-'
+doop
+doop @ 0 unary
+char '1'
+stackarg 1024 (@0)
+evaltop @(A,O) 1 1
+stackarg -1024 (@0)
+0MEMORYADDR0 
+
+0MEMORYADDR0 	.end
+
+basic/negative.asm (30): error: Value in 'lda #256' must be <$100.
+basic/negative.asm (36): error: Value in 'lda #1024' must be <$100.
+
+Unrecoverable error(s) in pass, aborting assembly!
+Complete.

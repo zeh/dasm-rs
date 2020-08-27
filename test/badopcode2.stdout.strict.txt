@@ -1,4 +1,0 @@
-
-badopcode2.asm (6): error: Illegal Addressing mode 'jsr ($1000)'.
-
-Fatal assembly error: Source is not resolvable.

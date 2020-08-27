@@ -1,0 +1,7 @@
+
+START OF PASS: 1
+ Including file "basic-strict/doublemacro.asm"
+
+Aborting assembly
+basic-strict/doublemacro.asm (8): error: Macro "testmac" definition is repeated.
+

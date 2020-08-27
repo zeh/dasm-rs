@@ -1,4 +1,0 @@
-badopcode1.asm (7): error: Unknown Mnemonic 'ldz'.
-
-Unrecoverable error(s) in pass, aborting assembly!
-Complete.

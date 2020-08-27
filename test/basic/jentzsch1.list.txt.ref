@@ -1,0 +1,16 @@
+------- FILE basic/jentzsch1.asm LEVEL 1 PASS 1
+      1  0000 ????						; Thomas Jentzsch <tjentzsch@web.de> test case for bug
+      2  0000 ????						; in error handling.
+      3  0000 ????
+      4  0000 ????				      processor	6502
+      5  0000 ????				      include	vcs.h
+      6  0000 ????
+      7  f800					      ORG	$f800
+      8  f800
+      9  f800				   Start
+basic/jentzsch1.asm (10): error: Unknown Mnemonic 'ldz'.
+     10  f800					      ldz	#$00	; illegal mnemonic
+     11  f800
+     12  fffc					      org	$fffc
+     13  fffc		       00 f8		      .word.w	Start
+     14  fffe		       00 f8		      .word.w	Start

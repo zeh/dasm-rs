@@ -1,0 +1,55 @@
+------- FILE basic/addressexpression.asm LEVEL 1 PASS 1
+      1  0000 ????						; addressexpression - adapted from the "jentzsch3" address expression bug test.
+      2  0000 ????						; Original test courtesy Thomas Jentzsch. Output result code generation
+      3  0000 ????						; added by Mike Saarna.
+      4  0000 ????
+      5  0000 ????				      processor	6502
+      6  0100					      ORG	$100
+      7  0100
+      8  0100		       01 00	   TEST_1     =	(.)
+      9  0100		       01 00	   TEST_2     =	(*)
+     10  0100		       ff ff ff 01 TEST_3     =	(1 - .)
+     11  0100		       ff ff ff 01 TEST_4     =	(1 - *)
+     12  0100		       ff ff ff 00 TEST_5     =	(1 - . - 1)
+     13  0100		       ff ff ff 00 TEST_6     =	(1 - * - 1)
+     14  0100		       ff ff ff 00 TEST_7     =	(1 - 1 - .)
+     15  0100		       ff ff ff 00 TEST_8     =	(1 - 1 - *)
+     16  0100		       01 01	   TEST_9     =	(1 + *)
+     17  0100		       01 02	   TEST_10    =	(1 + * + 1)
+     18  0100		       01 02	   TEST_11    =	(1 + 1 + *)
+     19  0100
+     20  0100					      if	TEST_1 = 256
+     21  0100		       01		      .byte.b	$01
+     22  0101					      endif
+     23  0101					      if	TEST_2 = 256
+     24  0101		       02		      .byte.b	$02
+     25  0102					      endif
+     26  0102					      if	TEST_3 = -255
+     27  0102		       03		      .byte.b	$03
+     28  0103					      endif
+     29  0103					      if	TEST_4 = -255
+     30  0103		       04		      .byte.b	$04
+     31  0104					      endif
+     32  0104					      if	TEST_5 = -256
+     33  0104		       05		      .byte.b	$05
+     34  0105					      endif
+     35  0105					      if	TEST_6 = -256
+     36  0105		       06		      .byte.b	$06
+     37  0106					      endif
+     38  0106					      if	TEST_7 = -256
+     39  0106		       07		      .byte.b	$07
+     40  0107					      endif
+     41  0107					      if	TEST_8 = -256
+     42  0107		       08		      .byte.b	$08
+     43  0108					      endif
+     44  0108					      if	TEST_9 = 257
+     45  0108		       09		      .byte.b	$09
+     46  0109					      endif
+     47  0109					      if	TEST_10 = 258
+     48  0109		       0a		      .byte.b	$0A
+     49  010a					      endif
+     50  010a					      if	TEST_11 = 258
+     51  010a		       0b		      .byte.b	$0B
+     52  010b					      endif
+     53  010b
+     54  010b

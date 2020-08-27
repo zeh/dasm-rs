@@ -1,0 +1,27 @@
+
+START OF PASS: 1
+ Including file "basic/addressexpression.asm"
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         0100                            0100                           
+----------------------------------------------------------------------
+0 references to unknown symbols.
+0 events requiring another assembler pass.
+
+--- Symbol List (sorted by symbol)
+INEEPROM                 0000                  
+TEST_1                   0100              (R )
+TEST_10                  0102              (R )
+TEST_11                  0102              (R )
+TEST_2                   0100              (R )
+TEST_3                   ffffffffffffff01              (R )
+TEST_4                   ffffffffffffff01              (R )
+TEST_5                   ffffffffffffff00              (R )
+TEST_6                   ffffffffffffff00              (R )
+TEST_7                   ffffffffffffff00              (R )
+TEST_8                   ffffffffffffff00              (R )
+TEST_9                   0101              (R )
+--- End of Symbol List.
+
+Complete.

@@ -1,0 +1,651 @@
+
+START OF PASS: 1
+ Including file "basic/sample.asm"
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+code                         fe00                            fe00                           
+bss                      [u] 0060                            0060                           
+INITIAL CODE SEGMENT         0000 ????                       0000 ????                      
+----------------------------------------------------------------------
+29 references to unknown symbols.
+52 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+ - Expression in a DC not resolved.
+ - Label defined after it has been referenced (forward reference).
+
+--- Symbol List (sorted by symbol)
+11.10                    ff7d              (R )
+11.100                   ffa2              (R )
+11.101                   ffaa              (R )
+11.102                   ffb1                  
+11.102r                  ffb9              (R )
+11.103                   ffbf              (R )
+11.20                    ff8c              (R )
+11.200                   ffbf              (R )
+11.4                     ff66              (R )
+11.5                     ff6c              (R )
+2.1                      fe70              (R )
+2.10                     fe8c              (R )
+2.110                    febc              (R )
+2.120                    fecf              (R )
+ADCTL                    0030              (R )
+ADCTL_CA                 0001                  
+ADCTL_CB                 0002                  
+ADCTL_CC                 0004              (R )
+ADCTL_CCF                0080                  
+ADCTL_CD                 0008                  
+ADCTL_MULT               0010              (R )
+ADCTL_SCAN               0020              (R )
+ADR1                     0031              (R )
+ADR2                     0032                  
+ADR3                     0033              (R )
+ADR4                     0034              (R )
+BadCmd                   fef7              (R )
+BadInt                   fe18              (R )
+BAUD                     002b              (R )
+BAUD_19200               0002                  
+BAUD_4800                0022                  
+BAUD_9600                0003              (R )
+BAUD_RCKB                0008                  
+BAUD_SCP0                0010                  
+BAUD_SCP1                0020              (R )
+BAUD_SCR0                0001              (R )
+BAUD_SCR1                0002              (R )
+BAUD_SCR2                0004                  
+BAUD_TCLR                0080                  
+BoardAddr                0061              (R )
+BOOTSTRAPORG             00eb                  
+BPROT                    0035              (R )
+BPROT_BPRT0              0001                  
+BPROT_BPRT1              0002                  
+BPROT_BPRT2              0004                  
+BPROT_BPRT3              0008                  
+BPROT_PTCON              0010                  
+BsCMJmp                  00fd                  
+BsCOPJmp                 00fa                  
+BsIC1Jmp                 00e8                  
+BsIC2Jmp                 00e5                  
+BsIC3Jmp                 00e2                  
+BsILLJmp                 00f7                  
+BsIRQJmp                 00ee                  
+BsOC1Jmp                 00df                  
+BsOC2Jmp                 00dc                  
+BsOC3Jmp                 00d9                  
+BsOC4Jmp                 00d6                  
+BsOC5Jmp                 00d3                  
+BsPAIJmp                 00ca                  
+BsPAOVJmp                00cd                  
+BsRTIJmp                 00eb                  
+BsSCIJmp                 00c4                  
+BsSPIJmp                 00c7                  
+BsSWIJmp                 00f4                  
+BsTOVJmp                 00d0                  
+BsXIRQJmp                00f1                  
+CFORC                    000b                  
+CFORC_FOC1               0080                  
+CFORC_FOC2               0040                  
+CFORC_FOC3               0020                  
+CFORC_FOC4               0010                  
+CFORC_FOC5               0008                  
+CommandTable             fee7              (R )
+CONFIG                   003f                  
+CONFIG_EEON              0001                  
+CONFIG_NOCOP             0004                  
+CONFIG_NOSEC             0008                  
+CONFIG_ROMON             0002                  
+ConfigureCmd             fef9              (R )
+COPRST                   003a                  
+Counter1                 0062              (R )
+Counter2                 0064              (R )
+CS101                    0020                  
+CS102                    0010                  
+CSGEN                    0040                  
+CSPROG                   0080                  
+DDRA                     0001                  
+DDRC                     0007                  
+DDRD                     0009              (R )
+DDRG                     0003                  
+EEPROM                   fe00                  
+Get8A                    ffc7              (R )
+Get8B                    ffcb              (R )
+GetB                     fed8              (R )
+GetBLoop                 fed7              (R )
+GetBoardAddr             ff41              (R )
+HIRAMBEG                 0300              (R )
+HPRIO                    003c                  
+HPRIO_IRV                0010                  
+HPRIO_MDA                0020                  
+HPRIO_PSEL0              0001                  
+HPRIO_PSEL1              0002                  
+HPRIO_PSEL2              0004                  
+HPRIO_PSEL3              0008                  
+HPRIO_RBOOT              0080                  
+HPRIO_SMOD               0040                  
+IC1Int                   ff2f              (R )
+IC2Int                   ff38              (R )
+IdentifyCmd              ff01              (R )
+INEEPROM                 0000              (R )
+INIT                     003d              (R )
+INIT_RAM0                0010                  
+INIT_RAM1                0020                  
+INIT_RAM2                0040                  
+INIT_RAM3                0080                  
+INIT_REG0                0001                  
+INIT_REG1                0002                  
+INIT_REG2                0004                  
+INIT_REG3                0008                  
+LORAMBEG                 0060              (R )
+MaxScanTable             0300              (R )
+memCpy                   ff16              (R )
+memCpyLoop               ff17              (R )
+OC1_d3                   0008                  
+OC1_d4                   0010                  
+OC1_d5                   0020                  
+OC1_d6                   0040                  
+OC1_d7                   0080                  
+OC1_M3                   0008                  
+OC1_M4                   0010                  
+OC1_M5                   0020                  
+OC1_M6                   0040                  
+OC1_M7                   0080                  
+OC1D                     000d                  
+OC1Int                   ff52              (R )
+OC1M                     000c                  
+oneOfFour                ff48              (R )
+OPT2                     0038              (R )
+OPT2_CLK4X               0020                  
+OPT2_CWOM                0040                  
+OPT2_GWOM                0080                  
+OPTION                   0039              (R )
+OPTION_ADPU              0080              (R )
+OPTION_CME               0008                  
+OPTION_CR0               0001                  
+OPTION_CR1               0002                  
+OPTION_CSEL              0040                  
+OPTION_DLY               0010                  
+OPTION_IRQE              0020                  
+PacketBuf                006b              (R )
+PACNT                    0027                  
+PACTL                    0026                  
+PACTL_DDRA7              0080                  
+PACTL_PAEN               0040                  
+PACTL_PAMOD              0020                  
+PACTL_PEDGE              0010                  
+PACTL_RTR0               0001                  
+PACTL_RTR1               0002                  
+PKT_ADR                  0001              (R )
+PKT_CMD                  0002              (R )
+PKT_DATA                 0003              (R )
+PKT_LEN                  0000              (R )
+PORTA                    0000              (R )
+PORTA_24V                0080              (R )
+PORTB                    0004                  
+PORTC                    0006                  
+PORTD                    0008                  
+PORTE                    000a                  
+PORTF                    0005              (R )
+PORTF_DIGOUT1            0040              (R )
+PORTF_DIGOUT2            0080              (R )
+PORTF_GRN                0020              (R )
+PORTF_RED                0010              (R )
+PORTG                    0002              (R )
+PORTG_ADSTROBHI          0004              (R )
+PORTG_MUXSEL0            0008                  
+PORTG_MUXSEL1            0010                  
+PORTG_MUXSEL2            0020                  
+PORTG_MUXSEL3            0040                  
+PORTG_RESERVED7          0080                  
+PPROG                    003b                  
+PPROG_BYTE               0010                  
+PPROG_EELAT              0002                  
+PPROG_EEPGM              0001                  
+PPROG_ERASE              0004                  
+PPROG_EVEN               0040                  
+PPROG_ODD                0080                  
+PPROG_ROW                0008                  
+RAM                      0000                  
+ReadBytesCmd             ff10              (R )
+REGS                     0000              (R )
+Reset                    fe18              (R )
+ResetCmd                 fe18              (R )
+RTIAvrCnt                006a              (R )
+RTIGrnCnt                0067              (R )
+RTIRedCnt                0066              (R )
+RTIWDog                  0068              (R )
+RTUConfig                0060              (R )
+ScanMax16                ffc0              (R )
+SCCR1                    002c              (R )
+SCCR1_M                  0010                  
+SCCR1_R8                 0080                  
+SCCR1_T8                 0040                  
+SCCR1_WAKE               0008                  
+SCCR2                    002d              (R )
+SCCR2_ILIE               0010                  
+SCCR2_RE                 0004              (R )
+SCCR2_RIE                0020                  
+SCCR2_RWU                0002                  
+SCCR2_SBK                0001                  
+SCCR2_TCIE               0040                  
+SCCR2_TE                 0008              (R )
+SCCR2_TIE                0080                  
+SCDR                     002f              (R )
+SCSR                     002e              (R )
+SCSR_FE                  0002                  
+SCSR_IDLE                0010                  
+SCSR_NF                  0004                  
+SCSR_OR                  0008                  
+SCSR_RDRF                0020              (R )
+SCSR_TC                  0040              (R )
+SCSR_TDRE                0080              (R )
+SendB                    fee0              (R )
+SendBLoop                fedf              (R )
+SPCR                     0028              (R )
+SPCR_CPHA                0004                  
+SPCR_CPOL                0008                  
+SPCR_DWOM                0020                  
+SPCR_MSTR                0010              (R )
+SPCR_SPE                 0040              (R )
+SPCR_SPIE                0080                  
+SPCR_SPR0                0001                  
+SPCR_SPR1                0002                  
+SPDR                     002a              (R )
+SPSR                     0029              (R )
+SPSR_MODF                0010                  
+SPSR_SPIF                0080                  
+SPSR_WCOL                0040                  
+Stack                    0360                  
+StackEnd                 03a0              (R )
+TCNT                     000e                  
+TCTL1                    0020                  
+TCTL1_OL2                0040                  
+TCTL1_OL3                0010                  
+TCTL1_OL4                0004                  
+TCTL1_OL5                0001                  
+TCTL1_OM2                0080                  
+TCTL1_OM3                0020                  
+TCTL1_OM4                0008                  
+TCTL1_OM5                0002                  
+TCTL2                    0021              (R )
+TCTL2_EDG1A              0010              (R )
+TCTL2_EDG1B              0020                  
+TCTL2_EDG2A              0004              (R )
+TCTL2_EDG2B              0008                  
+TCTL2_EDG3A              0001              (R )
+TCTL2_EDG3B              0002                  
+TEST1                    003e                  
+TEST1_CBYP               0010                  
+TEST1_DISR               0008                  
+TEST1_FCM                0004                  
+TEST1_FCOP               0002                  
+TEST1_OCCR               0020                  
+TEST1_TCON               0001                  
+TEST1_TILOP              0080                  
+TFLG1                    0023              (R )
+TFLG1_IC1F               0004              (R )
+TFLG1_IC2F               0002              (R )
+TFLG1_IC3F               0001                  
+TFLG1_OC1F               0080              (R )
+TFLG1_OC2F               0040                  
+TFLG1_OC3F               0020                  
+TFLG1_OC4F               0010                  
+TFLG1_OC5F               0008                  
+TFLG2                    0025                  
+TFLG2_PAIF               0010                  
+TFLG2_PAOVF              0020                  
+TFLG2_RTIF               0040                  
+TFLG2_TOF                0080                  
+TIC1                     0010                  
+TIC2                     0012                  
+TIC3                     0014                  
+TMSK1                    0022              (R )
+TMSK1_IC1I               0004              (R )
+TMSK1_IC2I               0002              (R )
+TMSK1_IC3I               0001                  
+TMSK1_OC1I               0080              (R )
+TMSK1_OC2I               0040                  
+TMSK1_OC3I               0020                  
+TMSK1_OC4I               0010                  
+TMSK1_OC5I               0008                  
+TMSK2                    0024                  
+TMSK2_PAII               0010                  
+TMSK2_PAOVI              0020                  
+TMSK2_PR0                0001                  
+TMSK2_PR1                0002                  
+TMSK2_RTII               0040                  
+TMSK2_TOI                0080                  
+TOC1                     0016              (R )
+TOC2                     0018                  
+TOC3                     001a                  
+TOC4                     001c                  
+TOC5                     001e                  
+TransmitPacket           fea8              (R )
+WaitPacket               fe66              (R )
+WaitPacketRed            fe5f              (R )
+WriteBytesCmd            ff27              (R )
+--- End of Symbol List.
+
+START OF PASS: 2
+ Including file "basic/sample.asm"
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+code                         fe00                            fe00                           
+bss                      [u] 0060                            0060                           
+INITIAL CODE SEGMENT         0000 ????                       0000 ????                      
+----------------------------------------------------------------------
+0 references to unknown symbols.
+0 events requiring another assembler pass.
+
+--- Symbol List (sorted by symbol)
+11.10                    ff7d              (R )
+11.100                   ffa2              (R )
+11.101                   ffaa              (R )
+11.102                   ffb1                  
+11.102r                  ffb9              (R )
+11.103                   ffbf              (R )
+11.20                    ff8c              (R )
+11.200                   ffbf              (R )
+11.4                     ff66              (R )
+11.5                     ff6c              (R )
+2.1                      fe70              (R )
+2.10                     fe8c              (R )
+2.110                    febc              (R )
+2.120                    fecf              (R )
+ADCTL                    0030              (R )
+ADCTL_CA                 0001                  
+ADCTL_CB                 0002                  
+ADCTL_CC                 0004              (R )
+ADCTL_CCF                0080                  
+ADCTL_CD                 0008                  
+ADCTL_MULT               0010              (R )
+ADCTL_SCAN               0020              (R )
+ADR1                     0031              (R )
+ADR2                     0032                  
+ADR3                     0033              (R )
+ADR4                     0034              (R )
+BadCmd                   fef7              (R )
+BadInt                   fe18              (R )
+BAUD                     002b              (R )
+BAUD_19200               0002                  
+BAUD_4800                0022                  
+BAUD_9600                0003              (R )
+BAUD_RCKB                0008                  
+BAUD_SCP0                0010                  
+BAUD_SCP1                0020              (R )
+BAUD_SCR0                0001              (R )
+BAUD_SCR1                0002              (R )
+BAUD_SCR2                0004                  
+BAUD_TCLR                0080                  
+BoardAddr                0061              (R )
+BOOTSTRAPORG             00eb                  
+BPROT                    0035              (R )
+BPROT_BPRT0              0001                  
+BPROT_BPRT1              0002                  
+BPROT_BPRT2              0004                  
+BPROT_BPRT3              0008                  
+BPROT_PTCON              0010                  
+BsCMJmp                  00fd                  
+BsCOPJmp                 00fa                  
+BsIC1Jmp                 00e8                  
+BsIC2Jmp                 00e5                  
+BsIC3Jmp                 00e2                  
+BsILLJmp                 00f7                  
+BsIRQJmp                 00ee                  
+BsOC1Jmp                 00df                  
+BsOC2Jmp                 00dc                  
+BsOC3Jmp                 00d9                  
+BsOC4Jmp                 00d6                  
+BsOC5Jmp                 00d3                  
+BsPAIJmp                 00ca                  
+BsPAOVJmp                00cd                  
+BsRTIJmp                 00eb                  
+BsSCIJmp                 00c4                  
+BsSPIJmp                 00c7                  
+BsSWIJmp                 00f4                  
+BsTOVJmp                 00d0                  
+BsXIRQJmp                00f1                  
+CFORC                    000b                  
+CFORC_FOC1               0080                  
+CFORC_FOC2               0040                  
+CFORC_FOC3               0020                  
+CFORC_FOC4               0010                  
+CFORC_FOC5               0008                  
+CommandTable             fee7              (R )
+CONFIG                   003f                  
+CONFIG_EEON              0001                  
+CONFIG_NOCOP             0004                  
+CONFIG_NOSEC             0008                  
+CONFIG_ROMON             0002                  
+ConfigureCmd             fef9              (R )
+COPRST                   003a                  
+Counter1                 0062              (R )
+Counter2                 0064              (R )
+CS101                    0020                  
+CS102                    0010                  
+CSGEN                    0040                  
+CSPROG                   0080                  
+DDRA                     0001                  
+DDRC                     0007                  
+DDRD                     0009              (R )
+DDRG                     0003                  
+EEPROM                   fe00                  
+Get8A                    ffc7              (R )
+Get8B                    ffcb              (R )
+GetB                     fed8              (R )
+GetBLoop                 fed7              (R )
+GetBoardAddr             ff41              (R )
+HIRAMBEG                 0300              (R )
+HPRIO                    003c                  
+HPRIO_IRV                0010                  
+HPRIO_MDA                0020                  
+HPRIO_PSEL0              0001                  
+HPRIO_PSEL1              0002                  
+HPRIO_PSEL2              0004                  
+HPRIO_PSEL3              0008                  
+HPRIO_RBOOT              0080                  
+HPRIO_SMOD               0040                  
+IC1Int                   ff2f              (R )
+IC2Int                   ff38              (R )
+IdentifyCmd              ff01              (R )
+INEEPROM                 0000              (R )
+INIT                     003d              (R )
+INIT_RAM0                0010                  
+INIT_RAM1                0020                  
+INIT_RAM2                0040                  
+INIT_RAM3                0080                  
+INIT_REG0                0001                  
+INIT_REG1                0002                  
+INIT_REG2                0004                  
+INIT_REG3                0008                  
+LORAMBEG                 0060              (R )
+MaxScanTable             0300              (R )
+memCpy                   ff16              (R )
+memCpyLoop               ff17              (R )
+OC1_d3                   0008                  
+OC1_d4                   0010                  
+OC1_d5                   0020                  
+OC1_d6                   0040                  
+OC1_d7                   0080                  
+OC1_M3                   0008                  
+OC1_M4                   0010                  
+OC1_M5                   0020                  
+OC1_M6                   0040                  
+OC1_M7                   0080                  
+OC1D                     000d                  
+OC1Int                   ff52              (R )
+OC1M                     000c                  
+oneOfFour                ff48              (R )
+OPT2                     0038              (R )
+OPT2_CLK4X               0020                  
+OPT2_CWOM                0040                  
+OPT2_GWOM                0080                  
+OPTION                   0039              (R )
+OPTION_ADPU              0080              (R )
+OPTION_CME               0008                  
+OPTION_CR0               0001                  
+OPTION_CR1               0002                  
+OPTION_CSEL              0040                  
+OPTION_DLY               0010                  
+OPTION_IRQE              0020                  
+PacketBuf                006b              (R )
+PACNT                    0027                  
+PACTL                    0026                  
+PACTL_DDRA7              0080                  
+PACTL_PAEN               0040                  
+PACTL_PAMOD              0020                  
+PACTL_PEDGE              0010                  
+PACTL_RTR0               0001                  
+PACTL_RTR1               0002                  
+PKT_ADR                  0001              (R )
+PKT_CMD                  0002              (R )
+PKT_DATA                 0003              (R )
+PKT_LEN                  0000              (R )
+PORTA                    0000              (R )
+PORTA_24V                0080              (R )
+PORTB                    0004                  
+PORTC                    0006                  
+PORTD                    0008                  
+PORTE                    000a                  
+PORTF                    0005              (R )
+PORTF_DIGOUT1            0040              (R )
+PORTF_DIGOUT2            0080              (R )
+PORTF_GRN                0020              (R )
+PORTF_RED                0010              (R )
+PORTG                    0002              (R )
+PORTG_ADSTROBHI          0004              (R )
+PORTG_MUXSEL0            0008                  
+PORTG_MUXSEL1            0010                  
+PORTG_MUXSEL2            0020                  
+PORTG_MUXSEL3            0040                  
+PORTG_RESERVED7          0080                  
+PPROG                    003b                  
+PPROG_BYTE               0010                  
+PPROG_EELAT              0002                  
+PPROG_EEPGM              0001                  
+PPROG_ERASE              0004                  
+PPROG_EVEN               0040                  
+PPROG_ODD                0080                  
+PPROG_ROW                0008                  
+RAM                      0000                  
+ReadBytesCmd             ff10              (R )
+REGS                     0000              (R )
+Reset                    fe18              (R )
+ResetCmd                 fe18              (R )
+RTIAvrCnt                006a              (R )
+RTIGrnCnt                0067              (R )
+RTIRedCnt                0066              (R )
+RTIWDog                  0068              (R )
+RTUConfig                0060              (R )
+ScanMax16                ffc0              (R )
+SCCR1                    002c              (R )
+SCCR1_M                  0010                  
+SCCR1_R8                 0080                  
+SCCR1_T8                 0040                  
+SCCR1_WAKE               0008                  
+SCCR2                    002d              (R )
+SCCR2_ILIE               0010                  
+SCCR2_RE                 0004              (R )
+SCCR2_RIE                0020                  
+SCCR2_RWU                0002                  
+SCCR2_SBK                0001                  
+SCCR2_TCIE               0040                  
+SCCR2_TE                 0008              (R )
+SCCR2_TIE                0080                  
+SCDR                     002f              (R )
+SCSR                     002e              (R )
+SCSR_FE                  0002                  
+SCSR_IDLE                0010                  
+SCSR_NF                  0004                  
+SCSR_OR                  0008                  
+SCSR_RDRF                0020              (R )
+SCSR_TC                  0040              (R )
+SCSR_TDRE                0080              (R )
+SendB                    fee0              (R )
+SendBLoop                fedf              (R )
+SPCR                     0028              (R )
+SPCR_CPHA                0004                  
+SPCR_CPOL                0008                  
+SPCR_DWOM                0020                  
+SPCR_MSTR                0010              (R )
+SPCR_SPE                 0040              (R )
+SPCR_SPIE                0080                  
+SPCR_SPR0                0001                  
+SPCR_SPR1                0002                  
+SPDR                     002a              (R )
+SPSR                     0029              (R )
+SPSR_MODF                0010                  
+SPSR_SPIF                0080                  
+SPSR_WCOL                0040                  
+Stack                    0360                  
+StackEnd                 03a0              (R )
+TCNT                     000e                  
+TCTL1                    0020                  
+TCTL1_OL2                0040                  
+TCTL1_OL3                0010                  
+TCTL1_OL4                0004                  
+TCTL1_OL5                0001                  
+TCTL1_OM2                0080                  
+TCTL1_OM3                0020                  
+TCTL1_OM4                0008                  
+TCTL1_OM5                0002                  
+TCTL2                    0021              (R )
+TCTL2_EDG1A              0010              (R )
+TCTL2_EDG1B              0020                  
+TCTL2_EDG2A              0004              (R )
+TCTL2_EDG2B              0008                  
+TCTL2_EDG3A              0001              (R )
+TCTL2_EDG3B              0002                  
+TEST1                    003e                  
+TEST1_CBYP               0010                  
+TEST1_DISR               0008                  
+TEST1_FCM                0004                  
+TEST1_FCOP               0002                  
+TEST1_OCCR               0020                  
+TEST1_TCON               0001                  
+TEST1_TILOP              0080                  
+TFLG1                    0023              (R )
+TFLG1_IC1F               0004              (R )
+TFLG1_IC2F               0002              (R )
+TFLG1_IC3F               0001                  
+TFLG1_OC1F               0080              (R )
+TFLG1_OC2F               0040                  
+TFLG1_OC3F               0020                  
+TFLG1_OC4F               0010                  
+TFLG1_OC5F               0008                  
+TFLG2                    0025                  
+TFLG2_PAIF               0010                  
+TFLG2_PAOVF              0020                  
+TFLG2_RTIF               0040                  
+TFLG2_TOF                0080                  
+TIC1                     0010                  
+TIC2                     0012                  
+TIC3                     0014                  
+TMSK1                    0022              (R )
+TMSK1_IC1I               0004              (R )
+TMSK1_IC2I               0002              (R )
+TMSK1_IC3I               0001                  
+TMSK1_OC1I               0080              (R )
+TMSK1_OC2I               0040                  
+TMSK1_OC3I               0020                  
+TMSK1_OC4I               0010                  
+TMSK1_OC5I               0008                  
+TMSK2                    0024                  
+TMSK2_PAII               0010                  
+TMSK2_PAOVI              0020                  
+TMSK2_PR0                0001                  
+TMSK2_PR1                0002                  
+TMSK2_RTII               0040                  
+TMSK2_TOI                0080                  
+TOC1                     0016              (R )
+TOC2                     0018                  
+TOC3                     001a                  
+TOC4                     001c                  
+TOC5                     001e                  
+TransmitPacket           fea8              (R )
+WaitPacket               fe66              (R )
+WaitPacketRed            fe5f              (R )
+WriteBytesCmd            ff27              (R )
+--- End of Symbol List.
+
+Complete.

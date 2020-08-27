@@ -1,0 +1,4 @@
+basic-strict/toobigbyte.asm (7): error: Value in 'byte 256' must be <$100.
+
+Unrecoverable error(s) in pass, aborting assembly!
+Complete.

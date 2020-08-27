@@ -1,0 +1,57 @@
+
+START OF PASS: 1
+ Including file "basic/jentzsch2.asm"
+Warning: Unable to open 'vcs.h'
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         f800                            f800                           
+----------------------------------------------------------------------
+2 references to unknown symbols.
+1 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+
+--- Symbol List (sorted by symbol)
+0.error                  0000 ????         (R )
+INEEPROM                 0000                  
+Start                    f800              (R )
+vcs.h                    0000 ????         (R )
+--- End of Symbol List.
+--- Unresolved Symbol List
+vcs.h                    0000 ????         (R )
+0.error                  0000 ????         (R )
+--- 2 Unresolved Symbols
+
+
+START OF PASS: 2
+ Including file "basic/jentzsch2.asm"
+Warning: Unable to open 'vcs.h'
+
+----------------------------------------------------------------------
+SEGMENT NAME                 INIT PC  INIT RPC FINAL PC FINAL RPC
+INITIAL CODE SEGMENT         f800                            f800                           
+----------------------------------------------------------------------
+2 references to unknown symbols.
+1 events requiring another assembler pass.
+ - Expression in mnemonic not resolved.
+
+--- Symbol List (sorted by symbol)
+0.error                  0000 ????         (R )
+INEEPROM                 0000                  
+Start                    f800              (R )
+vcs.h                    0000 ????         (R )
+--- End of Symbol List.
+--- Unresolved Symbol List
+vcs.h                    0000 ????         (R )
+0.error                  0000 ????         (R )
+--- 2 Unresolved Symbols
+
+--- Unresolved Symbol List
+vcs.h                    0000 ????         (R )
+0.error                  0000 ????         (R )
+--- 2 Unresolved Symbols
+
+
+basic/jentzsch2.asm (10): error: Unknown Mnemonic 'ldz'.
+
+Fatal assembly error: Source is not resolvable.

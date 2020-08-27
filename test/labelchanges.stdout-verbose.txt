@@ -1,5 +1,0 @@
-
-START OF PASS: 1
- Including file "labelchanges.asm"
-thread 'main' panicked at 'index out of bounds: the len is 4 but the index is 6', src/operations/legacy.rs:0000:0
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace.

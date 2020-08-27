@@ -1,9 +1,0 @@
-------- FILE toobigword.asm LEVEL 1 PASS 1
-      1  0000 ????						; Test case for strict mode check for word data size
-      2  0000 ????
-      3  0000 ????				      processor	6502
-      4  0000 ????
-      5  f800					      ORG	$f800
-      6  f800
-      7  f800		       00 00		      .word.w	$10000
-      8  f802

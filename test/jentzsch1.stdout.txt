@@ -1,5 +1,0 @@
-Warning: Unable to open 'vcs.h'
-jentzsch1.asm (10): error: Unknown Mnemonic 'ldz'.
-
-Unrecoverable error(s) in pass, aborting assembly!
-Complete.

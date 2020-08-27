@@ -1,0 +1,4 @@
+segment: code 0000 ????               vs current org: 0005
+
+basic/demo.asm (46): error: Origin Reverse-indexed.
+

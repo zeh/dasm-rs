@@ -1,0 +1,8 @@
+
+START OF PASS: 1
+ Including file "basic/demo.asm"
+segment: code 0000 ????               vs current org: 0005
+
+Aborting assembly
+basic/demo.asm (46): error: Origin Reverse-indexed.
+
