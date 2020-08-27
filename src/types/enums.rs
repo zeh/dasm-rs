@@ -122,7 +122,7 @@ pub enum ListMode {
 pub enum AddressModes {
 	Imp,						// 0  Implied
 	Imm8,						// 1  Immediate 8 bits
-	Imm16,		        		// 2  Immediate 16 bits
+	Imm16,						// 2  Immediate 16 bits
 	ByteAdr,					// 3  Address 8 bits
 	ByteAdrX,					// 4  Address 16 bits
 	ByteAdrY,					// 5  Relative 8 bits
@@ -145,11 +145,59 @@ pub enum AddressModes {
 	None,						// 21 Made to simulate reset of -1 in findext()
 }
 
-// Made to replace "NUMOC" in the original type
 impl AddressModes {
-    pub fn length() -> u32 {
+	// Made to replace "NUMOC" in the original type
+	pub fn length() -> u32 {
 		return Self::BSS as u32 - Self::Imp as u32 + 1
-    }
+	}
+
+	// In original C code, "Opsize" (as an array with a different length than the enum list)
+	pub fn operation_size(&self) -> u8 {
+		match self {
+			Self::Imp => 0,
+			Self::Imm8 => 1,
+			Self::Imm16 => 2,
+			Self::ByteAdr => 1,
+			Self::ByteAdrX => 1,
+			Self::ByteAdrY => 1,
+			Self::WordAdr => 2,
+			Self::WordAdrX => 2,
+			Self::WordAdrY => 2,
+			Self::Rel => 2,
+			Self::IndByteX => 1,
+			Self::IndByteY => 1,
+			Self::IndWord => 2,
+			Self::ZeroX => 0,
+			Self::ZeroY => 0,
+			Self::BitMod => 1,
+			Self::BitBraMod => 1,
+			_ => 0,
+		}
+	}
+
+	// In original C code, "Cvt" (as an array with a different length than the enum list)
+	pub fn convert(&self) -> Self {
+		match self {
+			Self::Imp => Self::Imp,
+			Self::Imm8 => Self::Imm16,
+			Self::Imm16 => Self::Imp,
+			Self::ByteAdr => Self::WordAdr,
+			Self::ByteAdrX => Self::WordAdrX,
+			Self::ByteAdrY => Self::WordAdrY,
+			Self::WordAdr => Self::Rel,
+			Self::WordAdrX => Self::Imp,
+			Self::WordAdrY => Self::Imp,
+			Self::Rel => Self::Imp,
+			Self::IndByteX => Self::Imp,
+			Self::IndByteY => Self::Imp,
+			Self::IndWord => Self::Imp,
+			Self::ZeroX => Self::ByteAdrX,
+			Self::ZeroY => Self::ByteAdrY,
+			Self::BitMod => Self::Imp,
+			Self::BitBraMod => Self::Imp,
+			_ => Self::Imp,
+		}
+	}
 }
 
 // In original C code, used for "MsbOrder" but without a clear enum

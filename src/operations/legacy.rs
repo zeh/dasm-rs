@@ -81,10 +81,6 @@ extern "C" {
     #[no_mangle]
     static mut Av: [*mut i8; 0];
     #[no_mangle]
-    static mut Cvt: [u32; 0];
-    #[no_mangle]
-    static mut Opsize: [u32; 0];
-    #[no_mangle]
     fn findext(str: *mut i8);
     #[no_mangle]
     fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8)
@@ -243,15 +239,15 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut i8,
             0
         }
     }
-    while (*mne).okmask & ((1) << addressMode as isize) as u64 == 0 && *Cvt.as_mut_ptr().offset(addressMode as isize) != 0 {
-        addressMode = AddressModes::try_from(*Cvt.as_mut_ptr().offset(addressMode as isize) as u8).unwrap();
+    while (*mne).okmask & ((1) << addressMode as isize) as u64 == 0 && addressMode.convert() != AddressModes::Imp {
+        addressMode = addressMode.convert();
     }
     if state.execution.trace {
         println!(
             "memask: {:08x} adrmode: {}  Cvt[am]: {}",
             (*mne).okmask,
             addressMode as u8,
-            *Cvt.as_mut_ptr().offset(addressMode as isize)
+            addressMode.convert() as u8,
         );
     }
     if (*mne).okmask & ((1) << addressMode as u8) as u64 == 0 {
@@ -282,8 +278,8 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut i8,
     if state.execution.trace {
         println!("final addrmode = {}", addressMode as u8);
     }
-    while opsize as u32 > *Opsize.as_mut_ptr().offset(addressMode as isize) {
-        if *Cvt.as_mut_ptr().offset(addressMode as isize) == 0 || (*mne).okmask & ((1) << *Cvt.as_mut_ptr().offset(addressMode as isize)) as u64 == 0 {
+    while opsize as u8 > addressMode.operation_size() {
+        if addressMode.convert() == AddressModes::Imp || (*mne).okmask & ((1) << addressMode.convert() as u8) as u64 == 0 {
             if (*sym).flags as i32 & 0x1 as i32 != 0 {
                 break;
             }
@@ -302,7 +298,7 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut i8,
                 break;
             }
         } else {
-            addressMode = AddressModes::try_from(*Cvt.as_mut_ptr().offset(addressMode as isize) as u8).unwrap();
+            addressMode = addressMode.convert();
         }
     }
     opcode = (*mne).opcode[addressMode as usize];
@@ -356,11 +352,11 @@ pub unsafe extern "C" fn v_mnemonic(mut str: *mut i8,
         }
         AddressModes::Rel => { }
         _ => {
-            if *Opsize.as_mut_ptr().offset(addressMode as isize) > 0 {
+            if addressMode.operation_size() > 0 {
                 state.output.generated[opidx] = (*sym).value as u8;
                 opidx = opidx + 1;
             }
-            if *Opsize.as_mut_ptr().offset(addressMode as isize) == 2 {
+            if addressMode.operation_size() == 2 {
                 if state.execution.bitOrder != BitOrder::LeastMost {
                     state.output.generated[(opidx - 1) as usize] = ((*sym).value >> 8) as u8;
                     state.output.generated[opidx] = (*sym).value as u8;
