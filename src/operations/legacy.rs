@@ -90,13 +90,9 @@ extern "C" {
     fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8)
      -> i32;
     #[no_mangle]
-    fn rmnode(base: *mut *mut libc::c_void, bytes: i32);
-    #[no_mangle]
     fn addhashtable(mne: *mut _MNE);
     #[no_mangle]
     fn pushinclude(str: *mut i8);
-    #[no_mangle]
-    fn permalloc(bytes: i32) -> *mut i8;
     #[no_mangle]
     fn zmalloc(bytes: i32) -> *mut i8;
     #[no_mangle]

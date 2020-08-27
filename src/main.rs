@@ -109,9 +109,6 @@ extern "C" {
     fn strcpy(_: *mut i8, _: *const i8)
      -> *mut i8;
     #[no_mangle]
-    fn strncpy(_: *mut i8, _: *const i8, _: u64)
-     -> *mut i8;
-    #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
