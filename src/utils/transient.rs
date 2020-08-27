@@ -2,6 +2,10 @@
 use std::ffi::CString;
 use std::os::raw::c_char;
 
+use crate::types::legacy::{
+	_STRLIST,
+};
+
 /**
  * Converts a *str until it finds a char 0 to a proper Rust String.
  * This is likely inneficient, but should suffice for now.
@@ -58,6 +62,26 @@ pub fn update_str_pointer_in_place(ptr: *mut i8, new_content: &str) {
  */
 pub fn string_to_str_pointer(str: String) -> *mut c_char {
 	CString::new(str).expect("Failed to convert argument into CString.").into_raw()
+}
+
+/**
+ * Converts a _STRLST, which is a linked list of [i8; 4] buffers, to a String.
+ * FIXME: this should likely be removed in the future, once we drop all uses of _STRLST.
+ */
+pub fn strlist_to_string(strlist: *mut _STRLIST) -> String {
+	let mut sstr = strlist;
+	let mut sstr_all = String::from("");
+	unsafe {
+		while !sstr.is_null() {
+			let mut i: usize = 0;
+			while i < (*sstr).buf.len() && (*sstr).buf[i] != 0 {
+				sstr_all.push_str(std::str::from_utf8(&[(*sstr).buf[i] as u8]).unwrap());
+				i += 1;
+			}
+			sstr = (*sstr).next;
+		}
+	}
+	return sstr_all;
 }
 
 #[cfg(test)]
