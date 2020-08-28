@@ -2,7 +2,10 @@
 // - This file's contents came from "asm.h" in the original DASM C code -
 // ----------------------------------------------------------------------
 
-use num_enum::{IntoPrimitive, TryFromPrimitive};
+use num_enum::{
+	IntoPrimitive,
+	TryFromPrimitive,
+};
 
 // Used for -T option
 // In original C code, "sortmode_t"
@@ -120,35 +123,35 @@ pub enum ListMode {
 #[derive(Copy, Clone, Debug, PartialEq, IntoPrimitive, TryFromPrimitive)]
 #[repr(u8)]
 pub enum AddressModes {
-	Imp,						// 0  Implied
-	Imm8,						// 1  Immediate 8 bits
-	Imm16,						// 2  Immediate 16 bits
-	ByteAdr,					// 3  Address 8 bits
-	ByteAdrX,					// 4  Address 16 bits
-	ByteAdrY,					// 5  Relative 8 bits
-	WordAdr,					// 6  Index x 0 bits
-	WordAdrX,					// 7  Index x 8 bits
-	WordAdrY,					// 8  Index x 16 bits
-	Rel,						// 9  Bit inst. special
-	IndByteX,					// 10 Bit-bra inst. spec.
-	IndByteY,					// 11 Index y 0 bits
-	IndWord,					// 12 Index y 8 bits
-	ZeroX,						// 13 Index x 0 bits
-	ZeroY,						// 14 Index y 0 bits
-	BitMod,						// 15 Ind addr 8 bits
-	BitBraMod,					// 16 Ind addr 16 bits
-	Symbol,						// 17
-	ExpList,					// 18
-	Long,						// 19
-	BSS,						// 20
+	Imp,                              // 0  Implied
+	Imm8,                             // 1  Immediate 8 bits
+	Imm16,                            // 2  Immediate 16 bits
+	ByteAdr,                          // 3  Address 8 bits
+	ByteAdrX,                         // 4  Address 16 bits
+	ByteAdrY,                         // 5  Relative 8 bits
+	WordAdr,                          // 6  Index x 0 bits
+	WordAdrX,                         // 7  Index x 8 bits
+	WordAdrY,                         // 8  Index x 16 bits
+	Rel,                              // 9  Bit inst. special
+	IndByteX,                         // 10 Bit-bra inst. spec.
+	IndByteY,                         // 11 Index y 0 bits
+	IndWord,                          // 12 Index y 8 bits
+	ZeroX,                            // 13 Index x 0 bits
+	ZeroY,                            // 14 Index y 0 bits
+	BitMod,                           // 15 Ind addr 8 bits
+	BitBraMod,                        // 16 Ind addr 16 bits
+	Symbol,                           // 17
+	ExpList,                          // 18
+	Long,                             // 19
+	BSS,                              // 20
 
-	None,						// 21 Made to simulate reset of -1 in findext()
+	None,                             // 21 Made to simulate reset of -1 in findext()
 }
 
 impl AddressModes {
 	// Made to replace "NUMOC" in the original type
 	pub fn length() -> u32 {
-		return Self::BSS as u32 - Self::Imp as u32 + 1
+		return Self::BSS as u32 - Self::Imp as u32 + 1;
 	}
 
 	// In original C code, "Opsize" (as an array with a different length than the enum list)

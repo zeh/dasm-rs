@@ -24,11 +24,9 @@ pub const MAX_ARGS: usize = 64;
 
 extern "C" {
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
-     -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8)
-     -> i32;
+    fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8) -> i32;
     #[no_mangle]
     fn ckmalloc(bytes: i32) -> *mut i8;
     #[no_mangle]
@@ -36,8 +34,7 @@ extern "C" {
     #[no_mangle]
     fn findsymbol(str: *const i8, len: i32) -> *mut _SYMBOL;
     #[no_mangle]
-    fn CreateSymbol(str: *const i8, len: i32)
-     -> *mut _SYMBOL;
+    fn CreateSymbol(str: *const i8, len: i32) -> *mut _SYMBOL;
     #[no_mangle]
     fn FreeSymbolList(sym: *mut _SYMBOL);
 }
@@ -54,13 +51,11 @@ extern "C" {
 /* warning: Calling functions without prototype */
 pub type opfunc_t = Option<unsafe extern "C" fn() -> ()>;
 #[no_mangle]
-pub static mut Argstring: [*mut i8; MAX_ARGS] =
-    [0 as *const i8 as *mut i8; MAX_ARGS];
+pub static mut Argstring: [*mut i8; MAX_ARGS] = [0 as *const i8 as *mut i8; MAX_ARGS];
 #[no_mangle]
 pub static mut Opdis: [opfunc_t; MAX_OPS] = [None; MAX_OPS];
 #[no_mangle]
-pub unsafe extern "C" fn eval(mut str: *const i8,
-                              mut wantmode: i32) -> *mut _SYMBOL {
+pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SYMBOL {
     let mut base: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut cur: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let oldArgIndexBase = state.expressions.argIndexBase;
@@ -91,8 +86,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                         128
                     );
                 } else {
-                    asmerr(AsmErrorEquates::SyntaxError,
-                           false, pLine);
+                    asmerr(AsmErrorEquates::SyntaxError, false, pLine);
                 }
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
@@ -123,7 +117,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
             }
             37 => {
                 if state.expressions.lastWasOp {
-                    str = pushbin(str.offset(1))
+                    str = pushbin(str.offset(1));
                 } else {
                     doop(
                         ::std::mem::transmute::<Option<unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32)-> ()>, opfunc_t>(
@@ -131,7 +125,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                         ),
                         20
                     );
-                    str = str.offset(1)
+                    str = str.offset(1);
                 }
                 current_block_184 = 3166194604430448652;
             }
@@ -186,7 +180,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                         ),
                         128
                     );
-                    str = str.offset(1)
+                    str = str.offset(1);
                 } else {
                     if *str.offset(1) as i32 == '>' as i32 {
                         doop(
@@ -195,7 +189,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                             ),
                             18
                         );
-                        str = str.offset(1)
+                        str = str.offset(1);
                     } else if *str.offset(1) as i32 == '=' as i32 {
                         doop(
                             ::std::mem::transmute::<Option<unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32)-> ()>, opfunc_t>(
@@ -203,7 +197,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                             ),
                             17
                         );
-                        str = str.offset(1)
+                        str = str.offset(1);
                     } else {
                         doop(
                             ::std::mem::transmute::<Option<unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32)-> ()>, opfunc_t>(
@@ -212,7 +206,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                             17
                         );
                     }
-                    str = str.offset(1)
+                    str = str.offset(1);
                 }
                 current_block_184 = 3166194604430448652;
             }
@@ -224,15 +218,14 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                         ),
                         128
                     );
-                    str = str.offset(1)
+                    str = str.offset(1);
                 } else {
                     if *str.offset(1) as i32 == '<' as i32 {
                         doop(
                             ::std::mem::transmute::<Option<unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32)-> ()>, opfunc_t>(
-                                Some(op_shiftleft as unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32) -> ())),
-                            18
+                                Some(op_shiftleft as unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32) -> ())), 18
                         );
-                        str = str.offset(1)
+                        str = str.offset(1);
                     } else if *str.offset(1) as i32 == '=' as i32 {
                         doop(
                             ::std::mem::transmute::<Option<unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32)-> ()>, opfunc_t>(
@@ -249,7 +242,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                             17
                         );
                     }
-                    str = str.offset(1)
+                    str = str.offset(1);
                 }
                 current_block_184 = 3166194604430448652;
             }
@@ -283,7 +276,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                         ),
                         16
                     );
-                    str = str.offset(1)
+                    str = str.offset(1);
                 }
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
@@ -329,7 +322,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                         ),
                         11
                     );
-                    str = str.offset(1)
+                    str = str.offset(1);
                 } else {
                     doop(
                         ::std::mem::transmute::<Option<unsafe extern "C" fn(_: i64, _: i64, _: i32, _: i32)-> ()>, opfunc_t>(
@@ -343,8 +336,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
             }
             40 => {
                 if wantmode != 0 {
-                    (*cur).addrmode =
-                        AddressModes::IndWord as u8;
+                    (*cur).addrmode = AddressModes::IndWord as u8;
                     str = str.offset(1);
                     current_block_184 = 3166194604430448652;
                 } else { current_block_184 = 18384894229789369419; }
@@ -352,13 +344,9 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
             91 => { current_block_184 = 18384894229789369419; }
             41 => {
                 if wantmode != 0 {
-                    if (*cur).addrmode as i32 ==
-                        AddressModes::IndWord as i32 &&
-                           *str.offset(1) as i32 == ',' as i32 &&
-                           *str.offset(2) as i32 | 0x20 as i32 == 'y' as i32
+                    if (*cur).addrmode as i32 == AddressModes::IndWord as i32 && *str.offset(1) as i32 == ',' as i32 && *str.offset(2) as i32 | 0x20 as i32 == 'y' as i32
                        {
-                        (*cur).addrmode =
-                            AddressModes::IndByteY as u8;
+                        (*cur).addrmode = AddressModes::IndByteY as u8;
                         str = str.offset(2)
                     }
                     //FIX: detect illegal opc (zp),x syntax...
@@ -390,9 +378,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
             44 => { // ',' - FIXME: convert back to original char
                 while state.expressions.opIndex != state.expressions.opIndexBase { evaltop(); }
                 state.expressions.lastWasOp = true;
-                scr =
-                    *str.offset(1) as i32 |
-                        0x20 as i32;
+                scr = *str.offset(1) as i32 | 0x20 as i32;
                 if (*cur).addrmode == AddressModes::IndWord as u8 && scr == 'x' as i32 && !is_alpha_num(*str.offset(2) as u8 as char) {
                     (*cur).addrmode = AddressModes::IndByteX as u8;
                     str = str.offset(1);
@@ -439,21 +425,16 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                     (*cur).next = pNewSymbol;
                     state.expressions.argIndex -= 1;
                     if state.expressions.argIndex < state.expressions.argIndexBase {
-                        asmerr(AsmErrorEquates::SyntaxError,
-                               false, pLine);
+                        asmerr(AsmErrorEquates::SyntaxError, false, pLine);
                     }
                     if state.expressions.argIndex > state.expressions.argIndexBase {
-                        asmerr(AsmErrorEquates::SyntaxError,
-                               false, pLine);
+                        asmerr(AsmErrorEquates::SyntaxError, false, pLine);
                     }
                     (*cur).value = state.expressions.argStack[state.expressions.argIndex];
                     (*cur).flags = state.expressions.argFlags[state.expressions.argIndex];
-                    (*cur).string =
-                        Argstring[state.expressions.argIndex] as *mut libc::c_void as
-                            *mut i8;
+                    (*cur).string = Argstring[state.expressions.argIndex] as *mut libc::c_void as *mut i8;
                     if !(*cur).string.is_null() {
-                        (*cur).flags =
-                            ((*cur).flags as i32 | 0x8 as i32) as u8;
+                        (*cur).flags = ((*cur).flags as i32 | 0x8 as i32) as u8;
                         if state.parameters.debug {
                             println!("STRING: {}", transient::str_pointer_to_string((*cur).string));
                         }
@@ -477,16 +458,14 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
             }
             _ => {
                 let mut dol: *const i8 = str;
-                while *dol as i32 >= '0' as i32 &&
-                          *dol as i32 <= '9' as i32 {
+                while *dol as i32 >= '0' as i32 && *dol as i32 <= '9' as i32 {
                     dol = dol.offset(1)
                 }
                 if *dol as i32 == '$' as i32 {
                     str = pushsymbol(str)
                 } else if *str as i32 == '0' as i32 {
                     str = pushoct(str)
-                } else if *str as i32 > '0' as i32 &&
-                              *str as i32 <= '9' as i32 {
+                } else if *str as i32 > '0' as i32 && *str as i32 <= '9' as i32 {
                     str = pushdec(str)
                 } else { str = pushsymbol(str) }
                 current_block_184 = 3166194604430448652;
@@ -536,12 +515,9 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
         state.expressions.argIndex -= 1;
         (*cur).value = state.expressions.argStack[state.expressions.argIndex];
         (*cur).flags = state.expressions.argFlags[state.expressions.argIndex];
-        (*cur).string =
-            Argstring[state.expressions.argIndex] as *mut libc::c_void as
-                *mut i8;
+        (*cur).string = Argstring[state.expressions.argIndex] as *mut libc::c_void as *mut i8;
         if !(*cur).string.is_null() {
-            (*cur).flags =
-                ((*cur).flags as i32 | 0x8 as i32) as u8;
+            (*cur).flags = ((*cur).flags as i32 | 0x8 as i32) as u8;
             if state.parameters.debug {
                 println!("STRING: {}", transient::str_pointer_to_string((*cur).string));
             }
@@ -566,18 +542,16 @@ pub unsafe extern "C" fn evaltop() {
         println!("evaltop @(A,O) {} {}", state.expressions.argIndex, state.expressions.opIndex);
     }
     if state.expressions.opIndex <= state.expressions.opIndexBase {
-        asmerr(AsmErrorEquates::SyntaxError, false,
-               0 as *const i8);
+        asmerr(AsmErrorEquates::SyntaxError, false, 0 as *const i8);
         state.expressions.opIndex = state.expressions.opIndexBase;
-        return
+        return;
     }
     state.expressions.opIndex -= 1;
     if state.expressions.opPri[state.expressions.opIndex] == 128 {
         if state.expressions.argIndex < state.expressions.argIndexBase + 1 {
-            asmerr(AsmErrorEquates::SyntaxError, false,
-                   0 as *const i8);
+            asmerr(AsmErrorEquates::SyntaxError, false, 0 as *const i8);
             state.expressions.argIndex = state.expressions.argIndexBase;
-            return
+            return;
         }
         state.expressions.argIndex -= 1;
         ::std::mem::transmute::<_, fn(_: _, _: _)>(
@@ -592,10 +566,9 @@ pub unsafe extern "C" fn evaltop() {
             );
     } else {
         if state.expressions.argIndex < state.expressions.argIndexBase + 2 {
-            asmerr(AsmErrorEquates::SyntaxError, false,
-                   0 as *const i8);
+            asmerr(AsmErrorEquates::SyntaxError, false, 0 as *const i8);
             state.expressions.argIndex = state.expressions.argIndexBase;
-            return
+            return;
         }
         state.expressions.argIndex -= 2;
         ::std::mem::transmute::<_, fn(_: _, _: _, _: _, _: _)>(
@@ -665,7 +638,7 @@ pub unsafe extern "C" fn doop(func: opfunc_t, pri: usize) {
         Opdis[state.expressions.opIndex] = func;
         state.expressions.opPri[state.expressions.opIndex] = pri;
         state.expressions.opIndex += 1;
-        return
+        return;
     }
     while state.expressions.opIndex != state.expressions.opIndexBase && state.expressions.opPri[state.expressions.opIndex - 1] != 0 && pri <= state.expressions.opPri[state.expressions.opIndex - 1] {
         evaltop();
@@ -711,24 +684,26 @@ pub unsafe extern "C" fn op_div(v1: i64, v2: i64, f1: i32, f2: i32) {
     state.expressions.lastWasOp = true;
     if f1 | f2 != 0 {
         stackarg(0, f1 | f2, 0 as *const i8);
-        return
+        return;
     }
     if v2 == 0 {
-        asmerr(AsmErrorEquates::DivisionByZero, true,
-               0 as *const i8);
-        stackarg(0, 0,
-                 0 as *const i8);
-    } else { stackarg(v1 / v2, 0, 0 as *const i8); };
+        asmerr(AsmErrorEquates::DivisionByZero, true, 0 as *const i8);
+        stackarg(0, 0, 0 as *const i8);
+    } else {
+        stackarg(v1 / v2, 0, 0 as *const i8);
+    };
 }
 #[no_mangle]
 pub unsafe extern "C" fn op_mod(v1: i64, v2: i64, f1: i32, f2: i32) {
     if f1 | f2 != 0 {
         stackarg(0, f1 | f2, 0 as *const i8);
-        return
+        return;
     }
     if v2 == 0 {
         stackarg(v1, 0, 0 as *const i8);
-    } else { stackarg(v1 % v2, 0, 0 as *const i8); }
+    } else {
+        stackarg(v1 % v2, 0, 0 as *const i8);
+    }
     state.expressions.lastWasOp = true;
 }
 #[no_mangle]
@@ -833,24 +808,15 @@ pub unsafe extern "C" fn pushchar(mut str: *const i8) -> *const i8 {
 pub unsafe extern "C" fn pushhex(mut str: *const i8) -> *const i8 {
     let mut val: i64 = 0;
     loop  {
-        if *str as i32 >= '0' as i32 &&
-               *str as i32 <= '9' as i32 {
-            val =
-                (val << 4) +
-                    (*str as i32 - '0' as i32) as i64
+        if *str as i32 >= '0' as i32 && *str as i32 <= '9' as i32 {
+            val = (val << 4) + (*str as i32 - '0' as i32) as i64
         } else {
-            if !(*str as i32 >= 'a' as i32 &&
-                     *str as i32 <= 'f' as i32 ||
-                     *str as i32 >= 'A' as i32 &&
-                         *str as i32 <= 'F' as i32) {
-                break ;
+            if !(*str as i32 >= 'a' as i32 && *str as i32 <= 'f' as i32 || *str as i32 >= 'A' as i32 && *str as i32 <= 'F' as i32) {
+                break;
             }
-            val =
-                (val << 4) +
-                    ((*str as i32 & 0x1f as i32) +
-                         9) as i64
+            val = (val << 4) + ((*str as i32 & 0x1f as i32) + 9) as i64
         }
-        str = str.offset(1)
+        str = str.offset(1);
     }
     stackarg(val, 0, 0 as *const i8);
     return str;
@@ -858,12 +824,9 @@ pub unsafe extern "C" fn pushhex(mut str: *const i8) -> *const i8 {
 #[no_mangle]
 pub unsafe extern "C" fn pushoct(mut str: *const i8) -> *const i8 {
     let mut val: i64 = 0;
-    while *str as i32 >= '0' as i32 &&
-              *str as i32 <= '7' as i32 {
-        val =
-            (val << 3) +
-                (*str as i32 - '0' as i32) as i64;
-        str = str.offset(1)
+    while *str as i32 >= '0' as i32 && *str as i32 <= '7' as i32 {
+        val = (val << 3) + (*str as i32 - '0' as i32) as i64;
+        str = str.offset(1);
     }
     stackarg(val, 0, 0 as *const i8);
     return str;
@@ -871,12 +834,9 @@ pub unsafe extern "C" fn pushoct(mut str: *const i8) -> *const i8 {
 #[no_mangle]
 pub unsafe extern "C" fn pushdec(mut str: *const i8) -> *const i8 {
     let mut val: i64 = 0;
-    while *str as i32 >= '0' as i32 &&
-              *str as i32 <= '9' as i32 {
-        val =
-            val * 10 +
-                (*str as i32 - '0' as i32) as i64;
-        str = str.offset(1)
+    while *str as i32 >= '0' as i32 && *str as i32 <= '9' as i32 {
+        val = val * 10 + (*str as i32 - '0' as i32) as i64;
+        str = str.offset(1);
     }
     stackarg(val, 0, 0 as *const i8);
     return str;
@@ -884,12 +844,9 @@ pub unsafe extern "C" fn pushdec(mut str: *const i8) -> *const i8 {
 #[no_mangle]
 pub unsafe extern "C" fn pushbin(mut str: *const i8) -> *const i8 {
     let mut val: i64 = 0;
-    while *str as i32 == '0' as i32 ||
-              *str as i32 == '1' as i32 {
-        val =
-            val << 1 |
-                (*str as i32 - '0' as i32) as i64;
-        str = str.offset(1)
+    while *str as i32 == '0' as i32 || *str as i32 == '1' as i32 {
+        val = val << 1 | (*str as i32 - '0' as i32) as i64;
+        str = str.offset(1);
     }
     stackarg(val, 0, 0 as *const i8);
     return str;
@@ -898,7 +855,7 @@ pub unsafe extern "C" fn pushbin(mut str: *const i8) -> *const i8 {
 pub unsafe extern "C" fn pushstr(mut str: *const i8) -> *const i8 {
     stackarg(0, 0x8 as i32, str);
     while *str as i32 != 0 && *str as i32 != '\"' as i32 {
-        str = str.offset(1)
+        str = str.offset(1);
     }
     if *str as i32 == '\"' as i32 { str = str.offset(1) }
     return str;
@@ -909,15 +866,8 @@ pub unsafe extern "C" fn pushsymbol(str: *const i8) -> *const i8 {
     let mut ptr: *const i8 = 0 as *const i8;
     let mut macro_0: u8 = 0;
     ptr = str;
-    while *ptr as i32 == '_' as i32 ||
-              *ptr as i32 == '.' as i32 ||
-              *ptr as i32 >= 'a' as i32 &&
-                  *ptr as i32 <= 'z' as i32 ||
-              *ptr as i32 >= 'A' as i32 &&
-                  *ptr as i32 <= 'Z' as i32 ||
-              *ptr as i32 >= '0' as i32 &&
-                  *ptr as i32 <= '9' as i32 {
-        ptr = ptr.offset(1)
+    while *ptr as i32 == '_' as i32 || *ptr as i32 == '.' as i32 || *ptr as i32 >= 'a' as i32 && *ptr as i32 <= 'z' as i32 || *ptr as i32 >= 'A' as i32 && *ptr as i32 <= 'Z' as i32 || *ptr as i32 >= '0' as i32 && *ptr as i32 <= '9' as i32 {
+        ptr = ptr.offset(1);
     }
     if ptr == str {
         asmerr(AsmErrorEquates::IllegalCharacter, false, str);
@@ -938,38 +888,27 @@ pub unsafe extern "C" fn pushsymbol(str: *const i8) -> *const i8 {
         return str.offset(1);
     }
     if *ptr as i32 == '$' as i32 { ptr = ptr.offset(1) }
-    sym =
-        findsymbol(str,
-                   ptr.wrapping_offset_from(str) as i64 as i32);
+    sym = findsymbol(str, ptr.wrapping_offset_from(str) as i64 as i32);
     if !sym.is_null() {
         if (*sym).flags as i32 & 0x1 as i32 != 0 {
-            state.execution.redoEval += 1
+            state.execution.redoEval += 1;
         }
         if (*sym).flags as i32 & 0x20 as i32 != 0 {
             macro_0 = 1;
-            sym = eval((*sym).string, 0)
+            sym = eval((*sym).string, 0);
         }
         if (*sym).flags as i32 & 0x8 as i32 != 0 {
-            stackarg(0, 0x8 as i32,
-                     (*sym).string);
+            stackarg(0, 0x8 as i32, (*sym).string);
         } else {
-            stackarg((*sym).value,
-                     (*sym).flags as i32 & 0x1 as i32,
-                     0 as *const i8);
+            stackarg((*sym).value, (*sym).flags as i32 & 0x1 as i32, 0 as *const i8);
         }
-        (*sym).flags =
-            ((*sym).flags as i32 |
-                 (0x4 as i32 | 0x40 as i32)) as u8;
+        (*sym).flags = ((*sym).flags as i32 | (0x4 as i32 | 0x40 as i32)) as u8;
         if macro_0 != 0 { FreeSymbolList(sym); }
     } else {
-        stackarg(0, 0x1 as i32,
-                 0 as *const i8);
-        sym =
-            CreateSymbol(str,
-                         ptr.wrapping_offset_from(str) as i64 as i32);
-        (*sym).flags =
-            (0x4 as i32 | 0x40 as i32 | 0x1 as i32) as u8;
-        state.execution.redoEval += 1
+        stackarg(0, 0x1 as i32, 0 as *const i8);
+        sym = CreateSymbol(str, ptr.wrapping_offset_from(str) as i64 as i32);
+        (*sym).flags = (0x4 as i32 | 0x40 as i32 | 0x1 as i32) as u8;
+        state.execution.redoEval += 1;
     }
     return ptr;
 }

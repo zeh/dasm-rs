@@ -23,14 +23,11 @@ use crate::utils::{
 
 extern "C" {
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
-     -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64)
-     -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void,
-              _: u64) -> i32;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
@@ -38,29 +35,25 @@ extern "C" {
     #[no_mangle]
     static mut Av: [*mut i8; 0];
     #[no_mangle]
-    fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8)
-     -> i32;
+    fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8) -> i32;
     #[no_mangle]
     fn permalloc(bytes: i32) -> *mut i8;
 }
-static mut org: _SYMBOL =
-    _SYMBOL{next: 0 as *const _SYMBOL as *mut _SYMBOL,
+static mut org: _SYMBOL = _SYMBOL{next: 0 as *const _SYMBOL as *mut _SYMBOL,
             name: 0 as *const i8 as *mut i8,
             string: 0 as *const i8 as *mut i8,
             flags: 0,
             addrmode: 0,
             value: 0,
             namelen: 0,};
-static mut special: _SYMBOL =
-    _SYMBOL{next: 0 as *const _SYMBOL as *mut _SYMBOL,
+static mut special: _SYMBOL = _SYMBOL{next: 0 as *const _SYMBOL as *mut _SYMBOL,
             name: 0 as *const i8 as *mut i8,
             string: 0 as *const i8 as *mut i8,
             flags: 0,
             addrmode: 0,
             value: 0,
             namelen: 0,};
-static mut specchk: _SYMBOL =
-    _SYMBOL{next: 0 as *const _SYMBOL as *mut _SYMBOL,
+static mut specchk: _SYMBOL = _SYMBOL{next: 0 as *const _SYMBOL as *mut _SYMBOL,
             name: 0 as *const i8 as *mut i8,
             string: 0 as *const i8 as *mut i8,
             flags: 0,
@@ -73,8 +66,7 @@ pub unsafe extern "C" fn setspecial(value: i32, flags: i32) {
     special.flags = flags as u8; /* historical */
 }
 #[no_mangle]
-pub unsafe extern "C" fn findsymbol(mut str: *const i8,
-                                    mut len: i32) -> *mut _SYMBOL {
+pub unsafe extern "C" fn findsymbol(mut str: *const i8, mut len: i32) -> *mut _SYMBOL {
     let mut h1: u32 = 0; /*	permalloc zeros the array for us */
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     if len > MAX_SYMBOLS as i32 { len = MAX_SYMBOLS as i32 }
@@ -88,21 +80,15 @@ pub unsafe extern "C" fn findsymbol(mut str: *const i8,
                 org.flags = currentSegment.flags & SymbolTypes::Unknown;
                 org.value = currentSegment.org as i64;
             }
-            return &mut org
+            return &mut org;
         }
-        if len == 2 &&
-               *str.offset(1) as i32 ==
-                   '.' as i32 {
-            return &mut special
+        if len == 2 && *str.offset(1) as i32 == '.' as i32 {
+            return &mut special;
         }
-        if len == 3 &&
-               *str.offset(1) as i32 ==
-                   '.' as i32 &&
-               *str.offset(2) as i32 ==
-                   '.' as i32 {
+        if len == 3 && *str.offset(1) as i32 == '.' as i32 && *str.offset(2) as i32 == '.' as i32 {
             specchk.flags = 0;
             specchk.value = state.output.checksum as i64;
-            return &mut specchk
+            return &mut specchk;
         }
 
         let buffer = format!(
@@ -126,18 +112,16 @@ pub unsafe extern "C" fn findsymbol(mut str: *const i8,
     h1 = hash1(str, len);
     sym = *SHash.as_mut_ptr().offset(h1 as isize);
     while !sym.is_null() {
-        if (*sym).namelen == len as u32 &&
-               memcmp((*sym).name as *const libc::c_void,
+        if (*sym).namelen == len as u32 && memcmp((*sym).name as *const libc::c_void,
                       str as *const libc::c_void, len as u64) == 0 {
-            break ;
+            break;
         }
         sym = (*sym).next
     }
     return sym;
 }
 #[no_mangle]
-pub unsafe extern "C" fn CreateSymbol(mut str: *const i8,
-                                      mut len: i32) -> *mut _SYMBOL {
+pub unsafe extern "C" fn CreateSymbol(mut str: *const i8, mut len: i32) -> *mut _SYMBOL {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut h1: u32 = 0;
     if len > MAX_SYMBOLS as i32 { len = MAX_SYMBOLS as i32 }
@@ -175,8 +159,7 @@ pub unsafe extern "C" fn CreateSymbol(mut str: *const i8,
 /*
  *  SYMBOLS.C
  */
-unsafe extern "C" fn hash1(mut str: *const i8, mut len: i32)
- -> u32 {
+unsafe extern "C" fn hash1(mut str: *const i8, mut len: i32) -> u32 {
     let mut result: u32 = 0;
     loop  {
         let fresh1 = len;
@@ -281,8 +264,7 @@ pub unsafe extern "C" fn allocsymbol() -> *mut _SYMBOL {
         memset(sym as *mut libc::c_void, 0,
                ::std::mem::size_of::<_SYMBOL>() as u64);
     } else {
-        sym =
-            permalloc(::std::mem::size_of::<_SYMBOL>() as u64 as i32) as *mut _SYMBOL
+        sym = permalloc(::std::mem::size_of::<_SYMBOL>() as u64 as i32) as *mut _SYMBOL
     }
     return sym;
 }

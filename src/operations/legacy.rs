@@ -46,30 +46,23 @@ extern "C" {
     #[no_mangle]
     fn fclose(__stream: *mut FILE) -> i32;
     #[no_mangle]
-    fn fopen(__filename: *const i8, __modes: *const i8)
-     -> *mut FILE;
+    fn fopen(__filename: *const i8, __modes: *const i8) -> *mut FILE;
     #[no_mangle]
     fn fread(__ptr: *mut libc::c_void, __size: u64, __n: u64, __stream: *mut FILE) -> u64;
     #[no_mangle]
-    fn fseek(__stream: *mut FILE, __off: i64, __whence: i32)
-     -> i32;
+    fn fseek(__stream: *mut FILE, __off: i64, __whence: i32) -> i32;
     #[no_mangle]
     fn ftell(__stream: *mut FILE) -> i64;
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
-     -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64)
-     -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8)
-     -> *mut i8;
+    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strncpy(_: *mut i8, _: *const i8, _: u64)
-     -> *mut i8;
+    fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
     #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8,
-               _: u64) -> i32;
+    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
     #[no_mangle]
     fn strchr(_: *const i8, _: i32) -> *mut i8;
     #[no_mangle]
@@ -83,8 +76,7 @@ extern "C" {
     #[no_mangle]
     fn findext(str: *mut i8);
     #[no_mangle]
-    fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8)
-     -> i32;
+    fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8) -> i32;
     #[no_mangle]
     fn addhashtable(mne: *mut _MNE);
     #[no_mangle]
@@ -98,8 +90,7 @@ extern "C" {
     #[no_mangle]
     fn findsymbol(str: *const i8, len: i32) -> *mut _SYMBOL;
     #[no_mangle]
-    fn CreateSymbol(str: *const i8, len: i32)
-     -> *mut _SYMBOL;
+    fn CreateSymbol(str: *const i8, len: i32) -> *mut _SYMBOL;
     #[no_mangle]
     fn FreeSymbolList(sym: *mut _SYMBOL);
     #[no_mangle]
@@ -221,8 +212,7 @@ pub unsafe extern "C" fn v_mnemonic(str: *mut i8, mne: *mut _MNE) {
     if (*mne).flags as i32 & 0x40 as i32 != 0 {
         if !(*sym).next.is_null() {
             (*sym).addrmode = AddressModes::BitMod as u8;
-            if (*mne).flags as i32 & 0x20 as i32 != 0 &&
-                   !(*sym).next.is_null() {
+            if (*mne).flags as i32 & 0x20 as i32 != 0 && !(*sym).next.is_null() {
                 (*sym).addrmode = AddressModes::BitBraMod as u8
             }
         }
@@ -259,7 +249,7 @@ pub unsafe extern "C" fn v_mnemonic(str: *mut i8, mne: *mut _MNE) {
         //FIX
         state.execution.redoIndex += 1;
         state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved;
-        return
+        return;
     }
     if state.execution.modeNext != AddressModes::None {
         /*	Force	*/
@@ -270,7 +260,7 @@ pub unsafe extern "C" fn v_mnemonic(str: *mut i8, mne: *mut _MNE) {
             //FIX: Cause assembly to fail when an invalid mode is used for an opcode...
             state.execution.redoIndex += 1;
             state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved;
-            return
+            return;
         }
     }
     if state.execution.trace {
@@ -320,8 +310,7 @@ pub unsafe extern "C" fn v_mnemonic(str: *mut i8, mne: *mut _MNE) {
                     asmerr(AsmErrorEquates::IllegalBitSpecification, false, str);
                 } else {
                     state.output.generated[0] = (
-                        state.output.generated[0] as i64 +
-                        ((*symbase).value << 1)
+                        state.output.generated[0] as i64 + ((*symbase).value << 1)
                     ) as u8
                 }
             }
@@ -329,20 +318,16 @@ pub unsafe extern "C" fn v_mnemonic(str: *mut i8, mne: *mut _MNE) {
         AddressModes::BitBraMod => {
             if (*symbase).flags as i32 & 0x1 as i32 == 0 {
                 if (*symbase).value > 7 {
-                    asmerr(AsmErrorEquates::IllegalBitSpecification,
-                           false, str);
+                    asmerr(AsmErrorEquates::IllegalBitSpecification, false, str);
                 } else {
                     state.output.generated[0] = (
-                        state.output.generated[0] as i64 +
-                        ((*symbase).value << 1)
+                        state.output.generated[0] as i64 + ((*symbase).value << 1)
                     ) as u8
                 }
             }
             sym = (*symbase).next;
-            if (*sym).flags as i32 & 0x1 as i32 == 0 &&
-                   (*sym).value >= 0x100 {
-                asmerr(AsmErrorEquates::AddressMustBeLowerThan100,
-                       false, 0 as *const i8);
+            if (*sym).flags as i32 & 0x1 as i32 == 0 && (*sym).value >= 0x100 {
+                asmerr(AsmErrorEquates::AddressMustBeLowerThan100, false, 0 as *const i8);
             }
             state.output.generated[opidx] = (*sym).value as u8;
             opidx = opidx + 1;
@@ -426,8 +411,7 @@ pub unsafe extern "C" fn v_mnemonic(str: *mut i8, mne: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_trace(str: *mut i8, _dummy: *mut _MNE) {
-    state.execution.trace =
-        *str.offset(1) as i32 == 'n' as i32;
+    state.execution.trace = *str.offset(1) as i32 == 'n' as i32;
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_list(str: *mut i8, _dummy: *mut _MNE) {
@@ -436,14 +420,11 @@ pub unsafe extern "C" fn v_list(str: *mut i8, _dummy: *mut _MNE) {
     // Only so outlist() works
     state.output.generatedLength = 0;
 
-    if strncmp(str, b"localoff\x00" as *const u8 as *const i8, 7) == 0 ||
-        strncmp(str, b"LOCALOFF\x00" as *const u8 as *const i8, 7) == 0 {
+    if strncmp(str, b"localoff\x00" as *const u8 as *const i8, 7) == 0 || strncmp(str, b"LOCALOFF\x00" as *const u8 as *const i8, 7) == 0 {
         (*pIncfile).flags = (*pIncfile).flags | FileFlags::NoList;
-    } else if strncmp(str, b"localon\x00" as *const u8 as *const i8, 7) == 0 ||
-        strncmp(str, b"LOCALON\x00" as *const u8 as *const i8, 7) == 0 {
+    } else if strncmp(str, b"localon\x00" as *const u8 as *const i8, 7) == 0 || strncmp(str, b"LOCALON\x00" as *const u8 as *const i8, 7) == 0 {
         (*pIncfile).flags = ((*pIncfile).flags & !(FileFlags::NoList)) as u8;
-    } else if strncmp(str, b"off\x00" as *const u8 as *const i8, 2) == 0 ||
-        strncmp(str, b"OFF\x00" as *const u8 as *const i8, 2) == 0 {
+    } else if strncmp(str, b"off\x00" as *const u8 as *const i8, 2) == 0 || strncmp(str, b"OFF\x00" as *const u8 as *const i8, 2) == 0 {
         state.execution.listMode = ListMode::None
     } else {
         state.execution.listMode = ListMode::List
@@ -492,8 +473,7 @@ pub unsafe extern "C" fn v_incbin(str: *mut i8, _dummy: *mut _MNE) {
             /* does not access state.output.generated[] if Redo is set */
         } else {
             loop  {
-                state.output.generatedLength =
-                    fread(
+                state.output.generatedLength = fread(
                         state.output.generated.as_mut_ptr() as *mut libc::c_void,
                         1,
                         ::std::mem::size_of::<[u8; 1024]>() as u64,
@@ -567,12 +547,12 @@ pub unsafe extern "C" fn v_hex(str: *mut i8, _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn gethexdig(c: i32) -> i32 {
-    if c >= '0' as i32 && c <= '9' as i32 { return c - '0' as i32 }
+    if c >= '0' as i32 && c <= '9' as i32 { return c - '0' as i32 };
     if c >= 'a' as i32 && c <= 'f' as i32 {
-        return c - 'a' as i32 + 10
+        return c - 'a' as i32 + 10;
     }
     if c >= 'A' as i32 && c <= 'F' as i32 {
-        return c - 'A' as i32 + 10
+        return c - 'A' as i32 + 10;
     }
     let buffer = format!("Bad Hex Digit {}", c as u8 as char);
     asmerr(AsmErrorEquates::SyntaxError, false, transient::string_to_str_pointer(buffer));
@@ -581,11 +561,9 @@ pub unsafe extern "C" fn gethexdig(c: i32) -> i32 {
     return 0;
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_err(_str: *mut i8,
-                               mut _dummy: *mut _MNE) {
+pub unsafe extern "C" fn v_err(_str: *mut i8, mut _dummy: *mut _MNE) {
     programlabel();
-    asmerr(AsmErrorEquates::ErrPseudoOpEncountered,
-           true, 0 as *const i8);
+    asmerr(AsmErrorEquates::ErrPseudoOpEncountered, true, 0 as *const i8);
     std::process::exit(1);
 }
 #[no_mangle]
@@ -598,56 +576,45 @@ pub unsafe extern "C" fn v_dc(mut str: *mut i8, mne: *mut _MNE) {
     state.output.generatedLength = 0;
     programlabel();
     /* for byte, .byte, word, .word, long, .long */
-    if *(*mne).name.offset(0) as i32 !=
-           'd' as i32 {
+    if *(*mne).name.offset(0) as i32 != 'd' as i32 {
         static mut sTmp: [i8; 4] = [0; 4];
         strcpy(sTmp.as_mut_ptr(),
                b"x.x\x00" as *const u8 as *const i8);
-        sTmp[2] =
-            *(*mne).name.offset(0);
+        sTmp[2] = *(*mne).name.offset(0);
         findext(sTmp.as_mut_ptr());
     }
     /* F8... */
     /* db, dw, dd */
-    if *(*mne).name.offset(0) as i32 ==
-           'd' as i32 &&
-           *(*mne).name.offset(1) as i32 !=
-               'c' as i32 &&
-           *(*mne).name.offset(1) as i32 !=
-               'v' as i32 {
+    if *(*mne).name.offset(0) as i32 == 'd' as i32 && *(*mne).name.offset(1) as i32 != 'c' as i32 && *(*mne).name.offset(1) as i32 != 'v' as i32 {
         static mut sTmp_0: [i8; 4] = [0; 4];
         strcpy(sTmp_0.as_mut_ptr(),
                b"x.x\x00" as *const u8 as *const i8);
-        if 'd' as i32 ==
-               *(*mne).name.offset(1) as i32 {
+        if 'd' as i32 == *(*mne).name.offset(1) as i32 {
             sTmp_0[2] = 'l' as i32 as i8
         } else {
-            sTmp_0[2] =
-                *(*mne).name.offset(1)
+            sTmp_0[2] = *(*mne).name.offset(1)
         }
         findext(sTmp_0.as_mut_ptr());
     }
     /* ...F8 */
-    if *(*mne).name.offset(1) as i32 ==
-           'v' as i32 {
+    if *(*mne).name.offset(1) as i32 == 'v' as i32 {
         let mut i: i32 = 0;
         vmode = 1;
         i = 0;
-        while *str.offset(i as isize) as i32 != 0 &&
-                  *str.offset(i as isize) as i32 != ' ' as i32 {
+        while *str.offset(i as isize) as i32 != 0 && *str.offset(i as isize) as i32 != ' ' as i32 {
             i += 1
         }
         tmp = findsymbol(str, i);
         str = str.offset(i as isize);
         if tmp.is_null() {
             println!("EQM label not found");
-            return
+            return;
         }
         if (*tmp).flags as i32 & 0x20 as i32 != 0 {
             macstr = (*tmp).string as *mut libc::c_void as *mut i8
         } else {
             println!("must specify EQM label for DV");
-            return
+            return;
         }
     }
     sym = eval(str, 0);
@@ -658,8 +625,7 @@ pub unsafe extern "C" fn v_dc(mut str: *mut i8, mne: *mut _MNE) {
             state.execution.redoWhy |= ReasonCodes::DCNotResolved
         }
         if (*sym).flags as i32 & 0x8 as i32 != 0 {
-            let mut ptr: *mut u8 =
-                (*sym).string as *mut libc::c_void as *mut u8;
+            let mut ptr: *mut u8 = (*sym).string as *mut libc::c_void as *mut u8;
             loop  {
                 value = *ptr as i64;
                 if !(value != 0) { break ; }
@@ -805,9 +771,7 @@ pub unsafe extern "C" fn v_ds(str: *mut i8, _dummy: *mut _MNE) {
             state.execution.redoIndex += 1;
             state.execution.redoWhy |= ReasonCodes::DSNotResolved
         } else {
-            if !(*sym).next.is_null() &&
-                   (*(*sym).next).flags as i32 & 0x1 as i32 !=
-                       0 {
+            if !(*sym).next.is_null() && (*(*sym).next).flags as i32 & 0x1 as i32 != 0 {
                 state.execution.redoIndex += 1;
                 state.execution.redoWhy |= ReasonCodes::DSNotResolved
             }
@@ -861,8 +825,7 @@ pub unsafe extern "C" fn v_rorg(str: *mut i8, _dummy: *mut _MNE) {
     FreeSymbolList(sym);
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_rend(_str: *mut i8,
-                                mut _dummy: *mut _MNE) {
+pub unsafe extern "C" fn v_rend(_str: *mut i8, mut _dummy: *mut _MNE) {
     programlabel();
     let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
     currentSegment.flags &= !SegmentTypes::RelocatableOrigin;
@@ -909,8 +872,7 @@ pub unsafe extern "C" fn v_align(str: *mut i8, _dummy: *mut _MNE) {
     programlabel();
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_subroutine(_str: *mut i8,
-                                      mut _dummy: *mut _MNE) {
+pub unsafe extern "C" fn v_subroutine(_str: *mut i8, mut _dummy: *mut _MNE) {
     state.execution.lastLocalIndex += 1;
     state.execution.localIndex = state.execution.lastLocalIndex;
     programlabel();
@@ -929,10 +891,8 @@ pub unsafe extern "C" fn v_equ(str: *mut i8, dummy: *mut _MNE) {
     * depending on whether we have a relocatable origin now or not.
     */
     if
-        strlen(*Av.as_ptr().offset(0)) == 1 &&
-        (
-            *(*Av.as_ptr().offset(0)).offset(0) as i32 == '.' as i32 ||
-            *(*Av.as_ptr().offset(0)).offset(0) as i32 == '*' as i32 && {
+        strlen(*Av.as_ptr().offset(0)) == 1 && (
+            *(*Av.as_ptr().offset(0)).offset(0) as i32 == '.' as i32 || *(*Av.as_ptr().offset(0)).offset(0) as i32 == '*' as i32 && {
                 let ref mut fresh32 = *(*Av.as_ptr().offset(0)).offset(0);
                 *fresh32 = '.' as i32 as i8;
                 (*fresh32 as i32) != 0
@@ -944,7 +904,7 @@ pub unsafe extern "C" fn v_equ(str: *mut i8, dummy: *mut _MNE) {
         } else {
             v_org(str, dummy);
         }
-        return
+        return;
     }
     lab = findsymbol(*Av.as_ptr().offset(0), strlen(*Av.as_ptr().offset(0)) as i32);
     if lab.is_null() {
@@ -967,13 +927,9 @@ pub unsafe extern "C" fn v_equ(str: *mut i8, dummy: *mut _MNE) {
         }
     }
     (*lab).value = (*sym).value;
-    (*lab).flags =
-        ((*sym).flags as i32 &
-             (SegmentTypes::Unknown as i32 | SymbolTypes::StringResult as i32)) as u8;
+    (*lab).flags = ((*sym).flags as i32 & (SegmentTypes::Unknown as i32 | SymbolTypes::StringResult as i32)) as u8;
     (*lab).string = (*sym).string;
-    (*sym).flags =
-        ((*sym).flags as i32 &
-             !(0x8 as i32 | 0x20 as i32)) as u8;
+    (*sym).flags = ((*sym).flags as i32 & !(0x8 as i32 | 0x20 as i32)) as u8;
     /* List the value */
     let v: u64 = (*lab).value as u64;
     state.output.generatedLength = 0;
@@ -1040,14 +996,10 @@ pub unsafe extern "C" fn v_set(str: *mut i8, _dummy: *mut _MNE) {
     let mut i: usize = 0;
     let mut j: usize = 0;
     let mut setundefined: i32 = 0;
-    while *str.offset(i as isize) as i32 != 0 &&
-              *str.offset(i as isize) as i32 != '\"' as i32 &&
-              *str.offset(i as isize) as i32 != ' ' as i32 &&
-              *str.offset(i as isize) as i32 != ',' as i32 {
+    while *str.offset(i as isize) as i32 != 0 && *str.offset(i as isize) as i32 != '\"' as i32 && *str.offset(i as isize) as i32 != ' ' as i32 && *str.offset(i as isize) as i32 != ',' as i32 {
         i += 1
     }
-    if *str.offset(i as isize) as i32 != 0 &&
-           *str.offset(i as isize) as i32 == ',' as i32 {
+    if *str.offset(i as isize) as i32 != 0 && *str.offset(i as isize) as i32 == ',' as i32 {
         // is this SET is using the "," eval-concat operator?
         strncpy(dynamicname.as_mut_ptr(), str, 256);
         if i < 256 {
@@ -1056,23 +1008,16 @@ pub unsafe extern "C" fn v_set(str: *mut i8, _dummy: *mut _MNE) {
         dynamicname[256] = 0;
         j = strlen(dynamicname.as_mut_ptr()) as usize;
         // eval-concat argument processing loop...
-        while *str.offset(i as isize) as i32 != 0 &&
-                  *str.offset(i as isize) as i32 != '\"' as i32 &&
-                  *str.offset(i as isize) as i32 != ' ' as i32 {
-            if *str.offset(i as isize) as i32 == 0 ||
-                   *str.offset(i as isize) as i32 == ' ' as i32 {
-                break ;
+        while *str.offset(i as isize) as i32 != 0 && *str.offset(i as isize) as i32 != '\"' as i32 && *str.offset(i as isize) as i32 != ' ' as i32 {
+            if *str.offset(i as isize) as i32 == 0 || *str.offset(i as isize) as i32 == ' ' as i32 {
+                break;
                 // process any remaining arguments
             } // argument was symbol
             if *str.offset((i + 1) as isize) as i32 == '\"' as i32 {
                 // is this a string constant?
                 i = i + 2; // argument was string constant
-                while *str.offset(i as isize) as i32 != 0 &&
-                          *str.offset(i as isize) as i32 !=
-                              '\"' as i32 &&
-                          *str.offset(i as isize) as i32 != ' ' as i32
-                          &&
-                          *str.offset(i as isize) as i32 != ',' as i32
+                while *str.offset(i as isize) as i32 != 0 && *str.offset(i as isize) as i32 != '\"' as i32 && *str.offset(i as isize) as i32 != ' ' as i32
+                          && *str.offset(i as isize) as i32 != ',' as i32
                       {
                     let fresh37 = i; // advance to string contents
                     i = i + 1;
@@ -1080,8 +1025,7 @@ pub unsafe extern "C" fn v_set(str: *mut i8, _dummy: *mut _MNE) {
                     j = j + 1;
                     dynamicname[fresh38] = *str.offset(fresh37 as isize)
                 }
-                if *str.offset(i as isize) as i32 != 0 &&
-                       *str.offset(i as isize) as i32 == '\"' as i32 {
+                if *str.offset(i as isize) as i32 != 0 && *str.offset(i as isize) as i32 == '\"' as i32 {
                     dynamicname[j as usize] = 0;
                     i += 1
                 } else {
@@ -1117,10 +1061,8 @@ pub unsafe extern "C" fn v_set(str: *mut i8, _dummy: *mut _MNE) {
                     }
                 }
                 i += 1;
-                while *str.offset(i as isize) as i32 != 0 &&
-                          *str.offset(i as isize) as i32 != ' ' as i32
-                          &&
-                          *str.offset(i as isize) as i32 != ',' as i32
+                while *str.offset(i as isize) as i32 != 0 && *str.offset(i as isize) as i32 != ' ' as i32
+                          && *str.offset(i as isize) as i32 != ',' as i32
                       {
                     i += 1
                 }
@@ -1131,26 +1073,21 @@ pub unsafe extern "C" fn v_set(str: *mut i8, _dummy: *mut _MNE) {
         dynamicname[fresh39] = 0;
         if setundefined != 0 {
             // not all of the arguments are defined yet, so skip this SET
-            return
+            return;
         }
         sym = eval(dynamicname.as_mut_ptr(), 0)
     } else {
         // traditional SET behavior
         sym = eval(str, 0)
     } /* garbage */
-    lab =
-        findsymbol(*Av.as_ptr().offset(0), strlen(*Av.as_ptr().offset(0)) as i32);
+    lab = findsymbol(*Av.as_ptr().offset(0), strlen(*Av.as_ptr().offset(0)) as i32);
     if lab.is_null() {
         lab = CreateSymbol(*Av.as_ptr().offset(0), strlen(*Av.as_ptr().offset(0)) as i32)
     }
     (*lab).value = (*sym).value;
-    (*lab).flags =
-        ((*sym).flags as i32 &
-             (0x1 as i32 | 0x8 as i32)) as u8;
+    (*lab).flags = ((*sym).flags as i32 & (0x1 as i32 | 0x8 as i32)) as u8;
     (*lab).string = (*sym).string;
-    (*sym).flags =
-        ((*sym).flags as i32 &
-             !(0x8 as i32 | 0x20 as i32)) as u8;
+    (*sym).flags = ((*sym).flags as i32 & !(0x8 as i32 | 0x20 as i32)) as u8;
     FreeSymbolList(sym);
 }
 #[no_mangle]
@@ -1169,7 +1106,7 @@ pub unsafe extern "C" fn v_execmac(mut str: *mut i8, mac: *mut _MACRO) {
     programlabel();
     if state.execution.macroLevel == MAX_MACRO_LEVEL {
         println!("infinite macro recursion");
-        return
+        return;
     }
     state.execution.macroLevel += 1;
     base = ckmalloc((std::mem::size_of::<*mut _STRLIST>() as u64).wrapping_add(strlen(str)).wrapping_add(1) as i32) as *mut _STRLIST;
@@ -1182,8 +1119,7 @@ pub unsafe extern "C" fn v_execmac(mut str: *mut i8, mac: *mut _MACRO) {
                   && *str as i32 != ',' as i32 {
             str = str.offset(1)
         }
-        sl =
-            ckmalloc((::std::mem::size_of::<*mut _STRLIST>() as u64).wrapping_add(1) as i32) as *mut _STRLIST;
+        sl = ckmalloc((::std::mem::size_of::<*mut _STRLIST>() as u64).wrapping_add(1) as i32) as *mut _STRLIST;
         // Conversion note: in the above line, removed additional wrapping data...
         //     .wrapping_add(str.wrapping_offset_from(s1) as i64 as u64)
         // ...because it was relying on allocating more memory than the buffer needed, THEN
@@ -1197,13 +1133,11 @@ pub unsafe extern "C" fn v_execmac(mut str: *mut i8, mac: *mut _MACRO) {
                str.wrapping_offset_from(s1) as i64 as u64);
         // Conversion note: this is the line that was causing a buffer overrun during tests,
         // as the code was trying to read up to 9 (and it's size 4)
-        (*sl).buf[str.wrapping_offset_from(s1) as i64 as usize] =
-            0;
+        (*sl).buf[str.wrapping_offset_from(s1) as i64 as usize] = 0;
         if *str as i32 == ',' as i32 { str = str.offset(1) }
         while *str as i32 == ' ' as i32 { str = str.offset(1) }
     }
-    inc =
-        zmalloc(::std::mem::size_of::<_INCFILE>() as u64 as i32) as *mut _INCFILE;
+    inc = zmalloc(::std::mem::size_of::<_INCFILE>() as u64 as i32) as *mut _INCFILE;
     (*inc).next = pIncfile;
     (*inc).name = (*mac).name;
     (*inc).fi = (*pIncfile).fi;
@@ -1220,8 +1154,7 @@ pub unsafe extern "C" fn v_execmac(mut str: *mut i8, mac: *mut _MACRO) {
     state.execution.localDollarIndex = state.execution.lastLocalDollarIndex;
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_end(_str: *mut i8,
-                               mut _dummy: *mut _MNE) {
+pub unsafe extern "C" fn v_end(_str: *mut i8, mut _dummy: *mut _MNE) {
     /* Only ENDs current file and any macro calls within it */
     while (*pIncfile).flags as i32 & 0x1 as i32 != 0 {
         v_endm(0 as *mut i8, 0 as *mut _MNE);
@@ -1229,8 +1162,7 @@ pub unsafe extern "C" fn v_end(_str: *mut i8,
     fseek((*pIncfile).fi, 0, 2);
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_endm(_str: *mut i8,
-                                mut _dummy: *mut _MNE) {
+pub unsafe extern "C" fn v_endm(_str: *mut i8, mut _dummy: *mut _MNE) {
     let inc: *mut _INCFILE = pIncfile;
     let mut args: *mut _STRLIST = 0 as *mut _STRLIST;
     let mut an: *mut _STRLIST = 0 as *mut _STRLIST;
@@ -1247,13 +1179,12 @@ pub unsafe extern "C" fn v_endm(_str: *mut i8,
         state.execution.localDollarIndex = (*inc).savedolidx;
         pIncfile = (*inc).next;
         free(inc as *mut libc::c_void);
-        return
+        return;
     }
     println!("not within a macro");
 }
 #[no_mangle]
-pub unsafe extern "C" fn v_mexit(_str: *mut i8,
-                                 mut _dummy: *mut _MNE) {
+pub unsafe extern "C" fn v_mexit(_str: *mut i8, mut _dummy: *mut _MNE) {
     v_endm(0 as *mut i8, 0 as *mut _MNE);
 }
 #[no_mangle]
@@ -1278,7 +1209,7 @@ pub unsafe extern "C" fn v_if(str: *mut i8, _dummy: *mut _MNE) {
     let current_if = &mut state.execution.ifs.last_mut().unwrap();
     if !current_if.result || !current_if.result_acc {
         pushif(false);
-        return
+        return;
     }
     programlabel();
     sym = eval(str, 0);
@@ -1319,21 +1250,21 @@ pub unsafe extern "C" fn v_repeat(str: *mut i8, _dummy: *mut _MNE) {
     let current_if = &state.execution.ifs.last().unwrap();
     if !current_if.result || !current_if.result_acc {
         pushif(false);
-        return
+        return;
     }
     programlabel();
     sym = eval(str, 0);
     if (*sym).value == 0 {
         pushif(false);
         FreeSymbolList(sym);
-        return
+        return;
     }
     /* Don't allow negative values for REPEAT loops */
     if (*sym).value < 0 {
         pushif(false);
         FreeSymbolList(sym);
         asmerr(AsmErrorEquates::RepeatNegative, false, 0 as *const i8);
-        return
+        return;
     }
 
     let repeat = StackRepeat {
@@ -1406,7 +1337,7 @@ pub unsafe extern "C" fn pfopen(name: *const i8, mode: *const i8) -> *mut FILE {
     }
     /* Don't use the incdirlist for absolute pathnames */
     if !strchr(name, ':' as i32).is_null() {
-        return 0 as *mut FILE
+        return 0 as *mut FILE;
     } /*	multiplied later    */
     for incDir in &state.execution.includeDirList {
         let path = filesystem::combine_paths(incDir.as_str(), transient::str_pointer_to_string(name).as_str());
@@ -1437,7 +1368,7 @@ pub unsafe extern "C" fn generate() {
                 if currentSegment.flags & SegmentTypes::Unknown != 0 {
                     state.execution.redoIndex += 1;
                     state.execution.redoWhy |= ReasonCodes::Obscure;
-                    return
+                    return;
                 }
                 org = currentSegment.org;
                 if state.parameters.format == Format::Default || state.parameters.format == Format::Ras {
@@ -1461,9 +1392,7 @@ pub unsafe extern "C" fn generate() {
                             formatting::segment_address_to_string(currentSegment.org, currentSegment.flags),
                             org
                         );
-                        asmerr(AsmErrorEquates::OriginReverseIndexed,
-                               true,
-                               0 as *const i8);
+                        asmerr(AsmErrorEquates::OriginReverseIndexed, true, 0 as *const i8);
                         std::process::exit(1);
                     }
                     while currentSegment.org != org {
@@ -1536,18 +1465,21 @@ pub unsafe extern "C" fn genfill(fill: i64, entries: i64, size: i32) {
     let mut i: usize = 0;
     match size {
         1 => {
-            memset(state.output.generated.as_mut_ptr() as *mut libc::c_void, c0 as i32,
-                   ::std::mem::size_of::<[u8; 1024]>() as u64);
+            memset(
+                state.output.generated.as_mut_ptr() as *mut libc::c_void,
+                c0 as i32,
+                ::std::mem::size_of::<[u8; 1024]>() as u64
+            );
         }
         2 => {
             bytes <<= 1;
             while i < state.output.generated.len() {
                 if state.execution.bitOrder != BitOrder::LeastMost {
                     state.output.generated[(i + 0) as usize] = c1;
-                    state.output.generated[(i + 1) as usize] = c0
+                    state.output.generated[(i + 1) as usize] = c0;
                 } else {
                     state.output.generated[(i + 0) as usize] = c0;
-                    state.output.generated[(i + 1) as usize] = c1
+                    state.output.generated[(i + 1) as usize] = c1;
                 }
                 i += 2
             }
@@ -1559,12 +1491,12 @@ pub unsafe extern "C" fn genfill(fill: i64, entries: i64, size: i32) {
                     state.output.generated[(i + 0) as usize] = c3;
                     state.output.generated[(i + 1) as usize] = c2;
                     state.output.generated[(i + 2) as usize] = c1;
-                    state.output.generated[(i + 3) as usize] = c0
+                    state.output.generated[(i + 3) as usize] = c0;
                 } else {
                     state.output.generated[(i + 0) as usize] = c0;
                     state.output.generated[(i + 1) as usize] = c1;
                     state.output.generated[(i + 2) as usize] = c2;
-                    state.output.generated[(i + 3) as usize] = c3
+                    state.output.generated[(i + 3) as usize] = c3;
                 }
                 i += 4
             }

@@ -77,8 +77,7 @@ pub struct _IO_FILE {
     pub _unused2: [i8; 20],
 }
 pub type FILE = _IO_FILE;
-unsafe fn main_0(mut ac: i32, mut av: *mut *mut i8)
- -> i32 {
+unsafe fn main_0(mut ac: i32, mut av: *mut *mut i8) -> i32 {
     let mut format: i32 = 0;
     let mut infile: *mut FILE = 0 as *mut FILE;
     let mut outfile: *mut FILE = 0 as *mut FILE;
@@ -92,15 +91,15 @@ unsafe fn main_0(mut ac: i32, mut av: *mut *mut i8)
     if format < 1 || format > 3 {
         exit_with_error("specify infile format 1, 2, or 3");
     }
-    infile =
-        fopen(*av.offset(2), b"r\x00" as *const u8 as *const i8);
+    infile = fopen(*av.offset(2), b"r\x00" as *const u8 as *const i8);
     if infile.is_null() {
         exit_with_error("unable to open input file");
     }
-    outfile =
-        if !(*av.offset(3)).is_null() {
-            fopen(*av.offset(3), b"w\x00" as *const u8 as *const i8)
-        } else { stdout };
+    outfile = if !(*av.offset(3)).is_null() {
+        fopen(*av.offset(3), b"w\x00" as *const u8 as *const i8)
+    } else {
+        stdout
+    };
     if outfile.is_null() {
         exit_with_error("unable to open output file");
     }
@@ -129,8 +128,7 @@ pub fn exit_with_error(message: &str) {
  *			cc=invert of checksum all codes
  */
 #[no_mangle]
-pub unsafe extern "C" fn convert(mut format: i32, mut in_0: *mut FILE,
-                                 mut out: *mut FILE) {
+pub unsafe extern "C" fn convert(mut format: i32, mut in_0: *mut FILE, mut out: *mut FILE) {
     let mut org: u32 = 0;
     let mut idx: u32 = 0;
     let mut len: i64 = 0;
@@ -148,39 +146,35 @@ pub unsafe extern "C" fn convert(mut format: i32, mut in_0: *mut FILE,
         while len > 0 {
             let mut chk: u8 = 0;
             let mut i: u32 = 0;
-            idx =
-                if len > 16 {
-                    16
-                } else { len } as u32;
+            idx = if len > 16 {
+                16
+            } else {
+                len
+            } as u32;
             fread(buf.as_mut_ptr() as *mut libc::c_void, idx as u64, 1, in_0);
             putc(':' as i32, out);
             puth(idx as u8, out);
             puth((org >> 8) as u8, out);
-            puth((org & 0xff) as u8,
-                 out);
+            puth((org & 0xff) as u8, out);
             putc('0' as i32, out);
             putc('0' as i32, out);
-            chk =
-                idx.wrapping_add(org >>
-                                     8).wrapping_add(org &
-                                                                       0xff) as u8;
+            chk = idx.wrapping_add(org >> 8).wrapping_add(org & 0xff) as u8;
             i = 0;
             while i < idx {
-                chk =
-                    (chk as i32 + buf[i as usize] as i32) as u8;
+                chk = (chk as i32 + buf[i as usize] as i32) as u8;
                 puth(buf[i as usize], out);
-                i = i.wrapping_add(1)
+                i = i.wrapping_add(1);
             }
             puth(-(chk as i32) as u8, out);
             putc('\r' as i32, out);
             putc('\n' as i32, out);
             len -= idx as i64;
-            org = org.wrapping_add(idx)
+            org = org.wrapping_add(idx);
         }
         if !(format == 2) { break ; }
         org = getwlh(in_0);
         if feof(in_0) != 0 { break ; }
-        len = getwlh(in_0) as i64
+        len = getwlh(in_0) as i64;
     }
     fprintf(out, b":00000001FF\r\n\x00" as *const u8 as *const i8);
 }
@@ -188,14 +182,12 @@ pub unsafe extern "C" fn convert(mut format: i32, mut in_0: *mut FILE,
 pub unsafe extern "C" fn getwlh(mut in_0: *mut FILE) -> u32 {
     let mut result: u32 = 0;
     result = getc(in_0) as u32;
-    result =
-        result.wrapping_add((getc(in_0) << 8) as u32);
+    result = result.wrapping_add((getc(in_0) << 8) as u32);
     return result;
 }
 #[no_mangle]
 pub unsafe extern "C" fn puth(mut c: u8, mut out: *mut FILE) {
-    static mut dig: [i8; 17] =
-        [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70, 0];
+    static mut dig: [i8; 17] = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70, 0];
     putc(dig[(c as i32 >> 4) as usize] as i32,
          out);
     putc(dig[(c as i32 & 15) as usize] as i32,

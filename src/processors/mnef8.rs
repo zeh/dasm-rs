@@ -19,11 +19,9 @@ extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
-    fn strcasecmp(_: *const i8, _: *const i8)
-     -> i32;
+    fn strcasecmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
-    fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8)
-     -> i32;
+    fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8) -> i32;
     #[no_mangle]
     fn FreeSymbolList(sym: *mut _SYMBOL);
     #[no_mangle]
@@ -305,11 +303,9 @@ unsafe extern "C" fn v_ins_outs(str: *mut i8, mne: *mut _MNE) {
     programlabel();
     parse_value(str, &mut operand);
     if operand > 15 {
-        f8err(AsmErrorEquates::ValueMustBeLowerThan10, (*mne).name, str,
-              false);
+        f8err(AsmErrorEquates::ValueMustBeLowerThan10, (*mne).name, str, false);
     }
-    emit_opcode1(((*mne).opcode[0] as u64 |
-                      operand & 15) as u8);
+    emit_opcode1(((*mne).opcode[0] as u64 | operand & 15) as u8);
 }
 unsafe extern "C" fn v_sl_sr(str: *mut i8, mne: *mut _MNE) {
     let mut operand: u64 = 0;
@@ -338,22 +334,18 @@ unsafe extern "C" fn v_lis(str: *mut i8, mne: *mut _MNE) {
     programlabel();
     parse_value(str, &mut operand);
     if operand > 15 {
-        f8err(AsmErrorEquates::ValueMustBeLowerThan10, (*mne).name, str,
-              false);
+        f8err(AsmErrorEquates::ValueMustBeLowerThan10, (*mne).name, str, false);
     }
-    emit_opcode1((0x70 |
-                      operand & 15) as u8);
+    emit_opcode1((0x70 | operand & 15) as u8);
 }
 unsafe extern "C" fn v_lisu_lisl(str: *mut i8, mne: *mut _MNE) {
     let mut operand: u64 = 0;
     programlabel();
     parse_value(str, &mut operand);
     if operand > 7 {
-        f8err(AsmErrorEquates::ValueMustBeLowerThan8, (*mne).name, str,
-              false);
+        f8err(AsmErrorEquates::ValueMustBeLowerThan8, (*mne).name, str, false);
     }
-    emit_opcode1(((*mne).opcode[0] as u64 |
-                      operand & 7) as u8);
+    emit_opcode1(((*mne).opcode[0] as u64 | operand & 7) as u8);
 }
 /*
  * handles opcodes with a scratchpad register operand:
@@ -363,8 +355,7 @@ unsafe extern "C" fn v_sreg_op(str: *mut i8, mne: *mut _MNE) {
     let mut reg: u8 = 0;
     programlabel();
     parse_scratchpad_register(str, &mut reg);
-    emit_opcode1(((*mne).opcode[0] |
-                      reg as u32) as u8);
+    emit_opcode1(((*mne).opcode[0] | reg as u32) as u8);
 }
 unsafe extern "C" fn v_lr(str: *mut i8, mne: *mut _MNE) {
     let mut i: i32 = 0;
@@ -388,23 +379,15 @@ unsafe extern "C" fn v_lr(str: *mut i8, mne: *mut _MNE) {
         i += 1
     }
     if 1 != ncommas {
-        f8err(AsmErrorEquates::SyntaxError, (*mne).name, str,
-              false);
-        return
+        f8err(AsmErrorEquates::SyntaxError, (*mne).name, str, false);
+        return;
     }
     /* extract operand strings  */
     *str.offset(cindex as isize) = 0;
     op1 = str;
-    op2 =
-        &mut *str.offset((cindex + 1) as isize) as
-            *mut i8;
-    if 0 != cindex &&
-           *(*__ctype_b_loc()).offset(*str.offset((cindex - 1)
-                                                      as isize) as i32
-                                          as isize) as i32 &
-               _ISspace as i32 as u16 as i32 != 0 {
-        *str.offset((cindex - 1) as isize) =
-            0
+    op2 = &mut *str.offset((cindex + 1) as isize) as *mut i8;
+    if 0 != cindex && *(*__ctype_b_loc()).offset(*str.offset((cindex - 1) as isize) as i32 as isize) as i32 & _ISspace as i32 as u16 as i32 != 0 {
+        *str.offset((cindex - 1) as isize) = 0
     }
     if *(*__ctype_b_loc()).offset(*op2 as i32 as isize) as i32
            & _ISspace as i32 as u16 as i32 != 0 {
@@ -416,7 +399,7 @@ unsafe extern "C" fn v_lr(str: *mut i8, mne: *mut _MNE) {
         if parse_scratchpad_register(op1, &mut reg_dst) != 0 {
             /* unresolved expression, reserve space */
             emit_opcode1(0);
-            return
+            return;
         }
     }
     reg_src = parse_special_register(op2) as u8;
@@ -424,16 +407,13 @@ unsafe extern "C" fn v_lr(str: *mut i8, mne: *mut _MNE) {
         if parse_scratchpad_register(op2, &mut reg_src) != 0 {
             /* unresolved expression, reserve space */
             emit_opcode1(0);
-            return
+            return;
         }
     }
     /* restore operand string */
     *str.offset(cindex as isize) = ',' as i32 as i8;
-    if 0 != cindex &&
-           0 ==
-               *str.offset((cindex - 1) as isize) as i32 {
-        *str.offset((cindex - 1) as isize) =
-            ' ' as i32 as i8
+    if 0 != cindex && 0 == *str.offset((cindex - 1) as isize) as i32 {
+        *str.offset((cindex - 1) as isize) = ' ' as i32 as i8
     }
     /* generate opcode */
     opcode = -(1);
@@ -517,12 +497,10 @@ unsafe extern "C" fn v_lr(str: *mut i8, mne: *mut _MNE) {
         }
         _ => {
             /* lr sreg,xxx*/
-            if 15 > reg_dst as i32 &&
-                   REG_A as i32 == reg_src as i32 {
+            if 15 > reg_dst as i32 && REG_A as i32 == reg_src as i32 {
                 /* lr sreg,a */
                 opcode = 0x50 as i32 | reg_dst as i32
-            } else if 9 == reg_dst as i32 &&
-                          REG_W as i32 == reg_src as i32 {
+            } else if 9 == reg_dst as i32 && REG_W as i32 == reg_src as i32 {
                 /* special case : lr j,w */
                 opcode = 0x1e as i32
             }
@@ -547,7 +525,7 @@ unsafe fn generate_branch(opcode: u8, str: *const i8) {
     if parse_value(str, &mut target_adr) != 0 {
         /* unresolved target address, reserve space */
         emit_opcode2(0, 0);
-        return
+        return;
     }
     /* calculate displacement */
     if isPCKnown() != 0 {
@@ -588,37 +566,29 @@ unsafe extern "C" fn v_bf_bt(str: *mut i8, mne: *mut _MNE) {
         i += 1
     }
     if 1 != ncommas {
-        f8err(AsmErrorEquates::SyntaxError, (*mne).name, str,
-              false);
-        return
+        f8err(AsmErrorEquates::SyntaxError, (*mne).name, str, false);
+        return;
     }
     /* extract operands */
     *str.offset(cindex as isize) = 0;
     op1 = str;
-    op2 =
-        &mut *str.offset((cindex + 1) as isize) as
-            *mut i8;
+    op2 = &mut *str.offset((cindex + 1) as isize) as *mut i8;
     /* parse first operand*/
     if parse_value(op1, &mut value) != 0 {
         /* unresolved expression, reserve space */
-        emit_opcode2(0,
-                     0);
-        return
+        emit_opcode2(0, 0);
+        return;
     }
     /* check first operand */
-    *str.offset(cindex as isize) =
-        ',' as i32 as i8; /* restore operand string */
-    if 'f' as i32 ==
-           *(*mne).name.offset(1) as i32 {
+    *str.offset(cindex as isize) = ',' as i32 as i8; /* restore operand string */
+    if 'f' as i32 == *(*mne).name.offset(1) as i32 {
         /* bf */
         if value > 15 {
-            f8err(AsmErrorEquates::ValueMustBeLowerThan10, (*mne).name, str,
-                  false);
+            f8err(AsmErrorEquates::ValueMustBeLowerThan10, (*mne).name, str, false);
             value &= 15
         }
     } else if value > 7 {
-        f8err(AsmErrorEquates::ValueMustBeLowerThan8, (*mne).name, str,
-              false);
+        f8err(AsmErrorEquates::ValueMustBeLowerThan8, (*mne).name, str, false);
         value &= 7
     }
     generate_branch(((*mne).opcode[0] as u64
@@ -634,12 +604,10 @@ unsafe extern "C" fn v_wordop(str: *mut i8, mne: *mut _MNE) {
     programlabel();
     parse_value(str, &mut value);
     if value > 0xffff {
-        f8err(AsmErrorEquates::ValueMustBeLowerThan10000, (*mne).name, str,
-              false);
+        f8err(AsmErrorEquates::ValueMustBeLowerThan10000, (*mne).name, str, false);
     }
     emit_opcode3((*mne).opcode[0] as u8,
-                 (value >> 8 &
-                      0xff) as u8,
+                 (value >> 8 & 0xff) as u8,
                  (value & 0xff) as u8);
 }
 /*
@@ -651,876 +619,531 @@ unsafe extern "C" fn v_byteop(str: *mut i8, mne: *mut _MNE) {
     programlabel();
     parse_value(str, &mut value);
     if value > 0xff {
-        f8err(AsmErrorEquates::AddressMustBeLowerThan100, (*mne).name, str,
-              false);
+        f8err(AsmErrorEquates::AddressMustBeLowerThan100, (*mne).name, str, false);
     }
-    emit_opcode2((*mne).opcode[0] as u8,
-                 (value & 0xff) as u8);
+    emit_opcode2((*mne).opcode[0] as u8, (value & 0xff) as u8);
 }
 #[no_mangle]
-pub static mut MneF8: [_MNE; 59] =
-        [{
+pub static mut MneF8: [_MNE; 59] = [{
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_ds as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_ds as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"res\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: 0,
-                      opcode:
-                          [0, 0, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_dc as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_dc as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"db\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: 0,
-                      opcode:
-                          [0, 0, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_dc as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_dc as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"dw\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: 0,
-                      opcode:
-                          [0, 0, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_dc as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_dc as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"dd\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: 0,
-                      opcode:
-                          [0, 0, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_mnemonic as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"adc\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x8e, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x8e, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_byteop as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_byteop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"ai\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x24, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_mnemonic as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"am\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x88, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x88, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_mnemonic as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"amd\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x89, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x89, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_sreg_op as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_sreg_op as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"as\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0xc0, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0xc0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_sreg_op as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_sreg_op as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"asd\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0xd0, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0xd0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_branch as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_branch as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bc\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x82, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_bf_bt as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_bf_bt as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bf\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x90, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_branch as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_branch as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bm\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x91, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x91, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_branch as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_branch as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bnc\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x92, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x92, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_branch as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_branch as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bno\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x98, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x98, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_branch as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_branch as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bnz\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x94, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x94, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_branch as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_branch as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bp\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x81, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x81, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_branch as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_branch as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"br\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x90, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_branch as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_branch as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"br7\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x8f, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x8f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_bf_bt as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_bf_bt as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bt\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x80, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_branch as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_branch as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bz\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x84, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x84, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_byteop as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_byteop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"ci\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x25, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_mnemonic as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"clr\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x70, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_mnemonic as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"cm\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x8d, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x8d, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_mnemonic as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"com\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x18, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_wordop as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_wordop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"dci\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x2a, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x2a, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_mnemonic as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"di\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x1a, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x1a, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_sreg_op as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_sreg_op as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"ds\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x30, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_mnemonic as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"ei\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x1b, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x1b, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_byteop as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_byteop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"in\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x26, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_mnemonic as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"inc\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x1f, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x1f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_ins_outs as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_ins_outs as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"ins\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0xa0, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0xa0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_wordop as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_wordop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"jmp\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x29, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x29, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_byteop as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_byteop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"li\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x20, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_lis as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_lis as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"lis\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: 0,
-                      opcode:
-                          [0, 0, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_lisu_lisl as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_lisu_lisl as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"lisl\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x68, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x68, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_lisu_lisl as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_lisu_lisl as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"lisu\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x60, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_mnemonic as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"lm\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x16, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_mnemonic as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"lnk\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x19, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_lr as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_lr as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"lr\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: 0,
-                      opcode:
-                          [0, 0, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_byteop as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_byteop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"ni\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x21, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_mnemonic as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"nm\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x8a, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x8a, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_mnemonic as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"nop\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x2b, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x2b, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_sreg_op as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_sreg_op as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"ns\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0xf0, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0xf0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_byteop as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_byteop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"oi\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x22, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_mnemonic as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"om\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x8b, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x8b, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_byteop as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_byteop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"out\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x27, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_ins_outs as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_ins_outs as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"outs\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0xb0, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0xb0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_wordop as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_wordop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"pi\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x28, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_mnemonic as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"pk\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0xc, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0xc, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_mnemonic as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"pop\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x1c, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x1c, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_sl_sr as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_sl_sr as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"sl\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x13, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_sl_sr as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_sl_sr as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"sr\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x12, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_mnemonic as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"st\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x17, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_mnemonic as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"xdc\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x2c, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x2c, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_byteop as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_byteop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"xi\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x23, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x23, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_mnemonic as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"xm\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0x8c, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0x8c, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
             let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
-                      vect:
-                          Some(v_sreg_op as
-                                   unsafe extern "C" fn(_: *mut i8,
-                                                        _: *mut _MNE) -> ()),
+                      vect: Some(v_sreg_op as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"xs\x00" as *const u8 as *const i8,
                       flags: 0,
-                      okmask:
-                          ((1) << AddressModes::Imp as i32) as u64,
-                      opcode:
-                          [0xe0, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      okmask: ((1) << AddressModes::Imp as i32) as u64,
+                      opcode: [0xe0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          },
          {
@@ -1529,9 +1152,7 @@ pub static mut MneF8: [_MNE; 59] =
                       name: 0 as *const i8,
                       flags: 0,
                       okmask: 0,
-                      opcode:
-                          [0, 0, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
+                      opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          }]
 ;

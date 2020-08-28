@@ -82,39 +82,31 @@ use utils::{
 
 extern "C" {
     #[no_mangle]
-    fn strcasecmp(_: *const i8, _: *const i8)
-     -> i32;
+    fn strcasecmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     static mut stdout: *mut FILE;
     #[no_mangle]
     fn fclose(__stream: *mut FILE) -> i32;
     #[no_mangle]
-    fn fopen(__filename: *const i8, __modes: *const i8)
-     -> *mut FILE;
+    fn fopen(__filename: *const i8, __modes: *const i8) -> *mut FILE;
     #[no_mangle]
-    fn fgets(__s: *mut i8, __n: i32, __stream: *mut FILE)
-     -> *mut i8;
+    fn fgets(__s: *mut i8, __n: i32, __stream: *mut FILE) -> *mut i8;
     #[no_mangle]
     fn v_incdir(_: *mut i8, _: *mut _MNE);
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
-     -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
-     -> *mut libc::c_void;
+    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64)
-     -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8)
-     -> *mut i8;
+    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
-    fn strtol(__nptr: *const i8, __endptr: *mut *mut i8,
-              __base: i32) -> i64;
+    fn strtol(__nptr: *const i8, __endptr: *mut *mut i8, __base: i32) -> i64;
     #[no_mangle]
     fn malloc(_: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -189,11 +181,11 @@ unsafe extern "C" fn CountUnresolvedSymbols() -> i32 {
         sym = *SHash.as_mut_ptr().offset(i as isize);
         while !sym.is_null() {
             if (*sym).flags as i32 & 0x1 as i32 != 0 {
-                nUnresolved += 1
+                nUnresolved += 1;
             }
-            sym = (*sym).next
+            sym = (*sym).next;
         }
-        i += 1
+        i += 1;
     }
     return nUnresolved;
 }
@@ -271,8 +263,7 @@ unsafe fn generate_resolved_symbols_list(sorted: bool) -> String {
         i += 1
     }
     /* Malloc an array of pointers to data */
-    symArray =
-        ckmalloc((::std::mem::size_of::<*mut _SYMBOL>() as u64).wrapping_mul(nSymbols as u64) as i32) as *mut *mut _SYMBOL;
+    symArray = ckmalloc((::std::mem::size_of::<*mut _SYMBOL>() as u64).wrapping_mul(nSymbols as u64) as i32) as *mut *mut _SYMBOL;
     if symArray.is_null() {
         result.push_str(" (unsorted - not enough memory to sort!)\n");
         /* Display complete symbol table */
@@ -525,7 +516,7 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
             if !(i < ac) { current_block = 16231175055492490595; break ; }
             if !(*(*av.offset(i as isize)).offset(0) as i32 == '-' as i32 || *(*av.offset(i as isize)).offset(0) as i32 == '/' as i32) {
                 current_block = 15878785573848117940;
-                break ;
+                break;
             }
             let mut str: *mut i8 = (*av.offset(i as isize)).offset(2);
             // FIXME: use better strings for parsing chars. These are temporary.
@@ -567,13 +558,13 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                 }
                 'M' | 'D' => {
                     while *str as i32 != 0 && *str as i32 != '=' as i32 {
-                        str = str.offset(1)
+                        str = str.offset(1);
                     }
                     if *str as i32 == '=' as i32 {
                         *str = 0;
-                        str = str.offset(1)
+                        str = str.offset(1);
                     } else {
-                        str = b"0\x00" as *const u8 as *const i8 as *mut i8
+                        str = b"0\x00" as *const u8 as *const i8 as *mut i8;
                     }
                     let ref mut fresh2 = *Av.as_mut_ptr().offset(0);
                     *fresh2 = (*av.offset(i as isize)).offset(2);
@@ -671,7 +662,7 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                 }
                 _ => { }
             }
-            i += 1
+            i += 1;
         }
         match current_block {
             15878785573848117940 => { }
@@ -728,7 +719,7 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                         },
                         _ => {
                             println!("Warning: Unable to [re]open '{}'", state.parameters.outFile);
-                            return AsmErrorEquates::FileError
+                            return AsmErrorEquates::FileError;
                         },
                     }
 
@@ -741,7 +732,7 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                             },
                             _ => {
                                 println!("Warning: Unable to [re]open '{}'", state.parameters.listFile);
-                                return AsmErrorEquates::FileError
+                                return AsmErrorEquates::FileError;
                             },
                         }
                     }
@@ -826,10 +817,9 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                     filesystem::close_file_maybe(&mut state.output.listFile);
                     if state.execution.redoIndex != 0 {
                         if !doAllPasses {
-                            if state.execution.redoIndex == oldRedoIndex && state.execution.redoWhy == oldRedoWhy &&
-                                state.execution.redoEval == oldRedoEval {
+                            if state.execution.redoIndex == oldRedoIndex && state.execution.redoWhy == oldRedoWhy && state.execution.redoEval == oldRedoEval {
                                 ShowUnresolvedSymbols();
-                                return AsmErrorEquates::NotResolvable
+                                return AsmErrorEquates::NotResolvable;
                             }
                         }
                         oldRedoIndex = state.execution.redoIndex;
@@ -862,7 +852,7 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                             nError = AsmErrorEquates::NonAbort;
                         }
                         println!("Complete.");
-                        return nError
+                        return nError;
                     }
                 }
             }
@@ -983,8 +973,7 @@ pub unsafe extern "C" fn clearrefs() {
     while (i as i32) < S_HASH_SIZE as i32 {
         sym = *SHash.as_mut_ptr().offset(i as isize);
         while !sym.is_null() {
-            (*sym).flags =
-                ((*sym).flags as i32 & !(0x4 as i32)) as u8;
+            (*sym).flags = ((*sym).flags as i32 & !(0x4 as i32)) as u8;
             sym = (*sym).next
         }
         i += 1
@@ -996,14 +985,12 @@ pub unsafe extern "C" fn clearrefs() {
    function names, at least not GCC's; we should be safe
    since MS compilers document strtol as well... [phf]
 */
-unsafe extern "C" fn cleanup(buf: *mut i8, bDisable: bool)
- -> *const i8 {
+unsafe extern "C" fn cleanup(buf: *mut i8, bDisable: bool) -> *const i8 {
     let mut str: *mut i8 = 0 as *mut i8;
     let mut strlist: *mut _STRLIST = 0 as *mut _STRLIST;
     let mut arg: i32 = 0;
     let mut add: i32 = 0;
-    let mut comment: *const i8 =
-        b"\x00" as *const u8 as *const i8;
+    let mut comment: *const i8 = b"\x00" as *const u8 as *const i8;
     str = buf;
     while *str != 0 {
         match *str as i32 {
@@ -1015,31 +1002,24 @@ unsafe extern "C" fn cleanup(buf: *mut i8, bDisable: bool)
                 if *str as i32 == CHAR_TAB {
                     *str = ' ' as i32 as i8
                 }
-                if *str as i32 == '\n' as i32 ||
-                       *str as i32 == 0 {
-                    *str.offset(0) =
-                        ' ' as i32 as i8;
-                    *str.offset(1) =
-                        0
+                if *str as i32 == '\n' as i32 || *str as i32 == 0 {
+                    *str.offset(0) = ' ' as i32 as i8;
+                    *str.offset(1) = 0
                 }
-                if *str.offset(0) as i32 ==
-                       ' ' as i32 {
-                    *str.offset(0) =
-                        -128i32 as i8
+                if *str.offset(0) as i32 == ' ' as i32 {
+                    *str.offset(0) = -128i32 as i8
                 }
             }
             34 => {
                 str = str.offset(1);
-                while *str as i32 != 0 &&
-                          *str as i32 != '\"' as i32 {
+                while *str as i32 != 0 && *str as i32 != '\"' as i32 {
                     if *str as i32 == ' ' as i32 {
                         *str = -128i32 as i8
                     }
                     str = str.offset(1)
                 }
                 if *str as i32 != '\"' as i32 {
-                    asmerr(AsmErrorEquates::SyntaxError,
-                           false, buf);
+                    asmerr(AsmErrorEquates::SyntaxError, false, buf);
                     str = str.offset(-1)
                 }
             }
@@ -1093,36 +1073,21 @@ unsafe extern "C" fn cleanup(buf: *mut i8, bDisable: bool)
                                 }
                                 panic("failure1");
                             }
-                            memmove(str.offset(add as isize) as
-                                        *mut libc::c_void,
-                                    str as *const libc::c_void,
-                                    strlen(str).wrapping_add(1));
+                            memmove(str.offset(add as isize) as *mut libc::c_void, str as *const libc::c_void, strlen(str).wrapping_add(1));
                             str = str.offset(add as isize);
-                            if str.offset(-(strlen((*strlist).buf.as_mut_ptr())
-                                                as isize)) < buf {
+                            if str.offset(-(strlen((*strlist).buf.as_mut_ptr()) as isize)) < buf {
                                 panic("failure2");
                             }
-                            memmove(str.offset(-(strlen((*strlist).buf.as_mut_ptr())
-                                                     as isize)) as
-                                        *mut libc::c_void,
-                                    (*strlist).buf.as_mut_ptr() as
-                                        *const libc::c_void,
-                                    strlen((*strlist).buf.as_mut_ptr()));
-                            str =
-                                str.offset(-(strlen((*strlist).buf.as_mut_ptr())
-                                                 as isize));
-                            if str < buf ||
-                                   str >=
-                                       buf.offset(MAX_LINES as isize) {
+                            memmove(str.offset(-(strlen((*strlist).buf.as_mut_ptr()) as isize)) as *mut libc::c_void, (*strlist).buf.as_mut_ptr() as *const libc::c_void, strlen((*strlist).buf.as_mut_ptr()));
+                            str = str.offset(-(strlen((*strlist).buf.as_mut_ptr()) as isize));
+                            if str < buf || str >= buf.offset(MAX_LINES as isize) {
                                 panic("failure 3");
                             }
                             str = str.offset(-1)
                             /*  for loop increments string    */
                         } else {
-                            asmerr(AsmErrorEquates::NotEnoughArgumentsPassedToMacro,
-                                   false,
-                                   0 as *const i8);
-                            break ;
+                            asmerr(AsmErrorEquates::NotEnoughArgumentsPassedToMacro, false, 0 as *const i8);
+                            break;
                         }
                     }
                 }
@@ -1132,9 +1097,7 @@ unsafe extern "C" fn cleanup(buf: *mut i8, bDisable: bool)
         str = str.offset(1)
     }
     /*    FALL THROUGH    */
-    while str != buf &&
-              *str.offset(-(1)) as i32 ==
-                  ' ' as i32 {
+    while str != buf && *str.offset(-(1)) as i32 == ' ' as i32 {
         str = str.offset(-1)
     }
     *str = 0;
@@ -1162,7 +1125,7 @@ pub unsafe extern "C" fn findext(mut str: *mut i8) {
     state.execution.extraString.clear();
     if *str.offset(0) as i32 == '.' as i32 {
         /* Allow .OP for OP */
-        return
+        return;
     }
     while *str as i32 != 0 && *str as i32 != '.' as i32 {
         str = str.offset(1)
@@ -1180,7 +1143,7 @@ pub unsafe extern "C" fn findext(mut str: *mut i8) {
                     'n' => { state.execution.modeNext = AddressModes::IndWord; }
                     _ => { }
                 }
-                return
+                return;
             }
             'd' | 'b' | 'z' => {
                 match (*str.offset(1) as u8 | 0x20) as char {
@@ -1190,7 +1153,7 @@ pub unsafe extern "C" fn findext(mut str: *mut i8) {
                     'b' => { state.execution.modeNext = AddressModes::BitBraMod; }
                     _ => { state.execution.modeNext = AddressModes::ByteAdr; }
                 }
-                return
+                return;
             }
             'e' | 'w' | 'a' => {
                 match (*str.offset(1) as u8 | 0x20) as char {
@@ -1198,7 +1161,7 @@ pub unsafe extern "C" fn findext(mut str: *mut i8) {
                     'y' => { state.execution.modeNext = AddressModes::WordAdrY; }
                     _ => { state.execution.modeNext = AddressModes::WordAdr; }
                 }
-                return
+                return;
             }
             'l' => { state.execution.modeNext = AddressModes::Long; return; }
             'r' => { state.execution.modeNext = AddressModes::Rel; return; }
@@ -1214,8 +1177,7 @@ pub unsafe extern "C" fn findext(mut str: *mut i8) {
 *  member.
 */
 #[no_mangle]
-pub unsafe extern "C" fn rmnode(base: *mut *mut libc::c_void,
-                                mut _bytes: i32) {
+pub unsafe extern "C" fn rmnode(base: *mut *mut libc::c_void, mut _bytes: i32) {
     let mut node: *mut libc::c_void = 0 as *mut libc::c_void;
     node = *base;
     if !node.is_null() {
@@ -1247,41 +1209,30 @@ pub unsafe extern "C" fn parse(buf: *mut i8) -> *mut _MNE {
     } else { i = 0 }
     let ref mut fresh6 = *Av.as_mut_ptr().offset(0);
     *fresh6 = Avbuf.as_mut_ptr().offset(j as isize);
-    while *buf.offset(i as isize) as i32 != 0 &&
-              *buf.offset(i as isize) as i32 != ' ' as i32 &&
-              *buf.offset(i as isize) as i32 != '=' as i32 {
+    while *buf.offset(i as isize) as i32 != 0 && *buf.offset(i as isize) as i32 != ' ' as i32 && *buf.offset(i as isize) as i32 != '=' as i32 {
         if *buf.offset(i as isize) as i32 == ':' as i32 {
             i += 1;
-            break ;
+            break;
         } else if *buf.offset(i as isize) as i32 == ',' as i32 {
             // we have label arguments
-            if *buf.offset((i + 1) as isize) as i32 ==
-                   '\"' as i32 {
+            if *buf.offset((i + 1) as isize) as i32 == '\"' as i32 {
                 // is it a string constant?
                 i = i + 2; // advance to string contents
-                while *buf.offset(i as isize) as i32 != 0 &&
-                          *buf.offset(i as isize) as i32 !=
-                              '\"' as i32 &&
-                          *buf.offset(i as isize) as i32 != ' ' as i32
-                          &&
-                          *buf.offset(i as isize) as i32 != ',' as i32
-                          &&
-                          *buf.offset(i as isize) as i32 != ':' as i32
+                while *buf.offset(i as isize) as i32 != 0 && *buf.offset(i as isize) as i32 != '\"' as i32 && *buf.offset(i as isize) as i32 != ' ' as i32
+                          && *buf.offset(i as isize) as i32 != ',' as i32
+                          && *buf.offset(i as isize) as i32 != ':' as i32
                       {
                     let fresh7 = i;
                     i = i + 1;
                     let fresh8 = j;
                     j = j + 1;
-                    *Avbuf.as_mut_ptr().offset(fresh8 as isize) =
-                        *buf.offset(fresh7 as isize)
+                    *Avbuf.as_mut_ptr().offset(fresh8 as isize) = *buf.offset(fresh7 as isize)
                 }
-                if *buf.offset(i as isize) as i32 != 0 &&
-                       *buf.offset(i as isize) as i32 == '\"' as i32 {
+                if *buf.offset(i as isize) as i32 != 0 && *buf.offset(i as isize) as i32 == '\"' as i32 {
                     i += 1
                 } else {
                     labelundefined += 1;
-                    asmerr(AsmErrorEquates::SyntaxError,
-                           false, buf);
+                    asmerr(AsmErrorEquates::SyntaxError, false, buf);
                 }
             } else {
                 // or else it's a symbol to be evaluated, and added to the label
@@ -1312,43 +1263,35 @@ pub unsafe extern "C" fn parse(buf: *mut i8) -> *mut _MNE {
                     }
                 }
                 i += 1;
-                while *buf.offset(i as isize) as i32 != 0 &&
-                          *buf.offset(i as isize) as i32 != ' ' as i32
-                          &&
-                          *buf.offset(i as isize) as i32 != '=' as i32
-                          &&
-                          *buf.offset(i as isize) as i32 != ',' as i32
-                          &&
-                          *buf.offset(i as isize) as i32 != ':' as i32
+                while *buf.offset(i as isize) as i32 != 0 && *buf.offset(i as isize) as i32 != ' ' as i32
+                          && *buf.offset(i as isize) as i32 != '=' as i32
+                          && *buf.offset(i as isize) as i32 != ',' as i32
+                          && *buf.offset(i as isize) as i32 != ':' as i32
                       {
                     i += 1
                 }
             }
         } else {
-            if *buf.offset(i as isize) as u8 as i32 ==
-                   0x80 as i32 {
+            if *buf.offset(i as isize) as u8 as i32 == 0x80 as i32 {
                 *buf.offset(i as isize) = ' ' as i32 as i8
             }
             let fresh9 = i;
             i = i + 1;
             let fresh10 = j;
             j = j + 1;
-            *Avbuf.as_mut_ptr().offset(fresh10 as isize) =
-                *buf.offset(fresh9 as isize)
+            *Avbuf.as_mut_ptr().offset(fresh10 as isize) = *buf.offset(fresh9 as isize)
         }
     }
     let fresh11 = j;
     j = j + 1;
-    *Avbuf.as_mut_ptr().offset(fresh11 as isize) =
-        0;
+    *Avbuf.as_mut_ptr().offset(fresh11 as isize) = 0;
     // if the label has arguments that aren't defined, we need to scuttle it
     // to avoid a partial label being used.
     if labelundefined != 0 {
         j = 1;
         let fresh12 = j;
         j = j + 1;
-        *Avbuf.as_mut_ptr().offset(fresh12 as isize) =
-            0
+        *Avbuf.as_mut_ptr().offset(fresh12 as isize) = 0
     }
     /* Parse the second word of the line */
     while *buf.offset(i as isize) as i32 == ' ' as i32 { i += 1 }
@@ -1360,27 +1303,22 @@ pub unsafe extern "C" fn parse(buf: *mut i8) -> *mut _MNE {
         i = i + 1;
         let fresh15 = j;
         j = j + 1;
-        *Avbuf.as_mut_ptr().offset(fresh15 as isize) =
-            *buf.offset(fresh14 as isize)
+        *Avbuf.as_mut_ptr().offset(fresh15 as isize) = *buf.offset(fresh14 as isize)
     } else {
-        while *buf.offset(i as isize) as i32 != 0 &&
-                  *buf.offset(i as isize) as i32 != ' ' as i32 {
-            if *buf.offset(i as isize) as u8 as i32 ==
-                   0x80 as i32 {
+        while *buf.offset(i as isize) as i32 != 0 && *buf.offset(i as isize) as i32 != ' ' as i32 {
+            if *buf.offset(i as isize) as u8 as i32 == 0x80 as i32 {
                 *buf.offset(i as isize) = ' ' as i32 as i8
             }
             let fresh16 = i;
             i = i + 1;
             let fresh17 = j;
             j = j + 1;
-            *Avbuf.as_mut_ptr().offset(fresh17 as isize) =
-                *buf.offset(fresh16 as isize)
+            *Avbuf.as_mut_ptr().offset(fresh17 as isize) = *buf.offset(fresh16 as isize)
         }
     }
     let fresh18 = j;
     j = j + 1;
-    *Avbuf.as_mut_ptr().offset(fresh18 as isize) =
-        0;
+    *Avbuf.as_mut_ptr().offset(fresh18 as isize) = 0;
     /* and analyse it as an opcode */
     findext(*Av.as_mut_ptr().offset(1));
     mne = findmne(*Av.as_ptr().offset(1));
@@ -1395,16 +1333,14 @@ pub unsafe extern "C" fn parse(buf: *mut i8) -> *mut _MNE {
                 i += 1
             }
         }
-        if *buf.offset(i as isize) as u8 as i32 ==
-               0x80 as i32 {
+        if *buf.offset(i as isize) as u8 as i32 == 0x80 as i32 {
             *buf.offset(i as isize) = ' ' as i32 as i8
         }
         let fresh20 = i;
         i = i + 1;
         let fresh21 = j;
         j = j + 1;
-        *Avbuf.as_mut_ptr().offset(fresh21 as isize) =
-            *buf.offset(fresh20 as isize)
+        *Avbuf.as_mut_ptr().offset(fresh21 as isize) = *buf.offset(fresh20 as isize)
     }
     *Avbuf.as_mut_ptr().offset(j as isize) = 0;
     return mne;
@@ -1432,7 +1368,7 @@ pub unsafe fn findmne(mut str: *const i8) -> *mut _MNE {
     mne = *MHash.as_mut_ptr().offset(hash_string(transient::str_pointer_to_string(buf.as_mut_ptr())) as isize);
     while !mne.is_null() {
         if strcmp(buf.as_mut_ptr(), (*mne).name) == 0 {
-            break ;
+            break;
         }
         mne = (*mne).next
     }
@@ -1499,10 +1435,9 @@ pub unsafe extern "C" fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
         comment = cleanup(buf.as_mut_ptr(), true);
         mne = parse(buf.as_mut_ptr());
         if *(*Av.as_ptr().offset(1)).offset(0) != 0 {
-            if !mne.is_null() &&
-                   (*mne).flags as i32 & 0x80 as i32 != 0 {
+            if !mne.is_null() && (*mne).flags as i32 & 0x80 as i32 != 0 {
                 if defined == 0 { (*mac).strlist = base }
-                return
+                return;
             }
         }
         if !skipit && !state.parameters.listFile.is_empty() && state.execution.listMode != ListMode::None {
@@ -1515,8 +1450,7 @@ pub unsafe extern "C" fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
             slp = &mut (*sl).next
         }
     }
-    asmerr(AsmErrorEquates::PrematureEOF, true,
-           0 as *const i8);
+    asmerr(AsmErrorEquates::PrematureEOF, true, 0 as *const i8);
 }
 #[no_mangle]
 pub unsafe extern "C" fn addhashtable(mut mne: *mut _MNE) {
@@ -1531,8 +1465,7 @@ pub unsafe extern "C" fn addhashtable(mut mne: *mut _MNE) {
         i = j;
         while i < AddressModes::length() as usize {
             (*mne).opcode[i as usize] = 0;
-            if (*mne).okmask & ((1) << i) as u64 !=
-                   0 {
+            if (*mne).okmask & ((1) << i) as u64 != 0 {
                 let fresh23 = j;
                 j = j + 1;
                 (*mne).opcode[i as usize] = opcode[fresh23]
@@ -1573,15 +1506,13 @@ pub unsafe extern "C" fn pushinclude(str: *const i8) {
                 state.execution.pass,
             ).as_str(),
         );
-        inf =
-            zmalloc(::std::mem::size_of::<_INCFILE>() as u64 as i32) as *mut _INCFILE;
+        inf = zmalloc(::std::mem::size_of::<_INCFILE>() as u64 as i32) as *mut _INCFILE;
         (*inf).next = pIncfile;
-        (*inf).name =
-            strcpy(ckmalloc(strlen(str).wrapping_add(1) as i32), str);
+        (*inf).name = strcpy(ckmalloc(strlen(str).wrapping_add(1) as i32), str);
         (*inf).fi = fi;
         (*inf).lineno = 0;
         pIncfile = inf;
-        return
+        return;
     }
     println!("Warning: Unable to open '{}'", transient::str_pointer_to_string(str));
 }
@@ -1706,19 +1637,14 @@ pub unsafe extern "C" fn ckmalloc(bytes: i32) -> *mut i8 {
 }
 #[no_mangle]
 pub unsafe extern "C" fn permalloc(mut bytes: i32) -> *mut i8 {
-    static mut buf: *mut i8 =
-        0 as *const i8 as *mut i8;
+    static mut buf: *mut i8 = 0 as *const i8 as *mut i8;
     static mut left: i32 = 0;
     let mut ptr: *mut i8 = 0 as *mut i8;
     /* Assume sizeof(union align) is a power of 2 */
-    bytes =
-        ((bytes as u64).wrapping_add(::std::mem::size_of::<align>() as u64).wrapping_sub(1)
-             &
-             !(::std::mem::size_of::<align>() as u64).wrapping_sub(1)) as i32;
+    bytes = ((bytes as u64).wrapping_add(::std::mem::size_of::<align>() as u64).wrapping_sub(1)
+             & !(::std::mem::size_of::<align>() as u64).wrapping_sub(1)) as i32;
     if bytes > left {
-        buf =
-            malloc(ALLOC_SIZE as i32 as u64) as
-                *mut i8;
+        buf = malloc(ALLOC_SIZE as i32 as u64) as *mut i8;
         if buf.is_null() {
             panic("unable to malloc");
         }
@@ -1734,8 +1660,7 @@ pub unsafe extern "C" fn permalloc(mut bytes: i32) -> *mut i8 {
     left -= bytes;
     return ptr;
 }
-unsafe fn main_0(ac: i32, av: *mut *mut i8)
- -> u8 {
+unsafe fn main_0(ac: i32, av: *mut *mut i8) -> u8 {
     let mut bTableSort: bool = false;
     let nError: AsmErrorEquates = MainShadow(ac, av, &mut bTableSort);
     if nError != AsmErrorEquates::None && nError != AsmErrorEquates::NonAbort {
