@@ -68,8 +68,7 @@ static mut specchk: _SYMBOL =
             value: 0,
             namelen: 0,};
 #[no_mangle]
-pub unsafe extern "C" fn setspecial(mut value: i32,
-                                    mut flags: i32) {
+pub unsafe extern "C" fn setspecial(value: i32, flags: i32) {
     special.value = value as i64; /* historical */
     special.flags = flags as u8; /* historical */
 }
@@ -81,7 +80,7 @@ pub unsafe extern "C" fn findsymbol(mut str: *const i8,
     if len > MAX_SYMBOLS as i32 { len = MAX_SYMBOLS as i32 }
     if *str.offset(0) as i32 == '.' as i32 {
         if len == 1 {
-            let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
+            let currentSegment = &mut state.other.segments[state.other.currentSegment];
             if currentSegment.flags & SegmentTypes::RelocatableOrigin != 0 {
                 org.flags = currentSegment.rflags & SymbolTypes::Unknown;
                 org.value = currentSegment.rorg as i64;
@@ -195,13 +194,13 @@ unsafe extern "C" fn hash1(mut str: *const i8, mut len: i32)
 #[no_mangle]
 pub unsafe extern "C" fn programlabel() {
     let currentSegment = &state.other.segments[state.other.currentSegment];
-    let mut rorg: u8 = currentSegment.flags & SegmentTypes::RelocatableOrigin;
-    let mut cflags: u8 = if rorg != 0 {
+    let rorg: u8 = currentSegment.flags & SegmentTypes::RelocatableOrigin;
+    let cflags: u8 = if rorg != 0 {
         currentSegment.rflags
     } else {
         currentSegment.flags
     };
-    let mut pc: u64 = if rorg != 0 {
+    let pc: u64 = if rorg != 0 {
         currentSegment.rorg
     } else {
         currentSegment.org

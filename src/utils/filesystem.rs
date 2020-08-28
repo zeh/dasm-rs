@@ -23,15 +23,15 @@ pub fn try_open_file_with_locations(filename: &str, locations: &Vec<String>) -> 
 
 	// Try direct file first. Returns if it exists, or if it's absolute,
 	// return whatever the result is since it ignores includes.
-	let mut file_attempt = try_open_file(filename);
+	let file_attempt = try_open_file(filename);
 	if file_attempt.is_ok() || is_absolute {
 		return file_attempt;
 	}
 
 	// Finally, try all include locations
 	for location in locations {
-		let mut filename_with_location = combine_paths(location.as_str(), filename);
-		let mut file_location_attempt = try_open_file(filename_with_location.as_str());
+		let filename_with_location = combine_paths(location.as_str(), filename);
+		let file_location_attempt = try_open_file(filename_with_location.as_str());
 		if file_location_attempt.is_ok() {
 			return file_location_attempt;
 		}

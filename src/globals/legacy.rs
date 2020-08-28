@@ -98,8 +98,7 @@ pub static mut Avbuf: [i8; 512] = [0; 512];
 #[no_mangle]
 pub static mut Ops: [_MNE; 39] =
         [{
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_list as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -113,8 +112,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_include as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -129,8 +127,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_seg as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -144,8 +141,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_hex as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -159,8 +155,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_err as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -174,8 +169,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_dc as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -189,8 +183,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_dc as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -204,8 +197,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_dc as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -219,8 +211,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_dc as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -234,8 +225,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_ds as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -249,8 +239,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_dc as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -264,8 +253,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_end as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -279,8 +267,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_trace as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -294,8 +281,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_org as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -309,8 +295,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_rorg as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -324,8 +309,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_rend as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -339,8 +323,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_align as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -354,8 +337,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_subroutine as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -371,8 +353,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_equ as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -386,8 +367,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_equ as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -401,8 +381,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_eqm as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -416,8 +395,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_set as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -431,8 +409,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_setstr as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -446,8 +423,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_macro as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -461,8 +437,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_endm as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -476,8 +451,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_mexit as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -491,8 +465,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_ifconst as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -507,8 +480,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_ifnconst as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -523,8 +495,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_if as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -538,8 +509,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_else as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -553,8 +523,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_endif as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -568,8 +537,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_endif as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -583,8 +551,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_repeat as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -598,8 +565,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_repend as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -613,8 +579,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_echo as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -628,8 +593,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_processor as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -645,8 +609,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_incbin as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -660,8 +623,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_incdir as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -675,8 +637,7 @@ pub static mut Ops: [_MNE; 39] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect: None,
                       name: 0 as *const i8,
                       flags: 0,

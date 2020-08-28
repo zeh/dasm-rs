@@ -92,10 +92,7 @@ pub const REG_A: REGISTERS = 16;
  * abort    : false = don't abort assembly
  *            true = abort assembly
  */
-unsafe extern "C" fn f8err(mut err: AsmErrorEquates,
-                           mut mnename: *const i8,
-                           mut opstring: *const i8,
-                           mut bAbort: bool) {
+unsafe extern "C" fn f8err(err: AsmErrorEquates, mnename: *const i8, opstring: *const i8, bAbort: bool) {
     let mut buffer = String::new();
     buffer.push_str(transient::str_pointer_to_string(mnename).as_str());
     buffer.push_str(" ");
@@ -105,7 +102,7 @@ unsafe extern "C" fn f8err(mut err: AsmErrorEquates,
 /*
  * emits a one byte opcode.
  */
-unsafe extern "C" fn emit_opcode1(mut opcode: u8) {
+unsafe extern "C" fn emit_opcode1(opcode: u8) {
     state.output.generatedLength = 1;
     state.output.generated[0] = opcode;
     generate();
@@ -116,8 +113,7 @@ unsafe extern "C" fn emit_opcode1(mut opcode: u8) {
  * byte0 : first byte (lower address)
  * byte1 : second byte (higher address)
  */
-unsafe extern "C" fn emit_opcode2(mut byte0: u8,
-                                  mut byte1: u8) {
+unsafe extern "C" fn emit_opcode2(byte0: u8, byte1: u8) {
     state.output.generatedLength = 2;
     state.output.generated[0] = byte0;
     state.output.generated[1] = byte1;
@@ -130,9 +126,7 @@ unsafe extern "C" fn emit_opcode2(mut byte0: u8,
  * byte1 : second byte (middle address)
  * byte2 : third byte (highest address)
  */
-unsafe extern "C" fn emit_opcode3(mut byte0: u8,
-                                  mut byte1: u8,
-                                  mut byte2: u8) {
+unsafe extern "C" fn emit_opcode3(byte0: u8, byte1: u8, byte2: u8) {
     state.output.generatedLength = 3;
     state.output.generated[0] = byte0;
     state.output.generated[1] = byte1;
@@ -179,15 +173,12 @@ unsafe extern "C" fn getPC() -> i64 {
  * result : zero = ok or syntax error
  *          nonzero = unresolved expression
  */
-unsafe extern "C" fn parse_value(mut str: *mut i8,
-                                 mut value: *mut u64)
- -> i32 {
+unsafe fn parse_value(str: *const i8, value: *mut u64) -> i32 {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut result: i32 = 0;
     *value = 0;
     sym = eval(str, 0);
-    if !(*sym).next.is_null() ||
-           AddressModes::ByteAdr as i32 != (*sym).addrmode as i32 {
+    if !(*sym).next.is_null() || AddressModes::ByteAdr as u8 != (*sym).addrmode {
         asmerr(AsmErrorEquates::SyntaxError, true, str);
     } else if (*sym).flags as i32 & 0x1 as i32 != 0 {
         state.execution.redoIndex += 1;
@@ -221,53 +212,44 @@ unsafe extern "C" fn parse_value(mut str: *mut i8,
  * result : zero = ok or syntax error
  *          nonzero = unresolved expression
  */
-unsafe extern "C" fn parse_scratchpad_register(mut str: *mut i8,
-                                               mut reg: *mut u8)
- -> i32 {
+unsafe fn parse_scratchpad_register(str: *mut i8, reg: *mut u8) -> i32 {
     let mut regnum: u64 = 0;
     /* parse special cases where ISAR is used as index */
-    if strcasecmp(b"s\x00" as *const u8 as *const i8, str) == 0 ||
-           strcasecmp(b"(is)\x00" as *const u8 as *const i8, str) ==
-               0 {
+    if strcasecmp(b"s\x00" as *const u8 as *const i8, str) == 0 || strcasecmp(b"(is)\x00" as *const u8 as *const i8, str) == 0 {
         *reg = 0xc;
-        return 0
+        return 0;
     }
-    if strcasecmp(b"i\x00" as *const u8 as *const i8, str) == 0 ||
-           strcasecmp(b"(is)+\x00" as *const u8 as *const i8, str)
-               == 0 {
+    if strcasecmp(b"i\x00" as *const u8 as *const i8, str) == 0 || strcasecmp(b"(is)+\x00" as *const u8 as *const i8, str) == 0 {
         *reg = 0xd;
-        return 0
+        return 0;
     }
-    if strcasecmp(b"d\x00" as *const u8 as *const i8, str) == 0 ||
-           strcasecmp(b"(is)-\x00" as *const u8 as *const i8, str)
-               == 0 {
+    if strcasecmp(b"d\x00" as *const u8 as *const i8, str) == 0 || strcasecmp(b"(is)-\x00" as *const u8 as *const i8, str) == 0 {
         *reg = 0xe;
-        return 0
+        return 0;
     }
     /* parse aliases for scratchpad registers */
     if strcasecmp(b"j\x00" as *const u8 as *const i8, str) == 0 {
         *reg = 0x9;
-        return 0
+        return 0;
     }
     if strcasecmp(b"hu\x00" as *const u8 as *const i8, str) == 0 {
         *reg = 0xa;
-        return 0
+        return 0;
     }
     if strcasecmp(b"hl\x00" as *const u8 as *const i8, str) == 0 {
         *reg = 0xb;
-        return 0
+        return 0;
     }
     /* parse register number */
     if parse_value(str, &mut regnum) != 0 {
-        return 1
+        return 1;
         /* unresolved expr */
     } else {
         if regnum > 14 {
-            asmerr(AsmErrorEquates::ValueMustBeLowerThanF,
-                   true, str);
+            asmerr(AsmErrorEquates::ValueMustBeLowerThanF, true, str);
         }
         *reg = regnum as u8;
-        return 0
+        return 0;
     };
 }
 /*
@@ -275,56 +257,50 @@ unsafe extern "C" fn parse_scratchpad_register(mut str: *mut i8,
  *
  * result : one of the REG_xxx constants (possibly also REG_NONE)
  */
-unsafe extern "C" fn parse_special_register(mut str: *mut i8)
- -> i32 {
+unsafe fn parse_special_register(str: *mut i8) -> i32 {
     if strcasecmp(b"a\x00" as *const u8 as *const i8, str) == 0 {
-        return REG_A as i32
+        return REG_A as i32;
     }
-    if strcasecmp(b"dc0\x00" as *const u8 as *const i8, str) == 0 ||
-           strcasecmp(b"dc\x00" as *const u8 as *const i8, str) == 0
-       {
-        return REG_DC0 as i32
+    if strcasecmp(b"dc0\x00" as *const u8 as *const i8, str) == 0 || strcasecmp(b"dc\x00" as *const u8 as *const i8, str) == 0 {
+        return REG_DC0 as i32;
     }
     if strcasecmp(b"h\x00" as *const u8 as *const i8, str) == 0 {
-        return REG_H as i32
+        return REG_H as i32;
     }
     if strcasecmp(b"is\x00" as *const u8 as *const i8, str) == 0 {
-        return REG_IS as i32
+        return REG_IS as i32;
     }
     if strcasecmp(b"k\x00" as *const u8 as *const i8, str) == 0 {
-        return REG_K as i32
+        return REG_K as i32;
     }
     if strcasecmp(b"ku\x00" as *const u8 as *const i8, str) == 0 {
-        return REG_KU as i32
+        return REG_KU as i32;
     }
     if strcasecmp(b"kl\x00" as *const u8 as *const i8, str) == 0 {
-        return REG_KL as i32
+        return REG_KL as i32;
     }
-    if strcasecmp(b"pc0\x00" as *const u8 as *const i8, str) == 0 ||
-           strcasecmp(b"p0\x00" as *const u8 as *const i8, str) == 0
-       {
-        return REG_PC0 as i32
+    if strcasecmp(b"pc0\x00" as *const u8 as *const i8, str) == 0 || strcasecmp(b"p0\x00" as *const u8 as *const i8, str) == 0 {
+        return REG_PC0 as i32;
     }
-    if strcasecmp(b"pc1\x00" as *const u8 as *const i8, str) == 0 ||
-           strcasecmp(b"p\x00" as *const u8 as *const i8, str) == 0
-       {
-        return REG_PC1 as i32
+    if strcasecmp(b"pc1\x00" as *const u8 as *const i8, str) == 0 || strcasecmp(b"p\x00" as *const u8 as *const i8, str) == 0 {
+        return REG_PC1 as i32;
     }
     if strcasecmp(b"q\x00" as *const u8 as *const i8, str) == 0 {
-        return REG_Q as i32
+        return REG_Q as i32;
     }
     if strcasecmp(b"qu\x00" as *const u8 as *const i8, str) == 0 {
-        return REG_QU as i32
+        return REG_QU as i32;
     }
     if strcasecmp(b"ql\x00" as *const u8 as *const i8, str) == 0 {
-        return REG_QL as i32
+        return REG_QL as i32;
     }
     if strcasecmp(b"w\x00" as *const u8 as *const i8, str) == 0 {
-        return REG_W as i32
-    } else { return REG_NONE as i32 };
+        return REG_W as i32;
+    } else {
+        return REG_NONE as i32;
+    };
 }
-unsafe extern "C" fn v_ins_outs(mut str: *mut i8,
-                                mut mne: *mut _MNE) {
+unsafe extern "C" fn v_ins_outs(str: *mut i8, mne: *mut _MNE) {
     let mut operand: u64 = 0;
     programlabel();
     parse_value(str, &mut operand);
@@ -335,7 +311,7 @@ unsafe extern "C" fn v_ins_outs(mut str: *mut i8,
     emit_opcode1(((*mne).opcode[0] as u64 |
                       operand & 15) as u8);
 }
-unsafe extern "C" fn v_sl_sr(mut str: *mut i8, mut mne: *mut _MNE) {
+unsafe extern "C" fn v_sl_sr(str: *mut i8, mne: *mut _MNE) {
     let mut operand: u64 = 0;
     programlabel();
     if parse_value(str, &mut operand) != 0 {
@@ -357,7 +333,7 @@ unsafe extern "C" fn v_sl_sr(mut str: *mut i8, mut mne: *mut _MNE) {
         }
     };
 }
-unsafe extern "C" fn v_lis(mut str: *mut i8, mut mne: *mut _MNE) {
+unsafe extern "C" fn v_lis(str: *mut i8, mne: *mut _MNE) {
     let mut operand: u64 = 0;
     programlabel();
     parse_value(str, &mut operand);
@@ -368,8 +344,7 @@ unsafe extern "C" fn v_lis(mut str: *mut i8, mut mne: *mut _MNE) {
     emit_opcode1((0x70 |
                       operand & 15) as u8);
 }
-unsafe extern "C" fn v_lisu_lisl(mut str: *mut i8,
-                                 mut mne: *mut _MNE) {
+unsafe extern "C" fn v_lisu_lisl(str: *mut i8, mne: *mut _MNE) {
     let mut operand: u64 = 0;
     programlabel();
     parse_value(str, &mut operand);
@@ -384,15 +359,14 @@ unsafe extern "C" fn v_lisu_lisl(mut str: *mut i8,
  * handles opcodes with a scratchpad register operand:
  * as, asd, ds, ns, xs
  */
-unsafe extern "C" fn v_sreg_op(mut str: *mut i8,
-                               mut mne: *mut _MNE) {
+unsafe extern "C" fn v_sreg_op(str: *mut i8, mne: *mut _MNE) {
     let mut reg: u8 = 0;
     programlabel();
     parse_scratchpad_register(str, &mut reg);
     emit_opcode1(((*mne).opcode[0] |
                       reg as u32) as u8);
 }
-unsafe extern "C" fn v_lr(mut str: *mut i8, mut mne: *mut _MNE) {
+unsafe extern "C" fn v_lr(str: *mut i8, mne: *mut _MNE) {
     let mut i: i32 = 0;
     let mut ncommas: i32 = 0;
     let mut cindex: i32 = 0;
@@ -565,28 +539,26 @@ unsafe extern "C" fn v_lr(mut str: *mut i8, mut mne: *mut _MNE) {
  * opcode : opcode of the branch (for instance 0x8f for BR7)
  * str    : operand string
  */
-unsafe extern "C" fn generate_branch(mut opcode: u8,
-                                     mut str: *mut i8) {
+unsafe fn generate_branch(opcode: u8, str: *const i8) {
     let mut target_adr: u64 = 0;
     let mut disp: i64 = 0;
     programlabel();
     /* get target address */
     if parse_value(str, &mut target_adr) != 0 {
         /* unresolved target address, reserve space */
-        emit_opcode2(0,
-                     0);
+        emit_opcode2(0, 0);
         return
     }
     /* calculate displacement */
     if isPCKnown() != 0 {
         disp = target_adr.wrapping_sub(getPC() as u64).wrapping_sub(1) as i64;
-        if disp > 127 || disp < -128{
+        if disp > 127 || disp < -128 {
             let buffer = format!("{}", disp);
             asmerr(AsmErrorEquates::BranchOutOfRange, false, transient::string_to_str_pointer(buffer));
         }
     } else {
         /* unknown pc, will be (hopefully) resolved in future passes */
-        disp = 0
+        disp = 0;
     }
     emit_opcode2(opcode, (disp & 255) as u8);
 }
@@ -594,12 +566,10 @@ unsafe extern "C" fn generate_branch(mut opcode: u8,
  * handles the following branch mnemonics:
  * bc, bm, bnc, bno, bnz, bp, br, br7, bz
  */
-unsafe extern "C" fn v_branch(mut str: *mut i8,
-                              mut mne: *mut _MNE) {
-    generate_branch((*mne).opcode[0] as u8,
-                    str);
+unsafe extern "C" fn v_branch(str: *mut i8, mne: *mut _MNE) {
+    generate_branch((*mne).opcode[0] as u8, str);
 }
-unsafe extern "C" fn v_bf_bt(mut str: *mut i8, mut mne: *mut _MNE) {
+unsafe extern "C" fn v_bf_bt(str: *mut i8, mne: *mut _MNE) {
     let mut ncommas: i32 = 0;
     let mut cindex: i32 = 0;
     let mut i: i32 = 0;
@@ -659,8 +629,7 @@ unsafe extern "C" fn v_bf_bt(mut str: *mut i8, mut mne: *mut _MNE) {
  * handles instructions that take a word operand:
  * dci, jmp, pi
  */
-unsafe extern "C" fn v_wordop(mut str: *mut i8,
-                              mut mne: *mut _MNE) {
+unsafe extern "C" fn v_wordop(str: *mut i8, mne: *mut _MNE) {
     let mut value: u64 = 0;
     programlabel();
     parse_value(str, &mut value);
@@ -677,8 +646,7 @@ unsafe extern "C" fn v_wordop(mut str: *mut i8,
  * handles instructions that take a byte operand:
  * ai, ci, in, li, ni, oi, out, xi
  */
-unsafe extern "C" fn v_byteop(mut str: *mut i8,
-                              mut mne: *mut _MNE) {
+unsafe extern "C" fn v_byteop(str: *mut i8, mne: *mut _MNE) {
     let mut value: u64 = 0;
     programlabel();
     parse_value(str, &mut value);
@@ -692,8 +660,7 @@ unsafe extern "C" fn v_byteop(mut str: *mut i8,
 #[no_mangle]
 pub static mut MneF8: [_MNE; 59] =
         [{
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_ds as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -707,8 +674,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_dc as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -722,8 +688,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_dc as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -737,8 +702,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_dc as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -752,8 +716,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_mnemonic as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -768,8 +731,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_byteop as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -784,8 +746,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_mnemonic as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -800,8 +761,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_mnemonic as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -816,8 +776,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_sreg_op as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -832,8 +791,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_sreg_op as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -848,8 +806,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_branch as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -864,8 +821,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_bf_bt as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -880,8 +836,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_branch as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -896,8 +851,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_branch as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -912,8 +866,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_branch as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -928,8 +881,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_branch as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -944,8 +896,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_branch as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -960,8 +911,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_branch as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -976,8 +926,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_branch as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -992,8 +941,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_bf_bt as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1008,8 +956,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_branch as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1024,8 +971,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_byteop as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1040,8 +986,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_mnemonic as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1056,8 +1001,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_mnemonic as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1072,8 +1016,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_mnemonic as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1088,8 +1031,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_wordop as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1104,8 +1046,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_mnemonic as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1120,8 +1061,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_sreg_op as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1136,8 +1076,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_mnemonic as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1152,8 +1091,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_byteop as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1168,8 +1106,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_mnemonic as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1184,8 +1121,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_ins_outs as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1200,8 +1136,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_wordop as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1216,8 +1151,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_byteop as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1232,8 +1166,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_lis as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1247,8 +1180,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_lisu_lisl as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1263,8 +1195,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_lisu_lisl as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1279,8 +1210,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_mnemonic as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1295,8 +1225,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_mnemonic as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1311,8 +1240,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_lr as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1326,8 +1254,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_byteop as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1342,8 +1269,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_mnemonic as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1358,8 +1284,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_mnemonic as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1374,8 +1299,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_sreg_op as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1390,8 +1314,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_byteop as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1406,8 +1329,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_mnemonic as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1422,8 +1344,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_byteop as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1438,8 +1359,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_ins_outs as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1454,8 +1374,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_wordop as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1470,8 +1389,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_mnemonic as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1486,8 +1404,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_mnemonic as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1502,8 +1419,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_sl_sr as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1518,8 +1434,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_sl_sr as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1534,8 +1449,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_mnemonic as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1550,8 +1464,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_mnemonic as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1566,8 +1479,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_byteop as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1582,8 +1494,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_mnemonic as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1598,8 +1509,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect:
                           Some(v_sreg_op as
                                    unsafe extern "C" fn(_: *mut i8,
@@ -1614,8 +1524,7 @@ pub static mut MneF8: [_MNE; 59] =
              init
          },
          {
-             let mut init =
-                 _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
                       vect: None,
                       name: 0 as *const i8,
                       flags: 0,

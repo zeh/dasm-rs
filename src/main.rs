@@ -200,7 +200,7 @@ unsafe extern "C" fn CountUnresolvedSymbols() -> i32 {
 unsafe extern "C" fn ShowUnresolvedSymbols() -> i32 {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut i: i32 = 0;
-    let mut nUnresolved: i32 = CountUnresolvedSymbols();
+    let nUnresolved: i32 = CountUnresolvedSymbols();
     if nUnresolved != 0 {
         println!("--- Unresolved Symbol List");
         /* Display unresolved symbols */
@@ -229,12 +229,10 @@ unsafe extern "C" fn ShowUnresolvedSymbols() -> i32 {
     }
     return nUnresolved;
 }
-unsafe extern "C" fn CompareAlpha(mut arg1: *const libc::c_void,
-                                  mut arg2: *const libc::c_void)
- -> i32 {
+unsafe extern "C" fn CompareAlpha(arg1: *const libc::c_void, arg2: *const libc::c_void) -> i32 {
     /* Simple alphabetic ordering comparison function for quicksort */
-    let mut sym1: *const _SYMBOL = *(arg1 as *const *mut _SYMBOL);
-    let mut sym2: *const _SYMBOL = *(arg2 as *const *mut _SYMBOL);
+    let sym1: *const _SYMBOL = *(arg1 as *const *mut _SYMBOL);
+    let sym2: *const _SYMBOL = *(arg2 as *const *mut _SYMBOL);
     /*
        The cast above is wild, thank goodness the Linux man page
        for qsort(3) has an example explaining it... :-) [phf]
@@ -247,12 +245,10 @@ unsafe extern "C" fn CompareAlpha(mut arg1: *const libc::c_void,
     */
     return strcasecmp((*sym1).name, (*sym2).name);
 }
-unsafe extern "C" fn CompareAddress(mut arg1: *const libc::c_void,
-                                    mut arg2: *const libc::c_void)
- -> i32 {
+unsafe extern "C" fn CompareAddress(arg1: *const libc::c_void, arg2: *const libc::c_void) -> i32 {
     /* Simple numeric ordering comparison function for quicksort */
-    let mut sym1: *const _SYMBOL = *(arg1 as *const *mut _SYMBOL);
-    let mut sym2: *const _SYMBOL = *(arg2 as *const *mut _SYMBOL);
+    let sym1: *const _SYMBOL = *(arg1 as *const *mut _SYMBOL);
+    let sym2: *const _SYMBOL = *(arg2 as *const *mut _SYMBOL);
     return ((*sym1).value - (*sym2).value) as i32;
 }
 // FIXME: update parameters, and move to symbols/mod
@@ -511,9 +507,7 @@ unsafe extern "C" fn ShowSegments() {
     println!();
 }
 
-unsafe extern "C" fn MainShadow(mut ac: i32,
-                                mut av: *mut *mut i8,
-                                mut pbTableSort: *mut bool) -> AsmErrorEquates {
+unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut bool) -> AsmErrorEquates {
     let mut current_block: u64;
     let mut nError: AsmErrorEquates = AsmErrorEquates::None;
     let mut doAllPasses: bool = false;
@@ -683,7 +677,7 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
             15878785573848117940 => { }
             _ => {
                 /*    INITIAL SEGMENT */
-                let mut seg = Segment {
+                let seg = Segment {
                     name: String::from("INITIAL CODE SEGMENT"),
                     flags: SegmentTypes::Unknown,
                     rflags: SegmentTypes::Unknown,
@@ -902,7 +896,7 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
     println!("Report bugs on https://github.com/dasm-assembler/dasm please!");
     return AsmErrorEquates::CommandLine;
 }
-unsafe extern "C" fn outlistfile(mut comment: *const i8) {
+unsafe extern "C" fn outlistfile(comment: *const i8) {
     let current_if = &state.execution.ifs.last().unwrap();
     let mut xtrue: char = 0 as char;
     let mut c: char = 0 as char;
@@ -1002,7 +996,7 @@ pub unsafe extern "C" fn clearrefs() {
    function names, at least not GCC's; we should be safe
    since MS compilers document strtol as well... [phf]
 */
-unsafe extern "C" fn cleanup(mut buf: *mut i8, mut bDisable: bool)
+unsafe extern "C" fn cleanup(buf: *mut i8, bDisable: bool)
  -> *const i8 {
     let mut str: *mut i8 = 0 as *mut i8;
     let mut strlist: *mut _STRLIST = 0 as *mut _STRLIST;
@@ -1220,7 +1214,7 @@ pub unsafe extern "C" fn findext(mut str: *mut i8) {
 *  member.
 */
 #[no_mangle]
-pub unsafe extern "C" fn rmnode(mut base: *mut *mut libc::c_void,
+pub unsafe extern "C" fn rmnode(base: *mut *mut libc::c_void,
                                 mut _bytes: i32) {
     let mut node: *mut libc::c_void = 0 as *mut libc::c_void;
     node = *base;
@@ -1233,7 +1227,7 @@ pub unsafe extern "C" fn rmnode(mut base: *mut *mut libc::c_void,
 *  Parse into three arguments: Av[0], Av[1], Av[2]
 */
 #[no_mangle]
-pub unsafe extern "C" fn parse(mut buf: *mut i8) -> *mut _MNE {
+pub unsafe extern "C" fn parse(buf: *mut i8) -> *mut _MNE {
     let mut i: usize = 0;
     let mut j: usize = 1;
     let mut mne: *mut _MNE = 0 as *mut _MNE;
@@ -1293,7 +1287,7 @@ pub unsafe extern "C" fn parse(mut buf: *mut i8) -> *mut _MNE {
                 // or else it's a symbol to be evaluated, and added to the label
                 let mut t: usize = 0;
                 let mut temp_buffer = String::new();
-                let mut buffer = transient::str_pointer_to_string(buf);
+                let buffer = transient::str_pointer_to_string(buf);
                 let mut symarg: *mut _SYMBOL = 0 as *mut _SYMBOL;
                 temp_buffer.push_str(&buffer[i + 1..]);
                 temp_buffer.truncate(256);
@@ -1311,7 +1305,7 @@ pub unsafe extern "C" fn parse(mut buf: *mut i8) -> *mut _MNE {
                         // Ensure the label we're creating doesn't get used
                         labelundefined += 1
                     } else {
-                        let mut temp_value = format!("{}", (*symarg).value);
+                        let temp_value = format!("{}", (*symarg).value);
                         let temp_value_len = temp_value.len();
                         strcpy(Avbuf.as_mut_ptr().offset(j as isize), transient::string_to_str_pointer(temp_value));
                         j += temp_value_len;
@@ -1447,8 +1441,7 @@ pub unsafe fn findmne(mut str: *const i8) -> *mut _MNE {
 /* symbols.c */
 /* ops.c */
 #[no_mangle]
-pub unsafe extern "C" fn v_macro(mut str: *mut i8,
-                                 mut _dummy: *mut _MNE) {
+pub unsafe extern "C" fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
     let mut base: *mut _STRLIST = 0 as *mut _STRLIST; /* slp, mac: might be used uninitialised */
     let mut defined: i32 = 0; /* not really needed */
     let mut slp: *mut *mut _STRLIST = 0 as *mut *mut _STRLIST;
@@ -1554,7 +1547,7 @@ pub unsafe extern "C" fn addhashtable(mut mne: *mut _MNE) {
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn pushinclude(mut str: *mut i8) {
+pub unsafe extern "C" fn pushinclude(str: *const i8) {
     let mut inf: *mut _INCFILE = 0 as *mut _INCFILE;
     let mut fi: *mut FILE = 0 as *mut FILE;
     fi = pfopen(str, b"rb\x00" as *const u8 as *const i8);
@@ -1593,12 +1586,12 @@ pub unsafe extern "C" fn pushinclude(mut str: *mut i8) {
     println!("Warning: Unable to open '{}'", transient::str_pointer_to_string(str));
 }
 #[no_mangle]
-pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut abort: bool, mut sText: *const i8) -> AsmErrorEquates {
+pub unsafe extern "C" fn asmerr(err: AsmErrorEquates, abort: bool, sText: *const i8) -> AsmErrorEquates {
     let mut errorOutput: String = String::new();
     let mut pincfile: *mut _INCFILE = 0 as *mut _INCFILE;
     /* file pointer we print error messages to */
     let errorToFile = !state.parameters.listFile.is_empty();
-    let mut errorFile = &mut state.output.listFile;
+    let errorFile = &mut state.output.listFile;
     if find_error_definition(err).fatal {
         state.other.stopAtEnd = true
     }
@@ -1622,7 +1615,7 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut abort: bool, mut s
                 Error format for MS VisualStudio and relatives:
                 "file (line): error: string"
             */
-            let mut errorMessage = format!(
+            let errorMessage = format!(
                 "{} ({}): error: ",
                 transient::str_pointer_to_string((*pincfile).name),
                 (*pincfile).lineno
@@ -1642,7 +1635,7 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut abort: bool, mut s
                     "*line %4ld %-10s %s\n" (list file)
                     "line %4ld %-10s %s\n" (terminal)
             */
-            let mut errorMessage = format!(
+            let errorMessage = format!(
                 "line {:>7} {:10} ",
                 (*pincfile).lineno,
                 transient::str_pointer_to_string((*pincfile).name),
@@ -1657,7 +1650,7 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut abort: bool, mut s
                 GNU format error messages, from their coding
                 standards.
             */
-            let mut errorMessage = format!(
+            let errorMessage = format!(
                 "{}:{}: error: ",
                 transient::str_pointer_to_string((*pincfile).name),
                 (*pincfile).lineno,
@@ -1697,27 +1690,22 @@ pub unsafe extern "C" fn asmerr(mut err: AsmErrorEquates, mut abort: bool, mut s
     return err;
 }
 #[no_mangle]
-pub unsafe extern "C" fn zmalloc(mut bytes: i32)
- -> *mut i8 {
-    let mut ptr: *mut i8 = ckmalloc(bytes);
+pub unsafe extern "C" fn zmalloc(bytes: i32) -> *mut i8 {
+    let ptr: *mut i8 = ckmalloc(bytes);
     if !ptr.is_null() {
-        memset(ptr as *mut libc::c_void, 0,
-               bytes as u64);
+        memset(ptr as *mut libc::c_void, 0, bytes as u64);
     }
     return ptr;
 }
 #[no_mangle]
-pub unsafe extern "C" fn ckmalloc(mut bytes: i32)
- -> *mut i8 {
-    let mut ptr: *mut i8 =
-        malloc(bytes as u64) as *mut i8;
+pub unsafe extern "C" fn ckmalloc(bytes: i32) -> *mut i8 {
+    let ptr: *mut i8 = malloc(bytes as u64) as *mut i8;
     if !ptr.is_null() { return ptr }
     panic("unable to malloc");
     return 0 as *mut i8;
 }
 #[no_mangle]
-pub unsafe extern "C" fn permalloc(mut bytes: i32)
- -> *mut i8 {
+pub unsafe extern "C" fn permalloc(mut bytes: i32) -> *mut i8 {
     static mut buf: *mut i8 =
         0 as *const i8 as *mut i8;
     static mut left: i32 = 0;
@@ -1746,10 +1734,10 @@ pub unsafe extern "C" fn permalloc(mut bytes: i32)
     left -= bytes;
     return ptr;
 }
-unsafe fn main_0(mut ac: i32, mut av: *mut *mut i8)
+unsafe fn main_0(ac: i32, av: *mut *mut i8)
  -> u8 {
     let mut bTableSort: bool = false;
-    let mut nError: AsmErrorEquates = MainShadow(ac, av, &mut bTableSort);
+    let nError: AsmErrorEquates = MainShadow(ac, av, &mut bTableSort);
     if nError != AsmErrorEquates::None && nError != AsmErrorEquates::NonAbort {
         // Dump messages when aborting due to errors
         operations::output_passbuffer(&mut state.output.passBufferMessages);

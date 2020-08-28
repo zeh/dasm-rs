@@ -63,10 +63,10 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                               mut wantmode: i32) -> *mut _SYMBOL {
     let mut base: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut cur: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut oldArgIndexBase = state.expressions.argIndexBase;
-    let mut oldOpIndexBase = state.expressions.opIndexBase;
+    let oldArgIndexBase = state.expressions.argIndexBase;
+    let oldOpIndexBase = state.expressions.opIndexBase;
     let mut scr: i32 = 0;
-    let mut pLine: *const i8 = str;
+    let pLine: *const i8 = str;
     state.expressions.argIndexBase = state.expressions.argIndex;
     state.expressions.opIndexBase = state.expressions.opIndex;
     state.expressions.lastWasOp = true;
@@ -76,7 +76,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
         if state.parameters.debug {
             println!("char '{}'", transient::str_pointer_and_len_to_string(str, 1));
         }
-        let mut current_block_184: u64;
+        let current_block_184: u64;
         match *str as i32 {
             32 | 10 => {
                 str = str.offset(1);
@@ -435,7 +435,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8,
                         state.execution.modeNext = AddressModes::ZeroY
                     }
                 } else {
-                    let mut pNewSymbol: *mut _SYMBOL = allocsymbol();
+                    let pNewSymbol: *mut _SYMBOL = allocsymbol();
                     (*cur).next = pNewSymbol;
                     state.expressions.argIndex -= 1;
                     if state.expressions.argIndex < state.expressions.argIndexBase {
@@ -612,8 +612,7 @@ pub unsafe extern "C" fn evaltop() {
             );
     };
 }
-unsafe extern "C" fn stackarg(mut val: i64, mut flags: i32,
-                              mut ptr1: *const i8) {
+unsafe extern "C" fn stackarg(mut val: i64, mut flags: i32, ptr1: *const i8) {
     let mut str: *mut i8 = 0 as *mut i8;
     if state.parameters.debug {
         println!("stackarg {} (@{})", val, state.expressions.argIndex);
@@ -654,7 +653,7 @@ unsafe extern "C" fn stackarg(mut val: i64, mut flags: i32,
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn doop(mut func: opfunc_t, mut pri: usize) {
+pub unsafe extern "C" fn doop(func: opfunc_t, pri: usize) {
     if state.parameters.debug {
         println!("doop");
     }
@@ -683,40 +682,32 @@ pub unsafe extern "C" fn doop(mut func: opfunc_t, mut pri: usize) {
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_takelsb(mut v1: i64,
-                                    mut f1: i32) {
+pub unsafe extern "C" fn op_takelsb(v1: i64, f1: i32) {
     stackarg(v1 & 0xff as i64, f1, 0 as *const i8);
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_takemsb(mut v1: i64,
-                                    mut f1: i32) {
-    stackarg(v1 >> 8 & 0xff, f1,
-             0 as *const i8);
+pub unsafe extern "C" fn op_takemsb(v1: i64, f1: i32) {
+    stackarg(v1 >> 8 & 0xff, f1, 0 as *const i8);
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_negate(mut v1: i64,
-                                   mut f1: i32) {
+pub unsafe extern "C" fn op_negate(v1: i64, f1: i32) {
     stackarg(-v1, f1, 0 as *const i8);
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_invert(mut v1: i64,
-                                   mut f1: i32) {
+pub unsafe extern "C" fn op_invert(v1: i64, f1: i32) {
     stackarg(!v1, f1, 0 as *const i8);
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_not(mut v1: i64, mut f1: i32) {
-    stackarg((v1 == 0) as i32 as i64, f1,
-             0 as *const i8);
+pub unsafe extern "C" fn op_not(v1: i64, f1: i32) {
+    stackarg((v1 == 0) as i32 as i64, f1, 0 as *const i8);
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_mult(mut v1: i64, mut v2: i64,
-                                 mut f1: i32, mut f2: i32) {
+pub unsafe extern "C" fn op_mult(v1: i64, v2: i64, f1: i32, f2: i32) {
     stackarg(v1 * v2, f1 | f2, 0 as *const i8);
     state.expressions.lastWasOp = true;
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_div(mut v1: i64, mut v2: i64,
-                                mut f1: i32, mut f2: i32) {
+pub unsafe extern "C" fn op_div(v1: i64, v2: i64, f1: i32, f2: i32) {
     state.expressions.lastWasOp = true;
     if f1 | f2 != 0 {
         stackarg(0, f1 | f2, 0 as *const i8);
@@ -730,8 +721,7 @@ pub unsafe extern "C" fn op_div(mut v1: i64, mut v2: i64,
     } else { stackarg(v1 / v2, 0, 0 as *const i8); };
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_mod(mut v1: i64, mut v2: i64,
-                                mut f1: i32, mut f2: i32) {
+pub unsafe extern "C" fn op_mod(v1: i64, v2: i64, f1: i32, f2: i32) {
     if f1 | f2 != 0 {
         stackarg(0, f1 | f2, 0 as *const i8);
         return
@@ -742,10 +732,7 @@ pub unsafe extern "C" fn op_mod(mut v1: i64, mut v2: i64,
     state.expressions.lastWasOp = true;
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_question(mut v1: i64,
-                                     mut v2: i64,
-                                     mut f1: i32,
-                                     mut f2: i32) {
+pub unsafe extern "C" fn op_question(v1: i64, v2: i64, f1: i32, f2: i32) {
     if f1 != 0 {
         stackarg(0, f1, 0 as *const i8);
     } else {
@@ -755,22 +742,17 @@ pub unsafe extern "C" fn op_question(mut v1: i64,
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_add(mut v1: i64, mut v2: i64,
-                                mut f1: i32, mut f2: i32) {
+pub unsafe extern "C" fn op_add(v1: i64, v2: i64, f1: i32, f2: i32) {
     stackarg(v1 + v2, f1 | f2, 0 as *const i8);
     state.expressions.lastWasOp = true;
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_sub(mut v1: i64, mut v2: i64,
-                                mut f1: i32, mut f2: i32) {
+pub unsafe extern "C" fn op_sub(v1: i64, v2: i64, f1: i32, f2: i32) {
     stackarg(v1 - v2, f1 | f2, 0 as *const i8);
     state.expressions.lastWasOp = true;
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_shiftright(mut v1: i64,
-                                       mut v2: i64,
-                                       mut f1: i32,
-                                       mut f2: i32) {
+pub unsafe extern "C" fn op_shiftright(v1: i64, v2: i64, f1: i32, f2: i32) {
     if f1 | f2 != 0 {
         stackarg(0, f1 | f2, 0 as *const i8);
     } else {
@@ -778,10 +760,7 @@ pub unsafe extern "C" fn op_shiftright(mut v1: i64,
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_shiftleft(mut v1: i64,
-                                      mut v2: i64,
-                                      mut f1: i32,
-                                      mut f2: i32) {
+pub unsafe extern "C" fn op_shiftleft(v1: i64, v2: i64, f1: i32, f2: i32) {
     if f1 | f2 != 0 {
         stackarg(0, f1 | f2, 0 as *const i8);
     } else {
@@ -789,91 +768,64 @@ pub unsafe extern "C" fn op_shiftleft(mut v1: i64,
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_greater(mut v1: i64,
-                                    mut v2: i64, mut f1: i32,
-                                    mut f2: i32) {
-    stackarg((v1 > v2) as i32 as i64, f1 | f2,
-             0 as *const i8);
+pub unsafe extern "C" fn op_greater(v1: i64, v2: i64, f1: i32, f2: i32) {
+    stackarg((v1 > v2) as i32 as i64, f1 | f2, 0 as *const i8);
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_greatereq(mut v1: i64,
-                                      mut v2: i64,
-                                      mut f1: i32,
-                                      mut f2: i32) {
-    stackarg((v1 >= v2) as i32 as i64, f1 | f2,
-             0 as *const i8);
+pub unsafe extern "C" fn op_greatereq(v1: i64, v2: i64, f1: i32, f2: i32) {
+    stackarg((v1 >= v2) as i32 as i64, f1 | f2, 0 as *const i8);
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_smaller(mut v1: i64,
-                                    mut v2: i64, mut f1: i32,
-                                    mut f2: i32) {
-    stackarg((v1 < v2) as i32 as i64, f1 | f2,
-             0 as *const i8);
+pub unsafe extern "C" fn op_smaller(v1: i64, v2: i64, f1: i32, f2: i32) {
+    stackarg((v1 < v2) as i32 as i64, f1 | f2, 0 as *const i8);
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_smallereq(mut v1: i64,
-                                      mut v2: i64,
-                                      mut f1: i32,
-                                      mut f2: i32) {
-    stackarg((v1 <= v2) as i32 as i64, f1 | f2,
-             0 as *const i8);
+pub unsafe extern "C" fn op_smallereq(v1: i64, v2: i64, f1: i32, f2: i32) {
+    stackarg((v1 <= v2) as i32 as i64, f1 | f2, 0 as *const i8);
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_eqeq(mut v1: i64, mut v2: i64,
-                                 mut f1: i32, mut f2: i32) {
-    stackarg((v1 == v2) as i32 as i64, f1 | f2,
-             0 as *const i8);
+pub unsafe extern "C" fn op_eqeq(v1: i64, v2: i64, f1: i32, f2: i32) {
+    stackarg((v1 == v2) as i32 as i64, f1 | f2, 0 as *const i8);
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_noteq(mut v1: i64, mut v2: i64,
-                                  mut f1: i32, mut f2: i32) {
-    stackarg((v1 != v2) as i32 as i64, f1 | f2,
-             0 as *const i8);
+pub unsafe extern "C" fn op_noteq(v1: i64, v2: i64, f1: i32, f2: i32) {
+    stackarg((v1 != v2) as i32 as i64, f1 | f2, 0 as *const i8);
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_andand(mut v1: i64, mut v2: i64,
-                                   mut f1: i32, mut f2: i32) {
+pub unsafe extern "C" fn op_andand(v1: i64, v2: i64, f1: i32, f2: i32) {
     if f1 == 0 && v1 == 0 || f2 == 0 && v2 == 0 {
-        stackarg(0, 0,
-                 0 as *const i8);
-        return
+        stackarg(0, 0, 0 as *const i8);
+        return;
     }
     stackarg(1, f1 | f2, 0 as *const i8);
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_oror(mut v1: i64, mut v2: i64,
-                                 mut f1: i32, mut f2: i32) {
+pub unsafe extern "C" fn op_oror(v1: i64, v2: i64, f1: i32, f2: i32) {
     if f1 == 0 && v1 != 0 || f2 == 0 && v2 != 0 {
-        stackarg(1, 0,
-                 0 as *const i8);
-        return
+        stackarg(1, 0, 0 as *const i8);
+        return;
     }
     stackarg(0, f1 | f2, 0 as *const i8);
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_xor(mut v1: i64, mut v2: i64,
-                                mut f1: i32, mut f2: i32) {
+pub unsafe extern "C" fn op_xor(v1: i64, v2: i64, f1: i32, f2: i32) {
     stackarg(v1 ^ v2, f1 | f2, 0 as *const i8);
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_and(mut v1: i64, mut v2: i64,
-                                mut f1: i32, mut f2: i32) {
+pub unsafe extern "C" fn op_and(v1: i64, v2: i64, f1: i32, f2: i32) {
     stackarg(v1 & v2, f1 | f2, 0 as *const i8);
 }
 #[no_mangle]
-pub unsafe extern "C" fn op_or(mut v1: i64, mut v2: i64,
-                               mut f1: i32, mut f2: i32) {
+pub unsafe extern "C" fn op_or(v1: i64, v2: i64, f1: i32, f2: i32) {
     stackarg(v1 | v2, f1 | f2, 0 as *const i8);
 }
 #[no_mangle]
 pub unsafe extern "C" fn pushchar(mut str: *const i8) -> *const i8 {
     if *str != 0 {
-        stackarg(*str as i64, 0,
-                 0 as *const i8);
-        str = str.offset(1)
+        stackarg(*str as i64, 0, 0 as *const i8);
+        str = str.offset(1);
     } else {
-        stackarg(' ' as i32 as i64, 0,
-                 0 as *const i8);
+        stackarg(' ' as i32 as i64, 0, 0 as *const i8);
     }
     return str;
 }
@@ -952,7 +904,7 @@ pub unsafe extern "C" fn pushstr(mut str: *const i8) -> *const i8 {
     return str;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pushsymbol(mut str: *const i8) -> *const i8 {
+pub unsafe extern "C" fn pushsymbol(str: *const i8) -> *const i8 {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut ptr: *const i8 = 0 as *const i8;
     let mut macro_0: u8 = 0;

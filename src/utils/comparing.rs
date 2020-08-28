@@ -9,7 +9,7 @@ pub fn compare_alpha(arg1: &str, arg2: &str) -> Ordering {
 	// FIXME: there might be smarter/faster/shorter ways of doing this in Rust
 	let s1 = arg1.to_lowercase();
 	let s2 = arg2.to_lowercase();
-	let mut iter = s1.chars().zip(s2.chars());
+	let iter = s1.chars().zip(s2.chars());
 	for (c1, c2) in iter {
 		let result = &c1.cmp(&c2);
 		match result {
