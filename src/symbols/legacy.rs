@@ -208,7 +208,7 @@ pub unsafe extern "C" fn programlabel() {
     };
     state.execution.programOrg = currentSegment.org;
     state.execution.programFlags = currentSegment.flags;
-    let str = transient::str_pointer_to_string(*Av.as_mut_ptr());
+    let str = transient::str_pointer_to_string(*Av.as_ptr());
     let mut len = str.len();
     if len == 0 {
         return;

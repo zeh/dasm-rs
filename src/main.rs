@@ -529,15 +529,11 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
         i = 2;
         loop  {
             if !(i < ac) { current_block = 16231175055492490595; break ; }
-            if !(*(*av.offset(i as isize)).offset(0) as i32 == '-' as i32 ||
-                     *(*av.offset(i as
-                                      isize)).offset(0) as i32
-                         == '/' as i32) {
+            if !(*(*av.offset(i as isize)).offset(0) as i32 == '-' as i32 || *(*av.offset(i as isize)).offset(0) as i32 == '/' as i32) {
                 current_block = 15878785573848117940;
                 break ;
             }
-            let mut str: *mut i8 =
-                (*av.offset(i as isize)).offset(2);
+            let mut str: *mut i8 = (*av.offset(i as isize)).offset(2);
             // FIXME: use better strings for parsing chars. These are temporary.
             let str_rs = transient::str_pointer_to_string(str);
             match *(*av.offset(i as isize)).offset(1) as u8 as char {
@@ -759,51 +755,37 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
                     pushinclude(*av.offset(1));
                     while !pIncfile.is_null() {
                         loop  {
-                            let mut comment: *const i8 =
-                                0 as *const i8;
-                            if (*pIncfile).flags as i32 &
-                                   0x1 as i32 != 0 {
+                            let mut comment: *const i8 = 0 as *const i8;
+                            if (*pIncfile).flags & FileFlags::Macro != 0 {
                                 if (*pIncfile).strlist.is_null() {
-                                    let ref mut fresh3 =
-                                        *Av.as_mut_ptr().offset(0);
-                                    *fresh3 =
-                                        b"\x00" as *const u8 as
-                                            *const i8 as
-                                            *mut i8;
-                                    v_mexit(0 as *mut i8,
-                                            0 as *mut _MNE);
-                                    continue ;
+                                    let ref mut fresh3 = *Av.as_mut_ptr().offset(0);
+                                    *fresh3 = b"\x00" as *const u8 as *const i8 as *mut i8;
+                                    v_mexit(0 as *mut i8, 0 as *mut _MNE);
+                                    continue;
                                 } else {
-                                    strcpy(buf.as_mut_ptr(),
-                                           (*(*pIncfile).strlist).buf.as_mut_ptr());
-                                    (*pIncfile).strlist =
-                                        (*(*pIncfile).strlist).next
+                                    strcpy(buf.as_mut_ptr(), (*(*pIncfile).strlist).buf.as_mut_ptr());
+                                    (*pIncfile).strlist = (*(*pIncfile).strlist).next;
                                 }
-                            } else if fgets(buf.as_mut_ptr(),
-                                            MAX_LINES as i32,
-                                            (*pIncfile).fi).is_null() {
-                                break ;
+                            } else if fgets(buf.as_mut_ptr(), MAX_LINES as i32, (*pIncfile).fi).is_null() {
+                                break;
                             }
                             if state.parameters.debug {
                                 println!("{:08x} {}", pIncfile as u64, transient::str_pointer_to_string(buf.as_mut_ptr()));
                             }
-                            comment =
-                                cleanup(buf.as_mut_ptr(),
-                                        false);
-                            (*pIncfile).lineno =
-                                (*pIncfile).lineno.wrapping_add(1);
+                            comment = cleanup(buf.as_mut_ptr(), false);
+                            (*pIncfile).lineno = (*pIncfile).lineno.wrapping_add(1);
                             mne = parse(buf.as_mut_ptr());
                             let current_if = &state.execution.ifs.last().unwrap();
-                            if *(*Av.as_mut_ptr().offset(1)).offset(0) != 0 {
+                            if *(*Av.as_ptr().offset(1)).offset(0) != 0 {
                                 if !mne.is_null() {
                                     if (*mne).flags as i32 & 0x4 as i32 != 0 || current_if.result && current_if.result_acc {
                                         Some((*mne).vect.expect("non-null function pointer")).expect("non-null function pointer")(
-                                            *Av.as_mut_ptr().offset(2),
+                                            *Av.as_ptr().offset(2),
                                             mne
                                         );
                                     }
                                 } else if current_if.result && current_if.result_acc {
-                                    asmerr(AsmErrorEquates::UnknownMnemonic, false, *Av.as_mut_ptr().offset(1));
+                                    asmerr(AsmErrorEquates::UnknownMnemonic, false, *Av.as_ptr().offset(1));
                                 }
                             } else if current_if.result && current_if.result_acc {
                                 programlabel();
@@ -821,9 +803,7 @@ unsafe extern "C" fn MainShadow(mut ac: i32,
                         fclose((*pIncfile).fi);
                         free((*pIncfile).name as *mut libc::c_void);
                         state.other.incLevel -= 1;
-                        rmnode(&mut pIncfile as *mut *mut _INCFILE as
-                                   *mut *mut libc::c_void,
-                               ::std::mem::size_of::<_INCFILE>() as u64 as i32);
+                        rmnode(&mut pIncfile as *mut *mut _INCFILE as *mut *mut libc::c_void, ::std::mem::size_of::<_INCFILE>() as u64 as i32);
                         if !pIncfile.is_null() {
                             /*
                             if (state.parameters.verbosity as u8 > 1)
@@ -977,11 +957,11 @@ unsafe extern "C" fn outlistfile(mut comment: *const i8) {
         format!(
             "{}{:10} {}{}{}\t{}\n",
             xtrue,
-            transient::str_pointer_to_string(*Av.as_mut_ptr().offset(0)),
-            transient::str_pointer_to_string(*Av.as_mut_ptr().offset(1)),
+            transient::str_pointer_to_string(*Av.as_ptr().offset(0)),
+            transient::str_pointer_to_string(*Av.as_ptr().offset(1)),
             dot,
             state.execution.extraString.clone(),
-            transient::str_pointer_to_string(*Av.as_mut_ptr().offset(2)),
+            transient::str_pointer_to_string(*Av.as_ptr().offset(2)),
         ).as_str()
     );
     if *comment.offset(0) != 0 {
@@ -1409,7 +1389,7 @@ pub unsafe extern "C" fn parse(mut buf: *mut i8) -> *mut _MNE {
         0;
     /* and analyse it as an opcode */
     findext(*Av.as_mut_ptr().offset(1));
-    mne = findmne(*Av.as_mut_ptr().offset(1));
+    mne = findmne(*Av.as_ptr().offset(1));
     /* Parse the rest of the line */
     while *buf.offset(i as isize) as i32 == ' ' as i32 { i += 1 }
     let ref mut fresh19 = *Av.as_mut_ptr().offset(2);
@@ -1435,8 +1415,7 @@ pub unsafe extern "C" fn parse(mut buf: *mut i8) -> *mut _MNE {
     *Avbuf.as_mut_ptr().offset(j as isize) = 0;
     return mne;
 }
-#[no_mangle]
-pub unsafe extern "C" fn findmne(mut str: *mut i8) -> *mut _MNE {
+pub unsafe fn findmne(mut str: *const i8) -> *mut _MNE {
     let mut i: i32 = 0;
     let mut c: i8 = 0;
     let mut mne: *mut _MNE = 0 as *mut _MNE;
@@ -1526,7 +1505,7 @@ pub unsafe extern "C" fn v_macro(mut str: *mut i8,
         (*pIncfile).lineno = (*pIncfile).lineno.wrapping_add(1);
         comment = cleanup(buf.as_mut_ptr(), true);
         mne = parse(buf.as_mut_ptr());
-        if *(*Av.as_mut_ptr().offset(1)).offset(0) != 0 {
+        if *(*Av.as_ptr().offset(1)).offset(0) != 0 {
             if !mne.is_null() &&
                    (*mne).flags as i32 & 0x80 as i32 != 0 {
                 if defined == 0 { (*mac).strlist = base }

@@ -942,11 +942,11 @@ pub unsafe extern "C" fn v_equ(mut str: *mut i8,
     * depending on whether we have a relocatable origin now or not.
     */
     if
-        strlen(*Av.as_mut_ptr().offset(0)) == 1 &&
+        strlen(*Av.as_ptr().offset(0)) == 1 &&
         (
-            *(*Av.as_mut_ptr().offset(0)).offset(0) as i32 == '.' as i32 ||
-            *(*Av.as_mut_ptr().offset(0)).offset(0) as i32 == '*' as i32 && {
-                let ref mut fresh32 = *(*Av.as_mut_ptr().offset(0)).offset(0);
+            *(*Av.as_ptr().offset(0)).offset(0) as i32 == '.' as i32 ||
+            *(*Av.as_ptr().offset(0)).offset(0) as i32 == '*' as i32 && {
+                let ref mut fresh32 = *(*Av.as_ptr().offset(0)).offset(0);
                 *fresh32 = '.' as i32 as i8;
                 (*fresh32 as i32) != 0
             } && true
@@ -959,9 +959,9 @@ pub unsafe extern "C" fn v_equ(mut str: *mut i8,
         }
         return
     }
-    lab = findsymbol(*Av.as_mut_ptr().offset(0), strlen(*Av.as_mut_ptr().offset(0)) as i32);
+    lab = findsymbol(*Av.as_ptr().offset(0), strlen(*Av.as_ptr().offset(0)) as i32);
     if lab.is_null() {
-        lab = CreateSymbol(*Av.as_mut_ptr().offset(0), strlen(*Av.as_mut_ptr().offset(0)) as i32)
+        lab = CreateSymbol(*Av.as_ptr().offset(0), strlen(*Av.as_ptr().offset(0)) as i32)
     }
     if (*lab).flags as i32 & SymbolTypes::Unknown as i32 == 0 {
         if (*sym).flags as i32 & SymbolTypes::Unknown as i32 != 0 {
@@ -971,7 +971,7 @@ pub unsafe extern "C" fn v_equ(mut str: *mut i8,
             asmerr(AsmErrorEquates::EquValueMismatch, false, 0 as *const i8);
             println!(
                 "INFO: Label '{}' changed from ${:04x} to ${:04x}",
-                transient::str_pointer_to_string(*Av.as_mut_ptr().offset(0)),
+                transient::str_pointer_to_string(*Av.as_ptr().offset(0)),
                 (*lab).value,
                 (*sym).value,
             );
@@ -1007,14 +1007,14 @@ pub unsafe extern "C" fn v_eqm(mut str: *mut i8,
                                mut _dummy: *mut _MNE) {
     let mut lab: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let str_rs = transient::str_pointer_to_string(str);
-    let mut len: i32 = strlen(*Av.as_mut_ptr().offset(0)) as i32;
-    lab = findsymbol(*Av.as_mut_ptr().offset(0), len);
+    let mut len: i32 = strlen(*Av.as_ptr().offset(0)) as i32;
+    lab = findsymbol(*Av.as_ptr().offset(0), len);
     if !lab.is_null() {
         if (*lab).flags & SymbolTypes::StringResult != 0 {
             free((*lab).string as *mut libc::c_void);
         }
     } else {
-        lab = CreateSymbol(*Av.as_mut_ptr().offset(0), len)
+        lab = CreateSymbol(*Av.as_ptr().offset(0), len)
     }
     (*lab).value = 0;
     (*lab).flags = SymbolTypes::StringResult | SymbolTypes::Set | SymbolTypes::Macro;
@@ -1155,12 +1155,9 @@ pub unsafe extern "C" fn v_set(mut str: *mut i8,
         sym = eval(str, 0)
     } /* garbage */
     lab =
-        findsymbol(*Av.as_mut_ptr().offset(0),
-                   strlen(*Av.as_mut_ptr().offset(0)) as i32);
+        findsymbol(*Av.as_ptr().offset(0), strlen(*Av.as_ptr().offset(0)) as i32);
     if lab.is_null() {
-        lab =
-            CreateSymbol(*Av.as_mut_ptr().offset(0),
-                         strlen(*Av.as_mut_ptr().offset(0)) as i32)
+        lab = CreateSymbol(*Av.as_ptr().offset(0), strlen(*Av.as_ptr().offset(0)) as i32)
     }
     (*lab).value = (*sym).value;
     (*lab).flags =
