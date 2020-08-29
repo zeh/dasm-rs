@@ -1,5 +1,7 @@
 use crate::constants;
-use crate::expressions;
+use crate::expressions::operations::{
+	ExpressionOperationFunc
+};
 use crate::types::enums::{
 	AddressModes,
 	BitOrder,
@@ -74,14 +76,14 @@ pub static mut state: GlobalState = GlobalState {
 	},
 
 	expressions: ExpressionsState {
-		argFlags: [0; expressions::MAX_ARGS],
-		argIndex: 0,
+		argFlags: Vec::<u8>::new(),
 		argIndexBase: 0,
-		argStack: [0; expressions::MAX_ARGS],
+		argStack: Vec::<i64>::new(),
+		argString: Vec::<String>::new(),
 		lastWasOp: false,
-		opIndex: 0,
+		opFunc: Vec::<ExpressionOperationFunc>::new(),
 		opIndexBase: 0,
-		opPri: [0; expressions::MAX_OPS],
+		opPri: Vec::<usize>::new(),
 	},
 
 	output: OutputState {

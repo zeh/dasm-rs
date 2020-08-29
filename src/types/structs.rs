@@ -5,7 +5,9 @@
 use std::fs::File;
 
 use crate::constants;
-use crate::expressions;
+use crate::expressions::operations::{
+	ExpressionOperationFunc
+};
 use crate::types::enums::{
 	AddressModes,
 	AsmErrorEquates,
@@ -93,14 +95,14 @@ pub struct ExecutionState {
 }
 
 pub struct ExpressionsState {
-	pub argFlags: [u8; expressions::MAX_ARGS],
-	pub argIndex: usize,
+	pub argFlags: Vec<u8>,
 	pub argIndexBase: usize,
-	pub argStack: [i64; expressions::MAX_ARGS],
+	pub argStack: Vec<i64>,
+	pub argString: Vec<String>,
 	pub lastWasOp: bool,
-	pub opIndex: usize,
+	pub opFunc: Vec<ExpressionOperationFunc>,
 	pub opIndexBase: usize,
-	pub opPri: [usize; expressions::MAX_OPS],
+	pub opPri: Vec<usize>,
 }
 
 pub struct OutputState {
