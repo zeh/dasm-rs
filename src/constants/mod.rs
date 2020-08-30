@@ -19,9 +19,6 @@ pub const MAX_SYMBOLS: usize = 1024; // In original C code, "MAX_SYM_LEN"
 pub const S_HASH_AND: u16 = 0x03ff;  // In original C code, "SHASHAND"
 pub const S_HASH_SIZE: usize = 1024; // In original C code, "SHASHSIZE"
 
-// FIXME: expand this or use a proper char table
-pub const CHAR_TAB: i32 = 9;         // In original C code, "TAB"
-
 // FIXME: a bit of a hack since we can't concatenate consts, and I wanted to still keep DASM_RELEASE separate
 macro_rules! DASM_RELEASE {() => {"2.20.14-SNAPSHOT"}}
 pub const DASM_ID: &'static str = concat!("DASM ", DASM_RELEASE!());

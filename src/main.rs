@@ -32,7 +32,6 @@ pub mod utils;
 
 use constants::{
     ALLOC_SIZE,
-    CHAR_TAB,
     DASM_ID,
     MAX_LINES,
     S_HASH_SIZE,
@@ -993,24 +992,30 @@ unsafe extern "C" fn cleanup(buf: *mut i8, bDisable: bool) -> *const i8 {
     let mut comment: *const i8 = b"\x00" as *const u8 as *const i8;
     str = buf;
     while *str != 0 {
-        match *str as i32 {
-            59 => { comment = str.offset(1); break ; }
-            13 | 10 => { break ; }
-            CHAR_TAB => { *str = ' ' as i32 as i8 }
-            39 => {
+        match *str as u8 as char {
+            ';' => {
+                comment = str.offset(1); break;
+            }
+            '\r' | '\n' => {
+                break;
+            }
+            '\t' => {
+                *str = ' ' as i32 as i8;
+            }
+            '\'' => {
                 str = str.offset(1);
-                if *str as i32 == CHAR_TAB {
-                    *str = ' ' as i32 as i8
+                if *str as i32 == '\t' as i32 {
+                    *str = ' ' as i32 as i8;
                 }
                 if *str as i32 == '\n' as i32 || *str as i32 == 0 {
                     *str.offset(0) = ' ' as i32 as i8;
-                    *str.offset(1) = 0
+                    *str.offset(1) = 0;
                 }
                 if *str.offset(0) as i32 == ' ' as i32 {
-                    *str.offset(0) = -128i32 as i8
+                    *str.offset(0) = -128i32 as i8;
                 }
             }
-            34 => {
+            '"' => {
                 str = str.offset(1);
                 while *str as i32 != 0 && *str as i32 != '\"' as i32 {
                     if *str as i32 == ' ' as i32 {
@@ -1023,7 +1028,7 @@ unsafe extern "C" fn cleanup(buf: *mut i8, bDisable: bool) -> *const i8 {
                     str = str.offset(-1)
                 }
             }
-            123 => {
+            '{' => {
                 if !bDisable {
                     if state.parameters.debug {
                         println!("macro tail: '{}'", transient::str_pointer_to_string(str));
