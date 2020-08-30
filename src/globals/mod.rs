@@ -75,11 +75,11 @@ pub static mut state: GlobalState = GlobalState {
 	},
 
 	expressions: ExpressionsState {
-		argIndexBase: 0,
+		argument_len_base: 0,
 		arguments: Vec::<ExpressionStackArgument>::new(),
-		lastWasOp: false,
+		last_was_operation: false,
+		operation_len_base: 0,
 		operations: Vec::<ExpressionStackOperation>::new(),
-		opIndexBase: 0,
 	},
 
 	output: OutputState {

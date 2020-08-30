@@ -95,11 +95,11 @@ pub struct ExecutionState {
 }
 
 pub struct ExpressionsState {
-	pub argIndexBase: usize,
+	pub argument_len_base: usize,
 	pub arguments: Vec<ExpressionStackArgument>,
-	pub lastWasOp: bool,
+	pub last_was_operation: bool,
+	pub operation_len_base: usize,
 	pub operations: Vec<ExpressionStackOperation>,
-	pub opIndexBase: usize,
 }
 
 pub struct OutputState {
@@ -158,4 +158,3 @@ pub struct ExpressionStackArgument {
 	pub value: i64,
 	pub string: Option<String>,
 }
-

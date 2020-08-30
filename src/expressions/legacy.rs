@@ -59,13 +59,13 @@ extern "C" {
 pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SYMBOL {
     let mut base: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut cur: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let oldArgIndexBase = state.expressions.argIndexBase;
-    let oldOpIndexBase = state.expressions.opIndexBase;
+    let oldArgIndexBase = state.expressions.argument_len_base;
+    let oldOpIndexBase = state.expressions.operation_len_base;
     let mut scr: i32 = 0;
     let pLine: *const i8 = str;
-    state.expressions.argIndexBase = state.expressions.arguments.len();
-    state.expressions.opIndexBase = state.expressions.operations.len();
-    state.expressions.lastWasOp = true;
+    state.expressions.argument_len_base = state.expressions.arguments.len();
+    state.expressions.operation_len_base = state.expressions.operations.len();
+    state.expressions.last_was_operation = true;
     cur = allocsymbol();
     base = cur;
     while *str != 0 {
@@ -79,7 +79,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                 current_block_184 = 3166194604430448652;
             }
             '~' => {
-                if state.expressions.lastWasOp {
+                if state.expressions.last_was_operation {
                     doop(operations::invert, 128);
                 } else {
                     asmerr(AsmErrorEquates::SyntaxError, false, pLine);
@@ -88,7 +88,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                 current_block_184 = 3166194604430448652;
             }
             '*' => {
-                if state.expressions.lastWasOp {
+                if state.expressions.last_was_operation {
                     pushsymbol(b".\x00" as *const u8 as *const i8);
                 } else {
                     doop(operations::multiply, 20);
@@ -102,7 +102,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                 current_block_184 = 3166194604430448652;
             }
             '%' => {
-                if state.expressions.lastWasOp {
+                if state.expressions.last_was_operation {
                     str = pushbin(str.offset(1));
                 } else {
                     doop(operations::modulo, 20);
@@ -124,7 +124,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
             }
             '-' => {
                 /*  19: -   (or - unary)        */
-                if state.expressions.lastWasOp {
+                if state.expressions.last_was_operation {
                     doop(operations::negate, 128);
                 } else {
                     doop(operations::subtract, 19);
@@ -134,7 +134,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
             }
             '>' => {
                 /*  18: >> <<  17: > >= <= <    */
-                if state.expressions.lastWasOp {
+                if state.expressions.last_was_operation {
                     doop(operations::take_most_significant_byte, 128);
                     str = str.offset(1);
                 } else {
@@ -152,7 +152,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                 current_block_184 = 3166194604430448652;
             }
             '<' => {
-                if state.expressions.lastWasOp {
+                if state.expressions.last_was_operation {
                     doop(operations::take_least_significant_byte, 128);
                     str = str.offset(1);
                 } else {
@@ -180,7 +180,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
             }
             '!' => {
                 /*  16: !=                      */
-                if state.expressions.lastWasOp {
+                if state.expressions.last_was_operation {
                     doop(operations::not, 128);
                 } else {
                     doop(operations::not_equal, 16);
@@ -258,10 +258,10 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                 current_block_184 = 3166194604430448652;
             }
             ',' => { // ',' - FIXME: convert back to original char
-                while state.expressions.operations.len() != state.expressions.opIndexBase {
+                while state.expressions.operations.len() != state.expressions.operation_len_base {
                     evaltop();
                 }
-                state.expressions.lastWasOp = true;
+                state.expressions.last_was_operation = true;
                 scr = *str.offset(1) as i32 | 0x20 as i32;
                 if (*cur).addrmode == AddressModes::IndWord as u8 && scr == 'x' as i32 && !is_alpha_num(*str.offset(2) as u8 as char) {
                     (*cur).addrmode = AddressModes::IndByteX as u8;
@@ -308,10 +308,10 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                     let pNewSymbol: *mut _SYMBOL = allocsymbol();
                     (*cur).next = pNewSymbol;
                     let last_argument = state.expressions.arguments.pop().unwrap();
-                    if state.expressions.arguments.len() < state.expressions.argIndexBase {
+                    if state.expressions.arguments.len() < state.expressions.argument_len_base {
                         asmerr(AsmErrorEquates::SyntaxError, false, pLine);
                     }
-                    if state.expressions.arguments.len() > state.expressions.argIndexBase {
+                    if state.expressions.arguments.len() > state.expressions.argument_len_base {
                         asmerr(AsmErrorEquates::SyntaxError, false, pLine);
                     }
                     (*cur).value = last_argument.value;
@@ -362,14 +362,14 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
             8741107198128373303 =>
             /* fall thru OK */
             {
-                while state.expressions.operations.len() != state.expressions.opIndexBase && state.expressions.operations.last().unwrap().pri != 0 {
+                while state.expressions.operations.len() != state.expressions.operation_len_base && state.expressions.operations.last().unwrap().pri != 0 {
                     evaltop();
                 }
-                if state.expressions.operations.len() != state.expressions.opIndexBase {
+                if state.expressions.operations.len() != state.expressions.operation_len_base {
                     state.expressions.operations.pop();
                 }
                 str = str.offset(1);
-                if state.expressions.arguments.len() == state.expressions.argIndexBase {
+                if state.expressions.arguments.len() == state.expressions.argument_len_base {
                     println!("\']\' error, no arg on stack");
                 } else {
                     if *str as i32 == 'd' as i32 {
@@ -381,7 +381,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                             last_argument.string = Some(buffer);
                         }
                     }
-                    state.expressions.lastWasOp = false
+                    state.expressions.last_was_operation = false
                 }
             }
             18384894229789369419 =>
@@ -403,10 +403,10 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
             _ => { }
         }
     }
-    while state.expressions.operations.len() != state.expressions.opIndexBase {
+    while state.expressions.operations.len() != state.expressions.operation_len_base {
         evaltop();
     }
-    if state.expressions.arguments.len() != state.expressions.argIndexBase {
+    if state.expressions.arguments.len() != state.expressions.argument_len_base {
         let last_argument = state.expressions.arguments.pop().unwrap();
         (*cur).value = last_argument.value;
         (*cur).flags = last_argument.flags;
@@ -424,13 +424,13 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
             (*base).addrmode = AddressModes::ByteAdr as i32 as u8
         }
     }
-    if state.expressions.arguments.len() != state.expressions.argIndexBase || state.expressions.operations.len() != state.expressions.opIndexBase {
+    if state.expressions.arguments.len() != state.expressions.argument_len_base || state.expressions.operations.len() != state.expressions.operation_len_base {
         asmerr(AsmErrorEquates::SyntaxError, false, pLine);
     }
-    state.expressions.arguments.truncate(state.expressions.argIndexBase);
-    state.expressions.operations.truncate(state.expressions.opIndexBase);
-    state.expressions.argIndexBase = oldArgIndexBase;
-    state.expressions.opIndexBase = oldOpIndexBase;
+    state.expressions.arguments.truncate(state.expressions.argument_len_base);
+    state.expressions.operations.truncate(state.expressions.operation_len_base);
+    state.expressions.argument_len_base = oldArgIndexBase;
+    state.expressions.operation_len_base = oldOpIndexBase;
     return base;
 }
 
@@ -440,7 +440,7 @@ pub unsafe fn execute_op_func(op_func: ExpressionOperationFunc, v1: i64, v2: i64
             let (val, flags, wasOp) = value;
             stackarg(val, flags, 0 as *const i8);
             if wasOp {
-                state.expressions.lastWasOp = true;
+                state.expressions.last_was_operation = true;
             }
         }
         Err(error) => {
@@ -456,16 +456,16 @@ pub unsafe extern "C" fn evaltop() {
     if state.parameters.debug {
         println!("evaltop @(A,O) {} {}", state.expressions.arguments.len(), state.expressions.operations.len());
     }
-    if state.expressions.operations.len() <= state.expressions.opIndexBase {
+    if state.expressions.operations.len() <= state.expressions.operation_len_base {
         asmerr(AsmErrorEquates::SyntaxError, false, 0 as *const i8);
-        state.expressions.operations.truncate(state.expressions.opIndexBase);
+        state.expressions.operations.truncate(state.expressions.operation_len_base);
         return;
     }
     let operation = state.expressions.operations.pop().unwrap();
     if operation.pri == 128 {
-        if state.expressions.arguments.len() < state.expressions.argIndexBase + 1 {
+        if state.expressions.arguments.len() < state.expressions.argument_len_base + 1 {
             asmerr(AsmErrorEquates::SyntaxError, false, 0 as *const i8);
-            state.expressions.arguments.truncate(state.expressions.argIndexBase);
+            state.expressions.arguments.truncate(state.expressions.argument_len_base);
             return;
         }
         let argument = state.expressions.arguments.pop().unwrap();
@@ -480,9 +480,9 @@ pub unsafe extern "C" fn evaltop() {
             );
         }
     } else {
-        if state.expressions.arguments.len() < state.expressions.argIndexBase + 2 {
+        if state.expressions.arguments.len() < state.expressions.argument_len_base + 2 {
             asmerr(AsmErrorEquates::SyntaxError, false, 0 as *const i8);
-            state.expressions.arguments.truncate(state.expressions.argIndexBase);
+            state.expressions.arguments.truncate(state.expressions.argument_len_base);
             return;
         }
         let argument1 = state.expressions.arguments.pop().unwrap();
@@ -505,7 +505,7 @@ unsafe extern "C" fn stackarg(mut val: i64, mut flags: i32, ptr1: *const i8) {
     if state.parameters.debug {
         println!("stackarg {} (@{})", val, state.expressions.arguments.len());
     }
-    state.expressions.lastWasOp = false;
+    state.expressions.last_was_operation = false;
     if flags & 0x8 as i32 != 0 {
         /*
            Why unsigned char? Looks like we're converting to
@@ -542,9 +542,9 @@ unsafe extern "C" fn stackarg(mut val: i64, mut flags: i32, ptr1: *const i8) {
     );
     if state.expressions.arguments.len() == MAX_ARGS {
         println!("stackarg: maxargs stacked");
-        state.expressions.arguments.truncate(state.expressions.argIndexBase);
+        state.expressions.arguments.truncate(state.expressions.argument_len_base);
     }
-    while state.expressions.operations.len() != state.expressions.opIndexBase && state.expressions.operations.last().unwrap().pri == 128 {
+    while state.expressions.operations.len() != state.expressions.operation_len_base && state.expressions.operations.last().unwrap().pri == 128 {
         evaltop();
     };
 }
@@ -553,8 +553,8 @@ pub unsafe extern "C" fn doop(func: ExpressionOperationFunc, pri: usize) {
     if state.parameters.debug {
         println!("doop");
     }
-    state.expressions.lastWasOp = true;
-    if state.expressions.operations.len() == state.expressions.opIndexBase || pri == 128 {
+    state.expressions.last_was_operation = true;
+    if state.expressions.operations.len() == state.expressions.operation_len_base || pri == 128 {
         if state.parameters.debug {
             println!("doop @ {} unary", state.expressions.operations.len());
         }
@@ -566,7 +566,7 @@ pub unsafe extern "C" fn doop(func: ExpressionOperationFunc, pri: usize) {
         );
         return;
     }
-    while state.expressions.operations.len() != state.expressions.opIndexBase && state.expressions.operations.last().unwrap().pri != 0 && pri <= state.expressions.operations.last().unwrap().pri {
+    while state.expressions.operations.len() != state.expressions.operation_len_base && state.expressions.operations.last().unwrap().pri != 0 && pri <= state.expressions.operations.last().unwrap().pri {
         evaltop();
     }
     if state.parameters.debug {
@@ -580,7 +580,7 @@ pub unsafe extern "C" fn doop(func: ExpressionOperationFunc, pri: usize) {
     );
     if state.expressions.operations.len() == MAX_OPS {
         println!("doop: too many operators");
-        state.expressions.operations.truncate(state.expressions.opIndexBase);
+        state.expressions.operations.truncate(state.expressions.operation_len_base);
     };
 }
 #[no_mangle]
