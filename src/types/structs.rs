@@ -95,14 +95,11 @@ pub struct ExecutionState {
 }
 
 pub struct ExpressionsState {
-	pub argFlags: Vec<u8>,
 	pub argIndexBase: usize,
-	pub argStack: Vec<i64>,
-	pub argString: Vec<String>,
+	pub arguments: Vec<ExpressionStackArgument>,
 	pub lastWasOp: bool,
-	pub opFunc: Vec<ExpressionOperationFunc>,
+	pub operations: Vec<ExpressionStackOperation>,
 	pub opIndexBase: usize,
-	pub opPri: Vec<usize>,
 }
 
 pub struct OutputState {
@@ -150,3 +147,15 @@ pub struct StackRepeat {
 	pub file: *mut _INCFILE,
 	pub flags: u8,
 }
+
+pub struct ExpressionStackOperation {
+	pub func: Option<ExpressionOperationFunc>,
+	pub pri: usize,
+}
+
+pub struct ExpressionStackArgument {
+	pub flags: u8,
+	pub value: i64,
+	pub string: Option<String>,
+}
+

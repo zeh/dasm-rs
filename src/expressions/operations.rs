@@ -5,10 +5,6 @@ pub type ResultValues = (i64, i32, bool);
 pub type ResultOfOperation = Result<ResultValues, AsmErrorEquates>;
 pub type ExpressionOperationFunc = fn(v1: i64, v2: i64, f1: i32, f2: i32) -> ResultOfOperation;
 
-pub fn noop(_v1: i64, _v2: i64, _f1: i32, _f2: i32) -> ResultOfOperation {
-	Ok((0, 0, false))
-}
-
 pub fn take_least_significant_byte(v1: i64, _v2: i64, f1: i32, _f2: i32) -> ResultOfOperation {
 	Ok((v1 & 0xff as i64, f1, false))
 }

@@ -1,7 +1,4 @@
 use crate::constants;
-use crate::expressions::operations::{
-	ExpressionOperationFunc
-};
 use crate::types::enums::{
 	AddressModes,
 	BitOrder,
@@ -15,6 +12,8 @@ use crate::types::enums::{
 use crate::types::structs::{
 	ExecutionState,
 	ExpressionsState,
+	ExpressionStackArgument,
+	ExpressionStackOperation,
 	GlobalState,
 	OtherMainState,
 	OutputState,
@@ -76,14 +75,11 @@ pub static mut state: GlobalState = GlobalState {
 	},
 
 	expressions: ExpressionsState {
-		argFlags: Vec::<u8>::new(),
 		argIndexBase: 0,
-		argStack: Vec::<i64>::new(),
-		argString: Vec::<String>::new(),
+		arguments: Vec::<ExpressionStackArgument>::new(),
 		lastWasOp: false,
-		opFunc: Vec::<ExpressionOperationFunc>::new(),
+		operations: Vec::<ExpressionStackOperation>::new(),
 		opIndexBase: 0,
-		opPri: Vec::<usize>::new(),
 	},
 
 	output: OutputState {
