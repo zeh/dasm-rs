@@ -111,19 +111,19 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                 current_block_184 = 3166194604430448652;
             }
             '?' => {
-                /*  10      */
+                // 10
                 doop(operations::question, 10);
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
             '+' => {
-                /*  19      */
+                // 19
                 doop(operations::add, 19);
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
             '-' => {
-                /*  19: -   (or - unary)        */
+                // 19: - (or - unary)
                 if state.expressions.last_was_operation {
                     doop(operations::negate, 128);
                 } else {
@@ -133,7 +133,8 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                 current_block_184 = 3166194604430448652;
             }
             '>' => {
-                /*  18: >> <<  17: > >= <= <    */
+                //  18: >> <<
+                // 17: > >= <= <
                 if state.expressions.last_was_operation {
                     doop(operations::take_most_significant_byte, 128);
                     str = str.offset(1);
@@ -170,7 +171,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                 current_block_184 = 3166194604430448652;
             }
             '=' => {
-                /*  16: ==  (= same as ==)      */
+                //  16: == (= same as ==)
                 if *str.offset(1) as i32 == '=' as i32 {
                     str = str.offset(1);
                 }
@@ -179,7 +180,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                 current_block_184 = 3166194604430448652;
             }
             '!' => {
-                /*  16: !=                      */
+                // 16: !=
                 if state.expressions.last_was_operation {
                     doop(operations::not, 128);
                 } else {
@@ -190,7 +191,8 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                 current_block_184 = 3166194604430448652;
             }
             '&' => {
-                /*  15: &   12: &&              */
+                // 15: &
+                // 12: &&
                 if *str.offset(1) as i32 == '&' as i32 {
                     doop(operations::and_and, 12);
                     str = str.offset(1);
@@ -201,13 +203,14 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                 current_block_184 = 3166194604430448652;
             }
             '^' => {
-                /*  14: ^                       */
+                // 14: ^
                 doop(operations::xor, 14);
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
             }
             '|' => {
-                /*  13: |   11: ||              */
+                // 13: |
+                // 11: ||
                 if *str.offset(1) as i32 == '|' as i32 {
                     doop(operations::or_or, 11);
                     str = str.offset(1);
@@ -231,7 +234,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                         (*cur).addrmode = AddressModes::IndByteY as u8;
                         str = str.offset(2)
                     }
-                    //FIX: detect illegal opc (zp),x syntax...
+                    // FIX: detect illegal opc (zp),x syntax...
                     if (*cur).addrmode == AddressModes::IndByteY as u8 && *str.offset(1) as u8 == ',' as u8 && *str.offset(2) as u8 | 0x20 == 'x' as u8 {
                         // FIXME: strangely, this is never used, so we have it here but commented out
                         // let buffer: String = transient::str_pointer_to_string(str);
@@ -250,14 +253,12 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
             '#' => {
                 (*cur).addrmode = AddressModes::Imm8 as u8;
                 str = str.offset(1);
-                /*
-            * No other addressing mode is possible from now on
-            * so we might as well allow () instead of [].
-            */
+                // No other addressing mode is possible from now on
+                // so we might as well allow () instead of [].
                 wantmode = 0; /* to lower case */
                 current_block_184 = 3166194604430448652;
             }
-            ',' => { // ',' - FIXME: convert back to original char
+            ',' => {
                 while state.expressions.operations.len() != state.expressions.operation_len_base {
                     evaltop();
                 }
@@ -272,16 +273,16 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                     asmerr(AsmErrorEquates::IllegalAddressingMode, false, pLine);
                     state.execution.redoIndex += 1;
                     state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved;
-                    //FIX: detect illegal opc (zp,y) syntax...
-                    //we treat the opcode as valid to allow passes to continue, which should
-                   //allow other errors (like phase errros) to resolve before our "++Redo"
-                   //ultimately forces a failure.
+                    // FIX: detect illegal opc (zp,y) syntax...
+                    // we treat the opcode as valid to allow passes to continue, which should
+                    // allow other errors (like phase errros) to resolve before our "++Redo"
+                    // ultimately forces a failure.
                     (*cur).addrmode = AddressModes::ZeroY as u8;
                     str = str.offset(1)
                 } else if scr == 'x' as i32 && !is_alpha_num(*str.offset(2) as u8 as char) {
                     (*cur).addrmode = AddressModes::ZeroX as u8;
                     str = str.offset(1);
-                    //FIX: OPCODE.FORCE needs to be adjusted for x indexing...
+                    // FIX: OPCODE.FORCE needs to be adjusted for x indexing...
                     if state.execution.modeNext == AddressModes::WordAdr {
                         state.execution.modeNext = AddressModes::WordAdrX
                     }
@@ -294,7 +295,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                 } else if scr == 'y' as i32 && !is_alpha_num(*str.offset(2) as u8 as char) {
                     (*cur).addrmode = AddressModes::ZeroY as u8;
                     str = str.offset(1);
-                    //FIX: OPCODE.FORCE needs to be adjusted for x indexing...
+                    // FIX: OPCODE.FORCE needs to be adjusted for x indexing...
                     if state.execution.modeNext == AddressModes::WordAdr {
                         state.execution.modeNext = AddressModes::WordAdrY
                     }
@@ -359,9 +360,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
             }
         }
         match current_block_184 {
-            8741107198128373303 =>
-            /* fall thru OK */
-            {
+            8741107198128373303 => {
                 while state.expressions.operations.len() != state.expressions.operation_len_base && state.expressions.operations.last().unwrap().pri != 0 {
                     evaltop();
                 }
@@ -381,13 +380,11 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                             last_argument.string = Some(buffer);
                         }
                     }
-                    state.expressions.last_was_operation = false
+                    state.expressions.last_was_operation = false;
                 }
             }
-            18384894229789369419 =>
-            /* fall thru OK */
-            /*  eventually an argument      */
-            {
+            18384894229789369419 => {
+                /*  eventually an argument      */
                 if state.expressions.operations.len() == MAX_OPS {
                     println!("too many ops");
                 } else {
@@ -398,7 +395,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                         }
                     );
                 }
-                str = str.offset(1)
+                str = str.offset(1);
             }
             _ => { }
         }
@@ -445,7 +442,7 @@ pub unsafe fn execute_op_func(op_func: ExpressionOperationFunc, v1: i64, v2: i64
         }
         Err(error) => {
             asmerr(error, true, 0 as *const i8);
-            // Still execute something, as the original code does that
+            // Conversion note: still executes something, as the original code does that
             stackarg(0, 0, 0 as *const i8);
         }
     }
@@ -522,8 +519,7 @@ unsafe extern "C" fn stackarg(mut val: i64, mut flags: i32, ptr1: *const i8) {
             len += 1
         }
         new = ckmalloc(len + 1);
-        memcpy(new as *mut libc::c_void, ptr1 as *const libc::c_void,
-               len as u64);
+        memcpy(new as *mut libc::c_void, ptr1 as *const libc::c_void, len as u64);
         *new.offset(len as isize) = 0;
         flags &= !(0x8 as i32);
         str = new
