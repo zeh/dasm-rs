@@ -1204,14 +1204,21 @@ pub unsafe extern "C" fn parse(buf: *mut i8) -> *mut _MNE {
         This means what follows is a label.
         If the first non-space is a #, what follows is a directive/opcode.
     */
-    while *buf.offset(i as isize) as i32 == ' ' as i32 { i += 1 }
+    while *buf.offset(i as isize) as i32 == ' ' as i32 {
+        i += 1;
+    }
     if *buf.offset(i as isize) as i32 == '^' as i32 {
         i += 1;
-        while *buf.offset(i as isize) as i32 == ' ' as i32 { i += 1 }
+        while *buf.offset(i as isize) as i32 == ' ' as i32 {
+            i += 1;
+        }
     } else if *buf.offset(i as isize) as i32 == '#' as i32 {
         *buf.offset(i as isize) = ' ' as i32 as i8
         /* label separator */
-    } else { i = 0 }
+    } else {
+        i = 0;
+    }
+
     let ref mut fresh6 = *Av.as_mut_ptr().offset(0);
     *fresh6 = Avbuf.as_mut_ptr().offset(j as isize);
     while *buf.offset(i as isize) as i32 != 0 && *buf.offset(i as isize) as i32 != ' ' as i32 && *buf.offset(i as isize) as i32 != '=' as i32 {
@@ -1223,15 +1230,15 @@ pub unsafe extern "C" fn parse(buf: *mut i8) -> *mut _MNE {
             if *buf.offset((i + 1) as isize) as i32 == '\"' as i32 {
                 // is it a string constant?
                 i = i + 2; // advance to string contents
-                while *buf.offset(i as isize) as i32 != 0 && *buf.offset(i as isize) as i32 != '\"' as i32 && *buf.offset(i as isize) as i32 != ' ' as i32
-                          && *buf.offset(i as isize) as i32 != ',' as i32
-                          && *buf.offset(i as isize) as i32 != ':' as i32
-                      {
-                    let fresh7 = i;
-                    i = i + 1;
-                    let fresh8 = j;
-                    j = j + 1;
-                    *Avbuf.as_mut_ptr().offset(fresh8 as isize) = *buf.offset(fresh7 as isize)
+                while *buf.offset(i as isize) as i32 != 0
+                    && *buf.offset(i as isize) as i32 != '\"' as i32
+                    && *buf.offset(i as isize) as i32 != ' ' as i32
+                    && *buf.offset(i as isize) as i32 != ',' as i32
+                    && *buf.offset(i as isize) as i32 != ':' as i32
+                {
+                    *Avbuf.as_mut_ptr().offset(j as isize) = *buf.offset(i as isize);
+                    i += 1;
+                    j += 1;
                 }
                 if *buf.offset(i as isize) as i32 != 0 && *buf.offset(i as isize) as i32 == '\"' as i32 {
                     i += 1
@@ -1259,7 +1266,7 @@ pub unsafe extern "C" fn parse(buf: *mut i8) -> *mut _MNE {
                     if (*symarg).flags & SymbolTypes::Unknown != 0 {
                         // One of the arguments isn't defined yet
                         // Ensure the label we're creating doesn't get used
-                        labelundefined += 1
+                        labelundefined += 1;
                     } else {
                         let temp_value = format!("{}", (*symarg).value);
                         let temp_value_len = temp_value.len();
@@ -1268,35 +1275,32 @@ pub unsafe extern "C" fn parse(buf: *mut i8) -> *mut _MNE {
                     }
                 }
                 i += 1;
-                while *buf.offset(i as isize) as i32 != 0 && *buf.offset(i as isize) as i32 != ' ' as i32
-                          && *buf.offset(i as isize) as i32 != '=' as i32
-                          && *buf.offset(i as isize) as i32 != ',' as i32
-                          && *buf.offset(i as isize) as i32 != ':' as i32
-                      {
-                    i += 1
+                while *buf.offset(i as isize) as i32 != 0
+                    && *buf.offset(i as isize) as i32 != ' ' as i32
+                    && *buf.offset(i as isize) as i32 != '=' as i32
+                    && *buf.offset(i as isize) as i32 != ',' as i32
+                    && *buf.offset(i as isize) as i32 != ':' as i32
+                {
+                    i += 1;
                 }
             }
         } else {
             if *buf.offset(i as isize) as u8 as i32 == 0x80 as i32 {
-                *buf.offset(i as isize) = ' ' as i32 as i8
+                *buf.offset(i as isize) = ' ' as i32 as i8;
             }
-            let fresh9 = i;
-            i = i + 1;
-            let fresh10 = j;
-            j = j + 1;
-            *Avbuf.as_mut_ptr().offset(fresh10 as isize) = *buf.offset(fresh9 as isize)
+            *Avbuf.as_mut_ptr().offset(j as isize) = *buf.offset(i as isize);
+            i += 1;
+            j += 1;
         }
     }
-    let fresh11 = j;
-    j = j + 1;
-    *Avbuf.as_mut_ptr().offset(fresh11 as isize) = 0;
+    *Avbuf.as_mut_ptr().offset(j as isize) = 0;
+    j += 1;
     // if the label has arguments that aren't defined, we need to scuttle it
     // to avoid a partial label being used.
     if labelundefined != 0 {
         j = 1;
-        let fresh12 = j;
-        j = j + 1;
-        *Avbuf.as_mut_ptr().offset(fresh12 as isize) = 0
+        *Avbuf.as_mut_ptr().offset(j as isize) = 0;
+        j += 1;
     }
     /* Parse the second word of the line */
     while *buf.offset(i as isize) as i32 == ' ' as i32 { i += 1 }
@@ -1314,11 +1318,9 @@ pub unsafe extern "C" fn parse(buf: *mut i8) -> *mut _MNE {
             if *buf.offset(i as isize) as u8 as i32 == 0x80 as i32 {
                 *buf.offset(i as isize) = ' ' as i32 as i8
             }
-            let fresh16 = i;
-            i = i + 1;
-            let fresh17 = j;
-            j = j + 1;
-            *Avbuf.as_mut_ptr().offset(fresh17 as isize) = *buf.offset(fresh16 as isize)
+            *Avbuf.as_mut_ptr().offset(j as isize) = *buf.offset(i as isize);
+            i += 1;
+            j += 1;
         }
     }
     let fresh18 = j;
@@ -1333,19 +1335,16 @@ pub unsafe extern "C" fn parse(buf: *mut i8) -> *mut _MNE {
     *fresh19 = Avbuf.as_mut_ptr().offset(j as isize);
     while *buf.offset(i as isize) != 0 {
         if *buf.offset(i as isize) as i32 == ' ' as i32 {
-            while *buf.offset((i + 1) as isize) as i32
-                      == ' ' as i32 {
-                i += 1
+            while *buf.offset((i + 1) as isize) as i32 == ' ' as i32 {
+                i += 1;
             }
         }
         if *buf.offset(i as isize) as u8 as i32 == 0x80 as i32 {
-            *buf.offset(i as isize) = ' ' as i32 as i8
+            *buf.offset(i as isize) = ' ' as i32 as i8;
         }
-        let fresh20 = i;
-        i = i + 1;
-        let fresh21 = j;
-        j = j + 1;
-        *Avbuf.as_mut_ptr().offset(fresh21 as isize) = *buf.offset(fresh20 as isize)
+        *Avbuf.as_mut_ptr().offset(j as isize) = *buf.offset(i as isize);
+        i += 1;
+        j += 1;
     }
     *Avbuf.as_mut_ptr().offset(j as isize) = 0;
     return mne;
@@ -1471,9 +1470,8 @@ pub unsafe extern "C" fn addhashtable(mut mne: *mut _MNE) {
         while i < AddressModes::length() as usize {
             (*mne).opcode[i as usize] = 0;
             if (*mne).okmask & ((1) << i) as u64 != 0 {
-                let fresh23 = j;
-                j = j + 1;
-                (*mne).opcode[i as usize] = opcode[fresh23]
+                (*mne).opcode[i as usize] = opcode[j];
+                j += 1;
             }
             i += 1
         }
