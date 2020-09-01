@@ -1,5 +1,4 @@
 use crate::constants::{
-    M_HASH_SIZE,
     S_HASH_SIZE,
 };
 use crate::types::legacy::{
@@ -80,9 +79,6 @@ extern "C" {
 #[no_mangle]
 pub static mut SHash: [*mut _SYMBOL; S_HASH_SIZE] = [0 as *const _SYMBOL as *mut _SYMBOL; S_HASH_SIZE];
 /*	symbol hash table   */
-#[no_mangle]
-pub static mut MHash: [*mut _MNE; M_HASH_SIZE] = [0 as *const _MNE as *mut _MNE; M_HASH_SIZE];
-/*	mnemonic hash table */
 #[no_mangle]
 pub static mut pIncfile: *mut _INCFILE = 0 as *const _INCFILE as *mut _INCFILE;
 /*	include file stack  */

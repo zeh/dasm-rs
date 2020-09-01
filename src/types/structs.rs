@@ -21,6 +21,8 @@ use crate::types::enums::{
 };
 use crate::types::legacy::{
 	_INCFILE,
+	_MACRO,
+	_MNE,
 };
 
 // In original C code, both "ERRORSTRUCT" and "ERROR_DEFINITION"
@@ -82,6 +84,10 @@ pub struct ExecutionState {
 	pub localDollarIndex: u64,
 	pub localIndex: u64, // To generate local variables
 	pub macroLevel: u8,
+	// FIXME: temporary, move to a new Macro struct when possible
+	pub macros: Vec<*mut _MACRO>,
+	// FIXME: temporary, move to a new Mnemonic struct when possible
+	pub mnemonics: Vec<*mut _MNE>,
 	pub modeNext: AddressModes,
 	pub pass: u8,
 	pub processor: Processors,

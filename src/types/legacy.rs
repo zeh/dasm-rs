@@ -33,6 +33,12 @@ pub struct _MNE {
 	pub opcode: [u32; 21],
 }
 
+pub enum MacroOrMnemonicPointer {
+	Macro(*mut _MACRO),
+	Mnemonic(*mut _MNE),
+	None,
+}
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _MACRO {
