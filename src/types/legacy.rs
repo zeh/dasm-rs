@@ -25,7 +25,6 @@ pub struct _STRLIST {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _MNE {
-	pub next: *mut _MNE,
 	pub vect: Option<unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()>,
 	pub name: *const i8,
 	pub flags: u8,
@@ -42,7 +41,6 @@ pub enum MacroOrMnemonicPointer {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _MACRO {
-	pub next: *mut _MACRO,
 	pub vect: Option<unsafe extern "C" fn(_: *mut i8, _: *mut _MACRO) -> ()>,
 	pub name: *mut i8,
 	pub flags: u8,

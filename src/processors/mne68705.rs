@@ -14,7 +14,7 @@ extern "C" {
  */
 #[no_mangle]
 pub static mut Mne68705: [_MNE; 89] = [{
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"adc\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -27,7 +27,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"add\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -40,7 +40,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"and\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -53,7 +53,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"asl\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -64,7 +64,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"asla\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -73,7 +73,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"aslx\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -82,7 +82,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"asr\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -93,7 +93,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"asra\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -102,7 +102,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"asrx\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -111,7 +111,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bcc\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -120,7 +120,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bclr\x00" as *const u8 as *const i8,
                       flags: 0x40,
@@ -129,7 +129,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bcs\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -138,7 +138,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"beq\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -147,7 +147,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bhcc\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -156,7 +156,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bhcs\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -165,7 +165,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bhi\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -174,7 +174,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bhs\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -183,7 +183,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bih\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -192,7 +192,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bil\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -201,7 +201,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bit\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -214,7 +214,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"blo\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -223,7 +223,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bls\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -232,7 +232,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bmc\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -241,7 +241,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bmi\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -250,7 +250,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bms\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -259,7 +259,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bne\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -268,7 +268,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bpl\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -277,7 +277,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bra\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -286,7 +286,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"brn\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -295,7 +295,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"brclr\x00" as *const u8 as *const i8,
                       flags:
@@ -305,7 +305,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"brset\x00" as *const u8 as *const i8,
                       flags:
@@ -315,7 +315,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bset\x00" as *const u8 as *const i8,
                       flags: 0x40,
@@ -324,7 +324,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"bsr\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -333,7 +333,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"clc\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -342,7 +342,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"cli\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -351,7 +351,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"clr\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -362,7 +362,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"clra\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -371,7 +371,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"clrx\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -380,7 +380,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"cmp\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -393,7 +393,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"com\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -404,7 +404,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"coma\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -413,7 +413,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"comx\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -422,7 +422,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"cpx\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -435,7 +435,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"dec\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -446,7 +446,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"deca\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -455,7 +455,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"decx\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -464,7 +464,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"dex\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -473,7 +473,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"eor\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -486,7 +486,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"inc\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -497,7 +497,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"inca\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -506,7 +506,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"incx\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -515,7 +515,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"inx\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -524,7 +524,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"jmp\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -536,7 +536,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"jsr\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -548,7 +548,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"lda\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -561,7 +561,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"ldx\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -574,7 +574,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"lsl\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -585,7 +585,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"lsla\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -594,7 +594,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"lslx\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -603,7 +603,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"lsr\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -614,7 +614,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"lsra\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -623,7 +623,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"lsrx\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -632,7 +632,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"neg\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -643,7 +643,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"nega\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -652,7 +652,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"negx\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -661,7 +661,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"nop\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -670,7 +670,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"ora\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -683,7 +683,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"rol\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -694,7 +694,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"rola\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -703,7 +703,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"rolx\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -712,7 +712,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"ror\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -723,7 +723,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"rora\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -732,7 +732,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"rorx\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -741,7 +741,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"rsp\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -750,7 +750,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"rti\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -759,7 +759,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"rts\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -768,7 +768,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"sbc\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -781,7 +781,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"sec\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -790,7 +790,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"sei\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -799,7 +799,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"sta\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -811,7 +811,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"stx\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -823,7 +823,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"sub\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -836,7 +836,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"swi\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -845,7 +845,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"tax\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -854,7 +854,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"tst\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -865,7 +865,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"tsta\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -874,7 +874,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"tstx\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -883,7 +883,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
                       name: b"txa\x00" as *const u8 as *const i8,
                       flags: 0,
@@ -892,7 +892,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
              init
          },
          {
-            let init = _MNE{next: 0 as *const _MNE as *mut _MNE,
+            let init = _MNE{
                       vect: None,
                       name: 0 as *const i8,
                       flags: 0,

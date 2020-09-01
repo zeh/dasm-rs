@@ -1456,7 +1456,6 @@ pub unsafe extern "C" fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
         base = 0 as *mut _STRLIST;
         slp = &mut base;
         let mac = permalloc(::std::mem::size_of::<_MACRO>() as u64 as i32) as *mut _MACRO;
-        (*mac).next = 0 as *mut _MACRO;
         (*mac).vect = Some(v_execmac as unsafe extern "C" fn(_: *mut i8, _: *mut _MACRO) -> ());
         (*mac).name = strcpy(permalloc(strlen(str).wrapping_add(1) as i32), str);
         (*mac).flags = 0x8;
