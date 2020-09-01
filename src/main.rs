@@ -1383,7 +1383,7 @@ pub unsafe fn findmne(mut str: *const i8) -> *mut _MNE {
 #[no_mangle]
 pub unsafe extern "C" fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
     let mut base: *mut _STRLIST = 0 as *mut _STRLIST; /* slp, mac: might be used uninitialised */
-    let mut defined: i32 = 0; /* not really needed */
+    let mut defined: bool = false; // Conversion note: "not really needed" according to the original code
     let mut slp: *mut *mut _STRLIST = 0 as *mut *mut _STRLIST;
     let mut sl: *mut _STRLIST = 0 as *mut _STRLIST;
     let mut mac: *mut _MACRO = 0 as *mut _MACRO;
@@ -1405,14 +1405,14 @@ pub unsafe extern "C" fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
 
     mne = findmne(str);
     if skipit {
-        defined = 1
+        defined = true
     } else {
-        defined = (mne != 0 as *mut libc::c_void as *mut _MNE) as i32;
+        defined = mne != 0 as *mut libc::c_void as *mut _MNE;
         if !state.parameters.listFile.is_empty() && state.execution.listMode != ListMode::None {
             outlistfile(b"\x00" as *const u8 as *const i8);
         }
     }
-    if defined == 0 {
+    if !defined {
         base = 0 as *mut _STRLIST;
         slp = &mut base;
         mac = permalloc(::std::mem::size_of::<_MACRO>() as u64 as i32) as *mut _MACRO;
@@ -1440,14 +1440,14 @@ pub unsafe extern "C" fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
         mne = parse(buf.as_mut_ptr());
         if *(*Av.as_ptr().offset(1)).offset(0) != 0 {
             if !mne.is_null() && (*mne).flags as i32 & 0x80 as i32 != 0 {
-                if defined == 0 { (*mac).strlist = base }
+                if !defined { (*mac).strlist = base }
                 return;
             }
         }
         if !skipit && !state.parameters.listFile.is_empty() && state.execution.listMode != ListMode::None {
             outlistfile(comment);
         }
-        if defined == 0 {
+        if !defined {
             sl = permalloc((::std::mem::size_of::<*mut _STRLIST>() as u64).wrapping_add(1).wrapping_add(strlen(buf.as_mut_ptr())) as i32) as *mut _STRLIST;
             strcpy((*sl).buf.as_mut_ptr(), buf.as_mut_ptr());
             *slp = sl;
