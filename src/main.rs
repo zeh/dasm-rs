@@ -23,6 +23,7 @@ use std::fs::File;
 pub mod constants;
 pub mod expressions;
 pub mod globals;
+pub mod macros;
 pub mod mnemonics;
 pub mod operations;
 pub mod processors;
