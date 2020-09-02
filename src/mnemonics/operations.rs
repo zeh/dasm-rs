@@ -223,16 +223,17 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
         }
     }
 
-    let mut macro_to_use: *mut _MACRO = 0 as *mut _MACRO;
+    let mut macro_to_use: _MACRO;
 
     if !defined {
         base = 0 as *mut _STRLIST;
         slp = &mut base;
-        let mac = permalloc(::std::mem::size_of::<_MACRO>() as u64 as i32) as *mut _MACRO;
-        (*mac).vect = macros::operations::v_execmac;
-        (*mac).name = strcpy(permalloc(strlen(str).wrapping_add(1) as i32), str);
-        (*mac).flags = 0x8;
-        (*mac).defpass = state.execution.pass as i32;
+        let mac = _MACRO {
+            vect: macros::operations::v_execmac,
+            name: strcpy(permalloc(strlen(str).wrapping_add(1) as i32), str),
+            flags: 0x8,
+            defpass = state.execution.pass as i32
+        };
         state.execution.macros.push(mac);
 
         macro_to_use = mac;

@@ -75,9 +75,9 @@ pub static mut state: GlobalState = GlobalState {
 		localIndex: 0,
 		macroLevel: 0,
 		// FIXME: temporary, move to a new Macro struct when possible
-		macros: Vec::<*mut _MACRO>::new(),
+		macros: Vec::<_MACRO>::new(),
 		// FIXME: temporary, move to a new Mnemonic struct when possible
-		mnemonics: Vec::<*mut _MNE>::new(),
+		mnemonics: Vec::<_MNE>::new(),
 		modeNext: AddressModes::Imp,
 		pass: 0,
 		processor: Processors::None,

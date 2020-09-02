@@ -41,8 +41,8 @@ pub struct _MNE {
 
 #[repr(C)]
 pub enum MacroOrMnemonicPointer {
-	Macro(*mut _MACRO),
-	Mnemonic(*mut _MNE),
+	Macro(&_MACRO),
+	Mnemonic(&_MNE),
 	None,
 }
 

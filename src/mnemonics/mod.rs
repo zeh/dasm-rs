@@ -42,7 +42,7 @@ pub fn parse_mnemonic_name(full_mnemonic: &str) -> (&str, &str) {
  * list search later
  * FIXME: remove the unsafe
  */
-pub unsafe fn find_mnemonic(mnemonics: &Vec<*mut _MNE>, name: &str) -> Option<*mut _MNE> {
+pub unsafe fn find_mnemonic<'a>(mnemonics: &'a Vec<_MNE>, name: &str) -> Option<&'a _MNE> {
     let name_to_find = (if name.starts_with(".") {
 		&name[1..]
 	} else {
@@ -55,10 +55,10 @@ pub unsafe fn find_mnemonic(mnemonics: &Vec<*mut _MNE>, name: &str) -> Option<*m
     // Ideally, we'd instead overwrite the names in the list (since the old mnemonics are simply
     // taking up space) but, for now, we keep them in the list to mimic the original dasm C
     // code behavior (where it used a linked list to search, but added new items to the head).
-    match mnemonics.iter().rev().find(|&&m| {
-        transient::str_pointer_to_string((*m).name).to_ascii_lowercase() == name_to_find
+    match mnemonics.iter().rev().find(|&m| {
+        transient::str_pointer_to_string(m.name).to_ascii_lowercase() == name_to_find
     }) {
-        Some(result) => Some(*result),
+        Some(result) => Some(result),
         None => None,
     }
 }

@@ -1352,7 +1352,7 @@ pub unsafe fn addhashtable(first_mne: *mut _MNE, len: usize) {
             i += 1
         }
 
-        state.execution.mnemonics.push(mne);
+        state.execution.mnemonics.push(*mne);
     };
 }
 

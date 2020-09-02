@@ -118,9 +118,9 @@ pub struct ExecutionState {
 	pub localIndex: u64, // To generate local variables
 	pub macroLevel: u8,
 	// FIXME: temporary, move to a new Macro struct when possible
-	pub macros: Vec<*mut _MACRO>,
+	pub macros: Vec<_MACRO>,
 	// FIXME: temporary, move to a new Mnemonic struct when possible
-	pub mnemonics: Vec<*mut _MNE>,
+	pub mnemonics: Vec<_MNE>,
 	pub modeNext: AddressModes,
 	pub pass: u8,
 	pub processor: Processors,
