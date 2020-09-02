@@ -553,7 +553,9 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                 }
                 'd' => {
                     let digit = str_rs.parse::<u8>().unwrap_or(0);
-                    state.parameters.debug = digit != 0;
+                    let d_equals_z = str_rs.to_ascii_lowercase() == "z";
+                    state.parameters.debug = digit != 0 || d_equals_z;
+                    state.parameters.debug_extended = d_equals_z;
                     println!("Debug trace {}", if state.parameters.debug { "ON" } else { "OFF" });
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
@@ -762,9 +764,21 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                             (*pIncfile).lineno = (*pIncfile).lineno.wrapping_add(1);
                             mne = parse(buf.as_mut_ptr());
                             let current_if = &state.execution.ifs.last().unwrap();
+                            #[cfg(debug_assertions)]
+                            {
+                                if state.parameters.debug_extended {
+                                    log_function_with!("current_if = {} {}", current_if.result, current_if.result_acc);
+                                }
+                            }
                             if *(*Av.as_ptr().offset(1)).offset(0) != 0 {
                                 if !mne.is_null() {
                                     if (*mne).flags as i32 & 0x4 as i32 != 0 || current_if.result && current_if.result_acc {
+                                        #[cfg(debug_assertions)]
+                                        {
+                                            if state.parameters.debug_extended {
+                                                log_function_with!("calling vect on [[{}]] [[{}]]", transient::str_pointer_to_string((*mne).name), transient::str_pointer_to_string(*Av.as_ptr().offset(2)));
+                                            }
+                                        }
                                         Some((*mne).vect.expect("non-null function pointer")).expect("non-null function pointer")(
                                             *Av.as_ptr().offset(2),
                                             mne
@@ -888,6 +902,9 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
     return AsmErrorEquates::CommandLine;
 }
 unsafe extern "C" fn outlistfile(comment: *const i8) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(comment)); } }
+
     let current_if = &state.execution.ifs.last().unwrap();
     let mut xtrue: char = 0 as char;
     let mut c: char = 0 as char;
@@ -1128,6 +1145,9 @@ unsafe extern "C" fn cleanup(buf: *mut i8, bDisable: bool) -> *const i8 {
 */
 #[no_mangle]
 pub unsafe extern "C" fn findext(mut str: *mut i8) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     state.execution.modeNext = AddressModes::None;
     state.execution.extraString.clear();
     if *str.offset(0) as i32 == '.' as i32 {
@@ -1141,6 +1161,10 @@ pub unsafe extern "C" fn findext(mut str: *mut i8) {
         *str = 0;
         str = str.offset(1);
         state.execution.extraString = transient::str_pointer_to_string(str);
+
+        #[cfg(debug_assertions)]
+        { if state.parameters.debug_extended { log_function_with!("state.execution.extraString = [[{}]]", state.execution.extraString); } }
+
         match (*str.offset(0) as u8 | 0x20) as char {
             '0' | 'i' => {
                 state.execution.modeNext = AddressModes::Imp;
@@ -1197,6 +1221,9 @@ pub unsafe extern "C" fn rmnode(base: *mut *mut libc::c_void, mut _bytes: i32) {
 */
 #[no_mangle]
 pub unsafe extern "C" fn parse(buf: *mut i8) -> *mut _MNE {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(buf)); } }
+
     let mut i: usize = 0;
     let mut j: usize = 1;
     let mut mne: *mut _MNE = 0 as *mut _MNE;
@@ -1384,6 +1411,9 @@ pub unsafe fn findmne(mut str: *const i8) -> *mut _MNE {
 /* ops.c */
 #[no_mangle]
 pub unsafe extern "C" fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut base: *mut _STRLIST = 0 as *mut _STRLIST; /* slp, mac: might be used uninitialised */
     let mut defined: bool = false; // Conversion note: "not really needed" according to the original code
     let mut slp: *mut *mut _STRLIST = 0 as *mut *mut _STRLIST;

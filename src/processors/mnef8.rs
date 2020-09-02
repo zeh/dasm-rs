@@ -1,3 +1,6 @@
+use crate::{
+    log_function_with,
+};
 use crate::globals::state;
 use crate::types::flags::{
     ReasonCodes,
@@ -299,6 +302,9 @@ unsafe fn parse_special_register(str: *mut i8) -> i32 {
     };
 }
 unsafe extern "C" fn v_ins_outs(str: *mut i8, mne: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut operand: u64 = 0;
     programlabel();
     parse_value(str, &mut operand);
@@ -308,6 +314,9 @@ unsafe extern "C" fn v_ins_outs(str: *mut i8, mne: *mut _MNE) {
     emit_opcode1(((*mne).opcode[0] as u64 | operand & 15) as u8);
 }
 unsafe extern "C" fn v_sl_sr(str: *mut i8, mne: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut operand: u64 = 0;
     programlabel();
     if parse_value(str, &mut operand) != 0 {
@@ -330,6 +339,9 @@ unsafe extern "C" fn v_sl_sr(str: *mut i8, mne: *mut _MNE) {
     };
 }
 unsafe extern "C" fn v_lis(str: *mut i8, mne: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut operand: u64 = 0;
     programlabel();
     parse_value(str, &mut operand);
@@ -339,6 +351,9 @@ unsafe extern "C" fn v_lis(str: *mut i8, mne: *mut _MNE) {
     emit_opcode1((0x70 | operand & 15) as u8);
 }
 unsafe extern "C" fn v_lisu_lisl(str: *mut i8, mne: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut operand: u64 = 0;
     programlabel();
     parse_value(str, &mut operand);
@@ -352,12 +367,18 @@ unsafe extern "C" fn v_lisu_lisl(str: *mut i8, mne: *mut _MNE) {
  * as, asd, ds, ns, xs
  */
 unsafe extern "C" fn v_sreg_op(str: *mut i8, mne: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut reg: u8 = 0;
     programlabel();
     parse_scratchpad_register(str, &mut reg);
     emit_opcode1(((*mne).opcode[0] | reg as u32) as u8);
 }
 unsafe extern "C" fn v_lr(str: *mut i8, mne: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut i: i32 = 0;
     let mut ncommas: i32 = 0;
     let mut cindex: i32 = 0;
@@ -545,9 +566,15 @@ unsafe fn generate_branch(opcode: u8, str: *const i8) {
  * bc, bm, bnc, bno, bnz, bp, br, br7, bz
  */
 unsafe extern "C" fn v_branch(str: *mut i8, mne: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     generate_branch((*mne).opcode[0] as u8, str);
 }
 unsafe extern "C" fn v_bf_bt(str: *mut i8, mne: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut ncommas: i32 = 0;
     let mut cindex: i32 = 0;
     let mut i: i32 = 0;
@@ -600,6 +627,9 @@ unsafe extern "C" fn v_bf_bt(str: *mut i8, mne: *mut _MNE) {
  * dci, jmp, pi
  */
 unsafe extern "C" fn v_wordop(str: *mut i8, mne: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut value: u64 = 0;
     programlabel();
     parse_value(str, &mut value);
@@ -615,6 +645,9 @@ unsafe extern "C" fn v_wordop(str: *mut i8, mne: *mut _MNE) {
  * ai, ci, in, li, ni, oi, out, xi
  */
 unsafe extern "C" fn v_byteop(str: *mut i8, mne: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut value: u64 = 0;
     programlabel();
     parse_value(str, &mut value);

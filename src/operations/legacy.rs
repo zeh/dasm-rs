@@ -2,6 +2,10 @@ use libc;
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 
+use crate::{
+    log_function,
+    log_function_with,
+};
 use crate::constants::{
     MAX_MACRO_LEVEL,
 };
@@ -121,6 +125,9 @@ extern "C" {
 */
 #[no_mangle]
 pub unsafe extern "C" fn v_processor(str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     // FIXME: this is a bit dumb and shouldn't be needed. Check if a processor exists only.
     static mut called: bool = false;
     let previousProcessor: Processors = state.execution.processor;
@@ -182,6 +189,9 @@ pub unsafe extern "C" fn v_processor(str: *mut i8, _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_mnemonic(str: *mut i8, mne: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut addressMode: AddressModes = AddressModes::Imp;
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut opcode: u32 = 0;
@@ -411,10 +421,16 @@ pub unsafe extern "C" fn v_mnemonic(str: *mut i8, mne: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_trace(str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     state.execution.trace = *str.offset(1) as i32 == 'n' as i32;
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_list(str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     programlabel();
 
     // Only so outlist() works
@@ -439,6 +455,9 @@ pub unsafe extern "C" fn v_list(str: *mut i8, _dummy: *mut _MNE) {
 /* ops.c */
 #[no_mangle]
 pub unsafe extern "C" fn v_include(str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     programlabel();
     // only eval the string if it's compliant with symbol naming
@@ -459,6 +478,9 @@ pub unsafe extern "C" fn v_include(str: *mut i8, _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_incbin(str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut binfile: *mut FILE = 0 as *mut FILE;
     programlabel();
     let str_rs = transient::str_pointer_to_string(str);
@@ -494,6 +516,9 @@ pub unsafe extern "C" fn v_incbin(str: *mut i8, _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_seg(str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let strNew = transient::str_pointer_to_string(str);
     for (index, seg) in &mut state.other.segments.iter().enumerate() {
         if strNew.eq(&seg.name) {
@@ -522,6 +547,9 @@ pub unsafe extern "C" fn v_seg(str: *mut i8, _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_hex(str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut i: u8 = 0;
     let mut result: u8 = 0;
     programlabel();
@@ -562,12 +590,18 @@ pub unsafe extern "C" fn gethexdig(c: i32) -> i32 {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_err(_str: *mut i8, mut _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function!(); } }
+
     programlabel();
     asmerr(AsmErrorEquates::ErrPseudoOpEncountered, true, 0 as *const i8);
     std::process::exit(1);
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_dc(mut str: *mut i8, mne: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut tmp: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut value: i64 = 0;
@@ -758,6 +792,9 @@ pub unsafe extern "C" fn v_dc(mut str: *mut i8, mne: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_ds(str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut mult: i32 = 1;
     let mut filler: i64 = 0;
@@ -782,6 +819,9 @@ pub unsafe extern "C" fn v_ds(str: *mut i8, _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_org(str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     sym = eval(str, 0);
     let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
@@ -806,6 +846,9 @@ pub unsafe extern "C" fn v_org(str: *mut i8, _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_rorg(str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let sym: *mut _SYMBOL = eval(str, 0);
     let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
     currentSegment.flags |= SegmentTypes::RelocatableOrigin;
@@ -826,12 +869,18 @@ pub unsafe extern "C" fn v_rorg(str: *mut i8, _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_rend(_str: *mut i8, mut _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function!(); } }
+
     programlabel();
     let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
     currentSegment.flags &= !SegmentTypes::RelocatableOrigin;
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_align(str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let sym: *mut _SYMBOL = eval(str, 0);
     let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
     let mut fill: u8 = 0;
@@ -873,12 +922,18 @@ pub unsafe extern "C" fn v_align(str: *mut i8, _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_subroutine(_str: *mut i8, mut _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function!(); } }
+
     state.execution.lastLocalIndex += 1;
     state.execution.localIndex = state.execution.lastLocalIndex;
     programlabel();
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_equ(str: *mut i8, dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut sym: *mut _SYMBOL = eval(str, 0);
     let mut lab: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let currentSegment = &state.other.segments[state.other.currentSegment];
@@ -947,6 +1002,9 @@ pub unsafe extern "C" fn v_equ(str: *mut i8, dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_eqm(str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut lab: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let str_rs = transient::str_pointer_to_string(str);
     let len: i32 = strlen(*Av.as_ptr().offset(0)) as i32;
@@ -964,6 +1022,9 @@ pub unsafe extern "C" fn v_eqm(str: *mut i8, _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_echo(str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let sym: *mut _SYMBOL = eval(str, 0);
     let mut s: *mut _SYMBOL = 0 as *mut _SYMBOL;
 
@@ -990,6 +1051,9 @@ pub unsafe extern "C" fn v_echo(str: *mut i8, _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_set(str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut lab: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut dynamicname: [i8; 257] = [0; 257];
@@ -1092,12 +1156,18 @@ pub unsafe extern "C" fn v_set(str: *mut i8, _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_setstr(symstr: *mut i8, dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(symstr)); } }
+
     let mut str = format!("\"{}\"", transient::str_pointer_to_string(symstr));
     str.truncate(1024);
     v_set(transient::string_to_str_pointer(str), dummy);
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_execmac(mut str: *mut i8, mac: *mut _MACRO) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]] [[{}]]", transient::str_pointer_to_string(str), if mac.is_null() { String::from("null") } else { transient::str_pointer_to_string((*mac).name) }); } }
+
     let mut inc: *mut _INCFILE = 0 as *mut _INCFILE;
     let mut base: *mut _STRLIST = 0 as *mut _STRLIST;
     let mut psl: *mut *mut _STRLIST = 0 as *mut *mut _STRLIST;
@@ -1155,6 +1225,9 @@ pub unsafe extern "C" fn v_execmac(mut str: *mut i8, mac: *mut _MACRO) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_end(_str: *mut i8, mut _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function!(); } }
+
     /* Only ENDs current file and any macro calls within it */
     while (*pIncfile).flags as i32 & 0x1 as i32 != 0 {
         v_endm(0 as *mut i8, 0 as *mut _MNE);
@@ -1163,6 +1236,9 @@ pub unsafe extern "C" fn v_end(_str: *mut i8, mut _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_endm(_str: *mut i8, mut _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function!(); } }
+
     let inc: *mut _INCFILE = pIncfile;
     let mut args: *mut _STRLIST = 0 as *mut _STRLIST;
     let mut an: *mut _STRLIST = 0 as *mut _STRLIST;
@@ -1185,10 +1261,16 @@ pub unsafe extern "C" fn v_endm(_str: *mut i8, mut _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_mexit(_str: *mut i8, mut _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function!(); } }
+
     v_endm(0 as *mut i8, 0 as *mut _MNE);
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_ifconst(str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     programlabel();
     sym = eval(str, 0);
@@ -1197,6 +1279,9 @@ pub unsafe extern "C" fn v_ifconst(str: *mut i8, _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_ifnconst(str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     programlabel();
     sym = eval(str, 0);
@@ -1205,6 +1290,9 @@ pub unsafe extern "C" fn v_ifnconst(str: *mut i8, _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_if(str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let current_if = &mut state.execution.ifs.last_mut().unwrap();
     if !current_if.result || !current_if.result_acc {
@@ -1224,6 +1312,9 @@ pub unsafe extern "C" fn v_if(str: *mut i8, _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_else(_str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function!(); } }
+
     let current_if = &mut state.execution.ifs.last_mut().unwrap();
     if current_if.result_acc && (current_if.flags & IfFlags::Base == 0) {
         programlabel();
@@ -1232,6 +1323,9 @@ pub unsafe extern "C" fn v_else(_str: *mut i8, _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_endif(_str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function!(); } }
+
     let current_if = &state.execution.ifs.last().unwrap();
     if current_if.flags & IfFlags::Base == 0 {
         if current_if.result_acc {
@@ -1246,6 +1340,9 @@ pub unsafe extern "C" fn v_endif(_str: *mut i8, _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_repeat(str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let current_if = &state.execution.ifs.last().unwrap();
     if !current_if.result || !current_if.result_acc {
@@ -1292,6 +1389,9 @@ pub unsafe extern "C" fn v_repeat(str: *mut i8, _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_repend(_str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function!(); } }
+
     let current_if = &state.execution.ifs.last().unwrap();
     if !current_if.result || !current_if.result_acc {
         v_endif(0 as *mut i8, 0 as *mut _MNE);
@@ -1322,6 +1422,9 @@ pub unsafe extern "C" fn v_repend(_str: *mut i8, _dummy: *mut _MNE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn v_incdir(str: *mut i8, _dummy: *mut _MNE) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let filename = get_filename(transient::str_pointer_to_string(str).as_str()).to_owned();
     if state.execution.includeDirList.iter().find(|dir| dir.cmp(&&filename) == Ordering::Equal).is_none() {
         state.execution.includeDirList.push(filename);

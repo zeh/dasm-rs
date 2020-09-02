@@ -30,6 +30,7 @@ pub mod legacy;
 pub static mut state: GlobalState = GlobalState {
 	parameters: ParametersState {
 		debug: false,
+		debug_extended: false,
 		errorFormat: ErrorFormat::Woe,
 		format: Format::Default,
 		listAllPasses: false,

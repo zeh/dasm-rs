@@ -50,6 +50,7 @@ pub struct GlobalState {
 
 pub struct ParametersState {
 	pub debug: bool,
+	pub debug_extended: bool,
 	pub errorFormat: ErrorFormat,
 	pub format: Format,
 	pub listAllPasses: bool,

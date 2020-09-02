@@ -1,5 +1,15 @@
 use libc;
 
+use crate::{
+    log_function_with,
+};
+use crate::expressions::{
+    is_alpha_num,
+    operations,
+};
+use crate::expressions::operations::{
+    ExpressionOperationFunc,
+};
 use crate::globals::state;
 use crate::types::flags::{
     ReasonCodes,
@@ -18,13 +28,6 @@ use crate::types::legacy::{
 use crate::utils::{
     filesystem,
     transient,
-};
-use crate::expressions::{
-    is_alpha_num,
-    operations,
-};
-use crate::expressions::operations::{
-    ExpressionOperationFunc,
 };
 
 pub const MAX_OPS: usize = 32;
@@ -57,6 +60,9 @@ extern "C" {
  */
 #[no_mangle]
 pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SYMBOL {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut base: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut cur: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let oldArgIndexBase = state.expressions.argument_len_base;
@@ -432,6 +438,9 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
 }
 
 pub unsafe fn execute_op_func(op_func: ExpressionOperationFunc, v1: i64, v2: i64, f1: i32, f2: i32) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("{} {} {} {}", v1, v2, f1, f2); } }
+
     match op_func(v1, v2, f1, f2) {
         Ok(value) => {
             let (val, flags, wasOp) = value;
@@ -446,6 +455,9 @@ pub unsafe fn execute_op_func(op_func: ExpressionOperationFunc, v1: i64, v2: i64
             stackarg(0, 0, 0 as *const i8);
         }
     }
+
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("state.expressions.last_was_operation = {}", state.expressions.last_was_operation); } }
 }
 
 #[no_mangle]
@@ -501,6 +513,8 @@ unsafe extern "C" fn stackarg(mut val: i64, mut flags: i32, ptr1: *const i8) {
     let mut str: *mut i8 = 0 as *mut i8;
     if state.parameters.debug {
         println!("stackarg {} (@{})", val, state.expressions.arguments.len());
+        #[cfg(debug_assertions)]
+        { if state.parameters.debug_extended { log_function_with!("{} {} [[{}]]", val, flags, if ptr1.is_null() { String::from("null") } else { transient::str_pointer_to_string(ptr1) }); } }
     }
     state.expressions.last_was_operation = false;
     if flags & 0x8 as i32 != 0 {
