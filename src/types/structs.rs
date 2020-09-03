@@ -202,3 +202,8 @@ pub struct ParsedValue<T> {
 	pub value: T,
 	pub original_size: usize,
 }
+
+pub struct ParsedComment {
+	pub new_line: String,
+	pub comment: String,
+}

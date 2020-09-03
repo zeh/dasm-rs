@@ -80,6 +80,7 @@ use types::legacy::{
 };
 use types::structs::{
     CommandLineOptions,
+    ParsedComment,
     Segment,
     StackIf,
 };
@@ -1009,12 +1010,175 @@ unsafe fn clearrefs() {
         i += 1;
     };
 }
-/*
-   replace old atoi() calls; I wanted to protect this using
-   #ifdef strtol but the C preprocessor doesn't recognize
-   function names, at least not GCC's; we should be safe
-   since MS compilers document strtol as well... [phf]
-*/
+
+#[derive(PartialEq)]
+enum CommentParsePhase {
+    Normal,
+    SingleQuote,
+    DoubleQuote,
+}
+
+/// Given a source code line, clean it up, and return both the cleaned up, simplified line, and comments found (if any).
+/// This replaces "cleanup" in the original C code.
+/// FIXME: mark as safe as soon as it's possible (depends on asmerr)
+unsafe fn parse_comment(line: &str, disable: bool) -> ParsedComment {
+    let mut new_line = String::new();
+    let mut comment = String::new();
+    let include_file = *state.execution.includeFiles.last().unwrap();
+
+    let mut should_break = false;
+    let mut pos: usize = 0;
+
+    let mut phase: CommentParsePhase = CommentParsePhase::Normal;
+
+    while pos < line.len() {
+        let ch = line.at(pos);
+        let mut new_ch = ch;
+
+        if should_break {
+            break;
+        }
+
+        match ch {
+            ";" if phase == CommentParsePhase::Normal => {
+                // Begin comment, effectively end of line
+                comment.push_str(&line[pos + 1..]);
+                break;
+            }
+            "\r" | "\n" => {
+                // End of line
+                if phase == CommentParsePhase::Normal {
+                    break;
+                } else {
+                    new_ch = " ";
+                    should_break = true;
+                }
+            }
+            "\t" => {
+                // Tab, ignore and replace
+                new_ch = " ";
+            }
+            " " => {
+                match phase {
+                    CommentParsePhase::SingleQuote => {
+                        new_ch = "\0x80"; // FIXME: weird behavior where it uses \x80 internally
+                    }
+                    CommentParsePhase::DoubleQuote => {
+                        new_ch = "\0x80"; // FIXME: weird behavior where it uses \x80 internally
+                    }
+                    CommentParsePhase::Normal => {}
+                }
+            }
+            "\'" => {
+                match phase {
+                    CommentParsePhase::SingleQuote => {
+                        phase = CommentParsePhase::Normal;
+                    }
+                    CommentParsePhase::DoubleQuote => {}
+                    CommentParsePhase::Normal => {
+                        phase = CommentParsePhase::SingleQuote;
+                        new_ch = "";
+                    }
+                }
+
+            }
+            "\"" => {
+                match phase {
+                    CommentParsePhase::SingleQuote => {}
+                    CommentParsePhase::DoubleQuote => {
+                        phase = CommentParsePhase::Normal;
+                    }
+                    CommentParsePhase::Normal => {
+                        phase = CommentParsePhase::DoubleQuote;
+                        new_ch = "";
+                    }
+                }
+            }
+            "{" if !disable => {
+                if OPTIONS.debug {
+                    println!("macro tail: '{}'", &line[pos..]);
+                }
+
+                let arg: isize = 0;
+                let add: isize = 0;
+                while pos < line.len() && line.at(pos) != "}" {
+                    add -= 1;
+                    pos += 1;
+                }
+                if line.at(pos) != "}" {
+                    println!("end brace required");
+                    pos -= 1;
+                } else {
+                    add -= 1;
+                    pos += 1;
+                    if OPTIONS.debug {
+                        println!("add/str: {} '{}'", add, &line[pos..]);
+                    }
+                    let strlist = (*include_file).args;
+                    while arg != 0 && !strlist.is_null() {
+                        arg -= 1;
+                        strlist = (*strlist).next
+                    }
+                    if !strlist.is_null() {
+                        add = (add as u64).wrapping_add(strlen((*strlist).buf.as_mut_ptr())) as i32;
+                        if OPTIONS.debug {
+                            println!(
+                                "strlist: '{}' {}",
+                                transient::str_pointer_to_string((*strlist).buf.as_mut_ptr()),
+                                strlen((*strlist).buf.as_mut_ptr())
+                            );
+                        }
+                        if pos as isize + add > MAX_LINES as isize {
+                            if OPTIONS.debug {
+                                println!(
+                                    "str {:8} buf {:8} (add/strlen(str)): {} {}",
+                                    0 as u64,
+                                    0 as u64,
+                                    add,
+                                    line.len() - pos
+                                );
+                            }
+                            panic("failure1");
+                        }
+                        pos = (pos as isize + add) as usize;
+                        if pos as u64 > strlen((*strlist).buf.as_mut_ptr()) {
+                            panic("failure2");
+                        }
+                        // FINISH HERE!!!!!****
+                        memmove(str.offset(-(strlen((*strlist).buf.as_mut_ptr()) as isize)) as *mut libc::c_void, (*strlist).buf.as_mut_ptr() as *const libc::c_void, strlen((*strlist).buf.as_mut_ptr()));
+                        str = str.offset(-(strlen((*strlist).buf.as_mut_ptr()) as isize));
+                        if str < buf || str >= buf.offset(MAX_LINES as isize) {
+                            panic("failure 3");
+                        }
+
+                        pos -= 1; // for loop increments string
+                    } else {
+                        asmerr(AsmErrorEquates::NotEnoughArgumentsPassedToMacro, false, 0 as *const i8);
+                        break;
+                    }
+                }
+            }
+            _ => {}
+        }
+
+        if phase == CommentParsePhase::DoubleQuote {
+            asmerr(AsmErrorEquates::SyntaxError, false, transient::string_to_str_pointer(String::from(line)));
+        }
+
+        new_line.push(new_ch);
+    }
+
+    // Trims right, avoids creating a new slice
+    while new_line.ends_with(" ") {
+        new_line.truncate(new_line.len() - 1);
+    }
+
+    ParsedComment {
+        new_line,
+        comment,
+    }
+}
+
 pub unsafe fn cleanup(buf: *mut i8, bDisable: bool) -> *const i8 {
     let mut str: *mut i8 = 0 as *mut i8;
     let mut strlist: *mut _STRLIST = 0 as *mut _STRLIST;
