@@ -1163,8 +1163,9 @@ pub unsafe extern "C" fn v_setstr(symstr: *mut i8, dummy: *mut _MNE) {
     str.truncate(1024);
     v_set(transient::string_to_str_pointer(str), dummy);
 }
-#[no_mangle]
-pub unsafe extern "C" fn v_execmac(mut str: *mut i8, mac: *mut _MACRO) {
+
+// FIXME: move to a macros/functions module once it's safe
+pub unsafe fn v_execmac(mut str: *mut i8, mac: *mut _MACRO) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]] [[{}]]", transient::str_pointer_to_string(str), if mac.is_null() { String::from("null") } else { transient::str_pointer_to_string((*mac).name) }); } }
 

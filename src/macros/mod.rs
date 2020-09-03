@@ -5,6 +5,9 @@ use crate::utils::{
     transient,
 };
 
+// FIXME: make this safe once it's possible
+pub type MacroFunc = unsafe fn(str: *mut i8, mac: *mut _MACRO) -> ();
+
 /**
  * Find a macro in a list, by name.
  * FIXME: this is terrible because of the pointer song-and-dance; convert to a simple

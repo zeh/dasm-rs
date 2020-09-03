@@ -1,6 +1,10 @@
 // FIXME: this file is temporary and should eventually be dropped, as all structs get migrated
 // to proper types.
 
+use crate::macros::{
+	MacroFunc,
+};
+
 extern "C" {
 	pub type _IO_wide_data;
 	pub type _IO_codecvt;
@@ -40,7 +44,7 @@ pub enum MacroOrMnemonicPointer {
 
 #[repr(C)]
 pub struct _MACRO {
-	pub vect: Option<unsafe extern "C" fn(_: *mut i8, _: *mut _MACRO) -> ()>,
+	pub vect: MacroFunc,
 	pub name: *mut i8,
 	pub flags: u8,
 	pub strlist: *mut _STRLIST,

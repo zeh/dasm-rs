@@ -132,8 +132,6 @@ extern "C" {
     static mut Avbuf: [i8; 0];
     #[no_mangle]
     static mut Ops: [_MNE; 0];
-    #[no_mangle]
-    fn v_execmac(str: *mut i8, mac: *mut _MACRO);
     /* exp.c */
     #[no_mangle]
     fn eval(str: *const i8, wantmode: i32) -> *mut _SYMBOL;
@@ -785,10 +783,7 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                                                     log_function_with!("calling vect on [[{}]] [[{}]]", transient::str_pointer_to_string((*mac).name), transient::str_pointer_to_string(*Av.as_ptr().offset(2)));
                                                 }
                                             }
-                                            Some((*mac).vect.expect("non-null function pointer")).expect("non-null function pointer")(
-                                                *Av.as_ptr().offset(2),
-                                                mac
-                                            );
+                                            ((*mac).vect)(*Av.as_ptr().offset(2), mac);
                                         }
                                     }
                                     MacroOrMnemonicPointer::Mnemonic(mne) => {
@@ -1456,7 +1451,7 @@ pub unsafe extern "C" fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
         base = 0 as *mut _STRLIST;
         slp = &mut base;
         let mac = permalloc(::std::mem::size_of::<_MACRO>() as u64 as i32) as *mut _MACRO;
-        (*mac).vect = Some(v_execmac as unsafe extern "C" fn(_: *mut i8, _: *mut _MACRO) -> ());
+        (*mac).vect = operations::legacy::v_execmac;
         (*mac).name = strcpy(permalloc(strlen(str).wrapping_add(1) as i32), str);
         (*mac).flags = 0x8;
         (*mac).defpass = state.execution.pass as i32;
