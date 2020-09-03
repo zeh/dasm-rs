@@ -7,7 +7,7 @@ use crate::utils::{
     transient,
 };
 
-// FIXME: make this safe once it's possible
+// FIXME: make this safe once possible
 pub type MacroFunc = unsafe fn(str: *mut i8, mac: *mut _MACRO) -> ();
 
 /**
