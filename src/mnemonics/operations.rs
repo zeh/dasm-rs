@@ -229,6 +229,7 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
         (*mac).name = strcpy(transient::permalloc(strlen(str).wrapping_add(1) as i32), str);
         (*mac).flags = 0x8;
         (*mac).defpass = state.execution.pass as i32;
+        (*mac).content = String::new();
         state.execution.macros.push(mac);
 
         macro_to_use = mac;
@@ -259,20 +260,22 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
                             if macro_to_use.is_null() {
                                 println!("Error: attempted to use macro reference before initialization")
                             } else {
-                                println!("!!! strlist mne = {}", if base.is_null() { String::from("null") } else { transient::strlist_to_string(base) });
+                                println!("!!! strlist mne = '{}'", if base.is_null() { String::from("null") } else { transient::strlist_to_string(base) });
                                 (*macro_to_use).strlist = base;
+                                //(*macro_to_use).content.push_str(string)
                             }
                         }
                         return;
                     }
                 }
                 MacroOrMnemonicPointer::Macro(mac) => {
+                    // FIXME: never happens?
                     if (*mac).flags & MnemonicsFlags::EndMnemonic != 0 {
                         if !defined {
                             if macro_to_use.is_null() {
                                 println!("Error: attempted to use macro reference before initialization")
                             } else {
-                                println!("!!! strlist mac = {}", if base.is_null() { String::from("null") } else { transient::strlist_to_string(base) });
+                                println!("!!! strlist mac = '{}'", if base.is_null() { String::from("null") } else { transient::strlist_to_string(base) });
                                 (*macro_to_use).strlist = base;
                             }
                         }
@@ -288,8 +291,16 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
         if !defined {
             sl = transient::permalloc((::std::mem::size_of::<*mut _STRLIST>() as u64).wrapping_add(1).wrapping_add(strlen(buf.as_mut_ptr())) as i32) as *mut _STRLIST;
             strcpy((*sl).buf.as_mut_ptr(), buf.as_mut_ptr());
+            println!("!!! strlist first += '{}', '{}'", transient::strlist_to_string(sl), transient::str_pointer_to_string(buf.as_mut_ptr()));
+            println!("!!! ...thus base = '{}'", transient::strlist_to_string(base));
             *slp = sl;
-            slp = &mut (*sl).next
+            slp = &mut (*sl).next;
+        }
+
+        if macro_to_use.is_null() {
+            println!("!!! FINAL is null!!!");
+        } else {
+            println!("!!! FINAL for '{}': [[{}]]", transient::str_pointer_to_string((*macro_to_use).name), transient::strlist_to_string((*macro_to_use).strlist));
         }
     }
     asmerr(AsmErrorEquates::PrematureEOF, true, 0 as *const i8);

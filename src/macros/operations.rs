@@ -92,6 +92,7 @@ pub unsafe fn v_execmac(mut str: *mut i8, mac: *mut _MACRO) {
     (*inc).savedolidx = state.execution.localDollarIndex;
     (*inc).strlist = (*mac).strlist;
     (*inc).args = base;
+    println!("!!! EXECMAC for '{}' with [[{}]]", transient::str_pointer_to_string((*mac).name), transient::strlist_to_string((*mac).strlist));
     state.execution.includeFiles.push(inc);
     state.execution.lastLocalIndex += 1;
     state.execution.localIndex = state.execution.lastLocalIndex;
