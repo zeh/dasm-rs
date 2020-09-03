@@ -38,7 +38,6 @@ pub enum MacroOrMnemonicPointer {
 	None,
 }
 
-#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _MACRO {
 	pub vect: Option<unsafe extern "C" fn(_: *mut i8, _: *mut _MACRO) -> ()>,
@@ -48,7 +47,6 @@ pub struct _MACRO {
 	pub defpass: i32,
 }
 
-#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _INCFILE {
 	pub next: *mut _INCFILE,
