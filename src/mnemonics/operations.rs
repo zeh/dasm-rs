@@ -259,6 +259,7 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
                             if macro_to_use.is_null() {
                                 println!("Error: attempted to use macro reference before initialization")
                             } else {
+                                println!("!!! strlist mne = {}", if base.is_null() { String::from("null") } else { transient::strlist_to_string(base) });
                                 (*macro_to_use).strlist = base;
                             }
                         }
@@ -271,6 +272,7 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
                             if macro_to_use.is_null() {
                                 println!("Error: attempted to use macro reference before initialization")
                             } else {
+                                println!("!!! strlist mac = {}", if base.is_null() { String::from("null") } else { transient::strlist_to_string(base) });
                                 (*macro_to_use).strlist = base;
                             }
                         }

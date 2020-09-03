@@ -53,6 +53,7 @@ pub struct _MACRO {
 	pub flags: u8,
 	pub strlist: *mut _STRLIST,
 	pub defpass: i32,
+	pub content: String,
 }
 
 #[repr(C)]
