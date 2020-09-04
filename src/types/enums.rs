@@ -42,6 +42,14 @@ pub enum Format {
 	Raw,
 }
 
+#[derive(Copy, Clone, Debug)]
+#[repr(i8)]
+pub enum ExitCode {
+	Ok = 0,
+	Failure = 1, // "EXIT_FAILURE" in original C code
+}
+
+
 // In original C code, "ASM_ERROR_EQUATES"
 // FIXME: check which aren't used anymore. "BadError", for example, shouldn't be needed,
 // as it's about passing invalid ints to error handling, which should never happen with

@@ -60,6 +60,7 @@ use types::enums::{
     AddressModes,
     AsmErrorEquates,
     ErrorFormat,
+    ExitCode,
     Format,
     ListMode,
     SortMode,
@@ -1555,7 +1556,7 @@ pub unsafe extern "C" fn asmerr(err: AsmErrorEquates, abort: bool, sText: *const
             println!("Aborting assembly");
         }
         operations::output_passbuffer(&mut state.output.passBufferErrors);
-        std::process::exit(1);
+        std::process::exit(ExitCode::Failure as u8 as i32);
     }
     return err;
 }

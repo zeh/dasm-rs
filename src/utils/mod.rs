@@ -3,6 +3,7 @@ use crate::constants::{
 };
 use crate::types::enums::{
 	AsmErrorEquates,
+	ExitCode,
 };
 use crate::types::structs::{
 	ErrorDefinition,
@@ -33,7 +34,7 @@ pub fn find_error_definition(errorType: AsmErrorEquates) -> &'static ErrorDefini
  */
 pub fn panic(message: &str) {
 	println!("{}", message);
-	std::process::exit(1);
+	std::process::exit(ExitCode::Failure as u8 as i32);
 }
 
 /**

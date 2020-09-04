@@ -38,6 +38,7 @@ use crate::types::enums::{
     AddressModes,
     AsmErrorEquates,
     BitOrder,
+    ExitCode,
     ListMode,
     Processors,
 };
@@ -691,7 +692,7 @@ pub unsafe fn v_err(_str: *mut i8, mut _dummy: *mut _MNE) {
 
     programlabel();
     asmerr(AsmErrorEquates::ErrPseudoOpEncountered, true, 0 as *const i8);
-    std::process::exit(1);
+    std::process::exit(ExitCode::Failure as u8 as i32);
 }
 
 pub unsafe fn v_dc(mut str: *mut i8, mne: *mut _MNE) {

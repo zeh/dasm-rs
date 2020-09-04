@@ -5,6 +5,7 @@ use crate::types::flags::{
 };
 use crate::types::enums::{
     AsmErrorEquates,
+    ExitCode,
     Format,
 };
 use crate::types::legacy::{
@@ -93,7 +94,7 @@ pub unsafe extern "C" fn generate() {
                             org
                         );
                         asmerr(AsmErrorEquates::OriginReverseIndexed, true, 0 as *const i8);
-                        std::process::exit(1);
+                        std::process::exit(ExitCode::Failure as u8 as i32);
                     }
                     while currentSegment.org != org {
                         filesystem::write_char_to_file_maybe(&mut state.output.outFile, state.output.orgFill as char);
