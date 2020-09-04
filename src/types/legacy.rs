@@ -4,6 +4,9 @@
 use crate::macros::{
 	MacroFunc,
 };
+use crate::mnemonics::{
+	MnemonicFunc,
+};
 
 extern "C" {
 	pub type _IO_wide_data;
@@ -29,13 +32,14 @@ pub struct _STRLIST {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _MNE {
-	pub vect: Option<unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()>,
+	pub vect: MnemonicFunc,
 	pub name: *const i8,
 	pub flags: u8,
 	pub okmask: u64,
 	pub opcode: [u32; 21],
 }
 
+#[repr(C)]
 pub enum MacroOrMnemonicPointer {
 	Macro(*mut _MACRO),
 	Mnemonic(*mut _MNE),

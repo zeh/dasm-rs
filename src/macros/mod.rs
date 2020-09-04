@@ -1,3 +1,5 @@
+pub mod operations;
+
 use crate::types::legacy::{
     _MACRO,
 };

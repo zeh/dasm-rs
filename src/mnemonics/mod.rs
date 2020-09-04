@@ -1,9 +1,15 @@
+pub mod operations;
+pub mod processors;
+
 use crate::types::legacy::{
     _MNE,
 };
 use crate::utils::{
     transient,
 };
+
+// FIXME: make this safe once it's possible
+pub type MnemonicFunc = unsafe fn(str: *mut i8, mac: *mut _MNE) -> ();
 
 /**
  * Given a mnemonic (e.g "dc.b") parses the name ("dc") and the extension ("b")

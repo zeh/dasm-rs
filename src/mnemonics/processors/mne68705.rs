@@ -1,3 +1,4 @@
+use crate::mnemonics;
 use crate::types::enums::{
     AddressModes,
 };
@@ -5,17 +6,9 @@ use crate::types::legacy::{
     _MNE,
 };
 
-extern "C" {
-    #[no_mangle]
-    fn v_mnemonic(str: *mut i8, mne: *mut _MNE);
-}
-/*
- *  MNE68705.C
- */
-#[no_mangle]
-pub static mut Mne68705: [_MNE; 89] = [{
+pub static mut mnemonics_68705: [_MNE; 88] = [{
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"adc\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imm8 as i32 | (1) <<
@@ -28,7 +21,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"add\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imm8 as i32 | (1) <<
@@ -41,7 +34,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"and\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imm8 as i32 | (1) <<
@@ -54,7 +47,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"asl\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32 | (1) <<
@@ -65,7 +58,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"asla\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -74,7 +67,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"aslx\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -83,7 +76,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"asr\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32 | (1) <<
@@ -94,7 +87,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"asra\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -103,7 +96,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"asrx\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -112,7 +105,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"bcc\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Rel as i32) as u64,
@@ -121,7 +114,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"bclr\x00" as *const u8 as *const i8,
                       flags: 0x40,
                       okmask: ((1) << AddressModes::BitMod as i32) as u64,
@@ -130,7 +123,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"bcs\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Rel as i32) as u64,
@@ -139,7 +132,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"beq\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Rel as i32) as u64,
@@ -148,7 +141,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"bhcc\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Rel as i32) as u64,
@@ -157,7 +150,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"bhcs\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Rel as i32) as u64,
@@ -166,7 +159,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"bhi\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Rel as i32) as u64,
@@ -175,7 +168,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"bhs\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Rel as i32) as u64,
@@ -184,7 +177,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"bih\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Rel as i32) as u64,
@@ -193,7 +186,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"bil\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Rel as i32) as u64,
@@ -202,7 +195,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"bit\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imm8 as i32 | (1) <<
@@ -215,7 +208,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"blo\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Rel as i32) as u64,
@@ -224,7 +217,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"bls\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Rel as i32) as u64,
@@ -233,7 +226,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"bmc\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Rel as i32) as u64,
@@ -242,7 +235,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"bmi\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Rel as i32) as u64,
@@ -251,7 +244,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"bms\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Rel as i32) as u64,
@@ -260,7 +253,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"bne\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Rel as i32) as u64,
@@ -269,7 +262,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"bpl\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Rel as i32) as u64,
@@ -278,7 +271,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"bra\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Rel as i32) as u64,
@@ -287,7 +280,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"brn\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Rel as i32) as u64,
@@ -296,7 +289,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"brclr\x00" as *const u8 as *const i8,
                       flags:
                           (0x40 as i32 | 0x20 as i32) as u8,
@@ -306,7 +299,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"brset\x00" as *const u8 as *const i8,
                       flags:
                           (0x40 as i32 | 0x20 as i32) as u8,
@@ -316,7 +309,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"bset\x00" as *const u8 as *const i8,
                       flags: 0x40,
                       okmask: ((1) << AddressModes::BitMod as i32) as u64,
@@ -325,7 +318,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"bsr\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Rel as i32) as u64,
@@ -334,7 +327,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"clc\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -343,7 +336,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"cli\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -352,7 +345,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"clr\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32 | (1) <<
@@ -363,7 +356,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"clra\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -372,7 +365,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"clrx\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -381,7 +374,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"cmp\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imm8 as i32 | (1) <<
@@ -394,7 +387,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"com\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32 | (1) <<
@@ -405,7 +398,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"coma\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -414,7 +407,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"comx\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -423,7 +416,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"cpx\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imm8 as i32 | (1) <<
@@ -436,7 +429,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"dec\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32 | (1) <<
@@ -447,7 +440,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"deca\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -456,7 +449,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"decx\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -465,7 +458,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"dex\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -474,7 +467,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"eor\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imm8 as i32 | (1) <<
@@ -487,7 +480,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"inc\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32 | (1) <<
@@ -498,7 +491,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"inca\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -507,7 +500,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"incx\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -516,7 +509,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"inx\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -525,7 +518,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"jmp\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::ByteAdr as i32 | (1) <<
@@ -537,7 +530,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"jsr\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::ByteAdr as i32 | (1) <<
@@ -549,7 +542,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"lda\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imm8 as i32 | (1) <<
@@ -562,7 +555,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"ldx\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imm8 as i32 | (1) <<
@@ -575,7 +568,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"lsl\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32 | (1) <<
@@ -586,7 +579,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"lsla\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -595,7 +588,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"lslx\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -604,7 +597,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"lsr\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32 | (1) <<
@@ -615,7 +608,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"lsra\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -624,7 +617,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"lsrx\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -633,7 +626,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"neg\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32 | (1) <<
@@ -644,7 +637,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"nega\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -653,7 +646,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"negx\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -662,7 +655,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"nop\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -671,7 +664,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"ora\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imm8 as i32 | (1) <<
@@ -684,7 +677,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"rol\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32 | (1) <<
@@ -695,7 +688,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"rola\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -704,7 +697,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"rolx\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -713,7 +706,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"ror\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32 | (1) <<
@@ -724,7 +717,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"rora\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -733,7 +726,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"rorx\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -742,7 +735,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"rsp\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -751,7 +744,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"rti\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -760,7 +753,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"rts\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -769,7 +762,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"sbc\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imm8 as i32 | (1) <<
@@ -782,7 +775,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"sec\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -791,7 +784,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"sei\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -800,7 +793,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"sta\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::ByteAdr as i32 | (1) <<
@@ -812,7 +805,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"stx\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::ByteAdr as i32 | (1) <<
@@ -824,7 +817,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"sub\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imm8 as i32 | (1) <<
@@ -837,7 +830,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"swi\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -846,7 +839,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"tax\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -855,7 +848,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"tst\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32 | (1) <<
@@ -866,7 +859,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"tsta\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -875,7 +868,7 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"tstx\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -884,20 +877,11 @@ pub static mut Mne68705: [_MNE; 89] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"txa\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
                       opcode: [0x9f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: None,
-                      name: 0 as *const i8,
-                      flags: 0,
-                      okmask: 0,
-                      opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          }]
 ;

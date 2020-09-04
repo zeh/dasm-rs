@@ -26,7 +26,6 @@ pub mod globals;
 pub mod macros;
 pub mod mnemonics;
 pub mod operations;
-pub mod processors;
 pub mod segments;
 pub mod symbols;
 pub mod types;
@@ -69,7 +68,6 @@ use types::enums::{
 use types::legacy::{
     __compar_fn_t,
     _INCFILE,
-    _MACRO,
     _MNE,
     _STRLIST,
     _SYMBOL,
@@ -101,8 +99,6 @@ extern "C" {
     #[no_mangle]
     fn fgets(__s: *mut i8, __n: i32, __stream: *mut FILE) -> *mut i8;
     #[no_mangle]
-    fn v_incdir(_: *mut i8, _: *mut _MNE);
-    #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
@@ -130,21 +126,13 @@ extern "C" {
     static mut Av: [*mut i8; 0];
     #[no_mangle]
     static mut Avbuf: [i8; 0];
-    #[no_mangle]
-    static mut Ops: [_MNE; 0];
     /* exp.c */
     #[no_mangle]
     fn eval(str: *const i8, wantmode: i32) -> *mut _SYMBOL;
     #[no_mangle]
     fn pfopen(_: *const i8, _: *const i8) -> *mut FILE;
     #[no_mangle]
-    fn v_eqm(_: *mut i8, _: *mut _MNE);
-    #[no_mangle]
     fn programlabel();
-    #[no_mangle]
-    fn v_set(str: *mut i8, _: *mut _MNE);
-    #[no_mangle]
-    fn v_mexit(str: *mut i8, _: *mut _MNE);
     #[no_mangle]
     fn closegenerate();
 }
@@ -512,7 +500,7 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
     let mut oldRedoIndex: i32 = -1;
     let mut oldRedoWhy: u64 = 0;
     let mut oldRedoEval: i32 = 0;
-    addhashtable(Ops.as_mut_ptr());
+    addhashtable(globals::legacy::mnemonics_operations.as_mut_ptr(), globals::legacy::mnemonics_operations.len());
     state.execution.pass = 1;
     if !(ac < 2) {
         i = 2;
@@ -575,9 +563,9 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                     let ref mut fresh2 = *Av.as_mut_ptr().offset(0);
                     *fresh2 = (*av.offset(i as isize)).offset(2);
                     if *(*av.offset(i as isize)).offset(1) as i32 == 'M' as i32 {
-                        v_eqm(str, 0 as *mut _MNE);
+                        mnemonics::operations::v_eqm(str, 0 as *mut _MNE);
                     } else {
-                        v_set(str, 0 as *mut _MNE);
+                        mnemonics::operations::v_set(str, 0 as *mut _MNE);
                     }
                     current_block = 17788412896529399552;
                 }
@@ -634,7 +622,7 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                     current_block = 17788412896529399552;
                 }
                 'I' => {
-                    v_incdir(str, 0 as *mut _MNE);
+                    mnemonics::operations::v_incdir(str, 0 as *mut _MNE);
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
                 'S' => {
@@ -751,7 +739,7 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                                 if (*pIncfile).strlist.is_null() {
                                     let ref mut fresh3 = *Av.as_mut_ptr().offset(0);
                                     *fresh3 = b"\x00" as *const u8 as *const i8 as *mut i8;
-                                    v_mexit(0 as *mut i8, 0 as *mut _MNE);
+                                    mnemonics::operations::v_mexit(0 as *mut i8, 0 as *mut _MNE);
                                     continue;
                                 } else {
                                     strcpy(buf.as_mut_ptr(), (*(*pIncfile).strlist).buf.as_mut_ptr());
@@ -794,10 +782,7 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                                                     log_function_with!("calling vect on [[{}]] [[{}]]", transient::str_pointer_to_string((*mne).name), transient::str_pointer_to_string(*Av.as_ptr().offset(2)));
                                                 }
                                             }
-                                            Some((*mne).vect.expect("non-null function pointer")).expect("non-null function pointer")(
-                                                *Av.as_ptr().offset(2),
-                                                mne
-                                            );
+                                            ((*mne).vect)(*Av.as_ptr().offset(2), mne);
                                         }
                                     }
                                     MacroOrMnemonicPointer::None => {
@@ -920,7 +905,8 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
     println!("Report bugs on https://github.com/dasm-assembler/dasm please!");
     return AsmErrorEquates::CommandLine;
 }
-unsafe extern "C" fn outlistfile(comment: *const i8) {
+
+pub unsafe fn outlistfile(comment: *const i8) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(comment)); } }
 
@@ -1022,7 +1008,7 @@ pub unsafe extern "C" fn clearrefs() {
    function names, at least not GCC's; we should be safe
    since MS compilers document strtol as well... [phf]
 */
-unsafe extern "C" fn cleanup(buf: *mut i8, bDisable: bool) -> *const i8 {
+pub unsafe fn cleanup(buf: *mut i8, bDisable: bool) -> *const i8 {
     let mut str: *mut i8 = 0 as *mut i8;
     let mut strlist: *mut _STRLIST = 0 as *mut _STRLIST;
     let mut arg: i32 = 0;
@@ -1238,8 +1224,7 @@ pub unsafe extern "C" fn rmnode(base: *mut *mut libc::c_void, mut _bytes: i32) {
 /*
 *  Parse into three arguments: Av[0], Av[1], Av[2]
 */
-#[no_mangle]
-pub unsafe extern "C" fn parse(buf: *mut i8) -> MacroOrMnemonicPointer {
+pub unsafe fn parse(buf: *mut i8) -> MacroOrMnemonicPointer {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(buf)); } }
 
@@ -1407,124 +1392,18 @@ pub unsafe extern "C" fn parse(buf: *mut i8) -> MacroOrMnemonicPointer {
     }
 }
 
-/* symbols.c */
-/* ops.c */
-#[no_mangle]
-pub unsafe extern "C" fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
-    #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
-
-    let mut base: *mut _STRLIST = 0 as *mut _STRLIST; /* slp, mac: might be used uninitialised */
-    let mut defined: bool = false; // Conversion note: "not really needed" according to the original code
-    let mut slp: *mut *mut _STRLIST = 0 as *mut *mut _STRLIST;
-    let mut sl: *mut _STRLIST = 0 as *mut _STRLIST;
-    let mut buf: [i8; MAX_LINES] = [0; MAX_LINES];
-
-    let current_if = &state.execution.ifs.last().unwrap();
-    let skipit = !current_if.result || !current_if.result_acc;
-
-    // Updates the *str in memory.
-    // This could have been just...
-    //   str = transient::string_to_str_pointer(transient::str_pointer_to_string(str).to_ascii_lowercase());
-    // ...but, other parts of the code reuse the same string, so we need to update
-    // the original location rather than just a copy of the string.
-    // FIXME: drop all of this in favor of properly renamed macros
-    let newStr = transient::str_pointer_to_string(str).to_ascii_lowercase();
-    transient::update_str_pointer_in_place(str, newStr.as_str());
-    let full_mnemonic_or_macro_name = transient::str_pointer_to_string(str);
-    let (mnemonic_name, _) = parse_mnemonic_name(full_mnemonic_or_macro_name.as_str());
-    let mnemonic_maybe = find_mnemonic(&state.execution.mnemonics, mnemonic_name);
-    let macro_maybe = find_macro(&state.execution.macros, full_mnemonic_or_macro_name.as_str());
-
-    if skipit {
-        defined = true
-    } else {
-        defined = mnemonic_maybe.is_some() || macro_maybe.is_some();
-        if !state.parameters.listFile.is_empty() && state.execution.listMode != ListMode::None {
-            outlistfile(b"\x00" as *const u8 as *const i8);
-        }
-    }
-
-    let mut macro_to_use: *mut _MACRO = 0 as *mut _MACRO;
-
-    if !defined {
-        base = 0 as *mut _STRLIST;
-        slp = &mut base;
-        let mac = permalloc(::std::mem::size_of::<_MACRO>() as u64 as i32) as *mut _MACRO;
-        (*mac).vect = operations::legacy::v_execmac;
-        (*mac).name = strcpy(permalloc(strlen(str).wrapping_add(1) as i32), str);
-        (*mac).flags = 0x8;
-        (*mac).defpass = state.execution.pass as i32;
-        state.execution.macros.push(mac);
-
-        macro_to_use = mac;
-    } else {
-        if macro_maybe.is_some() {
-            macro_to_use = macro_maybe.unwrap();
-        }
-        if state.parameters.strictMode && macro_maybe.is_some() && (*(macro_maybe.unwrap())).defpass == state.execution.pass as i32 {
-            asmerr(AsmErrorEquates::MacroRepeated, true, str);
-        }
-    }
-
-    while !fgets(buf.as_mut_ptr(), MAX_LINES as i32, (*pIncfile).fi).is_null() {
-        let mut comment: *const i8 = 0 as *const i8;
-        if state.parameters.debug {
-            println!("{:08x} {}", pIncfile as u64, transient::str_pointer_to_string(buf.as_mut_ptr()));
-        }
-        (*pIncfile).lineno = (*pIncfile).lineno.wrapping_add(1);
-        comment = cleanup(buf.as_mut_ptr(), true);
-        let mne_or_macro = parse(buf.as_mut_ptr());
-        if *(*Av.as_ptr().offset(1)).offset(0) != 0 {
-            match mne_or_macro {
-                MacroOrMnemonicPointer::Mnemonic(mne) => {
-                    if (*mne).flags & MnemonicsFlags::EndMnemonic != 0 {
-                        if !defined {
-                            if macro_to_use.is_null() {
-                                println!("Error: attempted to use macro reference before initialization")
-                            } else {
-                                (*macro_to_use).strlist = base;
-                            }
-                        }
-                        return;
-                    }
-                }
-                MacroOrMnemonicPointer::Macro(mac) => {
-                    if (*mac).flags & MnemonicsFlags::EndMnemonic != 0 {
-                        if !defined {
-                            if macro_to_use.is_null() {
-                                println!("Error: attempted to use macro reference before initialization")
-                            } else {
-                                (*macro_to_use).strlist = base;
-                            }
-                        }
-                        return;
-                    }
-                }
-                MacroOrMnemonicPointer::None => {}
-            }
-        }
-        if !skipit && !state.parameters.listFile.is_empty() && state.execution.listMode != ListMode::None {
-            outlistfile(comment);
-        }
-        if !defined {
-            sl = permalloc((::std::mem::size_of::<*mut _STRLIST>() as u64).wrapping_add(1).wrapping_add(strlen(buf.as_mut_ptr())) as i32) as *mut _STRLIST;
-            strcpy((*sl).buf.as_mut_ptr(), buf.as_mut_ptr());
-            *slp = sl;
-            slp = &mut (*sl).next
-        }
-    }
-    asmerr(AsmErrorEquates::PrematureEOF, true, 0 as *const i8);
-}
-#[no_mangle]
-pub unsafe extern "C" fn addhashtable(mut mne: *mut _MNE) {
+// FIXME: this should use vectors instead
+pub unsafe fn addhashtable(first_mne: *mut _MNE, len: usize) {
     let mut i: usize;
     let mut j: usize;
     let mut opcode: [u32; 21] = [0; 21];
-    while (*mne).vect.is_some() {
+    for m in 0..len {
+        let mne = first_mne.offset(m as isize);
+        // FIXME: this should be just:
+        //   opcode = (*mne).opcode.clone();
         memcpy(opcode.as_mut_ptr() as *mut libc::c_void,
-               (*mne).opcode.as_mut_ptr() as *const libc::c_void,
-               ::std::mem::size_of::<[u32; 21]>() as u64);
+                (*mne).opcode.as_mut_ptr() as *const libc::c_void,
+                ::std::mem::size_of::<[u32; 21]>() as u64);
         j = 0;
         i = j;
         while i < AddressModes::length() as usize {
@@ -1537,8 +1416,6 @@ pub unsafe extern "C" fn addhashtable(mut mne: *mut _MNE) {
         }
 
         state.execution.mnemonics.push(mne);
-
-        mne = mne.offset(1)
     };
 }
 #[no_mangle]

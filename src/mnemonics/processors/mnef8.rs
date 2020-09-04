@@ -2,6 +2,7 @@ use crate::{
     log_function_with,
 };
 use crate::globals::state;
+use crate::mnemonics;
 use crate::types::flags::{
     ReasonCodes,
     SegmentTypes,
@@ -32,12 +33,6 @@ extern "C" {
     /* ops.c */
     #[no_mangle]
     fn generate();
-    #[no_mangle]
-    fn v_dc(_: *mut i8, _: *mut _MNE);
-    #[no_mangle]
-    fn v_ds(_: *mut i8, _: *mut _MNE);
-    #[no_mangle]
-    fn v_mnemonic(str: *mut i8, mne: *mut _MNE);
     /* exp.c */
     #[no_mangle]
     fn eval(str: *const i8, wantmode: i32) -> *mut _SYMBOL;
@@ -301,7 +296,7 @@ unsafe fn parse_special_register(str: *mut i8) -> i32 {
         return REG_NONE as i32;
     };
 }
-unsafe extern "C" fn v_ins_outs(str: *mut i8, mne: *mut _MNE) {
+unsafe fn v_ins_outs(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -313,7 +308,7 @@ unsafe extern "C" fn v_ins_outs(str: *mut i8, mne: *mut _MNE) {
     }
     emit_opcode1(((*mne).opcode[0] as u64 | operand & 15) as u8);
 }
-unsafe extern "C" fn v_sl_sr(str: *mut i8, mne: *mut _MNE) {
+unsafe fn v_sl_sr(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -338,7 +333,7 @@ unsafe extern "C" fn v_sl_sr(str: *mut i8, mne: *mut _MNE) {
         }
     };
 }
-unsafe extern "C" fn v_lis(str: *mut i8, mne: *mut _MNE) {
+unsafe fn v_lis(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -350,7 +345,7 @@ unsafe extern "C" fn v_lis(str: *mut i8, mne: *mut _MNE) {
     }
     emit_opcode1((0x70 | operand & 15) as u8);
 }
-unsafe extern "C" fn v_lisu_lisl(str: *mut i8, mne: *mut _MNE) {
+unsafe fn v_lisu_lisl(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -366,7 +361,7 @@ unsafe extern "C" fn v_lisu_lisl(str: *mut i8, mne: *mut _MNE) {
  * handles opcodes with a scratchpad register operand:
  * as, asd, ds, ns, xs
  */
-unsafe extern "C" fn v_sreg_op(str: *mut i8, mne: *mut _MNE) {
+unsafe fn v_sreg_op(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -375,7 +370,7 @@ unsafe extern "C" fn v_sreg_op(str: *mut i8, mne: *mut _MNE) {
     parse_scratchpad_register(str, &mut reg);
     emit_opcode1(((*mne).opcode[0] | reg as u32) as u8);
 }
-unsafe extern "C" fn v_lr(str: *mut i8, mne: *mut _MNE) {
+unsafe fn v_lr(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -565,13 +560,13 @@ unsafe fn generate_branch(opcode: u8, str: *const i8) {
  * handles the following branch mnemonics:
  * bc, bm, bnc, bno, bnz, bp, br, br7, bz
  */
-unsafe extern "C" fn v_branch(str: *mut i8, mne: *mut _MNE) {
+unsafe fn v_branch(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     generate_branch((*mne).opcode[0] as u8, str);
 }
-unsafe extern "C" fn v_bf_bt(str: *mut i8, mne: *mut _MNE) {
+unsafe fn v_bf_bt(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -626,7 +621,7 @@ unsafe extern "C" fn v_bf_bt(str: *mut i8, mne: *mut _MNE) {
  * handles instructions that take a word operand:
  * dci, jmp, pi
  */
-unsafe extern "C" fn v_wordop(str: *mut i8, mne: *mut _MNE) {
+unsafe fn v_wordop(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -644,7 +639,7 @@ unsafe extern "C" fn v_wordop(str: *mut i8, mne: *mut _MNE) {
  * handles instructions that take a byte operand:
  * ai, ci, in, li, ni, oi, out, xi
  */
-unsafe extern "C" fn v_byteop(str: *mut i8, mne: *mut _MNE) {
+unsafe fn v_byteop(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -656,10 +651,10 @@ unsafe extern "C" fn v_byteop(str: *mut i8, mne: *mut _MNE) {
     }
     emit_opcode2((*mne).opcode[0] as u8, (value & 0xff) as u8);
 }
-#[no_mangle]
-pub static mut MneF8: [_MNE; 59] = [{
+
+pub static mut mnemonics_F8: [_MNE; 58] = [{
             let init = _MNE{
-                      vect: Some(v_ds as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_ds,
                       name: b"res\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: 0,
@@ -668,7 +663,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_dc as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_dc,
                       name: b"db\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: 0,
@@ -677,7 +672,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_dc as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_dc,
                       name: b"dw\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: 0,
@@ -686,7 +681,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_dc as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_dc,
                       name: b"dd\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: 0,
@@ -695,7 +690,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"adc\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -704,7 +699,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_byteop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_byteop,
                       name: b"ai\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -713,7 +708,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"am\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -722,7 +717,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"amd\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -731,7 +726,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_sreg_op as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_sreg_op,
                       name: b"as\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -740,7 +735,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_sreg_op as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_sreg_op,
                       name: b"asd\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -749,7 +744,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_branch as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_branch,
                       name: b"bc\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -758,7 +753,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_bf_bt as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_bf_bt,
                       name: b"bf\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -767,7 +762,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_branch as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_branch,
                       name: b"bm\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -776,7 +771,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_branch as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_branch,
                       name: b"bnc\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -785,7 +780,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_branch as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_branch,
                       name: b"bno\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -794,7 +789,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_branch as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_branch,
                       name: b"bnz\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -803,7 +798,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_branch as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_branch,
                       name: b"bp\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -812,7 +807,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_branch as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_branch,
                       name: b"br\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -821,7 +816,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_branch as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_branch,
                       name: b"br7\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -830,7 +825,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_bf_bt as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_bf_bt,
                       name: b"bt\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -839,7 +834,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_branch as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_branch,
                       name: b"bz\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -848,7 +843,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_byteop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_byteop,
                       name: b"ci\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -857,7 +852,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"clr\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -866,7 +861,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"cm\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -875,7 +870,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"com\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -884,7 +879,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_wordop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_wordop,
                       name: b"dci\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -893,7 +888,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"di\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -902,7 +897,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_sreg_op as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_sreg_op,
                       name: b"ds\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -911,7 +906,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"ei\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -920,7 +915,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_byteop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_byteop,
                       name: b"in\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -929,7 +924,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"inc\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -938,7 +933,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_ins_outs as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_ins_outs,
                       name: b"ins\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -947,7 +942,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_wordop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_wordop,
                       name: b"jmp\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -956,7 +951,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_byteop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_byteop,
                       name: b"li\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -965,7 +960,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_lis as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_lis,
                       name: b"lis\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: 0,
@@ -974,7 +969,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_lisu_lisl as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_lisu_lisl,
                       name: b"lisl\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -983,7 +978,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_lisu_lisl as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_lisu_lisl,
                       name: b"lisu\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -992,7 +987,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"lm\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -1001,7 +996,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"lnk\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -1010,7 +1005,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_lr as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_lr,
                       name: b"lr\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: 0,
@@ -1019,7 +1014,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_byteop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_byteop,
                       name: b"ni\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -1028,7 +1023,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"nm\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -1037,7 +1032,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"nop\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -1046,7 +1041,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_sreg_op as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_sreg_op,
                       name: b"ns\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -1055,7 +1050,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_byteop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_byteop,
                       name: b"oi\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -1064,7 +1059,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"om\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -1073,7 +1068,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_byteop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_byteop,
                       name: b"out\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -1082,7 +1077,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_ins_outs as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_ins_outs,
                       name: b"outs\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -1091,7 +1086,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_wordop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_wordop,
                       name: b"pi\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -1100,7 +1095,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"pk\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -1109,7 +1104,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"pop\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -1118,7 +1113,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_sl_sr as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_sl_sr,
                       name: b"sl\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -1127,7 +1122,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_sl_sr as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_sl_sr,
                       name: b"sr\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -1136,7 +1131,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"st\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -1145,7 +1140,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"xdc\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -1154,7 +1149,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_byteop as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_byteop,
                       name: b"xi\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -1163,7 +1158,7 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_mnemonic as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: mnemonics::operations::v_mnemonic,
                       name: b"xm\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
@@ -1172,20 +1167,11 @@ pub static mut MneF8: [_MNE; 59] = [{
          },
          {
             let init = _MNE{
-                      vect: Some(v_sreg_op as unsafe extern "C" fn(_: *mut i8, _: *mut _MNE) -> ()),
+                      vect: v_sreg_op,
                       name: b"xs\x00" as *const u8 as *const i8,
                       flags: 0,
                       okmask: ((1) << AddressModes::Imp as i32) as u64,
                       opcode: [0xe0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: None,
-                      name: 0 as *const i8,
-                      flags: 0,
-                      okmask: 0,
-                      opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
              init
          }]
 ;
