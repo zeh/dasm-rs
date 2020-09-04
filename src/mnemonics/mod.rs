@@ -9,7 +9,7 @@ use crate::utils::{
 };
 
 // FIXME: make this safe once it's possible
-pub type MnemonicFunc = unsafe fn(str: *mut i8, mac: *mut _MNE) -> ();
+pub type MnemonicFunc = unsafe fn(str: *mut i8, mnemonic: *mut _MNE) -> ();
 
 /**
  * Given a mnemonic (e.g "dc.b") parses the name ("dc") and the extension ("b")
