@@ -654,526 +654,411 @@ unsafe fn v_byteop(str: *mut i8, mne: *mut _MNE) {
     emit_opcode2((*mne).opcode[0] as u8, (value & 0xff) as u8);
 }
 
-pub static mut mnemonics_F8: [_MNE; 58] = [{
-            let init = _MNE{
-                      vect: mnemonics::operations::v_ds,
-                      name: b"res\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: 0,
-                      opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_dc,
-                      name: b"db\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: 0,
-                      opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_dc,
-                      name: b"dw\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: 0,
-                      opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_dc,
-                      name: b"dd\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: 0,
-                      opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_mnemonic,
-                      name: b"adc\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x8e, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_byteop,
-                      name: b"ai\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_mnemonic,
-                      name: b"am\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x88, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_mnemonic,
-                      name: b"amd\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x89, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_sreg_op,
-                      name: b"as\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0xc0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_sreg_op,
-                      name: b"asd\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0xd0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_branch,
-                      name: b"bc\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_bf_bt,
-                      name: b"bf\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_branch,
-                      name: b"bm\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x91, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_branch,
-                      name: b"bnc\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x92, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_branch,
-                      name: b"bno\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x98, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_branch,
-                      name: b"bnz\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x94, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_branch,
-                      name: b"bp\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x81, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_branch,
-                      name: b"br\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_branch,
-                      name: b"br7\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x8f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_bf_bt,
-                      name: b"bt\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_branch,
-                      name: b"bz\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x84, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_byteop,
-                      name: b"ci\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_mnemonic,
-                      name: b"clr\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_mnemonic,
-                      name: b"cm\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x8d, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_mnemonic,
-                      name: b"com\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_wordop,
-                      name: b"dci\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x2a, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_mnemonic,
-                      name: b"di\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x1a, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_sreg_op,
-                      name: b"ds\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_mnemonic,
-                      name: b"ei\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x1b, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_byteop,
-                      name: b"in\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_mnemonic,
-                      name: b"inc\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x1f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_ins_outs,
-                      name: b"ins\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0xa0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_wordop,
-                      name: b"jmp\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x29, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_byteop,
-                      name: b"li\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_lis,
-                      name: b"lis\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: 0,
-                      opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_lisu_lisl,
-                      name: b"lisl\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x68, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_lisu_lisl,
-                      name: b"lisu\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_mnemonic,
-                      name: b"lm\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_mnemonic,
-                      name: b"lnk\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_lr,
-                      name: b"lr\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: 0,
-                      opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_byteop,
-                      name: b"ni\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_mnemonic,
-                      name: b"nm\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x8a, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_mnemonic,
-                      name: b"nop\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x2b, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_sreg_op,
-                      name: b"ns\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0xf0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_byteop,
-                      name: b"oi\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_mnemonic,
-                      name: b"om\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x8b, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_byteop,
-                      name: b"out\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_ins_outs,
-                      name: b"outs\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0xb0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_wordop,
-                      name: b"pi\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_mnemonic,
-                      name: b"pk\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0xc, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_mnemonic,
-                      name: b"pop\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x1c, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_sl_sr,
-                      name: b"sl\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_sl_sr,
-                      name: b"sr\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_mnemonic,
-                      name: b"st\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_mnemonic,
-                      name: b"xdc\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x2c, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_byteop,
-                      name: b"xi\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x23, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: mnemonics::operations::v_mnemonic,
-                      name: b"xm\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0x8c, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         },
-         {
-            let init = _MNE{
-                      vect: v_sreg_op,
-                      name: b"xs\x00" as *const u8 as *const i8,
-                      flags: 0,
-                      okmask: ((1) << AddressModes::Imp as i32) as u64,
-                      opcode: [0xe0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],};
-             init
-         }]
-;
+pub static mut mnemonics_F8: [_MNE; 58] = [
+	_MNE {
+		vect: mnemonics::operations::v_ds,
+		name: b"res\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: 0,
+		opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_dc,
+		name: b"db\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: 0,
+		opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_dc,
+		name: b"dw\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: 0,
+		opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_dc,
+		name: b"dd\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: 0,
+		opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_mnemonic,
+		name: b"adc\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x8e, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_byteop,
+		name: b"ai\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_mnemonic,
+		name: b"am\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x88, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_mnemonic,
+		name: b"amd\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x89, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_sreg_op,
+		name: b"as\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0xc0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_sreg_op,
+		name: b"asd\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0xd0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_branch,
+		name: b"bc\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_bf_bt,
+		name: b"bf\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_branch,
+		name: b"bm\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x91, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_branch,
+		name: b"bnc\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x92, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_branch,
+		name: b"bno\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x98, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_branch,
+		name: b"bnz\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x94, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_branch,
+		name: b"bp\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x81, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_branch,
+		name: b"br\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_branch,
+		name: b"br7\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x8f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_bf_bt,
+		name: b"bt\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_branch,
+		name: b"bz\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x84, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_byteop,
+		name: b"ci\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_mnemonic,
+		name: b"clr\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_mnemonic,
+		name: b"cm\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x8d, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_mnemonic,
+		name: b"com\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_wordop,
+		name: b"dci\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x2a, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_mnemonic,
+		name: b"di\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x1a, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_sreg_op,
+		name: b"ds\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_mnemonic,
+		name: b"ei\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x1b, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_byteop,
+		name: b"in\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_mnemonic,
+		name: b"inc\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x1f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_ins_outs,
+		name: b"ins\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0xa0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_wordop,
+		name: b"jmp\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x29, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_byteop,
+		name: b"li\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_lis,
+		name: b"lis\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: 0,
+		opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_lisu_lisl,
+		name: b"lisl\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x68, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_lisu_lisl,
+		name: b"lisu\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_mnemonic,
+		name: b"lm\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_mnemonic,
+		name: b"lnk\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_lr,
+		name: b"lr\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: 0,
+		opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_byteop,
+		name: b"ni\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_mnemonic,
+		name: b"nm\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x8a, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_mnemonic,
+		name: b"nop\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x2b, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_sreg_op,
+		name: b"ns\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0xf0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_byteop,
+		name: b"oi\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_mnemonic,
+		name: b"om\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x8b, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_byteop,
+		name: b"out\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_ins_outs,
+		name: b"outs\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0xb0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_wordop,
+		name: b"pi\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_mnemonic,
+		name: b"pk\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0xc, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_mnemonic,
+		name: b"pop\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x1c, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_sl_sr,
+		name: b"sl\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_sl_sr,
+		name: b"sr\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_mnemonic,
+		name: b"st\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_mnemonic,
+		name: b"xdc\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x2c, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_byteop,
+		name: b"xi\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x23, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: mnemonics::operations::v_mnemonic,
+		name: b"xm\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0x8c, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+	_MNE {
+		vect: v_sreg_op,
+		name: b"xs\x00" as *const u8 as *const i8,
+		flags: 0,
+		okmask: ((1) << AddressModes::Imp as i32) as u64,
+		opcode: [0xe0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	},
+];
