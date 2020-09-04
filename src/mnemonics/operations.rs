@@ -127,7 +127,7 @@ extern "C" {
     fn fgets(__s: *mut i8, __n: i32, __stream: *mut FILE) -> *mut i8;
 }
 
-pub unsafe fn v_processor(str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_processor(str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -192,7 +192,7 @@ pub unsafe fn v_processor(str: *mut i8, _dummy: *mut _MNE) {
     };
 }
 
-pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_macro(str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -205,14 +205,7 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
     let current_if = &state.execution.ifs.last().unwrap();
     let skipit = !current_if.result || !current_if.result_acc;
 
-    // Updates the *str in memory.
-    // This could have been just...
-    //   str = transient::string_to_str_pointer(transient::str_pointer_to_string(str).to_ascii_lowercase());
-    // ...but, other parts of the code reuse the same string, so we need to update
-    // the original location rather than just a copy of the string.
-    // FIXME: drop all of this in favor of properly renamed macros
-    let newStr = transient::str_pointer_to_string(str).to_ascii_lowercase();
-    transient::update_str_pointer_in_place(str, newStr.as_str());
+    let new_str = transient::string_to_str_pointer(transient::str_pointer_to_string(str).to_ascii_lowercase());
     let full_mnemonic_or_macro_name = transient::str_pointer_to_string(str);
     let (mnemonic_name, _) = parse_mnemonic_name(full_mnemonic_or_macro_name.as_str());
     let mnemonic_maybe = find_mnemonic(&state.execution.mnemonics, mnemonic_name);
@@ -234,7 +227,7 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
         slp = &mut base;
         let mac = permalloc(::std::mem::size_of::<_MACRO>() as u64 as i32) as *mut _MACRO;
         (*mac).vect = macros::operations::v_execmac;
-        (*mac).name = strcpy(permalloc(strlen(str).wrapping_add(1) as i32), str);
+        (*mac).name = new_str;
         (*mac).flags = 0x8;
         (*mac).defpass = state.execution.pass as i32;
         state.execution.macros.push(mac);
@@ -245,7 +238,7 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
             macro_to_use = macro_maybe.unwrap();
         }
         if state.parameters.strictMode && macro_maybe.is_some() && (*(macro_maybe.unwrap())).defpass == state.execution.pass as i32 {
-            asmerr(AsmErrorEquates::MacroRepeated, true, str);
+            asmerr(AsmErrorEquates::MacroRepeated, true, new_str);
         }
     }
 
@@ -299,7 +292,7 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
     asmerr(AsmErrorEquates::PrematureEOF, true, 0 as *const i8);
 }
 
-pub unsafe fn v_mnemonic(str: *mut i8, mne: *mut _MNE) {
+pub unsafe fn v_mnemonic(str: *const i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -531,14 +524,14 @@ pub unsafe fn v_mnemonic(str: *mut i8, mne: *mut _MNE) {
     FreeSymbolList(symbase);
 }
 
-pub unsafe fn v_trace(str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_trace(str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     state.execution.trace = *str.offset(1) as i32 == 'n' as i32;
 }
 
-pub unsafe fn v_list(str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_list(str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -565,7 +558,7 @@ pub unsafe fn v_list(str: *mut i8, _dummy: *mut _MNE) {
 /* symbols.c */
 /* ops.c */
 
-pub unsafe fn v_include(str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_include(str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -588,7 +581,7 @@ pub unsafe fn v_include(str: *mut i8, _dummy: *mut _MNE) {
     if !sym.is_null() { FreeSymbolList(sym); };
 }
 
-pub unsafe fn v_incbin(str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_incbin(str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -626,7 +619,7 @@ pub unsafe fn v_incbin(str: *mut i8, _dummy: *mut _MNE) {
     /* don't list hexdump */
 }
 
-pub unsafe fn v_seg(str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_seg(str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -657,7 +650,7 @@ pub unsafe fn v_seg(str: *mut i8, _dummy: *mut _MNE) {
     programlabel();
 }
 
-pub unsafe fn v_hex(str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_hex(str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -685,7 +678,7 @@ pub unsafe fn v_hex(str: *mut i8, _dummy: *mut _MNE) {
     generate();
 }
 
-pub unsafe fn v_err(_str: *mut i8, mut _dummy: *mut _MNE) {
+pub unsafe fn v_err(_str: *const i8, mut _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function!(); } }
 
@@ -694,7 +687,7 @@ pub unsafe fn v_err(_str: *mut i8, mut _dummy: *mut _MNE) {
     std::process::exit(1);
 }
 
-pub unsafe fn v_dc(mut str: *mut i8, mne: *mut _MNE) {
+pub unsafe fn v_dc(mut str: *const i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -887,7 +880,7 @@ pub unsafe fn v_dc(mut str: *mut i8, mne: *mut _MNE) {
     FreeSymbolList(sym);
 }
 
-pub unsafe fn v_ds(str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_ds(str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -914,7 +907,7 @@ pub unsafe fn v_ds(str: *mut i8, _dummy: *mut _MNE) {
     };
 }
 
-pub unsafe fn v_org(str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_org(str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -941,7 +934,7 @@ pub unsafe fn v_org(str: *mut i8, _dummy: *mut _MNE) {
     FreeSymbolList(sym);
 }
 
-pub unsafe fn v_rorg(str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_rorg(str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -964,7 +957,7 @@ pub unsafe fn v_rorg(str: *mut i8, _dummy: *mut _MNE) {
     FreeSymbolList(sym);
 }
 
-pub unsafe fn v_rend(_str: *mut i8, mut _dummy: *mut _MNE) {
+pub unsafe fn v_rend(_str: *const i8, mut _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function!(); } }
 
@@ -973,7 +966,7 @@ pub unsafe fn v_rend(_str: *mut i8, mut _dummy: *mut _MNE) {
     currentSegment.flags &= !SegmentTypes::RelocatableOrigin;
 }
 
-pub unsafe fn v_align(str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_align(str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -1017,7 +1010,7 @@ pub unsafe fn v_align(str: *mut i8, _dummy: *mut _MNE) {
     programlabel();
 }
 
-pub unsafe fn v_subroutine(_str: *mut i8, mut _dummy: *mut _MNE) {
+pub unsafe fn v_subroutine(_str: *const i8, mut _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function!(); } }
 
@@ -1026,7 +1019,7 @@ pub unsafe fn v_subroutine(_str: *mut i8, mut _dummy: *mut _MNE) {
     programlabel();
 }
 
-pub unsafe fn v_equ(str: *mut i8, dummy: *mut _MNE) {
+pub unsafe fn v_equ(str: *const i8, dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -1097,7 +1090,7 @@ pub unsafe fn v_equ(str: *mut i8, dummy: *mut _MNE) {
     FreeSymbolList(sym);
 }
 
-pub unsafe fn v_eqm(str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_eqm(str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -1117,7 +1110,7 @@ pub unsafe fn v_eqm(str: *mut i8, _dummy: *mut _MNE) {
     (*lab).string = transient::string_to_str_pointer(str_rs);
 }
 
-pub unsafe fn v_echo(str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_echo(str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -1146,7 +1139,7 @@ pub unsafe fn v_echo(str: *mut i8, _dummy: *mut _MNE) {
     filesystem::writeln_to_file_maybe(&mut state.output.listFile, "");
 }
 
-pub unsafe fn v_set(str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_set(str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -1251,7 +1244,7 @@ pub unsafe fn v_set(str: *mut i8, _dummy: *mut _MNE) {
     FreeSymbolList(sym);
 }
 
-pub unsafe fn v_setstr(symstr: *mut i8, dummy: *mut _MNE) {
+pub unsafe fn v_setstr(symstr: *const i8, dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(symstr)); } }
 
@@ -1260,7 +1253,7 @@ pub unsafe fn v_setstr(symstr: *mut i8, dummy: *mut _MNE) {
     v_set(transient::string_to_str_pointer(str), dummy);
 }
 
-pub unsafe fn v_end(_str: *mut i8, mut _dummy: *mut _MNE) {
+pub unsafe fn v_end(_str: *const i8, mut _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function!(); } }
 
@@ -1271,7 +1264,7 @@ pub unsafe fn v_end(_str: *mut i8, mut _dummy: *mut _MNE) {
     fseek((*pIncfile).fi, 0, 2);
 }
 
-pub unsafe fn v_endm(_str: *mut i8, mut _dummy: *mut _MNE) {
+pub unsafe fn v_endm(_str: *const i8, mut _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function!(); } }
 
@@ -1296,14 +1289,14 @@ pub unsafe fn v_endm(_str: *mut i8, mut _dummy: *mut _MNE) {
     println!("not within a macro");
 }
 
-pub unsafe fn v_mexit(_str: *mut i8, mut _dummy: *mut _MNE) {
+pub unsafe fn v_mexit(_str: *const i8, mut _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function!(); } }
 
     v_endm(0 as *mut i8, 0 as *mut _MNE);
 }
 
-pub unsafe fn v_ifconst(str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_ifconst(str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -1314,7 +1307,7 @@ pub unsafe fn v_ifconst(str: *mut i8, _dummy: *mut _MNE) {
     FreeSymbolList(sym);
 }
 
-pub unsafe fn v_ifnconst(str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_ifnconst(str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -1325,7 +1318,7 @@ pub unsafe fn v_ifnconst(str: *mut i8, _dummy: *mut _MNE) {
     FreeSymbolList(sym);
 }
 
-pub unsafe fn v_if(str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_if(str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -1347,7 +1340,7 @@ pub unsafe fn v_if(str: *mut i8, _dummy: *mut _MNE) {
     FreeSymbolList(sym);
 }
 
-pub unsafe fn v_else(_str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_else(_str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function!(); } }
 
@@ -1358,7 +1351,7 @@ pub unsafe fn v_else(_str: *mut i8, _dummy: *mut _MNE) {
     };
 }
 
-pub unsafe fn v_endif(_str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_endif(_str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function!(); } }
 
@@ -1375,7 +1368,7 @@ pub unsafe fn v_endif(_str: *mut i8, _dummy: *mut _MNE) {
     };
 }
 
-pub unsafe fn v_repeat(str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_repeat(str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -1424,7 +1417,7 @@ pub unsafe fn v_repeat(str: *mut i8, _dummy: *mut _MNE) {
     pushif(true);
 }
 
-pub unsafe fn v_repend(_str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_repend(_str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function!(); } }
 
@@ -1457,7 +1450,7 @@ pub unsafe fn v_repend(_str: *mut i8, _dummy: *mut _MNE) {
     println!("no repeat");
 }
 
-pub unsafe fn v_incdir(str: *mut i8, _dummy: *mut _MNE) {
+pub unsafe fn v_incdir(str: *const i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 

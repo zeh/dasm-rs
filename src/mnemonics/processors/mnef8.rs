@@ -210,7 +210,7 @@ unsafe fn parse_value(str: *const i8, value: *mut u64) -> i32 {
  * result : zero = ok or syntax error
  *          nonzero = unresolved expression
  */
-unsafe fn parse_scratchpad_register(str: *mut i8, reg: *mut u8) -> i32 {
+unsafe fn parse_scratchpad_register(str: *const i8, reg: *mut u8) -> i32 {
     let mut regnum: u64 = 0;
     /* parse special cases where ISAR is used as index */
     if strcasecmp(b"s\x00" as *const u8 as *const i8, str) == 0 || strcasecmp(b"(is)\x00" as *const u8 as *const i8, str) == 0 {
@@ -255,7 +255,7 @@ unsafe fn parse_scratchpad_register(str: *mut i8, reg: *mut u8) -> i32 {
  *
  * result : one of the REG_xxx constants (possibly also REG_NONE)
  */
-unsafe fn parse_special_register(str: *mut i8) -> i32 {
+unsafe fn parse_special_register(str: *const i8) -> i32 {
     if strcasecmp(b"a\x00" as *const u8 as *const i8, str) == 0 {
         return REG_A as i32;
     }
@@ -298,7 +298,7 @@ unsafe fn parse_special_register(str: *mut i8) -> i32 {
         return REG_NONE as i32;
     };
 }
-unsafe fn v_ins_outs(str: *mut i8, mne: *mut _MNE) {
+unsafe fn v_ins_outs(str: *const i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -310,7 +310,7 @@ unsafe fn v_ins_outs(str: *mut i8, mne: *mut _MNE) {
     }
     emit_opcode1(((*mne).opcode[0] as u64 | operand & 15) as u8);
 }
-unsafe fn v_sl_sr(str: *mut i8, mne: *mut _MNE) {
+unsafe fn v_sl_sr(str: *const i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -335,7 +335,7 @@ unsafe fn v_sl_sr(str: *mut i8, mne: *mut _MNE) {
         }
     };
 }
-unsafe fn v_lis(str: *mut i8, mne: *mut _MNE) {
+unsafe fn v_lis(str: *const i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -347,7 +347,7 @@ unsafe fn v_lis(str: *mut i8, mne: *mut _MNE) {
     }
     emit_opcode1((0x70 | operand & 15) as u8);
 }
-unsafe fn v_lisu_lisl(str: *mut i8, mne: *mut _MNE) {
+unsafe fn v_lisu_lisl(str: *const i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -363,7 +363,7 @@ unsafe fn v_lisu_lisl(str: *mut i8, mne: *mut _MNE) {
  * handles opcodes with a scratchpad register operand:
  * as, asd, ds, ns, xs
  */
-unsafe fn v_sreg_op(str: *mut i8, mne: *mut _MNE) {
+unsafe fn v_sreg_op(str: *const i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -372,15 +372,15 @@ unsafe fn v_sreg_op(str: *mut i8, mne: *mut _MNE) {
     parse_scratchpad_register(str, &mut reg);
     emit_opcode1(((*mne).opcode[0] | reg as u32) as u8);
 }
-unsafe fn v_lr(str: *mut i8, mne: *mut _MNE) {
+unsafe fn v_lr(str: *const i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut i: i32 = 0;
     let mut ncommas: i32 = 0;
     let mut cindex: i32 = 0;
-    let mut op1: *mut i8 = 0 as *mut i8;
-    let mut op2: *mut i8 = 0 as *mut i8;
+    let mut op1: *const i8 = 0 as *const i8;
+    let mut op2: *const i8 = 0 as *const i8;
     let mut reg_dst: u8 = 0;
     let mut reg_src: u8 = 0;
     let mut opcode: i32 = 0;
@@ -562,21 +562,21 @@ unsafe fn generate_branch(opcode: u8, str: *const i8) {
  * handles the following branch mnemonics:
  * bc, bm, bnc, bno, bnz, bp, br, br7, bz
  */
-unsafe fn v_branch(str: *mut i8, mne: *mut _MNE) {
+unsafe fn v_branch(str: *const i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     generate_branch((*mne).opcode[0] as u8, str);
 }
-unsafe fn v_bf_bt(str: *mut i8, mne: *mut _MNE) {
+unsafe fn v_bf_bt(str: *const i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut ncommas: i32 = 0;
     let mut cindex: i32 = 0;
     let mut i: i32 = 0;
-    let mut op1: *mut i8 = 0 as *mut i8;
-    let mut op2: *mut i8 = 0 as *mut i8;
+    let mut op1: *const i8 = 0 as *const i8;
+    let mut op2: *const i8 = 0 as *const i8;
     let mut value: u64 = 0;
     /* a valid operand string must contain exactly one comma. find it. */
     ncommas = 0;
@@ -623,7 +623,7 @@ unsafe fn v_bf_bt(str: *mut i8, mne: *mut _MNE) {
  * handles instructions that take a word operand:
  * dci, jmp, pi
  */
-unsafe fn v_wordop(str: *mut i8, mne: *mut _MNE) {
+unsafe fn v_wordop(str: *const i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
@@ -641,7 +641,7 @@ unsafe fn v_wordop(str: *mut i8, mne: *mut _MNE) {
  * handles instructions that take a byte operand:
  * ai, ci, in, li, ni, oi, out, xi
  */
-unsafe fn v_byteop(str: *mut i8, mne: *mut _MNE) {
+unsafe fn v_byteop(str: *const i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
