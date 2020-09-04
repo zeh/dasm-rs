@@ -2,9 +2,6 @@ use libc;
 
 // FIXME: remove all unsafe() used in this module
 
-use crate::{
-    log_function_with,
-};
 use crate::constants::{
     MAX_MACRO_LEVEL,
 };
@@ -14,6 +11,13 @@ use crate::types::legacy::{
     _MACRO,
     _STRLIST,
 };
+
+#[cfg(debug_assertions)]
+use crate::{
+    log_function_with,
+};
+
+#[cfg(debug_assertions)]
 use crate::utils::{
     transient,
 };

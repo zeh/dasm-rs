@@ -1,8 +1,5 @@
 use libc;
 
-use crate::{
-    log_function_with,
-};
 use crate::expressions::{
     is_alpha_num,
     operations,
@@ -28,6 +25,11 @@ use crate::types::legacy::{
 use crate::utils::{
     filesystem,
     transient,
+};
+
+#[cfg(debug_assertions)]
+use crate::{
+    log_function_with,
 };
 
 pub const MAX_OPS: usize = 32;

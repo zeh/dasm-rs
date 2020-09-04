@@ -1,6 +1,3 @@
-use crate::{
-    log_function_with,
-};
 use crate::globals::state;
 use crate::mnemonics;
 use crate::types::flags::{
@@ -17,6 +14,11 @@ use crate::types::legacy::{
 };
 use crate::utils::{
     transient,
+};
+
+#[cfg(debug_assertions)]
+use crate::{
+    log_function_with,
 };
 
 extern "C" {

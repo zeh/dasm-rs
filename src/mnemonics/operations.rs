@@ -12,10 +12,6 @@ use crate::{
     parse,
 };
 
-use crate::{
-    log_function,
-    log_function_with,
-};
 use crate::constants::{
     MAX_LINES,
 };
@@ -63,6 +59,12 @@ use crate::utils::{
     filesystem,
     get_filename,
     transient,
+};
+
+#[cfg(debug_assertions)]
+use crate::{
+    log_function,
+    log_function_with,
 };
 
 extern "C" {
