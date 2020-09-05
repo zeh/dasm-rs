@@ -73,6 +73,7 @@ pub struct OtherMainState {
 }
 
 pub struct ExecutionState {
+	pub argumentStack: Vec<String>,
 	pub bitOrder: BitOrder,
 	pub extraString: String,
 	pub ifs: Vec<StackIf>, // IF/ELSE/ENDIF stack

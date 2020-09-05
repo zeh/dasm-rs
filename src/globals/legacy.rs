@@ -20,9 +20,6 @@ pub static mut SHash: [*mut _SYMBOL; S_HASH_SIZE] = [0 as *const _SYMBOL as *mut
 pub static mut pIncfile: *mut _INCFILE = 0 as *const _INCFILE as *mut _INCFILE;
 /*	include file stack  */
 #[no_mangle]
-pub static mut Av: [*mut i8; 256] = [0 as *const i8 as *mut i8; 256];
-/*	up to 256 arguments */
-#[no_mangle]
 pub static mut Avbuf: [i8; 512] = [0; 512];
 
 pub static mut mnemonics_operations: [_MNE; 38] = [

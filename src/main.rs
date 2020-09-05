@@ -124,8 +124,6 @@ extern "C" {
     #[no_mangle]
     static mut pIncfile: *mut _INCFILE;
     #[no_mangle]
-    static mut Av: [*mut i8; 0];
-    #[no_mangle]
     static mut Avbuf: [i8; 0];
     /* exp.c */
     #[no_mangle]
@@ -561,8 +559,7 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                     } else {
                         str = b"0\x00" as *const u8 as *const i8 as *mut i8;
                     }
-                    let ref mut fresh2 = *Av.as_mut_ptr().offset(0);
-                    *fresh2 = (*av.offset(i as isize)).offset(2);
+                    set_argument(0, transient::str_pointer_to_string((*av.offset(i as isize)).offset(2)));
                     if *(*av.offset(i as isize)).offset(1) as i32 == 'M' as i32 {
                         mnemonics::operations::v_eqm(str, 0 as *mut _MNE);
                     } else {
@@ -738,8 +735,7 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                             let mut comment: *const i8 = 0 as *const i8;
                             if (*pIncfile).flags & FileFlags::Macro != 0 {
                                 if (*pIncfile).strlist.is_null() {
-                                    let ref mut fresh3 = *Av.as_mut_ptr().offset(0);
-                                    *fresh3 = b"\x00" as *const u8 as *const i8 as *mut i8;
+                                    set_argument(0, String::new());
                                     mnemonics::operations::v_mexit(0 as *mut i8, 0 as *mut _MNE);
                                     continue;
                                 } else {
@@ -762,17 +758,17 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                                     log_function_with!("current_if = {} {}", current_if.result, current_if.result_acc);
                                 }
                             }
-                            if *(*Av.as_ptr().offset(1)).offset(0) != 0 {
+                            if !get_argument(1).is_empty() {
                                 match mne_or_macro {
                                     MacroOrMnemonicPointer::Macro(mac) => {
                                         if (*mac).flags & MnemonicsFlags::If != 0 || current_if.result && current_if.result_acc {
                                             #[cfg(debug_assertions)]
                                             {
                                                 if state.parameters.debug_extended {
-                                                    log_function_with!("calling vect on [[{}]] [[{}]]", transient::str_pointer_to_string((*mac).name), transient::str_pointer_to_string(*Av.as_ptr().offset(2)));
+                                                    log_function_with!("calling vect on [[{}]] [[{}]]", transient::str_pointer_to_string((*mac).name), get_argument(2));
                                                 }
                                             }
-                                            ((*mac).vect)(*Av.as_ptr().offset(2), mac);
+                                            ((*mac).vect)(transient::string_to_str_pointer(get_argument(2)), mac);
                                         }
                                     }
                                     MacroOrMnemonicPointer::Mnemonic(mne) => {
@@ -780,15 +776,15 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                                             #[cfg(debug_assertions)]
                                             {
                                                 if state.parameters.debug_extended {
-                                                    log_function_with!("calling vect on [[{}]] [[{}]]", transient::str_pointer_to_string((*mne).name), transient::str_pointer_to_string(*Av.as_ptr().offset(2)));
+                                                    log_function_with!("calling vect on [[{}]] [[{}]]", transient::str_pointer_to_string((*mne).name), get_argument(2));
                                                 }
                                             }
-                                            ((*mne).vect)(*Av.as_ptr().offset(2), mne);
+                                            ((*mne).vect)(transient::string_to_str_pointer(get_argument(2)), mne);
                                         }
                                     }
                                     MacroOrMnemonicPointer::None => {
                                         if current_if.result && current_if.result_acc {
-                                            asmerr(AsmErrorEquates::UnknownMnemonic, false, *Av.as_ptr().offset(1));
+                                            asmerr(AsmErrorEquates::UnknownMnemonic, false, transient::string_to_str_pointer(get_argument(1)));
                                         }
                                     }
                                 }
@@ -958,18 +954,22 @@ pub unsafe fn outlistfile(comment: *const i8) {
     }
     while i < 4 {
         buffer.push_str("   ");
-        i += 1
+        i += 1;
     }
     buffer.pop();
     buffer.push_str(
+        // FIXME: this is a good example of how messed up the "argument"
+        // strings are, probably because things have been added over time.
+        // It would be better to get rid of them, or move them into a
+        // unique struct.
         format!(
             "{}{:10} {}{}{}\t{}\n",
             xtrue,
-            transient::str_pointer_to_string(*Av.as_ptr().offset(0)),
-            transient::str_pointer_to_string(*Av.as_ptr().offset(1)),
-            dot,
-            state.execution.extraString.clone(),
-            transient::str_pointer_to_string(*Av.as_ptr().offset(2)),
+            get_argument(0),                                    // Label
+            parse_mnemonic_name(get_argument(1).as_str()).0,    // Mnemonic name (simple, sans extension)
+            dot,                                                // ".", if extension present
+            state.execution.extraString.clone(),                // Mnemonic extension, if any
+            get_argument(2),                                    // Parameters
         ).as_str()
     );
     if *comment.offset(0) != 0 {
@@ -1156,16 +1156,8 @@ pub unsafe extern "C" fn findext(mut str: *mut i8) {
 
     state.execution.modeNext = AddressModes::None;
     state.execution.extraString.clear();
-    if *str.offset(0) as i32 == '.' as i32 {
-        /* Allow .OP for OP */
-        return;
-    }
-    while *str as i32 != 0 && *str as i32 != '.' as i32 {
-        str = str.offset(1)
-    }
+
     if *str != 0 {
-        *str = 0;
-        str = str.offset(1);
         state.execution.extraString = transient::str_pointer_to_string(str);
 
         #[cfg(debug_assertions)]
@@ -1207,6 +1199,7 @@ pub unsafe extern "C" fn findext(mut str: *mut i8) {
         }
     };
 }
+
 /*
 *  bytes arg will eventually be used to implement a linked list of free
 *  nodes.
@@ -1252,8 +1245,8 @@ pub unsafe fn parse(buf: *mut i8) -> MacroOrMnemonicPointer {
         i = 0;
     }
 
-    let ref mut fresh6 = *Av.as_mut_ptr().offset(0);
-    *fresh6 = Avbuf.as_mut_ptr().offset(j as isize);
+    let av_0_offset = j;
+
     while *buf.offset(i as isize) as i32 != 0 && *buf.offset(i as isize) as i32 != ' ' as i32 && *buf.offset(i as isize) as i32 != '=' as i32 {
         if *buf.offset(i as isize) as i32 == ':' as i32 {
             i += 1;
@@ -1327,6 +1320,7 @@ pub unsafe fn parse(buf: *mut i8) -> MacroOrMnemonicPointer {
         }
     }
     *Avbuf.as_mut_ptr().offset(j as isize) = 0;
+
     j += 1;
     // if the label has arguments that aren't defined, we need to scuttle it
     // to avoid a partial label being used.
@@ -1337,15 +1331,13 @@ pub unsafe fn parse(buf: *mut i8) -> MacroOrMnemonicPointer {
     }
     /* Parse the second word of the line */
     while *buf.offset(i as isize) as i32 == ' ' as i32 { i += 1 }
-    let ref mut fresh13 = *Av.as_mut_ptr().offset(1);
-    *fresh13 = Avbuf.as_mut_ptr().offset(j as isize);
+    let av_1_offset = j;
+
     if *buf.offset(i as isize) as i32 == '=' as i32 {
         /* '=' directly seperates Av[0] and Av[2] */
-        let fresh14 = i;
-        i = i + 1;
-        let fresh15 = j;
-        j = j + 1;
-        *Avbuf.as_mut_ptr().offset(fresh15 as isize) = *buf.offset(fresh14 as isize)
+        *Avbuf.as_mut_ptr().offset(j as isize) = *buf.offset(i as isize);
+        i += 1;
+        j += 1;
     } else {
         while *buf.offset(i as isize) as i32 != 0 && *buf.offset(i as isize) as i32 != ' ' as i32 {
             if *buf.offset(i as isize) as u8 as i32 == 0x80 as i32 {
@@ -1356,19 +1348,24 @@ pub unsafe fn parse(buf: *mut i8) -> MacroOrMnemonicPointer {
             j += 1;
         }
     }
-    let fresh18 = j;
-    j = j + 1;
-    *Avbuf.as_mut_ptr().offset(fresh18 as isize) = 0;
+    *Avbuf.as_mut_ptr().offset(j as isize) = 0;
+    j += 1;
+
+    // Set label
+    set_argument(0, transient::str_pointer_to_string(Avbuf.as_mut_ptr().offset(av_0_offset as isize)));
+
+    // Set full mnemonic name
+    set_argument(1, transient::str_pointer_to_string(Avbuf.as_mut_ptr().offset(av_1_offset as isize)));
+
     /* and analyse it as an opcode */
-    findext(*Av.as_mut_ptr().offset(1));
-    let full_mnemonic_or_macro_name = transient::str_pointer_to_string(*Av.as_mut_ptr().offset(1));
-    let (mnemonic_name, _) = parse_mnemonic_name(full_mnemonic_or_macro_name.as_str());
+    let full_mnemonic_or_macro_name = get_argument(1);
+    let (mnemonic_name, mnemonic_extension) = parse_mnemonic_name(full_mnemonic_or_macro_name.as_str());
+    findext(transient::string_to_str_pointer(String::from(mnemonic_extension)));
     let mnemonic_maybe = find_mnemonic(&state.execution.mnemonics, mnemonic_name);
     let macro_maybe = find_macro(&state.execution.macros, full_mnemonic_or_macro_name.as_str());
     /* Parse the rest of the line */
     while *buf.offset(i as isize) as i32 == ' ' as i32 { i += 1 }
-    let ref mut fresh19 = *Av.as_mut_ptr().offset(2);
-    *fresh19 = Avbuf.as_mut_ptr().offset(j as isize);
+    let av_2_offset = j;
     while *buf.offset(i as isize) != 0 {
         if *buf.offset(i as isize) as i32 == ' ' as i32 {
             while *buf.offset((i + 1) as isize) as i32 == ' ' as i32 {
@@ -1383,6 +1380,8 @@ pub unsafe fn parse(buf: *mut i8) -> MacroOrMnemonicPointer {
         j += 1;
     }
     *Avbuf.as_mut_ptr().offset(j as isize) = 0;
+
+    set_argument(2, transient::str_pointer_to_string(Avbuf.as_mut_ptr().offset(av_2_offset as isize)));
 
     if mnemonic_maybe.is_some() {
         MacroOrMnemonicPointer::Mnemonic(mnemonic_maybe.unwrap())
@@ -1456,6 +1455,25 @@ pub unsafe extern "C" fn pushinclude(str: *const i8) {
     }
     println!("Warning: Unable to open '{}'", transient::str_pointer_to_string(str));
 }
+
+/**
+ * Safely set an argument for our argument stack at a position.
+ * This is made to replicate the *Av functionality.
+ * FIXME: make this more elegant.
+ */
+pub unsafe fn set_argument(position: usize, new_value: String) {
+    while state.execution.argumentStack.len() <= position {
+        state.execution.argumentStack.push(String::new());
+    }
+    state.execution.argumentStack[position] = new_value;
+}
+pub unsafe fn get_argument(position: usize) -> String {
+    match state.execution.argumentStack.get(position) {
+        Some(result) => result.to_owned(),
+        None => String::new()
+    }
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn asmerr(err: AsmErrorEquates, abort: bool, sText: *const i8) -> AsmErrorEquates {
     let mut errorOutput: String = String::new();

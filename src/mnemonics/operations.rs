@@ -8,8 +8,10 @@ use std::convert::TryFrom;
 use crate::{
     addhashtable,
     cleanup,
+    get_argument,
     outlistfile,
     parse,
+    set_argument,
 };
 
 use crate::constants::{
@@ -93,8 +95,6 @@ extern "C" {
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     static mut pIncfile: *mut _INCFILE;
-    #[no_mangle]
-    static mut Av: [*mut i8; 0];
     #[no_mangle]
     fn findext(str: *mut i8);
     #[no_mangle]
@@ -258,7 +258,7 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
         (*pIncfile).lineno = (*pIncfile).lineno.wrapping_add(1);
         comment = cleanup(buf.as_mut_ptr(), true);
         let mne_or_macro = parse(buf.as_mut_ptr());
-        if *(*Av.as_ptr().offset(1)).offset(0) != 0 {
+        if !get_argument(1).is_empty() {
             match mne_or_macro {
                 MacroOrMnemonicPointer::Mnemonic(mne) => {
                     if (*mne).flags & MnemonicsFlags::EndMnemonic != 0 {
@@ -708,24 +708,22 @@ pub unsafe fn v_dc(mut str: *mut i8, mne: *mut _MNE) {
     programlabel();
     /* for byte, .byte, word, .word, long, .long */
     if *(*mne).name.offset(0) as i32 != 'd' as i32 {
-        static mut sTmp: [i8; 4] = [0; 4];
-        strcpy(sTmp.as_mut_ptr(),
-               b"x.x\x00" as *const u8 as *const i8);
-        sTmp[2] = *(*mne).name.offset(0);
+        // FIXME: convoluted way to call the extension
+        let mut sTmp: [i8; 2] = [0; 2];
+        sTmp[0] = *(*mne).name.offset(0);
         findext(sTmp.as_mut_ptr());
     }
     /* F8... */
     /* db, dw, dd */
     if *(*mne).name.offset(0) as i32 == 'd' as i32 && *(*mne).name.offset(1) as i32 != 'c' as i32 && *(*mne).name.offset(1) as i32 != 'v' as i32 {
-        static mut sTmp_0: [i8; 4] = [0; 4];
-        strcpy(sTmp_0.as_mut_ptr(),
-               b"x.x\x00" as *const u8 as *const i8);
+        // FIXME: convoluted way to call the extension
+        let mut sTmp: [i8; 2] = [0; 2];
         if 'd' as i32 == *(*mne).name.offset(1) as i32 {
-            sTmp_0[2] = 'l' as i32 as i8
+            sTmp[0] = 'l' as i32 as i8
         } else {
-            sTmp_0[2] = *(*mne).name.offset(1)
+            sTmp[0] = *(*mne).name.offset(1)
         }
-        findext(sTmp_0.as_mut_ptr());
+        findext(sTmp.as_mut_ptr());
     }
     /* ...F8 */
     if *(*mne).name.offset(1) as i32 == 'v' as i32 {
@@ -1042,15 +1040,9 @@ pub unsafe fn v_equ(str: *mut i8, dummy: *mut _MNE) {
     *     rorg expr
     * depending on whether we have a relocatable origin now or not.
     */
-    if
-        strlen(*Av.as_ptr().offset(0)) == 1 && (
-            *(*Av.as_ptr().offset(0)).offset(0) as i32 == '.' as i32 || *(*Av.as_ptr().offset(0)).offset(0) as i32 == '*' as i32 && {
-                let ref mut fresh32 = *(*Av.as_ptr().offset(0)).offset(0);
-                *fresh32 = '.' as i32 as i8;
-                (*fresh32 as i32) != 0
-            } && true
-        ) {
-        /* Av[0][0] = '\0'; */
+    let av_0 = get_argument(0);
+    if get_argument(0).len() == 1 && (av_0.starts_with(".") || av_0.starts_with("*")) {
+        set_argument(0, String::from(","));
         if currentSegment.flags & SegmentTypes::RelocatableOrigin != 0 {
             v_rorg(str, dummy);
         } else {
@@ -1058,9 +1050,10 @@ pub unsafe fn v_equ(str: *mut i8, dummy: *mut _MNE) {
         }
         return;
     }
-    lab = findsymbol(*Av.as_ptr().offset(0), strlen(*Av.as_ptr().offset(0)) as i32);
+    let av_0 = get_argument(0);
+    lab = findsymbol(transient::string_to_str_pointer(av_0.clone()), av_0.len() as i32);
     if lab.is_null() {
-        lab = CreateSymbol(*Av.as_ptr().offset(0), strlen(*Av.as_ptr().offset(0)) as i32)
+        lab = CreateSymbol(transient::string_to_str_pointer(av_0.clone()), av_0.len() as i32)
     }
     if (*lab).flags as i32 & SymbolTypes::Unknown as i32 == 0 {
         if (*sym).flags as i32 & SymbolTypes::Unknown as i32 != 0 {
@@ -1070,7 +1063,7 @@ pub unsafe fn v_equ(str: *mut i8, dummy: *mut _MNE) {
             asmerr(AsmErrorEquates::EquValueMismatch, false, 0 as *const i8);
             println!(
                 "INFO: Label '{}' changed from ${:04x} to ${:04x}",
-                transient::str_pointer_to_string(*Av.as_ptr().offset(0)),
+                av_0,
                 (*lab).value,
                 (*sym).value,
             );
@@ -1104,14 +1097,15 @@ pub unsafe fn v_eqm(str: *mut i8, _dummy: *mut _MNE) {
 
     let mut lab: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let str_rs = transient::str_pointer_to_string(str);
-    let len: i32 = strlen(*Av.as_ptr().offset(0)) as i32;
-    lab = findsymbol(*Av.as_ptr().offset(0), len);
+    let av_0 = get_argument(0);
+    let len = av_0.len() as i32;
+    lab = findsymbol(transient::string_to_str_pointer(av_0.clone()), len);
     if !lab.is_null() {
         if (*lab).flags & SymbolTypes::StringResult != 0 {
             free((*lab).string as *mut libc::c_void);
         }
     } else {
-        lab = CreateSymbol(*Av.as_ptr().offset(0), len)
+        lab = CreateSymbol(transient::string_to_str_pointer(av_0.clone()), len);
     }
     (*lab).value = 0;
     (*lab).flags = SymbolTypes::StringResult | SymbolTypes::Set | SymbolTypes::Macro;
@@ -1241,9 +1235,10 @@ pub unsafe fn v_set(str: *mut i8, _dummy: *mut _MNE) {
         // traditional SET behavior
         sym = eval(str, 0)
     } /* garbage */
-    lab = findsymbol(*Av.as_ptr().offset(0), strlen(*Av.as_ptr().offset(0)) as i32);
+    let av_0 = get_argument(0);
+    lab = findsymbol(transient::string_to_str_pointer(av_0.clone()), av_0.len() as i32);
     if lab.is_null() {
-        lab = CreateSymbol(*Av.as_ptr().offset(0), strlen(*Av.as_ptr().offset(0)) as i32)
+        lab = CreateSymbol(transient::string_to_str_pointer(av_0.clone()), av_0.len() as i32);
     }
     (*lab).value = (*sym).value;
     (*lab).flags = ((*sym).flags as i32 & (0x1 as i32 | 0x8 as i32)) as u8;

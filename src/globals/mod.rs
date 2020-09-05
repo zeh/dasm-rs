@@ -55,6 +55,7 @@ pub static mut state: GlobalState = GlobalState {
 	},
 
 	execution: ExecutionState {
+		argumentStack: Vec::<String>::new(),
 		bitOrder: BitOrder::MostLeast,
 		extraString: String::new(),
 		ifs: Vec::<StackIf>::new(),

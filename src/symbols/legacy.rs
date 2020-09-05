@@ -1,5 +1,8 @@
 use libc;
 
+use crate::{
+    get_argument,
+};
 use crate::constants::{
     MAX_SYMBOLS,
     S_HASH_AND,
@@ -32,8 +35,6 @@ extern "C" {
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     static mut SHash: [*mut _SYMBOL; 0];
-    #[no_mangle]
-    static mut Av: [*mut i8; 0];
     #[no_mangle]
     fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8) -> i32;
     #[no_mangle]
@@ -190,7 +191,7 @@ pub unsafe extern "C" fn programlabel() {
     };
     state.execution.programOrg = currentSegment.org;
     state.execution.programFlags = currentSegment.flags;
-    let str = transient::str_pointer_to_string(*Av.as_ptr());
+    let str = get_argument(0);
     let mut len = str.len();
     if len == 0 {
         return;

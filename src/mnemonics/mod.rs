@@ -15,14 +15,13 @@ pub type MnemonicFunc = unsafe fn(str: *mut i8, mnemonic: *mut _MNE) -> ();
  * Given a mnemonic (e.g "dc.b") parses the name ("dc") and the extension ("b")
  * if one exists.
  * Names starting with "." (e.g. ".op") are simple instructions with no extension,
- * for compatibility, so the period is removed.
+ * for compatibility.
  * This is made to replace some strange functionality by findext() and findmne()
  * in main.c.
  */
 pub fn parse_mnemonic_name(full_mnemonic: &str) -> (&str, &str) {
-    // Compatibility mode: ".OP" has name "OP"
     if full_mnemonic.starts_with(".") {
-        (&full_mnemonic[1..], "")
+        (&full_mnemonic, "")
     } else {
         match full_mnemonic.find(".") {
             Some(pos) => (&full_mnemonic[..pos], &full_mnemonic[pos + 1..]),
@@ -38,7 +37,12 @@ pub fn parse_mnemonic_name(full_mnemonic: &str) -> (&str, &str) {
  * FIXME: remove the unsafe
  */
 pub unsafe fn find_mnemonic(mnemonics: &Vec<*mut _MNE>, name: &str) -> Option<*mut _MNE> {
-    let name_to_find = name.to_ascii_lowercase();
+    let name_to_find = (if name.starts_with(".") {
+		&name[1..]
+	} else {
+		name
+	})
+	.to_ascii_lowercase();
     // Search for a mnemonic in the list. This is done *in reverse* because mnemonics might
     // have been added later with duplicate names, effectively overriding the initially added
     // mnemonics.
@@ -61,7 +65,7 @@ mod tests {
 
 	#[test]
 	fn test_parse_mnemonic_name() {
-        assert_eq!(parse_mnemonic_name("ab"), ("ab", ""));
+        assert_eq!(parse_mnemonic_name(".ab"), (".ab", ""));
         assert_eq!(parse_mnemonic_name("ab"), ("ab", ""));
         assert_eq!(parse_mnemonic_name("ab.cd"), ("ab", "cd"));
 	}
