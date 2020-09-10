@@ -24,6 +24,7 @@ use crate::macros::{
 };
 use crate::mnemonics::{
     find_mnemonic,
+    find_mnemonic_extension_address_mode,
     parse_mnemonic_name,
     processors,
 };
@@ -95,8 +96,6 @@ extern "C" {
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     static mut pIncfile: *mut _INCFILE;
-    #[no_mangle]
-    fn findext(str: *mut i8);
     #[no_mangle]
     fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8) -> i32;
     #[no_mangle]
@@ -711,7 +710,14 @@ pub unsafe fn v_dc(mut str: *mut i8, mne: *mut _MNE) {
         // FIXME: convoluted way to call the extension
         let mut sTmp: [i8; 2] = [0; 2];
         sTmp[0] = *(*mne).name.offset(0);
-        findext(sTmp.as_mut_ptr());
+        let mnemonic_extension = transient::str_pointer_to_string(sTmp.as_mut_ptr());
+
+        #[cfg(debug_assertions)]
+        { if state.parameters.debug_extended { log_function_with!("find_mnemonic_extension_address_mode :: [[{}]]", mnemonic_extension); } }
+
+        let new_address_mode = find_mnemonic_extension_address_mode(mnemonic_extension.as_str());
+        state.execution.modeNext = new_address_mode;
+        state.execution.extraString = mnemonic_extension.clone();
     }
     /* F8... */
     /* db, dw, dd */
@@ -723,7 +729,14 @@ pub unsafe fn v_dc(mut str: *mut i8, mne: *mut _MNE) {
         } else {
             sTmp[0] = *(*mne).name.offset(1)
         }
-        findext(sTmp.as_mut_ptr());
+        let mnemonic_extension = transient::str_pointer_to_string(sTmp.as_mut_ptr());
+
+        #[cfg(debug_assertions)]
+        { if state.parameters.debug_extended { log_function_with!("find_mnemonic_extension_address_mode :: [[{}]]", mnemonic_extension); } }
+
+        let new_address_mode = find_mnemonic_extension_address_mode(mnemonic_extension.as_str());
+        state.execution.modeNext = new_address_mode;
+        state.execution.extraString = mnemonic_extension.clone();
     }
     /* ...F8 */
     if *(*mne).name.offset(1) as i32 == 'v' as i32 {

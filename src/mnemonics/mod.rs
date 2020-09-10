@@ -7,6 +7,12 @@ use crate::types::legacy::{
 use crate::utils::{
     transient,
 };
+use crate::utils::extensions::{
+    StringExtensions,
+};
+use crate::types::enums::{
+    AddressModes,
+};
 
 // FIXME: make this safe once it's possible
 pub type MnemonicFunc = unsafe fn(str: *mut i8, mnemonic: *mut _MNE) -> ();
@@ -55,6 +61,36 @@ pub unsafe fn find_mnemonic(mnemonics: &Vec<*mut _MNE>, name: &str) -> Option<*m
         Some(result) => Some(*result),
         None => None,
     }
+}
+
+/**
+ * Given a mnemonic extension, find the next address mode
+ */
+pub fn find_mnemonic_extension_address_mode(extension: &str) -> AddressModes {
+	match extension.at(0).to_ascii_lowercase().as_str() {
+		"0" | "i" => match extension.at(1).to_ascii_lowercase().as_str() {
+			"x" => AddressModes::ZeroX,
+			"y" => AddressModes::ZeroY,
+			"n" => AddressModes::IndWord,
+			_ => AddressModes::Imp,
+		},
+		"d" | "b" | "z" => match extension.at(1).to_ascii_lowercase().as_str() {
+			"x" => AddressModes::ByteAdrX,
+			"y" => AddressModes::ByteAdrY,
+			"i" => AddressModes::BitMod,
+			"b" => AddressModes::BitBraMod,
+			_ => AddressModes::ByteAdr,
+		},
+		"e" | "w" | "a" => match extension.at(1).to_ascii_lowercase().as_str() {
+			"x" => AddressModes::WordAdrX,
+			"y" => AddressModes::WordAdrY,
+			_ => AddressModes::WordAdr,
+		},
+		"l" => AddressModes::Long,
+		"r" => AddressModes::Rel,
+		"u" => AddressModes::BSS,
+		_ => AddressModes::None,
+	}
 }
 
 // Tests

@@ -1135,72 +1135,6 @@ pub unsafe fn cleanup(buf: *mut i8, bDisable: bool) -> *const i8 {
 }
 
 /*
-*  .dir    direct              x
-*  .ext    extended              x
-*  .r          relative              x
-*  .x          index, no offset          x
-*  .x8     index, byte offset          x
-*  .x16    index, word offset          x
-*  .bit    bit set/clr
-*  .bbr    bit and branch
-*  .imp    implied (inherent)          x
-*  .b                      x
-*  .w                      x
-*  .l                      x
-*  .u                      x
-*/
-#[no_mangle]
-pub unsafe extern "C" fn findext(mut str: *mut i8) {
-    #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
-
-    state.execution.modeNext = AddressModes::None;
-    state.execution.extraString.clear();
-
-    if *str != 0 {
-        state.execution.extraString = transient::str_pointer_to_string(str);
-
-        #[cfg(debug_assertions)]
-        { if state.parameters.debug_extended { log_function_with!("state.execution.extraString = [[{}]]", state.execution.extraString); } }
-
-        match (*str.offset(0) as u8 | 0x20) as char {
-            '0' | 'i' => {
-                state.execution.modeNext = AddressModes::Imp;
-                match (*str.offset(1) as u8 | 0x20) as char {
-                    'x' => { state.execution.modeNext = AddressModes::ZeroX; }
-                    'y' => { state.execution.modeNext = AddressModes::ZeroY; }
-                    'n' => { state.execution.modeNext = AddressModes::IndWord; }
-                    _ => { }
-                }
-                return;
-            }
-            'd' | 'b' | 'z' => {
-                match (*str.offset(1) as u8 | 0x20) as char {
-                    'x' => { state.execution.modeNext = AddressModes::ByteAdrX; }
-                    'y' => { state.execution.modeNext = AddressModes::ByteAdrY; }
-                    'i' => { state.execution.modeNext = AddressModes::BitMod; }
-                    'b' => { state.execution.modeNext = AddressModes::BitBraMod; }
-                    _ => { state.execution.modeNext = AddressModes::ByteAdr; }
-                }
-                return;
-            }
-            'e' | 'w' | 'a' => {
-                match (*str.offset(1) as u8 | 0x20) as char {
-                    'x' => { state.execution.modeNext = AddressModes::WordAdrX; }
-                    'y' => { state.execution.modeNext = AddressModes::WordAdrY; }
-                    _ => { state.execution.modeNext = AddressModes::WordAdr; }
-                }
-                return;
-            }
-            'l' => { state.execution.modeNext = AddressModes::Long; return; }
-            'r' => { state.execution.modeNext = AddressModes::Rel; return; }
-            'u' => { state.execution.modeNext = AddressModes::BSS; return; }
-            _ => { }
-        }
-    };
-}
-
-/*
 *  bytes arg will eventually be used to implement a linked list of free
 *  nodes.
 *  Assumes *base is really a pointer to a structure with .next as the first
@@ -1360,7 +1294,13 @@ pub unsafe fn parse(buf: *mut i8) -> MacroOrMnemonicPointer {
     /* and analyse it as an opcode */
     let full_mnemonic_or_macro_name = get_argument(1);
     let (mnemonic_name, mnemonic_extension) = parse_mnemonic_name(full_mnemonic_or_macro_name.as_str());
-    findext(transient::string_to_str_pointer(String::from(mnemonic_extension)));
+
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("find_mnemonic_extension_address_mode :: [[{}]]", mnemonic_extension); } }
+
+    let new_address_mode = mnemonics::find_mnemonic_extension_address_mode(mnemonic_extension);
+    state.execution.modeNext = new_address_mode;
+    state.execution.extraString = String::from(mnemonic_extension);
     let mnemonic_maybe = find_mnemonic(&state.execution.mnemonics, mnemonic_name);
     let macro_maybe = find_macro(&state.execution.macros, full_mnemonic_or_macro_name.as_str());
     /* Parse the rest of the line */
