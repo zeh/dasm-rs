@@ -13,6 +13,7 @@ use crate::types::structs::{
 pub mod transient;
 
 pub mod comparing;
+pub mod extensions;
 pub mod filesystem;
 pub mod formatting;
 pub mod macros;
