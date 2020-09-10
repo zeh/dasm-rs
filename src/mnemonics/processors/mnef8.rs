@@ -210,7 +210,7 @@ unsafe fn parse_value(str: *const i8, value: *mut u64) -> i32 {
  * result : zero = ok or syntax error
  *          nonzero = unresolved expression
  */
-unsafe fn parse_scratchpad_register(str: *mut i8, reg: *mut u8) -> i32 {
+unsafe fn parse_scratchpad_register(str: *const i8, reg: *mut u8) -> i32 {
     let mut regnum: u64 = 0;
     /* parse special cases where ISAR is used as index */
     if strcasecmp(b"s\x00" as *const u8 as *const i8, str) == 0 || strcasecmp(b"(is)\x00" as *const u8 as *const i8, str) == 0 {
@@ -255,7 +255,7 @@ unsafe fn parse_scratchpad_register(str: *mut i8, reg: *mut u8) -> i32 {
  *
  * result : one of the REG_xxx constants (possibly also REG_NONE)
  */
-unsafe fn parse_special_register(str: *mut i8) -> i32 {
+unsafe fn parse_special_register(str: *const i8) -> i32 {
     if strcasecmp(b"a\x00" as *const u8 as *const i8, str) == 0 {
         return REG_A as i32;
     }
