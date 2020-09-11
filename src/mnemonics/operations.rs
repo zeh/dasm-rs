@@ -83,8 +83,6 @@ extern "C" {
     #[no_mangle]
     fn ftell(__stream: *mut FILE) -> i64;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
@@ -1505,40 +1503,39 @@ pub unsafe fn genfill(fill: i64, entries: i64, size: i32) {
     let mut i: usize = 0;
     match size {
         1 => {
-            memset(
-                state.output.generated.as_mut_ptr() as *mut libc::c_void,
-                c0 as i32,
-                ::std::mem::size_of::<[u8; 1024]>() as u64
-            );
+            while i < state.output.generated.len() {
+                state.output.generated[i] = c0;
+                i += 1;
+            }
         }
         2 => {
             bytes <<= 1;
             while i < state.output.generated.len() {
                 if state.execution.bitOrder != BitOrder::LeastMost {
-                    state.output.generated[(i + 0) as usize] = c1;
-                    state.output.generated[(i + 1) as usize] = c0;
+                    state.output.generated[i + 0] = c1;
+                    state.output.generated[i + 1] = c0;
                 } else {
-                    state.output.generated[(i + 0) as usize] = c0;
-                    state.output.generated[(i + 1) as usize] = c1;
+                    state.output.generated[i + 0] = c0;
+                    state.output.generated[i + 1] = c1;
                 }
-                i += 2
+                i += 2;
             }
         }
         4 => {
             bytes <<= 2;
             while i < state.output.generated.len() {
                 if state.execution.bitOrder != BitOrder::LeastMost {
-                    state.output.generated[(i + 0) as usize] = c3;
-                    state.output.generated[(i + 1) as usize] = c2;
-                    state.output.generated[(i + 2) as usize] = c1;
-                    state.output.generated[(i + 3) as usize] = c0;
+                    state.output.generated[i + 0] = c3;
+                    state.output.generated[i + 1] = c2;
+                    state.output.generated[i + 2] = c1;
+                    state.output.generated[i + 3] = c0;
                 } else {
-                    state.output.generated[(i + 0) as usize] = c0;
-                    state.output.generated[(i + 1) as usize] = c1;
-                    state.output.generated[(i + 2) as usize] = c2;
-                    state.output.generated[(i + 3) as usize] = c3;
+                    state.output.generated[i + 0] = c0;
+                    state.output.generated[i + 1] = c1;
+                    state.output.generated[i + 2] = c2;
+                    state.output.generated[i + 3] = c3;
                 }
-                i += 4
+                i += 4;
             }
         }
         _ => { }
