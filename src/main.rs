@@ -490,7 +490,7 @@ unsafe extern "C" fn ShowSegments() {
     println!();
 }
 
-unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut bool) -> AsmErrorEquates {
+unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8) -> AsmErrorEquates {
     let mut current_block: u64;
     let mut nError: AsmErrorEquates = AsmErrorEquates::None;
     let mut doAllPasses: bool = false;
@@ -528,7 +528,6 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                     } else {
                         panic("Invalid sorting mode for -T option, must be 0 or 1");
                     }
-                    *pbTableSort = state.parameters.sortMode != SortMode::default();
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
                 'd' => {
@@ -804,7 +803,7 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                     }
                     if state.parameters.verbosity as u8  >= Verbosity::Three as u8  {
                         if state.execution.redoIndex == 0 || state.parameters.verbosity as u8  >= Verbosity::Four as u8 {
-                            write_symbols_to_stdout(*pbTableSort);
+                            write_symbols_to_stdout(state.parameters.sortMode == SortMode::Address);
                         }
                         ShowUnresolvedSymbols();
                     }
@@ -1539,8 +1538,7 @@ pub unsafe extern "C" fn permalloc(mut bytes: i32) -> *mut i8 {
     return ptr;
 }
 unsafe fn main_0(ac: i32, av: *mut *mut i8) -> u8 {
-    let mut bTableSort: bool = false;
-    let nError: AsmErrorEquates = MainShadow(ac, av, &mut bTableSort);
+    let nError: AsmErrorEquates = MainShadow(ac, av);
     if nError != AsmErrorEquates::None && nError != AsmErrorEquates::NonAbort {
         // Dump messages when aborting due to errors
         operations::output_passbuffer(&mut state.output.passBufferMessages);
@@ -1548,7 +1546,7 @@ unsafe fn main_0(ac: i32, av: *mut *mut i8) -> u8 {
         operations::output_passbuffer(&mut state.output.passBufferErrors);
         println!("Fatal assembly error: {}", find_error_definition(nError).description);
     }
-    dump_symbol_table(bTableSort);
+    dump_symbol_table(state.parameters.sortMode == SortMode::Address);
     operations::clear_passbuffer(&mut state.output.passBufferErrors);
     operations::clear_passbuffer(&mut state.output.passBufferMessages);
     return nError.into();
