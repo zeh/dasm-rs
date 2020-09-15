@@ -515,28 +515,18 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
             match *(*av.offset(i as isize)).offset(1) as u8 as char {
                 'E' => {
                     /* TODO: need to improve option parsing and errors for it */
-                    // FIXME: simplify this double match
-                    match str_rs.parse::<u8>() {
-                        Ok(digit) => {
-                            match ErrorFormat::try_from(digit) {
-                                Ok(result) => { state.parameters.errorFormat = result; }
-                                Err(_) => { panic("Invalid error format for -E, must be 0, 1, 2"); }
-                            }
-                        }
-                        Err(_) => { panic("Invalid error format for -E, must be 0, 1, 2"); }
+                    if let Some(result) = str_rs.parse::<u8>().ok().and_then(|digit| ErrorFormat::try_from(digit).ok()) {
+                        state.parameters.errorFormat = result;
+                    } else {
+                        panic("Invalid error format for -E, must be 0, 1, 2");
                     }
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
                 'T' => {
-                    // FIXME: simplify this double match
-                    match str_rs.parse::<u8>() {
-                        Ok(digit) => {
-                            match SortMode::try_from(digit) {
-                                Ok(result) => { state.parameters.sortMode = result; }
-                                Err(_) => { panic("Invalid sorting mode for -T option, must be 0 or 1"); }
-                            }
-                        }
-                        Err(_) => { panic("Invalid sorting mode for -T option, must be 0 or 1"); }
+                    if let Some(result) = str_rs.parse::<u8>().ok().and_then(|digit| SortMode::try_from(digit).ok()) {
+                        state.parameters.sortMode = result;
+                    } else {
+                        panic("Invalid sorting mode for -T option, must be 0 or 1");
                     }
                     *pbTableSort = state.parameters.sortMode != SortMode::default();
                     current_block = 17788412896529399552; // FIXME: remove this
@@ -568,15 +558,10 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                     current_block = 17788412896529399552;
                 }
                 'f' => {
-                    // FIXME: simplify this double match
-                    match str_rs.parse::<u8>() {
-                        Ok(digit) => {
-                            match Format::try_from(digit) {
-                                Ok(result) => { state.parameters.format = result; }
-                                Err(_) => { panic("Illegal format specification"); }
-                            }
-                        }
-                        Err(_) => { panic("Illegal format specification"); }
+                    if let Some(result) = str_rs.parse::<u8>().ok().and_then(|digit| Format::try_from(digit).ok()) {
+                        state.parameters.format = result;
+                    } else {
+                        panic("Illegal format specification");
                     }
                     current_block = 17788412896529399552; // FIXME: remove this
                 }
@@ -607,15 +592,10 @@ unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8, pbTableSort: *mut boo
                     current_block = 15042310719884093888; // FIXME: remove this
                 }
                 'v' => {
-                    // FIXME: simplify this double match
-                    match str_rs.parse::<u8>() {
-                        Ok(digit) => {
-                            match Verbosity::try_from(digit) {
-                                Ok(result) => { state.parameters.verbosity = result; }
-                                Err(_) => { panic("Illegal verbosity specification"); }
-                            }
-                        }
-                        Err(_) => { panic("Illegal verbosity specification"); }
+                    if let Some(result) = str_rs.parse::<u8>().ok().and_then(|digit| Verbosity::try_from(digit).ok()) {
+                        state.parameters.verbosity = result;
+                    } else {
+                        panic("Illegal verbosity specification");
                     }
                     current_block = 17788412896529399552;
                 }
