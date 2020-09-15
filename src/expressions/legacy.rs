@@ -462,8 +462,7 @@ pub unsafe fn execute_op_func(op_func: ExpressionOperationFunc, v1: i64, v2: i64
     { if state.parameters.debug_extended { log_function_with!("state.expressions.last_was_operation = {}", state.expressions.last_was_operation); } }
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn evaltop() {
+pub unsafe fn evaltop() {
     if state.parameters.debug {
         println!("evaltop @(A,O) {} {}", state.expressions.arguments.len(), state.expressions.operations.len());
     }
@@ -511,7 +510,7 @@ pub unsafe extern "C" fn evaltop() {
         }
     };
 }
-unsafe extern "C" fn stackarg(mut val: i64, mut flags: i32, ptr1: *const i8) {
+unsafe fn stackarg(mut val: i64, mut flags: i32, ptr1: *const i8) {
     let mut str: *mut i8 = 0 as *mut i8;
     if state.parameters.debug {
         println!("stackarg {} (@{})", val, state.expressions.arguments.len());
@@ -560,8 +559,7 @@ unsafe extern "C" fn stackarg(mut val: i64, mut flags: i32, ptr1: *const i8) {
         evaltop();
     };
 }
-#[no_mangle]
-pub unsafe extern "C" fn doop(func: ExpressionOperationFunc, pri: usize) {
+pub unsafe fn doop(func: ExpressionOperationFunc, pri: usize) {
     if state.parameters.debug {
         println!("doop");
     }
@@ -595,8 +593,7 @@ pub unsafe extern "C" fn doop(func: ExpressionOperationFunc, pri: usize) {
         state.expressions.operations.truncate(state.expressions.operation_len_base);
     };
 }
-#[no_mangle]
-pub unsafe extern "C" fn pushchar(mut str: *const i8) -> *const i8 {
+pub unsafe fn pushchar(mut str: *const i8) -> *const i8 {
     if *str != 0 {
         stackarg(*str as i64, 0, 0 as *const i8);
         str = str.offset(1);
@@ -605,8 +602,7 @@ pub unsafe extern "C" fn pushchar(mut str: *const i8) -> *const i8 {
     }
     return str;
 }
-#[no_mangle]
-pub unsafe extern "C" fn pushhex(mut str: *const i8) -> *const i8 {
+pub unsafe fn pushhex(mut str: *const i8) -> *const i8 {
     let mut val: i64 = 0;
     loop  {
         if *str as i32 >= '0' as i32 && *str as i32 <= '9' as i32 {
@@ -622,8 +618,7 @@ pub unsafe extern "C" fn pushhex(mut str: *const i8) -> *const i8 {
     stackarg(val, 0, 0 as *const i8);
     return str;
 }
-#[no_mangle]
-pub unsafe extern "C" fn pushoct(mut str: *const i8) -> *const i8 {
+pub unsafe fn pushoct(mut str: *const i8) -> *const i8 {
     let mut val: i64 = 0;
     while *str as i32 >= '0' as i32 && *str as i32 <= '7' as i32 {
         val = (val << 3) + (*str as i32 - '0' as i32) as i64;
@@ -632,8 +627,7 @@ pub unsafe extern "C" fn pushoct(mut str: *const i8) -> *const i8 {
     stackarg(val, 0, 0 as *const i8);
     return str;
 }
-#[no_mangle]
-pub unsafe extern "C" fn pushdec(mut str: *const i8) -> *const i8 {
+pub unsafe fn pushdec(mut str: *const i8) -> *const i8 {
     let mut val: i64 = 0;
     while *str as i32 >= '0' as i32 && *str as i32 <= '9' as i32 {
         val = val * 10 + (*str as i32 - '0' as i32) as i64;
@@ -642,8 +636,7 @@ pub unsafe extern "C" fn pushdec(mut str: *const i8) -> *const i8 {
     stackarg(val, 0, 0 as *const i8);
     return str;
 }
-#[no_mangle]
-pub unsafe extern "C" fn pushbin(mut str: *const i8) -> *const i8 {
+pub unsafe fn pushbin(mut str: *const i8) -> *const i8 {
     let mut val: i64 = 0;
     while *str as i32 == '0' as i32 || *str as i32 == '1' as i32 {
         val = val << 1 | (*str as i32 - '0' as i32) as i64;
@@ -652,8 +645,7 @@ pub unsafe extern "C" fn pushbin(mut str: *const i8) -> *const i8 {
     stackarg(val, 0, 0 as *const i8);
     return str;
 }
-#[no_mangle]
-pub unsafe extern "C" fn pushstr(mut str: *const i8) -> *const i8 {
+pub unsafe fn pushstr(mut str: *const i8) -> *const i8 {
     stackarg(0, 0x8 as i32, str);
     while *str as i32 != 0 && *str as i32 != '\"' as i32 {
         str = str.offset(1);
@@ -661,8 +653,7 @@ pub unsafe extern "C" fn pushstr(mut str: *const i8) -> *const i8 {
     if *str as i32 == '\"' as i32 { str = str.offset(1) }
     return str;
 }
-#[no_mangle]
-pub unsafe extern "C" fn pushsymbol(str: *const i8) -> *const i8 {
+pub unsafe fn pushsymbol(str: *const i8) -> *const i8 {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut ptr: *const i8 = 0 as *const i8;
     let mut macro_0: u8 = 0;

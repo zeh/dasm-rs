@@ -90,7 +90,7 @@ pub const REG_A: REGISTERS = 16;
  * abort    : false = don't abort assembly
  *            true = abort assembly
  */
-unsafe extern "C" fn f8err(err: AsmErrorEquates, mnename: *const i8, opstring: *const i8, bAbort: bool) {
+unsafe fn f8err(err: AsmErrorEquates, mnename: *const i8, opstring: *const i8, bAbort: bool) {
     let mut buffer = String::new();
     buffer.push_str(transient::str_pointer_to_string(mnename).as_str());
     buffer.push_str(" ");
@@ -100,7 +100,7 @@ unsafe extern "C" fn f8err(err: AsmErrorEquates, mnename: *const i8, opstring: *
 /*
  * emits a one byte opcode.
  */
-unsafe extern "C" fn emit_opcode1(opcode: u8) {
+unsafe fn emit_opcode1(opcode: u8) {
     state.output.generatedLength = 1;
     state.output.generated[0] = opcode;
     generate();
@@ -111,7 +111,7 @@ unsafe extern "C" fn emit_opcode1(opcode: u8) {
  * byte0 : first byte (lower address)
  * byte1 : second byte (higher address)
  */
-unsafe extern "C" fn emit_opcode2(byte0: u8, byte1: u8) {
+unsafe fn emit_opcode2(byte0: u8, byte1: u8) {
     state.output.generatedLength = 2;
     state.output.generated[0] = byte0;
     state.output.generated[1] = byte1;
@@ -124,7 +124,7 @@ unsafe extern "C" fn emit_opcode2(byte0: u8, byte1: u8) {
  * byte1 : second byte (middle address)
  * byte2 : third byte (highest address)
  */
-unsafe extern "C" fn emit_opcode3(byte0: u8, byte1: u8, byte2: u8) {
+unsafe fn emit_opcode3(byte0: u8, byte1: u8, byte2: u8) {
     state.output.generatedLength = 3;
     state.output.generated[0] = byte0;
     state.output.generated[1] = byte1;
@@ -137,7 +137,7 @@ unsafe extern "C" fn emit_opcode3(byte0: u8, byte1: u8, byte2: u8) {
  * result : zero = current program counter is unknown
  *          nonzero = current program counter is known
  */
-unsafe extern "C" fn isPCKnown() -> i32 {
+unsafe fn isPCKnown() -> i32 {
     let mut pcf: u8 = 0;
     let currentSegment = &state.other.segments[state.other.currentSegment];
     pcf = if currentSegment.flags & SegmentTypes::RelocatableOrigin != 0 {
@@ -154,7 +154,7 @@ unsafe extern "C" fn isPCKnown() -> i32 {
 /*
  * returns the current program counter
  */
-unsafe extern "C" fn getPC() -> i64 {
+unsafe fn getPC() -> i64 {
     let currentSegment = &state.other.segments[state.other.currentSegment];
     return if currentSegment.flags & SegmentTypes::RelocatableOrigin != 0 {
         currentSegment.rorg

@@ -163,7 +163,7 @@ extern "C" {
  *  NOTE: must handle mnemonic extensions and expression decode/compare.
  */
 /*unsigned char     Listing = 1;*/
-unsafe extern "C" fn CountUnresolvedSymbols() -> i32 {
+unsafe fn CountUnresolvedSymbols() -> i32 {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut nUnresolved: i32 = 0;
     let mut i: i32 = 0;
@@ -181,7 +181,7 @@ unsafe extern "C" fn CountUnresolvedSymbols() -> i32 {
     }
     return nUnresolved;
 }
-unsafe extern "C" fn ShowUnresolvedSymbols() -> i32 {
+unsafe fn ShowUnresolvedSymbols() -> i32 {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut i: i32 = 0;
     let nUnresolved: i32 = CountUnresolvedSymbols();
@@ -374,7 +374,7 @@ unsafe fn write_symbols_to_stdout(sorted: bool) {
     print!("{}", result);
 }
 
-unsafe extern "C" fn ShowSegments() {
+unsafe fn ShowSegments() {
     println!("\n----------------------------------------------------------------------");
     println!(
         "{:24} {:3} {:8} {:8} {:8} {:8}",
@@ -490,7 +490,7 @@ unsafe extern "C" fn ShowSegments() {
     println!();
 }
 
-unsafe extern "C" fn MainShadow(ac: i32, av: *mut *mut i8) -> AsmErrorEquates {
+unsafe fn MainShadow(ac: i32, av: *mut *mut i8) -> AsmErrorEquates {
     let mut current_block: u64;
     let mut nError: AsmErrorEquates = AsmErrorEquates::None;
     let mut doAllPasses: bool = false;
@@ -969,7 +969,7 @@ pub unsafe fn outlistfile(comment: *const i8) {
     state.execution.extraString.clear();
 }
 #[no_mangle]
-pub unsafe extern "C" fn clearrefs() {
+pub unsafe fn clearrefs() {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut i: i16 = 0;
     i = 0;
@@ -1120,7 +1120,7 @@ pub unsafe fn cleanup(buf: *mut i8, bDisable: bool) -> *const i8 {
 *  member.
 */
 #[no_mangle]
-pub unsafe extern "C" fn rmnode(base: *mut *mut libc::c_void, mut _bytes: i32) {
+pub unsafe fn rmnode(base: *mut *mut libc::c_void, mut _bytes: i32) {
     let mut node: *mut libc::c_void = 0 as *mut libc::c_void;
     node = *base;
     if !node.is_null() {
