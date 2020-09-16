@@ -220,7 +220,7 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
         defined = true
     } else {
         defined = mnemonic_maybe.is_some() || macro_maybe.is_some();
-        if !state.parameters.listFile.is_empty() && state.execution.listMode != ListMode::None {
+        if !state.parameters.list_file.is_empty() && state.execution.listMode != ListMode::None {
             outlistfile(b"\x00" as *const u8 as *const i8);
         }
     }
@@ -242,7 +242,7 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
         if macro_maybe.is_some() {
             macro_to_use = macro_maybe.unwrap();
         }
-        if state.parameters.strictMode && macro_maybe.is_some() && (*(macro_maybe.unwrap())).defpass == state.execution.pass as i32 {
+        if state.parameters.strict_mode && macro_maybe.is_some() && (*(macro_maybe.unwrap())).defpass == state.execution.pass as i32 {
             asmerr(AsmErrorEquates::MacroRepeated, true, str);
         }
     }
@@ -284,7 +284,7 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
                 MacroOrMnemonicPointer::None => {}
             }
         }
-        if !skipit && !state.parameters.listFile.is_empty() && state.execution.listMode != ListMode::None {
+        if !skipit && !state.parameters.list_file.is_empty() && state.execution.listMode != ListMode::None {
             outlistfile(comment);
         }
         if !defined {
@@ -835,7 +835,7 @@ pub unsafe fn v_dc(mut str: *mut i8, mne: *mut _MNE) {
             match state.execution.modeNext {
                 AddressModes::WordAdr => {
                     // Any value outside two's complement +ve and +ve word representation is invalid...
-                    if state.parameters.strictMode && (value < -0xffff || value > 0xffff) {
+                    if state.parameters.strict_mode && (value < -0xffff || value > 0xffff) {
                         let buffer = format!(
                             "{} {}",
                             transient::str_pointer_to_string((*mne).name),

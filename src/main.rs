@@ -7,7 +7,6 @@
 #![allow(unused_mut)]
 #![feature(const_raw_ptr_to_usize_cast)]
 #![feature(extern_types)]
-#![feature(main)]
 #![feature(ptr_wrapping_offset_from)]
 #![feature(register_tool)]
 #![feature(seek_convenience)]
@@ -17,6 +16,8 @@
 extern crate smart_default;
 
 use libc;
+use std::env;
+use std::process;
 use std::convert::TryFrom;
 use std::fs::File;
 
@@ -77,6 +78,7 @@ use types::legacy::{
     MacroOrMnemonicPointer,
 };
 use types::structs::{
+    CommandLineOptions,
     Segment,
     StackIf,
 };
@@ -86,6 +88,9 @@ use utils::{
     formatting,
     panic,
     transient,
+};
+use utils::extensions::{
+    StringExtensions,
 };
 
 extern "C" {
@@ -345,9 +350,9 @@ unsafe fn generate_resolved_symbols_list(sorted: bool) -> String {
  * In original C code, part of DumpSymbolTable()" in main.c
  */
 unsafe fn dump_symbol_table(sorted: bool) {
-    if !state.parameters.symbolsFile.is_empty() {
-        let mut file = filesystem::create_new_file(state.parameters.symbolsFile.as_str()).expect(
-            format!("Warning: Unable to open Symbol Dump file '{}'", state.parameters.symbolsFile).as_str()
+    if !state.parameters.symbols_file.is_empty() {
+        let mut file = filesystem::create_new_file(state.parameters.symbols_file.as_str()).expect(
+            format!("Warning: Unable to open Symbol Dump file '{}'", state.parameters.symbols_file).as_str()
         );
         write_symbols_to_file(&mut file, sorted);
         filesystem::close_file(&mut file);
@@ -490,369 +495,122 @@ unsafe fn ShowSegments() {
     println!();
 }
 
-unsafe fn MainShadow(ac: i32, av: *mut *mut i8) -> AsmErrorEquates {
-    let mut current_block: u64;
-    let mut nError: AsmErrorEquates = AsmErrorEquates::None;
-    let mut doAllPasses: bool = false;
-    let mut buf: [i8; MAX_LINES] = [0; MAX_LINES];
-    let mut i: i32 = 0;
-    let mut oldRedoIndex: i32 = -1;
-    let mut oldRedoWhy: u64 = 0;
-    let mut oldRedoEval: i32 = 0;
-    addhashtable(globals::legacy::mnemonics_operations.as_mut_ptr(), globals::legacy::mnemonics_operations.len());
-    state.execution.pass = 1;
-    if !(ac < 2) {
-        i = 2;
-        loop  {
-            if !(i < ac) { current_block = 16231175055492490595; break ; }
-            if !(*(*av.offset(i as isize)).offset(0) as i32 == '-' as i32 || *(*av.offset(i as isize)).offset(0) as i32 == '/' as i32) {
-                current_block = 15878785573848117940;
-                break;
+/**
+ * Parses arguments from the command line only, creating a struct with options.
+ * This only has two side effects:
+ *   - println!() when a debug param is set
+ *   - panicking for invalid parameters
+ */
+fn parse_command_line(args: Vec<String>) -> CommandLineOptions {
+    let mut options = CommandLineOptions::new();
+    if args.len() > 0 {
+        options.input = args[0].clone();
+        let mut i: usize = 1;
+        while i < args.len() && !options.parsing_failed {
+            let arg = args[i].clone();
+            if arg.at(0) == "-" || arg.at(0) == "/" {
+                let mut arg_value = String::from(arg.from(2));
+                match arg.at(1) {
+                    "E" => {
+                        if let Some(result) = arg_value.parse::<u8>().ok().and_then(|digit| ErrorFormat::try_from(digit).ok()) {
+                            options.error_format = result;
+                        } else {
+                            panic("Invalid error format for -E, must be 0, 1, 2");
+                        }
+                    }
+                    "T" => {
+                        if let Some(result) = arg_value.parse::<u8>().ok().and_then(|digit| SortMode::try_from(digit).ok()) {
+                            options.sort_mode = result;
+                        } else {
+                            panic("Invalid sorting mode for -T option, must be 0 or 1");
+                        }
+                    }
+                    "d" => {
+                        let digit = arg_value.parse::<u8>().unwrap_or(0);
+                        let d_equals_z = arg_value.to_ascii_lowercase() == "z";
+                        options.debug = digit != 0 || d_equals_z;
+                        options.debug_extended = d_equals_z;
+                        println!("Debug trace {}", if options.debug { "ON" } else { "OFF" });
+                    }
+                    "M" | "D" => {
+                        let arg_values: Vec<&str> = arg_value.split('=').collect();
+                        let arg_expression = if arg_values.len() > 1 { String::from(arg_values[1]) } else { String::from("0") };
+
+                        if arg.at(1) == "M" {
+                            options.symbols_eqm.push((String::from(arg_values[0]), arg_expression));
+                        } else {
+                            options.symbols_set.push((String::from(arg_values[0]), arg_expression));
+                        }
+                    }
+                    "f" => {
+                        if let Some(result) = arg_value.parse::<u8>().ok().and_then(|digit| Format::try_from(digit).ok()) {
+                            options.format = result;
+                        } else {
+                            panic("Illegal format specification");
+                        }
+                    }
+                    "o" => {
+                        options.out_file = arg_value.clone();
+                        if arg_value.len() == 0 {
+                            panic("-o Switch requires file name.");
+                        }
+                    }
+                    "L" | "l" => {
+                        options.list_file = arg_value.clone();
+                        if arg.at(1) == "L" {
+                            options.list_all_passes = true;
+                        }
+                        if arg_value.len() == 0 {
+                            // Conversion note: this error outputs "-o" incorrectly in the original C code
+                            panic("-l Switch requires file name.");
+                        }
+                    }
+                    "P" | "p" => {
+                        options.max_passes = arg_value.parse::<u8>().unwrap_or(0);
+                        if arg.at(1) == "P" {
+                            options.do_all_passes = true;
+                        }
+                    }
+                    "s" => {
+                        options.symbols_file = arg_value.clone();
+                        if arg_value.len() == 0 {
+                            // Conversion note: this error outputs "-o" incorrectly in the original C code
+                            panic("-s Switch requires file name.");
+                        }
+                    }
+                    "v" => {
+                        if let Some(result) = arg_value.parse::<u8>().ok().and_then(|digit| Verbosity::try_from(digit).ok()) {
+                            options.verbosity = result;
+                        } else {
+                            panic("Illegal verbosity specification");
+                        }
+                    }
+                    "I" => {
+                        options.include_dirs.push(arg_value);
+                    }
+                    "S" => {
+                        options.strict_mode = true;
+                    }
+                    _ => {
+                        options.parsing_failed = true;
+                    }
+                }
             }
-            let mut str: *mut i8 = (*av.offset(i as isize)).offset(2);
-            // FIXME: use better strings for parsing chars. These are temporary.
-            let str_rs = transient::str_pointer_to_string(str);
-            match *(*av.offset(i as isize)).offset(1) as u8 as char {
-                'E' => {
-                    /* TODO: need to improve option parsing and errors for it */
-                    if let Some(result) = str_rs.parse::<u8>().ok().and_then(|digit| ErrorFormat::try_from(digit).ok()) {
-                        state.parameters.errorFormat = result;
-                    } else {
-                        panic("Invalid error format for -E, must be 0, 1, 2");
-                    }
-                    current_block = 17788412896529399552; // FIXME: remove this
-                }
-                'T' => {
-                    if let Some(result) = str_rs.parse::<u8>().ok().and_then(|digit| SortMode::try_from(digit).ok()) {
-                        state.parameters.sortMode = result;
-                    } else {
-                        panic("Invalid sorting mode for -T option, must be 0 or 1");
-                    }
-                    current_block = 17788412896529399552; // FIXME: remove this
-                }
-                'd' => {
-                    let digit = str_rs.parse::<u8>().unwrap_or(0);
-                    let d_equals_z = str_rs.to_ascii_lowercase() == "z";
-                    state.parameters.debug = digit != 0 || d_equals_z;
-                    state.parameters.debug_extended = d_equals_z;
-                    println!("Debug trace {}", if state.parameters.debug { "ON" } else { "OFF" });
-                    current_block = 17788412896529399552; // FIXME: remove this
-                }
-                'M' | 'D' => {
-                    while *str as i32 != 0 && *str as i32 != '=' as i32 {
-                        str = str.offset(1);
-                    }
-                    if *str as i32 == '=' as i32 {
-                        *str = 0;
-                        str = str.offset(1);
-                    } else {
-                        str = b"0\x00" as *const u8 as *const i8 as *mut i8;
-                    }
-                    set_argument(0, transient::str_pointer_to_string((*av.offset(i as isize)).offset(2)));
-                    if *(*av.offset(i as isize)).offset(1) as i32 == 'M' as i32 {
-                        mnemonics::operations::v_eqm(str, 0 as *mut _MNE);
-                    } else {
-                        mnemonics::operations::v_set(str, 0 as *mut _MNE);
-                    }
-                    current_block = 17788412896529399552;
-                }
-                'f' => {
-                    if let Some(result) = str_rs.parse::<u8>().ok().and_then(|digit| Format::try_from(digit).ok()) {
-                        state.parameters.format = result;
-                    } else {
-                        panic("Illegal format specification");
-                    }
-                    current_block = 17788412896529399552; // FIXME: remove this
-                }
-                'o' => {
-                    state.parameters.outFile = transient::str_pointer_to_string(str);
-                    current_block = 15042310719884093888; // FIXME: remove this
-                }
-                'L' => {
-                    state.parameters.listAllPasses = true;
-                    current_block = 14976246946730902058; // FIXME: remove this
-                }
-                'l' => {
-                    // FIXME: this is supposed to be `F_listfile = str;` but is
-                    // handled by the current_block craziness.
-                    current_block = 14976246946730902058; // FIXME: remove this
-                }
-                'P' => {
-                    doAllPasses = true;
-                    current_block = 3124391281584211484; // FIXME: remove this
-                }
-                'p' => {
-                    // FIXME: this is supposed to be `nMaxPasses = atoi(str);` but is
-                    // handled by the current_block craziness.
-                    current_block = 3124391281584211484; // FIXME: remove this
-                }
-                's' => {
-                    state.parameters.symbolsFile = transient::str_pointer_to_string(str);
-                    current_block = 15042310719884093888; // FIXME: remove this
-                }
-                'v' => {
-                    if let Some(result) = str_rs.parse::<u8>().ok().and_then(|digit| Verbosity::try_from(digit).ok()) {
-                        state.parameters.verbosity = result;
-                    } else {
-                        panic("Illegal verbosity specification");
-                    }
-                    current_block = 17788412896529399552;
-                }
-                'I' => {
-                    mnemonics::operations::v_incdir(str, 0 as *mut _MNE);
-                    current_block = 17788412896529399552; // FIXME: remove this
-                }
-                'S' => {
-                    state.parameters.strictMode = true;
-                    current_block = 17788412896529399552; // FIXME: remove this
-                }
-                _ => { current_block = 15878785573848117940; break ; }
-            }
-            match current_block {
-                14976246946730902058 =>
-                /* fall through to 'l' */
-                /*  F_listfile  */
-                {
-                    state.parameters.listFile = transient::str_pointer_to_string(str);
-                    current_block = 15042310719884093888;
-                }
-                3124391281584211484 =>
-                /* fall through to 'p' */
-                /*  F_passes   */
-                {
-                    state.parameters.maxPasses = str_rs.parse::<u8>().unwrap_or(0);
-                    current_block = 17788412896529399552;
-                }
-                _ => { }
-            }
-            match current_block {
-                15042310719884093888 => {
-                    if *str as i32 == 0 {
-                        panic("-o Switch requires file name.");
-                    }
-                }
-                _ => { }
-            }
+
             i += 1;
         }
-        match current_block {
-            15878785573848117940 => { }
-            _ => {
-                /*    INITIAL SEGMENT */
-                let seg = Segment {
-                    name: String::from("INITIAL CODE SEGMENT"),
-                    flags: SegmentTypes::Unknown,
-                    rflags: SegmentTypes::Unknown,
-                    initflags: SegmentTypes::Unknown,
-                    initrflags: SegmentTypes::Unknown,
-                    org: 0,
-                    rorg: 0,
-                    initorg: 0,
-                    initrorg: 0,
-                };
-                state.other.segments.clear();
-                state.other.segments.push(seg);
-                state.other.currentSegment = 0;
-
-                // Top level IF
-                state.execution.ifs.push(
-                    StackIf {
-                        file: 0 as *mut _INCFILE,
-                        flags: IfFlags::Base,
-                        result_acc: true,
-                        result: true,
-                    }
-                );
-
-                // Ready error and message buffer...
-                operations::clear_passbuffer(&mut state.output.passBufferErrors);
-                operations::clear_passbuffer(&mut state.output.passBufferMessages);
-                loop  {
-                    if state.parameters.verbosity != Verbosity::None {
-                        println!();
-                        println!("START OF PASS: {}", state.execution.pass);
-                    }
-                    state.execution.lastLocalIndex = 0;
-                    state.execution.localIndex = 0;
-                    state.execution.lastLocalDollarIndex = 0;
-                    state.execution.localDollarIndex = 0;
-                    state.execution.isClear = true;
-                    state.output.checksum = 0;
-
-                    // Create basic output file
-                    if state.parameters.outFile.is_empty() {
-                        state.parameters.outFile = String::from("a.out");
-                    }
-                    let fileOutOption = filesystem::create_new_file(state.parameters.outFile.as_str());
-                    match fileOutOption {
-                        Ok(file) => {
-                            state.output.outFile = Some(file);
-                        },
-                        _ => {
-                            println!("Warning: Unable to [re]open '{}'", state.parameters.outFile);
-                            return AsmErrorEquates::FileError;
-                        },
-                    }
-
-                    // Create list output file
-                    if !state.parameters.listFile.is_empty() {
-                        let fileOption = filesystem::create_new_file(state.parameters.listFile.as_str());
-                        match fileOption {
-                            Ok(file) => {
-                                state.output.listFile = Some(file);
-                            },
-                            _ => {
-                                println!("Warning: Unable to [re]open '{}'", state.parameters.listFile);
-                                return AsmErrorEquates::FileError;
-                            },
-                        }
-                    }
-
-                    pushinclude(*av.offset(1));
-                    while !pIncfile.is_null() {
-                        loop  {
-                            let mut comment: *const i8 = 0 as *const i8;
-                            if (*pIncfile).flags & FileFlags::Macro != 0 {
-                                if (*pIncfile).strlist.is_null() {
-                                    set_argument(0, String::new());
-                                    mnemonics::operations::v_mexit(0 as *mut i8, 0 as *mut _MNE);
-                                    continue;
-                                } else {
-                                    strcpy(buf.as_mut_ptr(), (*(*pIncfile).strlist).buf.as_mut_ptr());
-                                    (*pIncfile).strlist = (*(*pIncfile).strlist).next;
-                                }
-                            } else if fgets(buf.as_mut_ptr(), MAX_LINES as i32, (*pIncfile).fi).is_null() {
-                                break;
-                            }
-                            if state.parameters.debug {
-                                println!("{:08x} {}", pIncfile as u64, transient::str_pointer_to_string(buf.as_mut_ptr()));
-                            }
-                            comment = cleanup(buf.as_mut_ptr(), false);
-                            (*pIncfile).lineno = (*pIncfile).lineno.wrapping_add(1);
-                            let mne_or_macro = parse(buf.as_mut_ptr());
-                            let current_if = &state.execution.ifs.last().unwrap();
-                            #[cfg(debug_assertions)]
-                            {
-                                if state.parameters.debug_extended {
-                                    log_function_with!("current_if = {} {}", current_if.result, current_if.result_acc);
-                                }
-                            }
-                            if !get_argument(1).is_empty() {
-                                match mne_or_macro {
-                                    MacroOrMnemonicPointer::Macro(mac) => {
-                                        if (*mac).flags & MnemonicsFlags::If != 0 || current_if.result && current_if.result_acc {
-                                            #[cfg(debug_assertions)]
-                                            {
-                                                if state.parameters.debug_extended {
-                                                    log_function_with!("calling vect on [[{}]] [[{}]]", transient::str_pointer_to_string((*mac).name), get_argument(2));
-                                                }
-                                            }
-                                            ((*mac).vect)(transient::string_to_str_pointer(get_argument(2)), mac);
-                                        }
-                                    }
-                                    MacroOrMnemonicPointer::Mnemonic(mne) => {
-                                        if (*mne).flags & MnemonicsFlags::If != 0 || current_if.result && current_if.result_acc {
-                                            #[cfg(debug_assertions)]
-                                            {
-                                                if state.parameters.debug_extended {
-                                                    log_function_with!("calling vect on [[{}]] [[{}]]", transient::str_pointer_to_string((*mne).name), get_argument(2));
-                                                }
-                                            }
-                                            ((*mne).vect)(transient::string_to_str_pointer(get_argument(2)), mne);
-                                        }
-                                    }
-                                    MacroOrMnemonicPointer::None => {
-                                        if current_if.result && current_if.result_acc {
-                                            asmerr(AsmErrorEquates::UnknownMnemonic, false, transient::string_to_str_pointer(get_argument(1)));
-                                        }
-                                    }
-                                }
-                            } else if current_if.result && current_if.result_acc {
-                                programlabel();
-                            }
-                            if !state.parameters.listFile.is_empty() && state.execution.listMode != ListMode::None {
-                                outlistfile(comment);
-                            }
-                        }
-                        while state.execution.repeats.len() > 0 && state.execution.repeats.last().unwrap().file == pIncfile {
-                            state.execution.repeats.pop();
-                        }
-                        while state.execution.ifs.len() > 0 && state.execution.ifs.last().unwrap().file == pIncfile {
-                            state.execution.ifs.pop();
-                        }
-                        fclose((*pIncfile).fi);
-                        free((*pIncfile).name as *mut libc::c_void);
-                        state.other.incLevel -= 1;
-                        rmnode(&mut pIncfile as *mut *mut _INCFILE as *mut *mut libc::c_void, ::std::mem::size_of::<_INCFILE>() as u64 as i32);
-                        if !pIncfile.is_null() {
-                            /*
-                            if (state.parameters.verbosity as u8 > 1)
-                            println!("back to: {}", Incfile->name);
-                            */
-                            filesystem::writeln_to_file_maybe(
-                                &mut state.output.listFile,
-                                format!(
-                                    "------- FILE {}",
-                                    transient::str_pointer_to_string((*pIncfile).name),
-                                ).as_str(),
-                            );
-                        }
-                    }
-                    if state.parameters.verbosity as u8 >= Verbosity::One as u8 {
-                        ShowSegments();
-                    }
-                    if state.parameters.verbosity as u8  >= Verbosity::Three as u8  {
-                        if state.execution.redoIndex == 0 || state.parameters.verbosity as u8  >= Verbosity::Four as u8 {
-                            write_symbols_to_stdout(state.parameters.sortMode == SortMode::Address);
-                        }
-                        ShowUnresolvedSymbols();
-                    }
-                    closegenerate();
-                    filesystem::close_file_maybe(&mut state.output.outFile);
-                    filesystem::close_file_maybe(&mut state.output.listFile);
-                    if state.execution.redoIndex != 0 {
-                        if !doAllPasses {
-                            if state.execution.redoIndex == oldRedoIndex && state.execution.redoWhy == oldRedoWhy && state.execution.redoEval == oldRedoEval {
-                                ShowUnresolvedSymbols();
-                                return AsmErrorEquates::NotResolvable;
-                            }
-                        }
-                        oldRedoIndex = state.execution.redoIndex;
-                        oldRedoWhy = state.execution.redoWhy;
-                        oldRedoEval = state.execution.redoEval;
-                        state.execution.redoIndex = 0;
-                        state.execution.redoWhy = 0;
-                        state.execution.redoEval = 0;
-                        state.execution.redoIf <<= 1;
-                        state.execution.pass += 1;
-                        if state.execution.pass > state.parameters.maxPasses {
-                            let buffer = format!("{}", state.execution.pass);
-                            return asmerr(AsmErrorEquates::TooManyPasses, false, transient::string_to_str_pointer(buffer));
-                        } else {
-                            operations::clear_passbuffer(&mut state.output.passBufferErrors);
-                            operations::clear_passbuffer(&mut state.output.passBufferMessages);
-                            clearrefs();
-                            clear_segments(&mut state.other.segments);
-                        }
-                    } else {
-                        // Do not print any errors if assembly is successful!!!!! -FXQ
-                        // only print messages from last pass and if there's no errors
-                        if !state.other.stopAtEnd {
-                            operations::output_passbuffer(&mut state.output.passBufferMessages);
-                        } else {
-                            // Only print errors if assembly is unsuccessful!!!!!
-                            // by FXQ
-                            operations::output_passbuffer(&mut state.output.passBufferErrors);
-                            println!("Unrecoverable error(s) in pass, aborting assembly!");
-                            nError = AsmErrorEquates::NonAbort;
-                        }
-                        println!("Complete.");
-                        return nError;
-                    }
-                }
-            }
-        }
+    } else {
+        options.parsing_failed = true;
     }
+
+    options
+}
+
+/**
+ * Prints generic command line help, usually if no operation has taken place or in the case
+ * of error.
+ */
+fn print_command_line_help() {
     println!("{}", DASM_ID);
     println!("Copyright (c) 1988-2020 by the DASM team.");
     println!("License GPLv2+: GNU GPL version 2 or later (see file LICENSE).");
@@ -879,7 +637,267 @@ unsafe fn MainShadow(ac: i32, av: *mut *mut i8) -> AsmErrorEquates {
     println!("-S       strict syntax checking");
     println!();
     println!("Report bugs on https://github.com/dasm-assembler/dasm please!");
-    return AsmErrorEquates::CommandLine;
+}
+
+unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
+    let mut nError: AsmErrorEquates = AsmErrorEquates::None;
+    let mut buf: [i8; MAX_LINES] = [0; MAX_LINES];
+    let mut oldRedoIndex: i32 = -1;
+    let mut oldRedoWhy: u64 = 0;
+    let mut oldRedoEval: i32 = 0;
+    addhashtable(globals::legacy::mnemonics_operations.as_mut_ptr(), globals::legacy::mnemonics_operations.len());
+    state.execution.pass = 1;
+
+    // Perform side effects based on command line options
+    // FIXME: change this to options.* once we don't have options in the state anymore
+    for (name, expression) in options.symbols_eqm.clone() {
+        set_argument(0, name);
+        mnemonics::operations::v_eqm(transient::string_to_str_pointer(expression), 0 as *mut _MNE);
+    }
+
+    // FIXME: change this to options.* once we don't have options in the state anymore
+    for (name, expression) in options.symbols_set.clone() {
+        set_argument(0, name);
+        mnemonics::operations::v_set(transient::string_to_str_pointer(expression), 0 as *mut _MNE);
+    }
+
+    // FIXME: change this to options.* once we don't have options in the state anymore
+    for dir in options.include_dirs.clone() {
+        mnemonics::operations::v_incdir(transient::string_to_str_pointer(dir), 0 as *mut _MNE);
+    }
+
+    /*    INITIAL SEGMENT */
+    let seg = Segment {
+        name: String::from("INITIAL CODE SEGMENT"),
+        flags: SegmentTypes::Unknown,
+        rflags: SegmentTypes::Unknown,
+        initflags: SegmentTypes::Unknown,
+        initrflags: SegmentTypes::Unknown,
+        org: 0,
+        rorg: 0,
+        initorg: 0,
+        initrorg: 0,
+    };
+    state.other.segments.clear();
+    state.other.segments.push(seg);
+    state.other.currentSegment = 0;
+
+    // Top level IF
+    state.execution.ifs.push(
+        StackIf {
+            file: 0 as *mut _INCFILE,
+            flags: IfFlags::Base,
+            result_acc: true,
+            result: true,
+        }
+    );
+
+    // Ready error and message buffer...
+    operations::clear_passbuffer(&mut state.output.passBufferErrors);
+    operations::clear_passbuffer(&mut state.output.passBufferMessages);
+    loop {
+        if state.parameters.verbosity != Verbosity::None {
+            println!();
+            println!("START OF PASS: {}", state.execution.pass);
+        }
+        state.execution.lastLocalIndex = 0;
+        state.execution.localIndex = 0;
+        state.execution.lastLocalDollarIndex = 0;
+        state.execution.localDollarIndex = 0;
+        state.execution.isClear = true;
+        state.output.checksum = 0;
+
+        // Create basic output file
+        if state.parameters.out_file.is_empty() {
+            state.parameters.out_file = String::from("a.out");
+        }
+        let fileOutOption = filesystem::create_new_file(state.parameters.out_file.as_str());
+        match fileOutOption {
+            Ok(file) => {
+                state.output.outFile = Some(file);
+            },
+            _ => {
+                println!("Warning: Unable to [re]open '{}'", state.parameters.out_file);
+                return AsmErrorEquates::FileError;
+            },
+        }
+
+        // Create list output file
+        if !state.parameters.list_file.is_empty() {
+            let fileOption = filesystem::create_new_file(state.parameters.list_file.as_str());
+            match fileOption {
+                Ok(file) => {
+                    state.output.listFile = Some(file);
+                },
+                _ => {
+                    println!("Warning: Unable to [re]open '{}'", state.parameters.list_file);
+                    return AsmErrorEquates::FileError;
+                },
+            }
+        }
+
+        pushinclude(transient::string_to_str_pointer(options.input.clone()));
+        while !pIncfile.is_null() {
+            loop  {
+                let mut comment: *const i8 = 0 as *const i8;
+                if (*pIncfile).flags & FileFlags::Macro != 0 {
+                    if (*pIncfile).strlist.is_null() {
+                        set_argument(0, String::new());
+                        mnemonics::operations::v_mexit(0 as *mut i8, 0 as *mut _MNE);
+                        continue;
+                    } else {
+                        strcpy(buf.as_mut_ptr(), (*(*pIncfile).strlist).buf.as_mut_ptr());
+                        (*pIncfile).strlist = (*(*pIncfile).strlist).next;
+                    }
+                } else if fgets(buf.as_mut_ptr(), MAX_LINES as i32, (*pIncfile).fi).is_null() {
+                    break;
+                }
+                if state.parameters.debug {
+                    println!("{:08x} {}", pIncfile as u64, transient::str_pointer_to_string(buf.as_mut_ptr()));
+                }
+                comment = cleanup(buf.as_mut_ptr(), false);
+                (*pIncfile).lineno = (*pIncfile).lineno.wrapping_add(1);
+                let mne_or_macro = parse(buf.as_mut_ptr());
+                let current_if = &state.execution.ifs.last().unwrap();
+                #[cfg(debug_assertions)]
+                {
+                    if state.parameters.debug_extended {
+                        log_function_with!("current_if = {} {}", current_if.result, current_if.result_acc);
+                    }
+                }
+                if !get_argument(1).is_empty() {
+                    match mne_or_macro {
+                        MacroOrMnemonicPointer::Macro(mac) => {
+                            if (*mac).flags & MnemonicsFlags::If != 0 || current_if.result && current_if.result_acc {
+                                #[cfg(debug_assertions)]
+                                {
+                                    if state.parameters.debug_extended {
+                                        log_function_with!("calling vect on [[{}]] [[{}]]", transient::str_pointer_to_string((*mac).name), get_argument(2));
+                                    }
+                                }
+                                ((*mac).vect)(transient::string_to_str_pointer(get_argument(2)), mac);
+                            }
+                        }
+                        MacroOrMnemonicPointer::Mnemonic(mne) => {
+                            if (*mne).flags & MnemonicsFlags::If != 0 || current_if.result && current_if.result_acc {
+                                #[cfg(debug_assertions)]
+                                {
+                                    if state.parameters.debug_extended {
+                                        log_function_with!("calling vect on [[{}]] [[{}]]", transient::str_pointer_to_string((*mne).name), get_argument(2));
+                                    }
+                                }
+                                ((*mne).vect)(transient::string_to_str_pointer(get_argument(2)), mne);
+                            }
+                        }
+                        MacroOrMnemonicPointer::None => {
+                            if current_if.result && current_if.result_acc {
+                                asmerr(AsmErrorEquates::UnknownMnemonic, false, transient::string_to_str_pointer(get_argument(1)));
+                            }
+                        }
+                    }
+                } else if current_if.result && current_if.result_acc {
+                    programlabel();
+                }
+                if !state.parameters.list_file.is_empty() && state.execution.listMode != ListMode::None {
+                    outlistfile(comment);
+                }
+            }
+            while state.execution.repeats.len() > 0 && state.execution.repeats.last().unwrap().file == pIncfile {
+                state.execution.repeats.pop();
+            }
+            while state.execution.ifs.len() > 0 && state.execution.ifs.last().unwrap().file == pIncfile {
+                state.execution.ifs.pop();
+            }
+            fclose((*pIncfile).fi);
+            free((*pIncfile).name as *mut libc::c_void);
+            state.other.incLevel -= 1;
+            rmnode(&mut pIncfile as *mut *mut _INCFILE as *mut *mut libc::c_void, ::std::mem::size_of::<_INCFILE>() as u64 as i32);
+            if !pIncfile.is_null() {
+                /*
+                if (state.options.verbosity as u8 > 1)
+                println!("back to: {}", Incfile->name);
+                */
+                filesystem::writeln_to_file_maybe(
+                    &mut state.output.listFile,
+                    format!(
+                        "------- FILE {}",
+                        transient::str_pointer_to_string((*pIncfile).name),
+                    ).as_str(),
+                );
+            }
+        }
+        if state.parameters.verbosity as u8 >= Verbosity::One as u8 {
+            ShowSegments();
+        }
+        if state.parameters.verbosity as u8  >= Verbosity::Three as u8  {
+            if state.execution.redoIndex == 0 || state.parameters.verbosity as u8  >= Verbosity::Four as u8 {
+                write_symbols_to_stdout(state.parameters.sort_mode == SortMode::Address);
+            }
+            ShowUnresolvedSymbols();
+        }
+        closegenerate();
+        filesystem::close_file_maybe(&mut state.output.outFile);
+        filesystem::close_file_maybe(&mut state.output.listFile);
+        if state.execution.redoIndex != 0 {
+            if !state.parameters.do_all_passes {
+                if state.execution.redoIndex == oldRedoIndex && state.execution.redoWhy == oldRedoWhy && state.execution.redoEval == oldRedoEval {
+                    ShowUnresolvedSymbols();
+                    return AsmErrorEquates::NotResolvable;
+                }
+            }
+            oldRedoIndex = state.execution.redoIndex;
+            oldRedoWhy = state.execution.redoWhy;
+            oldRedoEval = state.execution.redoEval;
+            state.execution.redoIndex = 0;
+            state.execution.redoWhy = 0;
+            state.execution.redoEval = 0;
+            state.execution.redoIf <<= 1;
+            state.execution.pass += 1;
+            if state.execution.pass > state.parameters.max_passes {
+                let buffer = format!("{}", state.execution.pass);
+                return asmerr(AsmErrorEquates::TooManyPasses, false, transient::string_to_str_pointer(buffer));
+            } else {
+                operations::clear_passbuffer(&mut state.output.passBufferErrors);
+                operations::clear_passbuffer(&mut state.output.passBufferMessages);
+                clearrefs();
+                clear_segments(&mut state.other.segments);
+            }
+        } else {
+            // Do not print any errors if assembly is successful!!!!! -FXQ
+            // only print messages from last pass and if there's no errors
+            if !state.other.stopAtEnd {
+                operations::output_passbuffer(&mut state.output.passBufferMessages);
+            } else {
+                // Only print errors if assembly is unsuccessful!!!!!
+                // by FXQ
+                operations::output_passbuffer(&mut state.output.passBufferErrors);
+                println!("Unrecoverable error(s) in pass, aborting assembly!");
+                nError = AsmErrorEquates::NonAbort;
+            }
+            println!("Complete.");
+            return nError;
+        }
+    }
+}
+
+unsafe fn main_shadow(args: Vec<String>) -> AsmErrorEquates {
+    // First command line options first
+    let options = parse_command_line(args);
+
+    // Add options to the state
+    // FIXME: this should probably just be an instance, not a static member of the state...
+    state.parameters = options;
+
+    // FIXME: change this to options.* once we don't have options in the state anymore
+    if !state.parameters.parsing_failed {
+        return assemble(&state.parameters);
+    }
+
+    // If nothing done, just show help
+    print_command_line_help();
+
+    // Finally, bail with generic error
+    AsmErrorEquates::CommandLine
 }
 
 pub unsafe fn outlistfile(comment: *const i8) {
@@ -1398,7 +1416,7 @@ pub unsafe extern "C" fn asmerr(err: AsmErrorEquates, abort: bool, sText: *const
     let mut errorOutput: String = String::new();
     let mut pincfile: *mut _INCFILE = 0 as *mut _INCFILE;
     /* file pointer we print error messages to */
-    let errorToFile = !state.parameters.listFile.is_empty();
+    let errorToFile = !state.parameters.list_file.is_empty();
     let errorFile = &mut state.output.listFile;
     if find_error_definition(err).fatal {
         state.other.stopAtEnd = true
@@ -1417,7 +1435,7 @@ pub unsafe extern "C" fn asmerr(err: AsmErrorEquates, abort: bool, sText: *const
         eventually I hope... [phf]
     */
     /* print first part of message, different formats offered */
-    match state.parameters.errorFormat {
+    match state.parameters.error_format {
         ErrorFormat::Woe => {
             /*
                 Error format for MS VisualStudio and relatives:
@@ -1537,33 +1555,25 @@ pub unsafe extern "C" fn permalloc(mut bytes: i32) -> *mut i8 {
     left -= bytes;
     return ptr;
 }
-unsafe fn main_0(ac: i32, av: *mut *mut i8) -> u8 {
-    let nError: AsmErrorEquates = MainShadow(ac, av);
-    if nError != AsmErrorEquates::None && nError != AsmErrorEquates::NonAbort {
-        // Dump messages when aborting due to errors
-        operations::output_passbuffer(&mut state.output.passBufferMessages);
-        // Only print errors if assembly is unsuccessful
-        operations::output_passbuffer(&mut state.output.passBufferErrors);
-        println!("Fatal assembly error: {}", find_error_definition(nError).description);
-    }
-    dump_symbol_table(state.parameters.sortMode == SortMode::Address);
-    operations::clear_passbuffer(&mut state.output.passBufferErrors);
-    operations::clear_passbuffer(&mut state.output.passBufferMessages);
-    return nError.into();
-}
-#[main]
+
 pub fn main() {
-    let mut args: Vec<*mut i8> = Vec::new();
-    for arg in std::env::args() {
-        args.push(transient::string_to_str_pointer(arg));
-    }
-    args.push(std::ptr::null_mut());
+    // Gather arguments so we can treat them C-like.
+    // Normally, a Rust application would use StructOpt for this,
+    // but we keep the custom parser for consistency.
+    let args = env::args().skip(1).collect();
+    // FIXME: remove this unsafe when possible
     unsafe {
-        std::process::exit(
-            main_0(
-                (args.len() - 1) as i32,
-                args.as_mut_ptr() as *mut *mut i8
-            ) as i32
-        );
+        let nError: AsmErrorEquates = main_shadow(args);
+        if nError != AsmErrorEquates::None && nError != AsmErrorEquates::NonAbort {
+            // Dump messages when aborting due to errors
+            operations::output_passbuffer(&mut state.output.passBufferMessages);
+            // Only print errors if assembly is unsuccessful
+            operations::output_passbuffer(&mut state.output.passBufferErrors);
+            println!("Fatal assembly error: {}", find_error_definition(nError).description);
+        }
+        dump_symbol_table(state.parameters.sort_mode == SortMode::Address);
+        operations::clear_passbuffer(&mut state.output.passBufferErrors);
+        operations::clear_passbuffer(&mut state.output.passBufferMessages);
+        process::exit(nError as u8 as i32);
     }
 }

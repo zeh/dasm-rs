@@ -2,13 +2,17 @@
 // https://stackoverflow.com/questions/37157926/is-there-a-method-like-javascripts-substr-in-rust
 
 pub trait StringExtensions {
-    fn at(&self, pos: usize) -> &str;
+	fn at(&self, pos: usize) -> &str;
+	fn from(&self, start: usize) -> &str;
 	fn substring(&self, start: usize, len: usize) -> &str;
 }
 
 impl StringExtensions for str {
     fn at(&self, pos: usize) -> &str {
         self.substring(pos, 1)
+	}
+	fn from(&self, pos: usize) -> &str {
+        self.substring(pos, self.len() - pos)
     }
 	fn substring(&self, start: usize, len: usize) -> &str {
 		let mut char_pos = 0;
@@ -56,6 +60,15 @@ mod tests {
 		assert_eq!(s.at(4), "è");
 		assert_eq!(s.at(9), "j");
 		assert_eq!(s.at(100), "");
+	}
+
+	#[test]
+	fn test_StringExtensions_from() {
+		let s = "abcdèfghij";
+        assert_eq!(s.from(0), "abcdèfghij");
+		assert_eq!(s.from(3), "abcdèfghij");
+		assert_eq!(s.from(8), "ij");
+		assert_eq!(s.from(100), "");
 	}
 
 	#[test]

@@ -5,9 +5,7 @@
 use std::fs::File;
 
 use crate::constants;
-use crate::expressions::operations::{
-	ExpressionOperationFunc
-};
+use crate::expressions::operations::ExpressionOperationFunc;
 use crate::types::enums::{
 	AddressModes,
 	AsmErrorEquates,
@@ -35,7 +33,7 @@ pub struct ErrorDefinition {
 
 pub struct GlobalState {
 	// Set by main, coming from command line switches
-	pub parameters: ParametersState,
+	pub parameters: CommandLineOptions,
 
 	// Set by main, misc stuff
 	pub other: OtherMainState,
@@ -50,19 +48,53 @@ pub struct GlobalState {
 	pub output: OutputState,
 }
 
-pub struct ParametersState {
-	pub debug: bool,
+/**
+ * All options, as parsed from the command line or as default otherwise.
+ */
+pub struct CommandLineOptions {
 	pub debug_extended: bool,
-	pub errorFormat: ErrorFormat,
+	pub debug: bool,
+	pub do_all_passes: bool,
+	pub error_format: ErrorFormat,
 	pub format: Format,
-	pub listAllPasses: bool,
-	pub listFile: String,
-	pub maxPasses: u8,
-	pub outFile: String,
-	pub sortMode: SortMode,
-	pub strictMode: bool,
-	pub symbolsFile: String,
+	pub include_dirs: Vec<String>,
+	pub input: String,
+	pub list_all_passes: bool,
+	pub list_file: String,
+	pub max_passes: u8,
+	pub out_file: String,
+	pub parsing_failed: bool,
+	pub sort_mode: SortMode,
+	pub strict_mode: bool,
+	pub symbols_eqm: Vec<(String, String)>,
+	pub symbols_file: String,
+	pub symbols_set: Vec<(String, String)>,
 	pub verbosity: Verbosity,
+}
+
+impl CommandLineOptions {
+	pub fn new() -> Self {
+		return Self {
+			debug_extended: false,
+			debug: false,
+			do_all_passes: false,
+			error_format: ErrorFormat::Woe,
+			format: Format::Default,
+			include_dirs: Vec::<String>::new(),
+			input: String::new(),
+			list_all_passes: false,
+			list_file: String::new(),
+			max_passes: 10,
+			out_file: String::new(),
+			parsing_failed: false,
+			sort_mode: SortMode::Alpha,
+			strict_mode: false,
+			symbols_eqm: Vec::<(String, String)>::new(),
+			symbols_file: String::new(),
+			symbols_set: Vec::<(String, String)>::new(),
+			verbosity: Verbosity::None,
+		};
+	}
 }
 
 pub struct OtherMainState {

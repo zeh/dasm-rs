@@ -14,6 +14,7 @@ use crate::types::legacy::{
 	_MNE,
 };
 use crate::types::structs::{
+	CommandLineOptions,
 	ExecutionState,
 	ExpressionsState,
 	ExpressionStackArgument,
@@ -21,7 +22,6 @@ use crate::types::structs::{
 	GlobalState,
 	OtherMainState,
 	OutputState,
-	ParametersState,
 	Segment,
 	StackIf,
 	StackRepeat,
@@ -32,18 +32,25 @@ pub mod legacy;
 
 // Enums use explicit options since we can't use ::default()
 pub static mut state: GlobalState = GlobalState {
-	parameters: ParametersState {
-		debug: false,
+	// FIXME: this is a duplicate of CommandLineOptions::new()
+	parameters: CommandLineOptions {
 		debug_extended: false,
-		errorFormat: ErrorFormat::Woe,
+		debug: false,
+		do_all_passes: false,
+		error_format: ErrorFormat::Woe,
 		format: Format::Default,
-		listAllPasses: false,
-		listFile: String::new(),
-		maxPasses: 10,
-		outFile: String::new(),
-		sortMode: SortMode::Alpha,
-		strictMode: false,
-		symbolsFile: String::new(),
+		include_dirs: Vec::<String>::new(),
+		input: String::new(),
+		list_all_passes: false,
+		list_file: String::new(),
+		max_passes: 10,
+		out_file: String::new(),
+		parsing_failed: false,
+		sort_mode: SortMode::Alpha,
+		strict_mode: false,
+		symbols_eqm: Vec::<(String, String)>::new(),
+		symbols_file: String::new(),
+		symbols_set: Vec::<(String, String)>::new(),
 		verbosity: Verbosity::None,
 	},
 
