@@ -579,9 +579,12 @@ fn parse_command_line(args: Vec<String>) -> CommandLineOptions {
                         }
                     }
                     "v" => {
-                        if let Some(result) = arg_value.parse::<u8>().ok().and_then(|digit| Verbosity::try_from(digit).ok()) {
+                        if arg_value.len() == 0 {
+                            options.verbosity = Verbosity::None;
+                        } else if let Some(result) = arg_value.parse::<u8>().ok().and_then(|digit| Verbosity::try_from(digit).ok()) {
                             options.verbosity = result;
                         } else {
+                            // Conversion note: verbosity errors are ignored in the original C code, but we check them here
                             panic("Illegal verbosity specification");
                         }
                     }
