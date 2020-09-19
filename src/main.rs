@@ -987,8 +987,8 @@ pub unsafe fn outlistfile(comment: *const i8) {
     state.output.generatedLength = 0;
     state.execution.extraString.clear();
 }
-#[no_mangle]
-pub unsafe fn clearrefs() {
+
+unsafe fn clearrefs() {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut i: i16 = 0;
     i = 0;
@@ -1138,8 +1138,7 @@ pub unsafe fn cleanup(buf: *mut i8, bDisable: bool) -> *const i8 {
 *  Assumes *base is really a pointer to a structure with .next as the first
 *  member.
 */
-#[no_mangle]
-pub unsafe fn rmnode(base: *mut *mut libc::c_void, mut _bytes: i32) {
+unsafe fn rmnode(base: *mut *mut libc::c_void, mut _bytes: i32) {
     let mut node: *mut libc::c_void = 0 as *mut libc::c_void;
     node = *base;
     if !node.is_null() {
@@ -1356,8 +1355,8 @@ pub unsafe fn addhashtable(first_mne: *mut _MNE, len: usize) {
         state.execution.mnemonics.push(mne);
     };
 }
-#[no_mangle]
-pub unsafe extern "C" fn pushinclude(str: *const i8) {
+
+pub unsafe fn pushinclude(str: *const i8) {
     let mut inf: *mut _INCFILE = 0 as *mut _INCFILE;
     let mut fi: *mut FILE = 0 as *mut FILE;
     fi = pfopen(str, b"rb\x00" as *const u8 as *const i8);
@@ -1405,6 +1404,7 @@ pub unsafe fn set_argument(position: usize, new_value: String) {
     }
     state.execution.argumentStack[position] = new_value;
 }
+
 pub unsafe fn get_argument(position: usize) -> String {
     match state.execution.argumentStack.get(position) {
         Some(result) => result.to_owned(),
@@ -1412,8 +1412,7 @@ pub unsafe fn get_argument(position: usize) -> String {
     }
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn asmerr(err: AsmErrorEquates, abort: bool, sText: *const i8) -> AsmErrorEquates {
+pub unsafe fn asmerr(err: AsmErrorEquates, abort: bool, sText: *const i8) -> AsmErrorEquates {
     let mut errorOutput: String = String::new();
     let mut pincfile: *mut _INCFILE = 0 as *mut _INCFILE;
     /* file pointer we print error messages to */

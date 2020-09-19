@@ -1,6 +1,7 @@
 use libc;
 
 use crate::{
+    asmerr,
     get_argument,
 };
 use crate::constants::{
@@ -35,8 +36,6 @@ extern "C" {
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     static mut SHash: [*mut _SYMBOL; 0];
-    #[no_mangle]
-    fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8) -> i32;
     #[no_mangle]
     fn permalloc(bytes: i32) -> *mut i8;
 }

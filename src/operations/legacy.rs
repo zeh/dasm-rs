@@ -1,3 +1,7 @@
+// FIXME: remove these unsafe calls coming from main.rs
+use crate::{
+    asmerr,
+};
 use crate::globals::state;
 use crate::types::flags::{
     ReasonCodes,
@@ -24,8 +28,6 @@ extern "C" {
     fn fopen(__filename: *const i8, __modes: *const i8) -> *mut FILE;
     #[no_mangle]
     fn strchr(_: *const i8, _: i32) -> *mut i8;
-    #[no_mangle]
-    fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8) -> i32;
 }
 
 #[no_mangle]

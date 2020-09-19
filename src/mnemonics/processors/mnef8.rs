@@ -1,3 +1,7 @@
+// FIXME: remove these unsafe calls coming from main.rs
+use crate::{
+    asmerr,
+};
 use crate::globals::state;
 use crate::mnemonics;
 use crate::types::flags::{
@@ -26,8 +30,6 @@ extern "C" {
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn strcasecmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8) -> i32;
     #[no_mangle]
     fn FreeSymbolList(sym: *mut _SYMBOL);
     #[no_mangle]

@@ -7,10 +7,12 @@ use std::convert::TryFrom;
 // FIXME: remove these unsafe calls coming from main.rs
 use crate::{
     addhashtable,
+    asmerr,
     cleanup,
     get_argument,
     outlistfile,
     parse,
+    pushinclude,
     set_argument,
 };
 
@@ -94,10 +96,6 @@ extern "C" {
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     static mut pIncfile: *mut _INCFILE;
-    #[no_mangle]
-    fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8) -> i32;
-    #[no_mangle]
-    fn pushinclude(str: *mut i8);
     #[no_mangle]
     fn setspecial(value: i32, flags: i32);
     #[no_mangle]

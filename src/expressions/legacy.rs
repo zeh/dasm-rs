@@ -1,5 +1,9 @@
 use libc;
 
+// FIXME: remove these unsafe calls coming from main.rs
+use crate::{
+    asmerr,
+};
 use crate::expressions::{
     is_alpha_num,
     operations,
@@ -38,8 +42,6 @@ pub const MAX_ARGS: usize = 64;
 extern "C" {
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn asmerr(err: AsmErrorEquates, bAbort: bool, sText: *const i8) -> i32;
     #[no_mangle]
     fn ckmalloc(bytes: i32) -> *mut i8;
     #[no_mangle]
