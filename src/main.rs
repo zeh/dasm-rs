@@ -113,8 +113,6 @@ extern "C" {
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn strtol(__nptr: *const i8, __endptr: *mut *mut i8, __base: i32) -> i64;
