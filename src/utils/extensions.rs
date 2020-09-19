@@ -66,7 +66,7 @@ mod tests {
 	fn test_StringExtensions_from() {
 		let s = "abcdèfghij";
         assert_eq!(s.from(0), "abcdèfghij");
-		assert_eq!(s.from(3), "abcdèfghij");
+		assert_eq!(s.from(3), "dèfghij");
 		assert_eq!(s.from(8), "ij");
 		assert_eq!(s.from(100), "");
 	}
