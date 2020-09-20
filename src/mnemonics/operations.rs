@@ -97,7 +97,7 @@ extern "C" {
     #[no_mangle]
     static mut pIncfile: *mut _INCFILE;
     #[no_mangle]
-    fn setspecial(value: i32, flags: i32);
+    fn setspecial(value: i32, flags: u8);
     #[no_mangle]
     fn findsymbol(str: *const i8, len: i32) -> *mut _SYMBOL;
     #[no_mangle]
@@ -321,28 +321,28 @@ pub unsafe fn v_mnemonic(str: *mut i8, mne: *mut _MNE) {
     while !sym.is_null() {
         if (*sym).flags & SymbolTypes::Unknown != 0 {
             state.execution.redoIndex += 1;
-            state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved
+            state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved;
         }
-        sym = (*sym).next
+        sym = (*sym).next;
     }
     sym = symbase;
-    if (*mne).flags as i32 & 0x40 as i32 != 0 {
+    if (*mne).flags & MnemonicsFlags::InstructionMod != 0 {
         if !(*sym).next.is_null() {
             (*sym).addrmode = AddressModes::BitMod as u8;
-            if (*mne).flags as i32 & 0x20 as i32 != 0 && !(*sym).next.is_null() {
-                (*sym).addrmode = AddressModes::BitBraMod as u8
+            if (*mne).flags & MnemonicsFlags::Rel != 0 && !(*sym).next.is_null() {
+                (*sym).addrmode = AddressModes::BitBraMod as u8;
             }
         }
     }
     addressMode = AddressModes::try_from((*sym).addrmode).unwrap();
     if (*sym).flags & SymbolTypes::Unknown != 0 || (*sym).value >= 0x100 {
-        opsize = 2
+        opsize = 2;
     } else {
         opsize = if (*sym).value != 0 {
             1
         } else {
             0
-        }
+        };
     }
     while (*mne).okmask & ((1) << addressMode as isize) as u64 == 0 && addressMode.convert() != AddressModes::Imp {
         addressMode = addressMode.convert();
@@ -385,7 +385,7 @@ pub unsafe fn v_mnemonic(str: *mut i8, mne: *mut _MNE) {
     }
     while opsize as u8 > addressMode.operation_size() {
         if addressMode.convert() == AddressModes::Imp || (*mne).okmask & ((1) << addressMode.convert() as u8) as u64 == 0 {
-            if (*sym).flags as i32 & 0x1 as i32 != 0 {
+            if (*sym).flags & SymbolTypes::Unknown != 0 {
                 break;
             }
             //FIX: for negative operands...
@@ -417,12 +417,12 @@ pub unsafe fn v_mnemonic(str: *mut i8, mne: *mut _MNE) {
     match addressMode {
         AddressModes::BitMod => {
             sym = (*symbase).next;
-            if (*sym).flags as i32 & 0x1 as i32 == 0 && (*sym).value >= 0x100 {
+            if (*sym).flags & SymbolTypes::Unknown == 0 && (*sym).value >= 0x100 {
                 asmerr(AsmErrorEquates::AddressMustBeLowerThan100, false, 0 as *const i8);
             }
             state.output.generated[opidx] = (*sym).value as u8;
             opidx = opidx + 1;
-            if (*symbase).flags as i32 & 0x1 as i32 == 0 {
+            if (*symbase).flags & SymbolTypes::Unknown == 0 {
                 if (*symbase).value > 7 {
                     asmerr(AsmErrorEquates::IllegalBitSpecification, false, str);
                 } else {
@@ -433,7 +433,7 @@ pub unsafe fn v_mnemonic(str: *mut i8, mne: *mut _MNE) {
             }
         }
         AddressModes::BitBraMod => {
-            if (*symbase).flags as i32 & 0x1 as i32 == 0 {
+            if (*symbase).flags & SymbolTypes::Unknown == 0 {
                 if (*symbase).value > 7 {
                     asmerr(AsmErrorEquates::IllegalBitSpecification, false, str);
                 } else {
@@ -443,7 +443,7 @@ pub unsafe fn v_mnemonic(str: *mut i8, mne: *mut _MNE) {
                 }
             }
             sym = (*symbase).next;
-            if (*sym).flags as i32 & 0x1 as i32 == 0 && (*sym).value >= 0x100 {
+            if (*sym).flags & SymbolTypes::Unknown == 0 && (*sym).value >= 0x100 {
                 asmerr(AsmErrorEquates::AddressMustBeLowerThan100, false, 0 as *const i8);
             }
             state.output.generated[opidx] = (*sym).value as u8;
@@ -573,7 +573,7 @@ pub unsafe fn v_include(str: *mut i8, _dummy: *mut _MNE) {
         //check could be more comprehensive
         sym = eval(str, 0)
     } else { sym = 0 as *mut _SYMBOL }
-    if !sym.is_null() && (*sym).flags as i32 & 0x8 as i32 != 0
+    if !sym.is_null() && (*sym).flags & SymbolTypes::StringResult != 0
        {
         pushinclude((*sym).string);
     } else {
@@ -748,7 +748,7 @@ pub unsafe fn v_dc(mut str: *mut i8, mne: *mut _MNE) {
             println!("EQM label not found");
             return;
         }
-        if (*tmp).flags as i32 & 0x20 as i32 != 0 {
+        if (*tmp).flags & SymbolTypes::Macro != 0 {
             macstr = (*tmp).string as *mut libc::c_void as *mut i8
         } else {
             println!("must specify EQM label for DV");
@@ -758,11 +758,11 @@ pub unsafe fn v_dc(mut str: *mut i8, mne: *mut _MNE) {
     sym = eval(str, 0);
     while !sym.is_null() {
         value = (*sym).value;
-        if (*sym).flags as i32 & 0x1 as i32 != 0 {
+        if (*sym).flags & SymbolTypes::Unknown != 0 {
             state.execution.redoIndex += 1;
             state.execution.redoWhy |= ReasonCodes::DCNotResolved
         }
-        if (*sym).flags as i32 & 0x8 as i32 != 0 {
+        if (*sym).flags & SymbolTypes::StringResult != 0 {
             let mut ptr: *mut u8 = (*sym).string as *mut libc::c_void as *mut u8;
             loop  {
                 value = *ptr as i64;
@@ -771,7 +771,7 @@ pub unsafe fn v_dc(mut str: *mut i8, mne: *mut _MNE) {
                     setspecial(value as i32, 0);
                     tmp = eval(macstr, 0);
                     value = (*tmp).value;
-                    if (*tmp).flags as i32 & 0x1 as i32 != 0 {
+                    if (*tmp).flags & SymbolTypes::Unknown != 0 {
                         state.execution.redoIndex += 1;
                         state.execution.redoWhy |= ReasonCodes::DVNotResolvedProbably
                     }
@@ -821,10 +821,10 @@ pub unsafe fn v_dc(mut str: *mut i8, mne: *mut _MNE) {
             }
         } else {
             if vmode != 0 {
-                setspecial(value as i32, (*sym).flags as i32);
+                setspecial(value as i32, (*sym).flags);
                 tmp = eval(macstr, 0);
                 value = (*tmp).value;
-                if (*tmp).flags as i32 & 0x1 as i32 != 0 {
+                if (*tmp).flags & SymbolTypes::Unknown != 0 {
                     state.execution.redoIndex += 1;
                     state.execution.redoWhy |= ReasonCodes::DVNotResolvedCould
                 }
@@ -908,11 +908,11 @@ pub unsafe fn v_ds(str: *mut i8, _dummy: *mut _MNE) {
     sym = eval(str, 0);
     if !sym.is_null() {
         if !(*sym).next.is_null() { filler = (*(*sym).next).value }
-        if (*sym).flags as i32 & 0x1 as i32 != 0 {
+        if (*sym).flags & SymbolTypes::Unknown != 0 {
             state.execution.redoIndex += 1;
             state.execution.redoWhy |= ReasonCodes::DSNotResolved
         } else {
-            if !(*sym).next.is_null() && (*(*sym).next).flags as i32 & 0x1 as i32 != 0 {
+            if !(*sym).next.is_null() && (*(*sym).next).flags & SymbolTypes::Unknown != 0 {
                 state.execution.redoIndex += 1;
                 state.execution.redoWhy |= ReasonCodes::DSNotResolved
             }
@@ -1064,8 +1064,8 @@ pub unsafe fn v_equ(str: *mut i8, dummy: *mut _MNE) {
     if lab.is_null() {
         lab = CreateSymbol(transient::string_to_str_pointer(av_0.clone()), av_0.len() as i32)
     }
-    if (*lab).flags as i32 & SymbolTypes::Unknown as i32 == 0 {
-        if (*sym).flags as i32 & SymbolTypes::Unknown as i32 != 0 {
+    if (*lab).flags & SymbolTypes::Unknown == 0 {
+        if (*sym).flags & SymbolTypes::Unknown != 0 {
             state.execution.redoIndex += 1;
             state.execution.redoWhy |= ReasonCodes::EquNotResolved
         } else if (*lab).value != (*sym).value {
@@ -1081,9 +1081,9 @@ pub unsafe fn v_equ(str: *mut i8, dummy: *mut _MNE) {
         }
     }
     (*lab).value = (*sym).value;
-    (*lab).flags = ((*sym).flags as i32 & (SegmentTypes::Unknown as i32 | SymbolTypes::StringResult as i32)) as u8;
+    (*lab).flags = (*sym).flags & (SegmentTypes::Unknown | SymbolTypes::StringResult);
     (*lab).string = (*sym).string;
-    (*sym).flags = ((*sym).flags as i32 & !(0x8 as i32 | 0x20 as i32)) as u8;
+    (*sym).flags &= !(SymbolTypes::StringResult | SymbolTypes::Macro);
     /* List the value */
     let v: u64 = (*lab).value as u64;
     state.output.generatedLength = 0;
@@ -1250,9 +1250,9 @@ pub unsafe fn v_set(str: *mut i8, _dummy: *mut _MNE) {
         lab = CreateSymbol(transient::string_to_str_pointer(av_0.clone()), av_0.len() as i32);
     }
     (*lab).value = (*sym).value;
-    (*lab).flags = ((*sym).flags as i32 & (0x1 as i32 | 0x8 as i32)) as u8;
+    (*lab).flags = (*sym).flags & (SymbolTypes::Unknown | SymbolTypes::StringResult);
     (*lab).string = (*sym).string;
-    (*sym).flags = ((*sym).flags as i32 & !(0x8 as i32 | 0x20 as i32)) as u8;
+    (*sym).flags &= !(SymbolTypes::StringResult | SymbolTypes::Macro);
     FreeSymbolList(sym);
 }
 
@@ -1270,7 +1270,7 @@ pub unsafe fn v_end(_str: *mut i8, mut _dummy: *mut _MNE) {
     { if state.parameters.debug_extended { log_function!(); } }
 
     /* Only ENDs current file and any macro calls within it */
-    while (*pIncfile).flags as i32 & 0x1 as i32 != 0 {
+    while (*pIncfile).flags & FileFlags::Macro != 0 {
         v_endm(0 as *mut i8, 0 as *mut _MNE);
     }
     fseek((*pIncfile).fi, 0, 2);
@@ -1284,7 +1284,7 @@ pub unsafe fn v_endm(_str: *mut i8, mut _dummy: *mut _MNE) {
     let mut args: *mut _STRLIST = 0 as *mut _STRLIST;
     let mut an: *mut _STRLIST = 0 as *mut _STRLIST;
     /* programlabel(); contrary to documentation */
-    if (*inc).flags as i32 & 0x1 as i32 != 0 {
+    if (*inc).flags & FileFlags::Macro != 0 {
         state.execution.macroLevel -= 1;
         args = (*inc).args;
         while !args.is_null() {
@@ -1315,7 +1315,7 @@ pub unsafe fn v_ifconst(str: *mut i8, _dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     programlabel();
     sym = eval(str, 0);
-    pushif((*sym).flags as i32 == 0);
+    pushif((*sym).flags == 0);
     FreeSymbolList(sym);
 }
 
@@ -1326,7 +1326,7 @@ pub unsafe fn v_ifnconst(str: *mut i8, _dummy: *mut _MNE) {
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     programlabel();
     sym = eval(str, 0);
-    pushif((*sym).flags as i32 != 0);
+    pushif((*sym).flags != 0);
     FreeSymbolList(sym);
 }
 

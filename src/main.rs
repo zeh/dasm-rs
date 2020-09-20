@@ -175,7 +175,7 @@ unsafe fn CountUnresolvedSymbols() -> i32 {
     while i < S_HASH_SIZE as i32 {
         sym = *SHash.as_mut_ptr().offset(i as isize);
         while !sym.is_null() {
-            if (*sym).flags as i32 & 0x1 as i32 != 0 {
+            if (*sym).flags & SymbolTypes::Unknown != 0 {
                 nUnresolved += 1;
             }
             sym = (*sym).next;
@@ -195,7 +195,7 @@ unsafe fn ShowUnresolvedSymbols() -> i32 {
         while i < S_HASH_SIZE as i32 {
             sym = *SHash.as_mut_ptr().offset(i as isize);
             while !sym.is_null() {
-                if (*sym).flags as i32 & 0x1 as i32 != 0 {
+                if (*sym).flags & SymbolTypes::Unknown != 0 {
                     println!("{:24} {}",
                         transient::str_pointer_to_string((*sym).name),
                         formatting::segment_address_to_string((*sym).value as u64, (*sym).flags),
@@ -327,14 +327,14 @@ unsafe fn generate_resolved_symbols_list(sorted: bool) -> String {
                 transient::str_pointer_to_string((**symArray.offset(i as isize)).name),
                 formatting::segment_address_to_string((**symArray.offset(i as isize)).value as u64, (**symArray.offset(i as isize)).flags)
             ).as_str());
-            if (**symArray.offset(i as isize)).flags as i32 & 0x8 as i32 != 0 {
+            if (**symArray.offset(i as isize)).flags & SymbolTypes::StringResult != 0 {
                 result.push_str(format!(
                     " \"{}\"",
                     transient::str_pointer_to_string((**symArray.offset(i as isize)).string),
                 ).as_str());
             }
             result.push_str("\n");
-            i += 1
+            i += 1;
         }
         free(symArray as *mut libc::c_void);
     }
@@ -995,10 +995,10 @@ unsafe fn clearrefs() {
     while (i as i32) < S_HASH_SIZE as i32 {
         sym = *SHash.as_mut_ptr().offset(i as isize);
         while !sym.is_null() {
-            (*sym).flags = ((*sym).flags as i32 & !(0x4 as i32)) as u8;
-            sym = (*sym).next
+            (*sym).flags &= !SymbolTypes::Referenced;
+            sym = (*sym).next;
         }
-        i += 1
+        i += 1;
     };
 }
 /*
@@ -1419,11 +1419,11 @@ pub unsafe fn asmerr(err: AsmErrorEquates, abort: bool, sText: *const i8) -> Asm
     let errorToFile = !state.parameters.list_file.is_empty();
     let errorFile = &mut state.output.listFile;
     if find_error_definition(err).fatal {
-        state.other.stopAtEnd = true
+        state.other.stopAtEnd = true;
     }
     pincfile = pIncfile;
-    while (*pincfile).flags as i32 & 0x1 as i32 != 0 {
-        pincfile = (*pincfile).next
+    while (*pincfile).flags & FileFlags::Macro != 0 {
+        pincfile = (*pincfile).next;
     }
     let mut errorDescription = find_error_definition(err).description.clone().to_owned();
     errorDescription.push_str("\n");

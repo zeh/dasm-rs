@@ -1,6 +1,9 @@
 use crate::constants::{
     S_HASH_SIZE,
 };
+use crate::types::flags::{
+	MnemonicsFlags,
+};
 use crate::types::legacy::{
     _INCFILE,
     _MNE,
@@ -187,14 +190,14 @@ pub static mut mnemonics_operations: [_MNE; 38] = [
 	_MNE {
 		vect: operations::v_macro,
 		name: b"mac\x00" as *const u8 as *const i8,
-		flags: 0x4,
+		flags: MnemonicsFlags::If,
 		okmask: 0,
 		opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	},
 	_MNE {
 		vect: operations::v_endm,
 		name: b"endm\x00" as *const u8 as *const i8,
-		flags: 0x80,
+		flags: MnemonicsFlags::EndMnemonic,
 		okmask: 0,
 		opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	},
@@ -208,56 +211,56 @@ pub static mut mnemonics_operations: [_MNE; 38] = [
 	_MNE {
 		vect: operations::v_ifconst,
 		name: b"ifconst\x00" as *const u8 as *const i8,
-		flags: 0x4,
+		flags: MnemonicsFlags::If,
 		okmask: 0,
 		opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	},
 	_MNE {
 		vect: operations::v_ifnconst,
 		name: b"ifnconst\x00" as *const u8 as *const i8,
-		flags: 0x4,
+		flags: MnemonicsFlags::If,
 		okmask: 0,
 		opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	},
 	_MNE {
 		vect: operations::v_if,
 		name: b"if\x00" as *const u8 as *const i8,
-		flags: 0x4,
+		flags: MnemonicsFlags::If,
 		okmask: 0,
 		opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	},
 	_MNE {
 		vect: operations::v_else,
 		name: b"else\x00" as *const u8 as *const i8,
-		flags: 0x4,
+		flags: MnemonicsFlags::If,
 		okmask: 0,
 		opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	},
 	_MNE {
 		vect: operations::v_endif,
 		name: b"endif\x00" as *const u8 as *const i8,
-		flags: 0x4,
+		flags: MnemonicsFlags::If,
 		okmask: 0,
 		opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	},
 	_MNE {
 		vect: operations::v_endif,
 		name: b"eif\x00" as *const u8 as *const i8,
-		flags: 0x4,
+		flags: MnemonicsFlags::If,
 		okmask: 0,
 		opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	},
 	_MNE {
 		vect: operations::v_repeat,
 		name: b"repeat\x00" as *const u8 as *const i8,
-		flags: 0x4,
+		flags: MnemonicsFlags::If,
 		okmask: 0,
 		opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	},
 	_MNE {
 		vect: operations::v_repend,
 		name: b"repend\x00" as *const u8 as *const i8,
-		flags: 0x4,
+		flags: MnemonicsFlags::If,
 		okmask: 0,
 		opcode: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	},

@@ -61,15 +61,17 @@ static mut specchk: _SYMBOL = _SYMBOL{next: 0 as *const _SYMBOL as *mut _SYMBOL,
             value: 0,
             namelen: 0,};
 #[no_mangle]
-pub unsafe extern "C" fn setspecial(value: i32, flags: i32) {
+pub unsafe extern "C" fn setspecial(value: i32, flags: u8) {
     special.value = value as i64; /* historical */
-    special.flags = flags as u8; /* historical */
+    special.flags = flags;
 }
 #[no_mangle]
 pub unsafe extern "C" fn findsymbol(mut str: *const i8, mut len: i32) -> *mut _SYMBOL {
     let mut h1: u32 = 0; /*	permalloc zeros the array for us */
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    if len > MAX_SYMBOLS as i32 { len = MAX_SYMBOLS as i32 }
+    if len > MAX_SYMBOLS as i32 {
+        len = MAX_SYMBOLS as i32;
+    }
     if *str.offset(0) as i32 == '.' as i32 {
         if len == 1 {
             let currentSegment = &mut state.other.segments[state.other.currentSegment];
@@ -281,10 +283,10 @@ pub unsafe extern "C" fn FreeSymbolList(mut sym: *mut _SYMBOL) {
     while !sym.is_null() {
         next = (*sym).next;
         (*sym).next = SymAlloc;
-        if (*sym).flags as i32 & 0x8 as i32 != 0 {
+        if (*sym).flags & SymbolTypes::StringResult != 0 {
             free((*sym).string as *mut libc::c_void);
         }
         SymAlloc = sym;
-        sym = next
+        sym = next;
     };
 }

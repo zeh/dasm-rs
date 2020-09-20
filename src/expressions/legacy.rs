@@ -14,6 +14,7 @@ use crate::expressions::operations::{
 use crate::globals::state;
 use crate::types::flags::{
     ReasonCodes,
+    SymbolTypes,
 };
 use crate::types::enums::{
     AddressModes,
@@ -329,15 +330,15 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                     (*cur).flags = last_argument.flags;
                     (*cur).string = match last_argument.string {
                         Some(result) => transient::string_to_str_pointer(result),
-                        None => 0 as *mut i8
+                        None => 0 as *mut i8,
                     };
                     if !(*cur).string.is_null() {
-                        (*cur).flags = ((*cur).flags as i32 | 0x8 as i32) as u8;
+                        (*cur).flags |= SymbolTypes::StringResult;
                         if state.parameters.debug {
                             println!("STRING: {}", transient::str_pointer_to_string((*cur).string));
                         }
                     }
-                    cur = pNewSymbol
+                    cur = pNewSymbol;
                 }
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
@@ -422,13 +423,13 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
             None => 0 as *mut i8
         };
         if !(*cur).string.is_null() {
-            (*cur).flags = ((*cur).flags as i32 | 0x8 as i32) as u8;
+            (*cur).flags |= SymbolTypes::StringResult;
             if state.parameters.debug {
                 println!("STRING: {}", transient::str_pointer_to_string((*cur).string));
             }
         }
         if (*base).addrmode as i32 == 0 {
-            (*base).addrmode = AddressModes::ByteAdr as i32 as u8
+            (*base).addrmode = AddressModes::ByteAdr as i32 as u8;
         }
     }
     if state.expressions.arguments.len() != state.expressions.argument_len_base || state.expressions.operations.len() != state.expressions.operation_len_base {
@@ -441,7 +442,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
     return base;
 }
 
-pub unsafe fn execute_op_func(op_func: ExpressionOperationFunc, v1: i64, v2: i64, f1: i32, f2: i32) {
+pub unsafe fn execute_op_func(op_func: ExpressionOperationFunc, v1: i64, v2: i64, f1: u8, f2: u8) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("{} {} {} {}", v1, v2, f1, f2); } }
 
@@ -486,8 +487,7 @@ pub unsafe fn evaltop() {
                 operation.func.unwrap(),
                 argument.value,
                 0,
-                // FIXME: remove this conversion
-                argument.flags as i32,
+                argument.flags,
                 0,
             );
         }
@@ -504,15 +504,13 @@ pub unsafe fn evaltop() {
                 operation.func.unwrap(),
                 argument0.value,
                 argument1.value,
-                // FIXME: remove this conversion
-                argument0.flags as i32,
-                // FIXME: remove this conversion
-                argument1.flags as i32,
+                argument0.flags,
+                argument1.flags,
             );
         }
     };
 }
-unsafe fn stackarg(mut val: i64, mut flags: i32, ptr1: *const i8) {
+unsafe fn stackarg(mut val: i64, mut flags: u8, ptr1: *const i8) {
     let mut str: *mut i8 = 0 as *mut i8;
     if state.parameters.debug {
         println!("stackarg {} (@{})", val, state.expressions.arguments.len());
@@ -520,7 +518,7 @@ unsafe fn stackarg(mut val: i64, mut flags: i32, ptr1: *const i8) {
         { if state.parameters.debug_extended { log_function_with!("{} {} [[{}]]", val, flags, if ptr1.is_null() { String::from("null") } else { transient::str_pointer_to_string(ptr1) }); } }
     }
     state.expressions.last_was_operation = false;
-    if flags & 0x8 as i32 != 0 {
+    if flags & SymbolTypes::StringResult != 0 {
         /*
            Why unsigned char? Looks like we're converting to
            long in a very strange way... [phf]
@@ -538,14 +536,13 @@ unsafe fn stackarg(mut val: i64, mut flags: i32, ptr1: *const i8) {
         new = ckmalloc(len + 1);
         memcpy(new as *mut libc::c_void, ptr1 as *const libc::c_void, len as u64);
         *new.offset(len as isize) = 0;
-        flags &= !(0x8 as i32);
+        flags &= !(SymbolTypes::StringResult);
         str = new
     }
     state.expressions.arguments.push(
         ExpressionStackArgument {
             value: val,
-            // FIXME: fix type, remove conversion
-            flags: flags as u8,
+            flags,
             string: if str.is_null() {
                 None
             } else {
@@ -648,7 +645,7 @@ pub unsafe fn pushbin(mut str: *const i8) -> *const i8 {
     return str;
 }
 pub unsafe fn pushstr(mut str: *const i8) -> *const i8 {
-    stackarg(0, 0x8 as i32, str);
+    stackarg(0, SymbolTypes::StringResult, str);
     while *str as i32 != 0 && *str as i32 != '\"' as i32 {
         str = str.offset(1);
     }
@@ -684,24 +681,26 @@ pub unsafe fn pushsymbol(str: *const i8) -> *const i8 {
     if *ptr as i32 == '$' as i32 { ptr = ptr.offset(1) }
     sym = findsymbol(str, ptr.wrapping_offset_from(str) as i64 as i32);
     if !sym.is_null() {
-        if (*sym).flags as i32 & 0x1 as i32 != 0 {
+        if (*sym).flags & SymbolTypes::Unknown != 0 {
             state.execution.redoEval += 1;
         }
-        if (*sym).flags as i32 & 0x20 as i32 != 0 {
+        if (*sym).flags & SymbolTypes::Macro != 0 {
             macro_0 = 1;
             sym = eval((*sym).string, 0);
         }
-        if (*sym).flags as i32 & 0x8 as i32 != 0 {
-            stackarg(0, 0x8 as i32, (*sym).string);
+        if (*sym).flags & SymbolTypes::StringResult != 0 {
+            stackarg(0, SymbolTypes::StringResult, (*sym).string);
         } else {
-            stackarg((*sym).value, (*sym).flags as i32 & 0x1 as i32, 0 as *const i8);
+            stackarg((*sym).value, (*sym).flags & SymbolTypes::Unknown, 0 as *const i8);
         }
-        (*sym).flags = ((*sym).flags as i32 | (0x4 as i32 | 0x40 as i32)) as u8;
-        if macro_0 != 0 { FreeSymbolList(sym); }
+        (*sym).flags |= SymbolTypes::Referenced | SymbolTypes::MasterReference;
+        if macro_0 != 0 {
+            FreeSymbolList(sym);
+        }
     } else {
-        stackarg(0, 0x1 as i32, 0 as *const i8);
+        stackarg(0, SymbolTypes::Unknown, 0 as *const i8);
         sym = CreateSymbol(str, ptr.wrapping_offset_from(str) as i64 as i32);
-        (*sym).flags = (0x4 as i32 | 0x40 as i32 | 0x1 as i32) as u8;
+        (*sym).flags |= SymbolTypes::Referenced | SymbolTypes::MasterReference | SymbolTypes::Unknown;
         state.execution.redoEval += 1;
     }
     return ptr;

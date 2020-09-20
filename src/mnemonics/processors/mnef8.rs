@@ -7,6 +7,7 @@ use crate::mnemonics;
 use crate::types::flags::{
     ReasonCodes,
     SegmentTypes,
+    SymbolTypes,
 };
 use crate::types::enums::{
     AddressModes,
@@ -180,11 +181,13 @@ unsafe fn parse_value(str: *const i8, value: *mut u64) -> i32 {
     sym = eval(str, 0);
     if !(*sym).next.is_null() || AddressModes::ByteAdr as u8 != (*sym).addrmode {
         asmerr(AsmErrorEquates::SyntaxError, true, str);
-    } else if (*sym).flags as i32 & 0x1 as i32 != 0 {
+    } else if (*sym).flags & SymbolTypes::Unknown != 0 {
         state.execution.redoIndex += 1;
         state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved;
-        result = 1
-    } else { *value = (*sym).value as u64 }
+        result = 1;
+    } else {
+        *value = (*sym).value as u64;
+    }
     FreeSymbolList(sym);
     return result;
 }
