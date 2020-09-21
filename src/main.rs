@@ -126,8 +126,6 @@ extern "C" {
     static mut SHash: [*mut _SYMBOL; 0];
     #[no_mangle]
     static mut pIncfile: *mut _INCFILE;
-    #[no_mangle]
-    static mut Avbuf: [i8; 0];
     /* exp.c */
     #[no_mangle]
     fn eval(str: *const i8, wantmode: i32) -> *mut _SYMBOL;
@@ -1153,67 +1151,68 @@ pub unsafe fn parse(buf: *mut i8) -> MacroOrMnemonicPointer {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(buf)); } }
 
-    let mut i: usize = 0;
-    let mut j: usize = 1;
     let mut labelundefined: i32 = 0;
-    /*
-        If the first non-space is a ^, skip all further spaces too.
-        This means what follows is a label.
-        If the first non-space is a #, what follows is a directive/opcode.
-    */
-    while *buf.offset(i as isize) as i32 == ' ' as i32 {
-        i += 1;
+    let mut buffer = transient::str_pointer_to_string(buf);
+    let mut buffer_pos: usize = 0;
+    let mut av_0 = String::new();
+    let mut av_1 = String::new();
+    let mut av_2 = String::new();
+
+    // Skip all spaces
+    while buffer.at(buffer_pos) == " " {
+        buffer_pos += 1;
     }
-    if *buf.offset(i as isize) as i32 == '^' as i32 {
-        i += 1;
-        while *buf.offset(i as isize) as i32 == ' ' as i32 {
-            i += 1;
+
+    if buffer.at(buffer_pos) == "^" {
+        // If the first non-space is a ^, skip all further spaces too.
+        // This means what follows is a label.
+        buffer_pos += 1;
+        while buffer.at(buffer_pos) == " " {
+            buffer_pos += 1;
         }
-    } else if *buf.offset(i as isize) as i32 == '#' as i32 {
-        *buf.offset(i as isize) = ' ' as i32 as i8
-        /* label separator */
+    } else if buffer.at(buffer_pos) == "#" {
+        // If the first non-space is a #, what follows is a directive/opcode.
+        buffer.replace_range(buffer_pos..buffer_pos + 1, " "); // Label separator
     } else {
-        i = 0;
+        // Otherwise, don't skip anything
+        buffer_pos = 0;
     }
 
-    let av_0_offset = j;
-
-    while *buf.offset(i as isize) as i32 != 0 && *buf.offset(i as isize) as i32 != ' ' as i32 && *buf.offset(i as isize) as i32 != '=' as i32 {
-        if *buf.offset(i as isize) as i32 == ':' as i32 {
-            i += 1;
+    while buffer_pos < buffer.len() && buffer.at(buffer_pos) != " " && buffer.at(buffer_pos) != "=" {
+        if buffer.at(buffer_pos) == ":" {
+            buffer_pos += 1;
             break;
-        } else if *buf.offset(i as isize) as i32 == ',' as i32 {
-            // we have label arguments
-            if *buf.offset((i + 1) as isize) as i32 == '\"' as i32 {
-                // is it a string constant?
-                i = i + 2; // advance to string contents
-                while *buf.offset(i as isize) as i32 != 0
-                    && *buf.offset(i as isize) as i32 != '\"' as i32
-                    && *buf.offset(i as isize) as i32 != ' ' as i32
-                    && *buf.offset(i as isize) as i32 != ',' as i32
-                    && *buf.offset(i as isize) as i32 != ':' as i32
-                {
-                    *Avbuf.as_mut_ptr().offset(j as isize) = *buf.offset(i as isize);
-                    i += 1;
-                    j += 1;
+        } else if buffer.at(buffer_pos) == "," {
+            // We have label arguments
+
+            // Is it a string constant?
+            if buffer.at(buffer_pos + 1) == "\"" {
+                // Advance to string contents
+                buffer_pos += 2;
+
+                let mut bc = buffer.at(buffer_pos);
+                while buffer_pos < buffer.len() && bc != "\"" && bc != " " && bc != "," && bc != ":" {
+                    av_0.push_str(bc);
+                    buffer_pos += 1;
+                    bc = buffer.at(buffer_pos);
                 }
-                if *buf.offset(i as isize) as i32 != 0 && *buf.offset(i as isize) as i32 == '\"' as i32 {
-                    i += 1
+
+                if buffer_pos < buffer.len() && bc == "\"" {
+                    buffer_pos += 1;
                 } else {
                     labelundefined += 1;
-                    asmerr(AsmErrorEquates::SyntaxError, false, buf);
+                    asmerr(AsmErrorEquates::SyntaxError, false, transient::string_to_str_pointer(buffer.clone()));
                 }
             } else {
-                // or else it's a symbol to be evaluated, and added to the label
+                // Or else it's a symbol to be evaluated, and added to the label
                 let mut t: usize = 0;
                 let mut temp_buffer = String::new();
-                let buffer = transient::str_pointer_to_string(buf);
                 let mut symarg: *mut _SYMBOL = 0 as *mut _SYMBOL;
-                temp_buffer.push_str(&buffer[i + 1..]);
+                temp_buffer.push_str(&buffer[buffer_pos + 1..]);
                 temp_buffer.truncate(256);
 
                 while t < temp_buffer.len() {
-                    if temp_buffer.as_bytes()[t] == ',' as u8 {
+                    if temp_buffer.at(t) == "," {
                         temp_buffer.truncate(t);
                     }
                     t += 1;
@@ -1223,72 +1222,61 @@ pub unsafe fn parse(buf: *mut i8) -> MacroOrMnemonicPointer {
                     if (*symarg).flags & SymbolTypes::Unknown != 0 {
                         // One of the arguments isn't defined yet
                         // Ensure the label we're creating doesn't get used
-                        labelundefined += 1;
+                        labelundefined += 1
                     } else {
-                        let temp_value = format!("{}", (*symarg).value);
-                        let temp_value_len = temp_value.len();
-                        strcpy(Avbuf.as_mut_ptr().offset(j as isize), transient::string_to_str_pointer(temp_value));
-                        j += temp_value_len;
+                        let mut temp_value = format!("{}", (*symarg).value);
+                        av_0.push_str(temp_value.as_str());
                     }
                 }
-                i += 1;
-                while *buf.offset(i as isize) as i32 != 0
-                    && *buf.offset(i as isize) as i32 != ' ' as i32
-                    && *buf.offset(i as isize) as i32 != '=' as i32
-                    && *buf.offset(i as isize) as i32 != ',' as i32
-                    && *buf.offset(i as isize) as i32 != ':' as i32
-                {
-                    i += 1;
+
+                buffer_pos += 1;
+                let mut bc = buffer.at(buffer_pos);
+                while buffer_pos < buffer.len() && bc != " " && bc != "=" && bc != "," && bc != ":" {
+                    buffer_pos += 1;
+                    bc = buffer.at(buffer_pos);
                 }
             }
         } else {
-            if *buf.offset(i as isize) as u8 as i32 == 0x80 as i32 {
-                *buf.offset(i as isize) = ' ' as i32 as i8;
+            if buffer_pos < buffer.len() && buffer.at(buffer_pos).as_bytes()[0] as u8 == 0x80 {
+                buffer.replace_range(buffer_pos..buffer_pos + 1, " ");
             }
-            *Avbuf.as_mut_ptr().offset(j as isize) = *buf.offset(i as isize);
-            i += 1;
-            j += 1;
+            av_0.push_str(buffer.at(buffer_pos));
+            buffer_pos += 1;
         }
     }
-    *Avbuf.as_mut_ptr().offset(j as isize) = 0;
 
-    j += 1;
-    // if the label has arguments that aren't defined, we need to scuttle it
+    // If the label has arguments that aren't defined, we need to scuttle it
     // to avoid a partial label being used.
     if labelundefined != 0 {
-        j = 1;
-        *Avbuf.as_mut_ptr().offset(j as isize) = 0;
-        j += 1;
+        av_0.clear();
     }
-    /* Parse the second word of the line */
-    while *buf.offset(i as isize) as i32 == ' ' as i32 { i += 1 }
-    let av_1_offset = j;
-
-    if *buf.offset(i as isize) as i32 == '=' as i32 {
-        /* '=' directly seperates Av[0] and Av[2] */
-        *Avbuf.as_mut_ptr().offset(j as isize) = *buf.offset(i as isize);
-        i += 1;
-        j += 1;
-    } else {
-        while *buf.offset(i as isize) as i32 != 0 && *buf.offset(i as isize) as i32 != ' ' as i32 {
-            if *buf.offset(i as isize) as u8 as i32 == 0x80 as i32 {
-                *buf.offset(i as isize) = ' ' as i32 as i8
-            }
-            *Avbuf.as_mut_ptr().offset(j as isize) = *buf.offset(i as isize);
-            i += 1;
-            j += 1;
-        }
-    }
-    *Avbuf.as_mut_ptr().offset(j as isize) = 0;
-    j += 1;
 
     // Set label
-    set_argument(0, transient::str_pointer_to_string(Avbuf.as_mut_ptr().offset(av_0_offset as isize)));
+    set_argument(0, av_0);
+
+    /* Parse the second word of the line */
+    while buffer_pos < buffer.len() && buffer.at(buffer_pos) == " " {
+        buffer_pos += 1;
+    }
+
+    if buffer_pos < buffer.len() && buffer.at(buffer_pos) == "=" {
+        /* '=' directly seperates Av[0] and Av[2] */
+        av_1.push_str(buffer.at(buffer_pos));
+        buffer_pos += 1;
+    } else {
+        while buffer_pos < buffer.len() && buffer.at(buffer_pos) != " " {
+            if buffer.at(buffer_pos).as_bytes()[0] as u8 == 0x80 {
+                buffer.replace_range(buffer_pos..buffer_pos + 1, " ");
+            }
+            av_1.push_str(buffer.at(buffer_pos));
+            buffer_pos += 1;
+        }
+    }
 
     // Set full mnemonic name
-    set_argument(1, transient::str_pointer_to_string(Avbuf.as_mut_ptr().offset(av_1_offset as isize)));
+    set_argument(1, av_1);
 
-    /* and analyse it as an opcode */
+    // Analyse it as an opcode
     let full_mnemonic_or_macro_name = get_argument(1);
     let (mnemonic_name, mnemonic_extension) = parse_mnemonic_name(full_mnemonic_or_macro_name.as_str());
 
@@ -1300,25 +1288,29 @@ pub unsafe fn parse(buf: *mut i8) -> MacroOrMnemonicPointer {
     state.execution.extraString = String::from(mnemonic_extension);
     let mnemonic_maybe = find_mnemonic(&state.execution.mnemonics, mnemonic_name);
     let macro_maybe = find_macro(&state.execution.macros, full_mnemonic_or_macro_name.as_str());
+
     /* Parse the rest of the line */
-    while *buf.offset(i as isize) as i32 == ' ' as i32 { i += 1 }
-    let av_2_offset = j;
-    while *buf.offset(i as isize) != 0 {
-        if *buf.offset(i as isize) as i32 == ' ' as i32 {
-            while *buf.offset((i + 1) as isize) as i32 == ' ' as i32 {
-                i += 1;
+    while buffer_pos < buffer.len() && buffer.at(buffer_pos) == " " {
+        buffer_pos += 1;
+    }
+
+    while buffer_pos < buffer.len() {
+        if buffer.at(buffer_pos) == " " {
+            while buffer_pos < buffer.len() && buffer.at(buffer_pos + 1) == " " {
+                buffer_pos += 1;
             }
         }
-        if *buf.offset(i as isize) as u8 as i32 == 0x80 as i32 {
-            *buf.offset(i as isize) = ' ' as i32 as i8;
-        }
-        *Avbuf.as_mut_ptr().offset(j as isize) = *buf.offset(i as isize);
-        i += 1;
-        j += 1;
-    }
-    *Avbuf.as_mut_ptr().offset(j as isize) = 0;
 
-    set_argument(2, transient::str_pointer_to_string(Avbuf.as_mut_ptr().offset(av_2_offset as isize)));
+        if buffer.at(buffer_pos).as_bytes()[0] as u8 == 0x80 {
+            buffer.replace_range(buffer_pos..buffer_pos + 1, " ");
+        }
+
+        av_2.push_str(buffer.at(buffer_pos));
+        buffer_pos += 1;
+    }
+
+    // Set value
+    set_argument(2, av_2);
 
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function_with!("Ended with mne is_some :: [[{}]]", if mnemonic_maybe.is_some() { "true" } else { "false" }); } }
