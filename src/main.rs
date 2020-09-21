@@ -1320,6 +1320,9 @@ pub unsafe fn parse(buf: *mut i8) -> MacroOrMnemonicPointer {
 
     set_argument(2, transient::str_pointer_to_string(Avbuf.as_mut_ptr().offset(av_2_offset as isize)));
 
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("Ended with mne is_some :: [[{}]]", if mnemonic_maybe.is_some() { "true" } else { "false" }); } }
+
     if mnemonic_maybe.is_some() {
         MacroOrMnemonicPointer::Mnemonic(mnemonic_maybe.unwrap())
     } else if macro_maybe.is_some() {
@@ -1399,6 +1402,9 @@ pub unsafe fn pushinclude(str: *const i8) {
  * FIXME: make this more elegant.
  */
 pub unsafe fn set_argument(position: usize, new_value: String) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("{} => [[{}]]", position, new_value); } }
+
     while state.execution.argumentStack.len() <= position {
         state.execution.argumentStack.push(String::new());
     }
