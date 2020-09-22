@@ -124,8 +124,6 @@ extern "C" {
     fn qsort(__base: *mut libc::c_void, __nmemb: u64, __size: u64, __compar: __compar_fn_t);
     #[no_mangle]
     static mut SHash: [*mut _SYMBOL; 0];
-    #[no_mangle]
-    static mut pIncfile: *mut _INCFILE;
     /* exp.c */
     #[no_mangle]
     fn eval(str: *const i8, wantmode: i32) -> *mut _SYMBOL;
@@ -739,37 +737,37 @@ unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
         }
 
         pushinclude(transient::string_to_str_pointer(options.input.clone()));
-        while !pIncfile.is_null() {
+        while state.execution.includeFiles.len() > 0 {
             loop {
+                let include_file = *state.execution.includeFiles.last().unwrap();
+
                 #[cfg(debug_assertions)]
-                { if state.parameters.debug_extended { log_function_with!("loop start for incfile '{}' @ {} with flags {}", transient::str_pointer_to_string((*pIncfile).name), (*pIncfile).lineno, (*pIncfile).flags); } }
+                { if state.parameters.debug_extended { log_function_with!("loop start for incfile '{}' @ {} with flags {}", transient::str_pointer_to_string((*include_file).name), (*include_file).lineno, (*include_file).flags); } }
 
                 let mut comment: *const i8 = 0 as *const i8;
-                if (*pIncfile).flags & FileFlags::Macro != 0 {
-                    if (*pIncfile).strlist.is_null() {
+                if (*include_file).flags & FileFlags::Macro != 0 {
+                    if (*include_file).strlist.is_null() {
                         set_argument(0, String::new());
                         mnemonics::operations::v_mexit(0 as *mut i8, 0 as *mut _MNE);
                         continue;
                     } else {
-                        strcpy(buf.as_mut_ptr(), (*(*pIncfile).strlist).buf.as_mut_ptr());
-                        (*pIncfile).strlist = (*(*pIncfile).strlist).next;
+                        strcpy(buf.as_mut_ptr(), (*(*include_file).strlist).buf.as_mut_ptr());
+                        (*include_file).strlist = (*(*include_file).strlist).next;
                     }
-                } else if fgets(buf.as_mut_ptr(), MAX_LINES as i32, (*pIncfile).fi).is_null() {
+                } else if fgets(buf.as_mut_ptr(), MAX_LINES as i32, (*include_file).fi).is_null() {
                     break;
                 }
                 if state.parameters.debug {
-                    println!("{:08x} {}", pIncfile as u64, transient::str_pointer_to_string(buf.as_mut_ptr()));
+                    println!("{:08x} {}", include_file as u64, transient::str_pointer_to_string(buf.as_mut_ptr()));
                 }
                 comment = cleanup(buf.as_mut_ptr(), false);
-                (*pIncfile).lineno = (*pIncfile).lineno.wrapping_add(1);
+                (*include_file).lineno = (*include_file).lineno.wrapping_add(1);
                 let mne_or_macro = parse(buf.as_mut_ptr());
                 let current_if = &state.execution.ifs.last().unwrap();
+
                 #[cfg(debug_assertions)]
-                {
-                    if state.parameters.debug_extended {
-                        log_function_with!("current_if = {} {}", current_if.result, current_if.result_acc);
-                    }
-                }
+                { if state.parameters.debug_extended { log_function_with!("current_if = {} {}", current_if.result, current_if.result_acc); } }
+
                 if !get_argument(1).is_empty() {
                     match mne_or_macro {
                         MacroOrMnemonicPointer::Macro(mac) => {
@@ -808,20 +806,22 @@ unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
                 }
             }
 
-            #[cfg(debug_assertions)]
-            { if state.parameters.debug_extended { log_function_with!("loop continue :: incfile '{}' @ {} with flags {}", transient::str_pointer_to_string((*pIncfile).name), (*pIncfile).lineno, (*pIncfile).flags); } }
+            let include_file = *state.execution.includeFiles.last().unwrap();
 
-            while state.execution.repeats.len() > 0 && state.execution.repeats.last().unwrap().file == pIncfile {
+            #[cfg(debug_assertions)]
+            { if state.parameters.debug_extended { log_function_with!("loop continue :: incfile '{}' @ {} with flags {}", transient::str_pointer_to_string((*include_file).name), (*include_file).lineno, (*include_file).flags); } }
+
+            while state.execution.repeats.len() > 0 && state.execution.repeats.last().unwrap().file == include_file {
                 state.execution.repeats.pop();
             }
-            while state.execution.ifs.len() > 0 && state.execution.ifs.last().unwrap().file == pIncfile {
+            while state.execution.ifs.len() > 0 && state.execution.ifs.last().unwrap().file == include_file {
                 state.execution.ifs.pop();
             }
-            fclose((*pIncfile).fi);
-            free((*pIncfile).name as *mut libc::c_void);
+            fclose((*include_file).fi);
+            free((*include_file).name as *mut libc::c_void);
             state.other.incLevel -= 1;
-            rmnode(&mut pIncfile as *mut *mut _INCFILE as *mut *mut libc::c_void, ::std::mem::size_of::<_INCFILE>() as u64 as i32);
-            if !pIncfile.is_null() {
+            state.execution.includeFiles.pop();
+            if state.execution.includeFiles.len() > 0 {
                 /*
                 if (state.options.verbosity as u8 > 1)
                 println!("back to: {}", Incfile->name);
@@ -830,11 +830,12 @@ unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
                     &mut state.output.listFile,
                     format!(
                         "------- FILE {}",
-                        transient::str_pointer_to_string((*pIncfile).name),
+                        transient::str_pointer_to_string((*(*state.execution.includeFiles.last().unwrap())).name),
                     ).as_str(),
                 );
             }
         }
+
         if state.parameters.verbosity as u8 >= Verbosity::One as u8 {
             ShowSegments();
         }
@@ -918,7 +919,8 @@ pub unsafe fn outlistfile(comment: *const i8) {
     let mut c: char = 0 as char;
     let mut buffer: String = String::new();
     let mut i: usize = 0;
-    if (*pIncfile).flags & FileFlags::NoList != 0 {
+    let include_file = *state.execution.includeFiles.last().unwrap();
+    if (*include_file).flags & FileFlags::NoList != 0 {
         return;
     }
     xtrue = if current_if.result && current_if.result_acc {
@@ -940,7 +942,7 @@ pub unsafe fn outlistfile(comment: *const i8) {
     buffer.push_str(
         format!(
             "{:7} {}{}",
-            (*pIncfile).lineno,
+            (*include_file).lineno,
             c,
             formatting::segment_address_to_string(state.execution.programOrg, state.execution.programFlags & 7),
         ).as_str()
@@ -1021,6 +1023,7 @@ pub unsafe fn cleanup(buf: *mut i8, bDisable: bool) -> *const i8 {
     let mut arg: i32 = 0;
     let mut add: i32 = 0;
     let mut comment: *const i8 = b"\x00" as *const u8 as *const i8;
+    let include_file = *state.execution.includeFiles.last().unwrap();
     str = buf;
     while *str != 0 {
         match *str as u8 as char {
@@ -1083,7 +1086,7 @@ pub unsafe fn cleanup(buf: *mut i8, bDisable: bool) -> *const i8 {
                         if state.parameters.debug {
                             println!("add/str: {} '{}'", add, transient::str_pointer_to_string(str));
                         }
-                        strlist = (*pIncfile).args;
+                        strlist = (*include_file).args;
                         while arg != 0 && !strlist.is_null() {
                             arg -= 1;
                             strlist = (*strlist).next
@@ -1141,21 +1144,7 @@ pub unsafe fn cleanup(buf: *mut i8, bDisable: bool) -> *const i8 {
 }
 
 /*
-*  bytes arg will eventually be used to implement a linked list of free
-*  nodes.
-*  Assumes *base is really a pointer to a structure with .next as the first
-*  member.
-*/
-unsafe fn rmnode(base: *mut *mut libc::c_void, mut _bytes: i32) {
-    let mut node: *mut libc::c_void = 0 as *mut libc::c_void;
-    node = *base;
-    if !node.is_null() {
-        *base = *(node as *mut *mut libc::c_void);
-        free(node);
-    };
-}
-/*
-*  Parse into three arguments: Av[0], Av[1], Av[2]
+* Parse into three arguments: Av[0], Av[1], Av[2]
 */
 pub unsafe fn parse(buf: *mut i8) -> MacroOrMnemonicPointer {
     #[cfg(debug_assertions)]
@@ -1391,11 +1380,10 @@ pub unsafe fn pushinclude(str: *const i8) {
             ).as_str(),
         );
         inf = zmalloc(::std::mem::size_of::<_INCFILE>() as u64 as i32) as *mut _INCFILE;
-        (*inf).next = pIncfile;
         (*inf).name = strcpy(ckmalloc(strlen(str).wrapping_add(1) as i32), str);
         (*inf).fi = fi;
         (*inf).lineno = 0;
-        pIncfile = inf;
+        state.execution.includeFiles.push(inf);
         return;
     }
     println!("Warning: Unable to open '{}'", transient::str_pointer_to_string(str));
@@ -1425,17 +1413,24 @@ pub unsafe fn get_argument(position: usize) -> String {
 
 pub unsafe fn asmerr(err: AsmErrorEquates, abort: bool, sText: *const i8) -> AsmErrorEquates {
     let mut errorOutput: String = String::new();
-    let mut pincfile: *mut _INCFILE = 0 as *mut _INCFILE;
     /* file pointer we print error messages to */
     let errorToFile = !state.parameters.list_file.is_empty();
     let errorFile = &mut state.output.listFile;
+
     if find_error_definition(err).fatal {
         state.other.stopAtEnd = true;
     }
-    pincfile = pIncfile;
-    while (*pincfile).flags & FileFlags::Macro != 0 {
-        pincfile = (*pincfile).next;
+
+    let mut last_include_file = *state.execution.includeFiles.last().unwrap();
+    while state.execution.includeFiles.len() > 0 {
+        if (*last_include_file).flags & FileFlags::Macro != 0 {
+            state.execution.includeFiles.pop();
+            last_include_file = *state.execution.includeFiles.last().unwrap();
+        } else {
+            break;
+        }
     }
+
     let mut errorDescription = find_error_definition(err).description.clone().to_owned();
     errorDescription.push_str("\n");
     /*
@@ -1454,8 +1449,8 @@ pub unsafe fn asmerr(err: AsmErrorEquates, abort: bool, sText: *const i8) -> Asm
             */
             let errorMessage = format!(
                 "{} ({}): error: ",
-                transient::str_pointer_to_string((*pincfile).name),
-                (*pincfile).lineno
+                transient::str_pointer_to_string((*last_include_file).name),
+                (*last_include_file).lineno
             );
             if errorToFile {
                 filesystem::write_to_file_maybe(errorFile, errorMessage.as_str());
@@ -1474,8 +1469,8 @@ pub unsafe fn asmerr(err: AsmErrorEquates, abort: bool, sText: *const i8) -> Asm
             */
             let errorMessage = format!(
                 "line {:>7} {:10} ",
-                (*pincfile).lineno,
-                transient::str_pointer_to_string((*pincfile).name),
+                (*last_include_file).lineno,
+                transient::str_pointer_to_string((*last_include_file).name),
             );
             if errorToFile {
                 filesystem::write_to_file_maybe(errorFile, errorMessage.as_str());
@@ -1489,8 +1484,8 @@ pub unsafe fn asmerr(err: AsmErrorEquates, abort: bool, sText: *const i8) -> Asm
             */
             let errorMessage = format!(
                 "{}:{}: error: ",
-                transient::str_pointer_to_string((*pincfile).name),
-                (*pincfile).lineno,
+                transient::str_pointer_to_string((*last_include_file).name),
+                (*last_include_file).lineno,
             );
             if errorToFile {
                 filesystem::write_to_file_maybe(errorFile, errorMessage.as_str());

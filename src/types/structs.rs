@@ -110,6 +110,7 @@ pub struct ExecutionState {
 	pub extraString: String,
 	pub ifs: Vec<StackIf>, // IF/ELSE/ENDIF stack
 	pub includeDirList: Vec<String>,
+	pub includeFiles: Vec<*mut _INCFILE>, // Include file stack
 	pub isClear: bool,
 	pub lastLocalDollarIndex: u64,
 	pub lastLocalIndex: u64,

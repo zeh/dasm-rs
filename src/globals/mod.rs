@@ -10,6 +10,7 @@ use crate::types::enums::{
 	Verbosity,
 };
 use crate::types::legacy::{
+	_INCFILE,
 	_MACRO,
 	_MNE,
 };
@@ -67,6 +68,7 @@ pub static mut state: GlobalState = GlobalState {
 		extraString: String::new(),
 		ifs: Vec::<StackIf>::new(),
 		includeDirList: Vec::<String>::new(),
+		includeFiles: Vec::<*mut _INCFILE>::new(),
 		isClear: false,
 		lastLocalDollarIndex: 0,
 		lastLocalIndex: 0,

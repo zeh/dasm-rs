@@ -5,7 +5,6 @@ use crate::types::flags::{
 	MnemonicsFlags,
 };
 use crate::types::legacy::{
-    _INCFILE,
     _MNE,
     _SYMBOL,
 };
@@ -19,9 +18,6 @@ use crate::mnemonics::{
 #[no_mangle]
 pub static mut SHash: [*mut _SYMBOL; S_HASH_SIZE] = [0 as *const _SYMBOL as *mut _SYMBOL; S_HASH_SIZE];
 /*	symbol hash table   */
-#[no_mangle]
-pub static mut pIncfile: *mut _INCFILE = 0 as *const _INCFILE as *mut _INCFILE;
-/*	include file stack  */
 
 pub static mut mnemonics_operations: [_MNE; 38] = [
 	_MNE {

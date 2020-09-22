@@ -48,7 +48,6 @@ use crate::types::enums::{
     Processors,
 };
 use crate::types::legacy::{
-    _INCFILE,
     _MACRO,
     _MNE,
     _STRLIST,
@@ -94,8 +93,6 @@ extern "C" {
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
-    #[no_mangle]
-    static mut pIncfile: *mut _INCFILE;
     #[no_mangle]
     fn setspecial(value: i32, flags: u8);
     #[no_mangle]
@@ -245,12 +242,14 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
         }
     }
 
-    while !fgets(buf.as_mut_ptr(), MAX_LINES as i32, (*pIncfile).fi).is_null() {
+    let include_file = *state.execution.includeFiles.last().unwrap();
+
+    while !fgets(buf.as_mut_ptr(), MAX_LINES as i32, (*include_file).fi).is_null() {
         let mut comment: *const i8 = 0 as *const i8;
         if state.parameters.debug {
-            println!("{:08x} {}", pIncfile as u64, transient::str_pointer_to_string(buf.as_mut_ptr()));
+            println!("{:08x} {}", include_file as u64, transient::str_pointer_to_string(buf.as_mut_ptr()));
         }
-        (*pIncfile).lineno = (*pIncfile).lineno.wrapping_add(1);
+        (*include_file).lineno = (*include_file).lineno.wrapping_add(1);
         comment = cleanup(buf.as_mut_ptr(), true);
         let mne_or_macro = parse(buf.as_mut_ptr());
         if !get_argument(1).is_empty() {
@@ -543,10 +542,12 @@ pub unsafe fn v_list(str: *mut i8, _dummy: *mut _MNE) {
     // Only so outlist() works
     state.output.generatedLength = 0;
 
+    let include_file = *state.execution.includeFiles.last().unwrap();
+
     if strncmp(str, b"localoff\x00" as *const u8 as *const i8, 7) == 0 || strncmp(str, b"LOCALOFF\x00" as *const u8 as *const i8, 7) == 0 {
-        (*pIncfile).flags = (*pIncfile).flags | FileFlags::NoList;
+        (*include_file).flags |= FileFlags::NoList;
     } else if strncmp(str, b"localon\x00" as *const u8 as *const i8, 7) == 0 || strncmp(str, b"LOCALON\x00" as *const u8 as *const i8, 7) == 0 {
-        (*pIncfile).flags = ((*pIncfile).flags & !(FileFlags::NoList)) as u8;
+        (*include_file).flags &= !FileFlags::NoList;
     } else if strncmp(str, b"off\x00" as *const u8 as *const i8, 2) == 0 || strncmp(str, b"OFF\x00" as *const u8 as *const i8, 2) == 0 {
         state.execution.listMode = ListMode::None
     } else {
@@ -1269,33 +1270,36 @@ pub unsafe fn v_end(_str: *mut i8, mut _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function!(); } }
 
+    let include_file = *state.execution.includeFiles.last().unwrap();
+
     /* Only ENDs current file and any macro calls within it */
-    while (*pIncfile).flags & FileFlags::Macro != 0 {
+    while (*include_file).flags & FileFlags::Macro != 0 {
         v_endm(0 as *mut i8, 0 as *mut _MNE);
     }
-    fseek((*pIncfile).fi, 0, 2);
+    fseek((*include_file).fi, 0, 2);
 }
 
 pub unsafe fn v_endm(_str: *mut i8, mut _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function!(); } }
 
-    let inc: *mut _INCFILE = pIncfile;
+    let include_file = *state.execution.includeFiles.last().unwrap();
+
     let mut args: *mut _STRLIST = 0 as *mut _STRLIST;
     let mut an: *mut _STRLIST = 0 as *mut _STRLIST;
     /* programlabel(); contrary to documentation */
-    if (*inc).flags & FileFlags::Macro != 0 {
+    if (*include_file).flags & FileFlags::Macro != 0 {
         state.execution.macroLevel -= 1;
-        args = (*inc).args;
+        args = (*include_file).args;
         while !args.is_null() {
             an = (*args).next;
             free(args as *mut libc::c_void);
             args = an
         }
-        state.execution.localIndex = (*inc).saveidx;
-        state.execution.localDollarIndex = (*inc).savedolidx;
-        pIncfile = (*inc).next;
-        free(inc as *mut libc::c_void);
+        state.execution.localIndex = (*include_file).saveidx;
+        state.execution.localDollarIndex = (*include_file).savedolidx;
+        state.execution.includeFiles.pop();
+        free(include_file as *mut libc::c_void);
         return;
     }
     println!("not within a macro");
@@ -1367,12 +1371,14 @@ pub unsafe fn v_endif(_str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function!(); } }
 
+    let include_file = *state.execution.includeFiles.last().unwrap();
+
     let current_if = &state.execution.ifs.last().unwrap();
     if current_if.flags & IfFlags::Base == 0 {
         if current_if.result_acc {
             programlabel();
         }
-        if current_if.file != pIncfile {
+        if current_if.file != include_file {
             println!("too many endif\'s");
         } else {
             &state.execution.ifs.pop();
@@ -1405,16 +1411,18 @@ pub unsafe fn v_repeat(str: *mut i8, _dummy: *mut _MNE) {
         return;
     }
 
+    let include_file = *state.execution.includeFiles.last().unwrap();
+
     let repeat = StackRepeat {
         count: (*sym).value as u64,
-        file: pIncfile,
+        file: include_file,
         flags: (*sym).flags,
-        line_number: (*pIncfile).lineno,
+        line_number: (*include_file).lineno,
         // FIXME: ugh, change this
-        seek: if (*pIncfile).flags & FileFlags::Macro != 0 {
-            (*pIncfile).strlist as i64 as u64
+        seek: if (*include_file).flags & FileFlags::Macro != 0 {
+            (*include_file).strlist as i64 as u64
         } else {
-            ftell((*pIncfile).fi) as u64
+            ftell((*include_file).fi) as u64
         }
     };
 
@@ -1433,7 +1441,9 @@ pub unsafe fn v_repend(_str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
     { if state.parameters.debug_extended { log_function!(); } }
 
-    let current_if = &state.execution.ifs.last().unwrap();
+    let include_file = *state.execution.includeFiles.last().unwrap();
+
+    let current_if = state.execution.ifs.last().unwrap();
     if !current_if.result || !current_if.result_acc {
         v_endif(0 as *mut i8, 0 as *mut _MNE);
         return;
@@ -1441,17 +1451,17 @@ pub unsafe fn v_repend(_str: *mut i8, _dummy: *mut _MNE) {
 
     if state.execution.repeats.len() > 0 {
         let mut current_repeat = &mut state.execution.repeats.last_mut().unwrap();
-        if current_repeat.file == pIncfile {
+        if current_repeat.file == include_file {
             if current_repeat.flags == 0 && {
                 current_repeat.count -= 1;
                 current_repeat.count != 0
             } {
-                if (*pIncfile).flags & FileFlags::Macro != 0 {
-                    (*pIncfile).strlist = current_repeat.seek as *mut _STRLIST
+                if (*include_file).flags & FileFlags::Macro != 0 {
+                    (*include_file).strlist = current_repeat.seek as *mut _STRLIST
                 } else {
-                    fseek((*pIncfile).fi, current_repeat.seek as i64, 0);
+                    fseek((*include_file).fi, current_repeat.seek as i64, 0);
                 }
-                (*pIncfile).lineno = current_repeat.line_number
+                (*include_file).lineno = current_repeat.line_number
             } else {
                 state.execution.repeats.pop();
                 v_endif(0 as *mut i8, 0 as *mut _MNE);
@@ -1549,9 +1559,11 @@ pub unsafe fn genfill(fill: i64, entries: i64, size: i32) {
 
 pub unsafe fn pushif(value: bool) {
     let current_if = &state.execution.ifs.last().unwrap();
+
+    let include_file = *state.execution.includeFiles.last().unwrap();
     &state.execution.ifs.push(
         StackIf {
-            file: pIncfile,
+            file: include_file,
             flags: 0,
             result: value,
             result_acc: current_if.result_acc && current_if.result,

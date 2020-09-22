@@ -57,7 +57,6 @@ pub struct _MACRO {
 
 #[repr(C)]
 pub struct _INCFILE {
-	pub next: *mut _INCFILE,
 	pub name: *mut i8,
 	pub fi: *mut FILE,
 	pub lineno: u64,

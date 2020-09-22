@@ -30,8 +30,6 @@ extern "C" {
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
-    static mut pIncfile: *mut _INCFILE;
-    #[no_mangle]
     fn zmalloc(bytes: i32) -> *mut i8;
     #[no_mangle]
     fn ckmalloc(bytes: i32) -> *mut i8;
@@ -85,16 +83,16 @@ pub unsafe fn v_execmac(mut str: *mut i8, mac: *mut _MACRO) {
         while *str as i32 == ' ' as i32 { str = str.offset(1) }
     }
     inc = zmalloc(::std::mem::size_of::<_INCFILE>() as u64 as i32) as *mut _INCFILE;
-    (*inc).next = pIncfile;
+    let last_include_file = *state.execution.includeFiles.last().unwrap();
     (*inc).name = (*mac).name;
-    (*inc).fi = (*pIncfile).fi;
+    (*inc).fi = (*last_include_file).fi;
     (*inc).lineno = 0;
     (*inc).flags = 0x1;
     (*inc).saveidx = state.execution.localIndex;
     (*inc).savedolidx = state.execution.localDollarIndex;
     (*inc).strlist = (*mac).strlist;
     (*inc).args = base;
-    pIncfile = inc;
+    state.execution.includeFiles.push(inc);
     state.execution.lastLocalIndex += 1;
     state.execution.localIndex = state.execution.lastLocalIndex;
     state.execution.lastLocalDollarIndex += 1;
