@@ -639,6 +639,9 @@ fn print_command_line_help() {
 }
 
 unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function!(); } }
+
     let mut nError: AsmErrorEquates = AsmErrorEquates::None;
     let mut buf: [i8; MAX_LINES] = [0; MAX_LINES];
     let mut oldRedoIndex: i32 = -1;
@@ -737,7 +740,10 @@ unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
 
         pushinclude(transient::string_to_str_pointer(options.input.clone()));
         while !pIncfile.is_null() {
-            loop  {
+            loop {
+                #[cfg(debug_assertions)]
+                { if state.parameters.debug_extended { log_function_with!("loop start for incfile '{}' @ {} with flags {}", transient::str_pointer_to_string((*pIncfile).name), (*pIncfile).lineno, (*pIncfile).flags); } }
+
                 let mut comment: *const i8 = 0 as *const i8;
                 if (*pIncfile).flags & FileFlags::Macro != 0 {
                     if (*pIncfile).strlist.is_null() {
@@ -801,6 +807,10 @@ unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
                     outlistfile(comment);
                 }
             }
+
+            #[cfg(debug_assertions)]
+            { if state.parameters.debug_extended { log_function_with!("loop continue :: incfile '{}' @ {} with flags {}", transient::str_pointer_to_string((*pIncfile).name), (*pIncfile).lineno, (*pIncfile).flags); } }
+
             while state.execution.repeats.len() > 0 && state.execution.repeats.last().unwrap().file == pIncfile {
                 state.execution.repeats.pop();
             }
@@ -1352,6 +1362,9 @@ pub unsafe fn addhashtable(first_mne: *mut _MNE, len: usize) {
 }
 
 pub unsafe fn pushinclude(str: *const i8) {
+    #[cfg(debug_assertions)]
+    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+
     let mut inf: *mut _INCFILE = 0 as *mut _INCFILE;
     let mut fi: *mut FILE = 0 as *mut FILE;
     fi = pfopen(str, b"rb\x00" as *const u8 as *const i8);
