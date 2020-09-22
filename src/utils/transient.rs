@@ -19,7 +19,7 @@ pub fn str_pointer_to_string(str: *const c_char) -> String {
 		while !sstr.is_null() && *sstr != 0 {
 			let mut str_value = *sstr as u8;
 			// Detect 0x80 because it's used internally as some sort of char token
-			if str_value == 0x80 {
+			if str_value >= 0x80 {
 				sstr_all.push_str(" ");
 			} else {
 				sstr_all.push_str(std::str::from_utf8(&[str_value]).unwrap());
