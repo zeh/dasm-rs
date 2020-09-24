@@ -1,6 +1,7 @@
 // FIXME: remove these unsafe calls coming from main.rs
 use crate::{
     asmerr,
+    OPTIONS,
 };
 use crate::globals::state;
 use crate::types::flags::{
@@ -74,19 +75,19 @@ pub unsafe extern "C" fn generate() {
                     return;
                 }
                 org = currentSegment.org;
-                if state.parameters.format == Format::Default || state.parameters.format == Format::Ras {
+                if OPTIONS.format == Format::Default || OPTIONS.format == Format::Ras {
                     filesystem::write_buffer_to_file_maybe(
                         &mut state.output.outFile,
                         &[(org & 0xff) as u8, (org >> 8 & 0xff) as u8]
                     );
-                    if state.parameters.format == Format::Ras {
+                    if OPTIONS.format == Format::Ras {
                         state.output.seekBack = filesystem::get_stream_position_maybe(&mut state.output.outFile) as i64;
                         state.output.segmentLength = 0;
                         filesystem::write_buffer_to_file_maybe(&mut state.output.outFile, &[0u8, 0u8]);
                     }
                 }
             }
-            match state.parameters.format {
+            match OPTIONS.format {
                 Format::Raw | Format::Default => {
                     if currentSegment.org < org {
                         println!(
@@ -143,7 +144,7 @@ pub unsafe extern "C" fn generate() {
 #[no_mangle]
 pub unsafe extern "C" fn closegenerate() {
     if state.execution.redoIndex == 0 {
-        if state.parameters.format == Format::Ras {
+        if OPTIONS.format == Format::Ras {
             filesystem::seek_maybe(&mut state.output.outFile, state.output.seekBack as u64);
             filesystem::write_buffer_to_file_maybe(
                 &mut state.output.outFile,

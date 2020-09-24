@@ -2,6 +2,9 @@ use libc;
 
 // FIXME: remove all unsafe() used in this module
 
+use crate::{
+    OPTIONS,
+};
 use crate::constants::{
     MAX_MACRO_LEVEL,
 };
@@ -41,7 +44,7 @@ extern "C" {
 
 pub unsafe fn v_execmac(mut str: *mut i8, mac: *mut _MACRO) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]] [[{}]]", transient::str_pointer_to_string(str), if mac.is_null() { String::from("null") } else { transient::str_pointer_to_string((*mac).name) }); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]] [[{}]]", transient::str_pointer_to_string(str), if mac.is_null() { String::from("null") } else { transient::str_pointer_to_string((*mac).name) }); } }
 
     let mut inc: *mut _INCFILE = 0 as *mut _INCFILE;
     let mut base: *mut _STRLIST = 0 as *mut _STRLIST;

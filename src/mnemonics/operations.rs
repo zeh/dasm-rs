@@ -10,6 +10,7 @@ use crate::{
     asmerr,
     cleanup,
     get_argument,
+    OPTIONS,
     outlistfile,
     parse,
     pushinclude,
@@ -122,7 +123,7 @@ extern "C" {
 
 pub unsafe fn v_processor(str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     // FIXME: this is a bit dumb and shouldn't be needed. Check if a processor exists only.
     static mut called: bool = false;
@@ -187,7 +188,7 @@ pub unsafe fn v_processor(str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut base: *mut _STRLIST = 0 as *mut _STRLIST; /* slp, mac: might be used uninitialised */
     let mut defined: bool = false; // Conversion note: "not really needed" according to the original code
@@ -215,7 +216,7 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
         defined = true
     } else {
         defined = mnemonic_maybe.is_some() || macro_maybe.is_some();
-        if !state.parameters.list_file.is_empty() && state.execution.listMode != ListMode::None {
+        if !OPTIONS.list_file.is_empty() && state.execution.listMode != ListMode::None {
             outlistfile(b"\x00" as *const u8 as *const i8);
         }
     }
@@ -237,7 +238,7 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
         if macro_maybe.is_some() {
             macro_to_use = macro_maybe.unwrap();
         }
-        if state.parameters.strict_mode && macro_maybe.is_some() && (*(macro_maybe.unwrap())).defpass == state.execution.pass as i32 {
+        if OPTIONS.strict_mode && macro_maybe.is_some() && (*(macro_maybe.unwrap())).defpass == state.execution.pass as i32 {
             asmerr(AsmErrorEquates::MacroRepeated, true, str);
         }
     }
@@ -246,7 +247,7 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
 
     while !fgets(buf.as_mut_ptr(), MAX_LINES as i32, (*include_file).fi).is_null() {
         let mut comment: *const i8 = 0 as *const i8;
-        if state.parameters.debug {
+        if OPTIONS.debug {
             println!("{:08x} {}", include_file as u64, transient::str_pointer_to_string(buf.as_mut_ptr()));
         }
         (*include_file).lineno = (*include_file).lineno.wrapping_add(1);
@@ -281,7 +282,7 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
                 MacroOrMnemonicPointer::None => {}
             }
         }
-        if !skipit && !state.parameters.list_file.is_empty() && state.execution.listMode != ListMode::None {
+        if !skipit && !OPTIONS.list_file.is_empty() && state.execution.listMode != ListMode::None {
             outlistfile(comment);
         }
         if !defined {
@@ -296,7 +297,7 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_mnemonic(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut addressMode: AddressModes = AddressModes::Imp;
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
@@ -528,14 +529,14 @@ pub unsafe fn v_mnemonic(str: *mut i8, mne: *mut _MNE) {
 
 pub unsafe fn v_trace(str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     state.execution.trace = *str.offset(1) as i32 == 'n' as i32;
 }
 
 pub unsafe fn v_list(str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     programlabel();
 
@@ -564,7 +565,7 @@ pub unsafe fn v_list(str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_include(str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     programlabel();
@@ -587,7 +588,7 @@ pub unsafe fn v_include(str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_incbin(str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut binfile: *mut FILE = 0 as *mut FILE;
     programlabel();
@@ -625,7 +626,7 @@ pub unsafe fn v_incbin(str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_seg(str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let strNew = transient::str_pointer_to_string(str);
     for (index, seg) in &mut state.other.segments.iter().enumerate() {
@@ -656,7 +657,7 @@ pub unsafe fn v_seg(str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_hex(str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut i: u8 = 0;
     let mut result: u8 = 0;
@@ -684,7 +685,7 @@ pub unsafe fn v_hex(str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_err(_str: *mut i8, mut _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function!(); } }
+    { if OPTIONS.debug_extended { log_function!(); } }
 
     programlabel();
     asmerr(AsmErrorEquates::ErrPseudoOpEncountered, true, 0 as *const i8);
@@ -693,7 +694,7 @@ pub unsafe fn v_err(_str: *mut i8, mut _dummy: *mut _MNE) {
 
 pub unsafe fn v_dc(mut str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut tmp: *mut _SYMBOL = 0 as *mut _SYMBOL;
@@ -710,7 +711,7 @@ pub unsafe fn v_dc(mut str: *mut i8, mne: *mut _MNE) {
         let mnemonic_extension = transient::str_pointer_to_string(sTmp.as_mut_ptr());
 
         #[cfg(debug_assertions)]
-        { if state.parameters.debug_extended { log_function_with!("find_mnemonic_extension_address_mode :: [[{}]]", mnemonic_extension); } }
+        { if OPTIONS.debug_extended { log_function_with!("find_mnemonic_extension_address_mode :: [[{}]]", mnemonic_extension); } }
 
         let new_address_mode = find_mnemonic_extension_address_mode(mnemonic_extension.as_str());
         state.execution.modeNext = new_address_mode;
@@ -729,7 +730,7 @@ pub unsafe fn v_dc(mut str: *mut i8, mne: *mut _MNE) {
         let mnemonic_extension = transient::str_pointer_to_string(sTmp.as_mut_ptr());
 
         #[cfg(debug_assertions)]
-        { if state.parameters.debug_extended { log_function_with!("find_mnemonic_extension_address_mode :: [[{}]]", mnemonic_extension); } }
+        { if OPTIONS.debug_extended { log_function_with!("find_mnemonic_extension_address_mode :: [[{}]]", mnemonic_extension); } }
 
         let new_address_mode = find_mnemonic_extension_address_mode(mnemonic_extension.as_str());
         state.execution.modeNext = new_address_mode;
@@ -834,7 +835,7 @@ pub unsafe fn v_dc(mut str: *mut i8, mne: *mut _MNE) {
             match state.execution.modeNext {
                 AddressModes::WordAdr => {
                     // Any value outside two's complement +ve and +ve word representation is invalid...
-                    if state.parameters.strict_mode && (value < -0xffff || value > 0xffff) {
+                    if OPTIONS.strict_mode && (value < -0xffff || value > 0xffff) {
                         let buffer = format!(
                             "{} {}",
                             transient::str_pointer_to_string((*mne).name),
@@ -898,7 +899,7 @@ pub unsafe fn v_dc(mut str: *mut i8, mne: *mut _MNE) {
 
 pub unsafe fn v_ds(str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut mult: i32 = 1;
@@ -925,7 +926,7 @@ pub unsafe fn v_ds(str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_org(str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     sym = eval(str, 0);
@@ -952,7 +953,7 @@ pub unsafe fn v_org(str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_rorg(str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let sym: *mut _SYMBOL = eval(str, 0);
     let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
@@ -975,7 +976,7 @@ pub unsafe fn v_rorg(str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_rend(_str: *mut i8, mut _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function!(); } }
+    { if OPTIONS.debug_extended { log_function!(); } }
 
     programlabel();
     let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
@@ -984,7 +985,7 @@ pub unsafe fn v_rend(_str: *mut i8, mut _dummy: *mut _MNE) {
 
 pub unsafe fn v_align(str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let sym: *mut _SYMBOL = eval(str, 0);
     let mut currentSegment = &mut state.other.segments[state.other.currentSegment];
@@ -1028,7 +1029,7 @@ pub unsafe fn v_align(str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_subroutine(_str: *mut i8, mut _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function!(); } }
+    { if OPTIONS.debug_extended { log_function!(); } }
 
     state.execution.lastLocalIndex += 1;
     state.execution.localIndex = state.execution.lastLocalIndex;
@@ -1037,7 +1038,7 @@ pub unsafe fn v_subroutine(_str: *mut i8, mut _dummy: *mut _MNE) {
 
 pub unsafe fn v_equ(str: *mut i8, dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut sym: *mut _SYMBOL = eval(str, 0);
     let mut lab: *mut _SYMBOL = 0 as *mut _SYMBOL;
@@ -1103,7 +1104,7 @@ pub unsafe fn v_equ(str: *mut i8, dummy: *mut _MNE) {
 
 pub unsafe fn v_eqm(str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut lab: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let str_rs = transient::str_pointer_to_string(str);
@@ -1124,7 +1125,7 @@ pub unsafe fn v_eqm(str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_echo(str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let sym: *mut _SYMBOL = eval(str, 0);
     let mut s: *mut _SYMBOL = 0 as *mut _SYMBOL;
@@ -1153,7 +1154,7 @@ pub unsafe fn v_echo(str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_set(str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut lab: *mut _SYMBOL = 0 as *mut _SYMBOL;
@@ -1259,7 +1260,7 @@ pub unsafe fn v_set(str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_setstr(symstr: *mut i8, dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(symstr)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(symstr)); } }
 
     let mut str = format!("\"{}\"", transient::str_pointer_to_string(symstr));
     str.truncate(1024);
@@ -1268,7 +1269,7 @@ pub unsafe fn v_setstr(symstr: *mut i8, dummy: *mut _MNE) {
 
 pub unsafe fn v_end(_str: *mut i8, mut _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function!(); } }
+    { if OPTIONS.debug_extended { log_function!(); } }
 
     let include_file = *state.execution.includeFiles.last().unwrap();
 
@@ -1281,7 +1282,7 @@ pub unsafe fn v_end(_str: *mut i8, mut _dummy: *mut _MNE) {
 
 pub unsafe fn v_endm(_str: *mut i8, mut _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function!(); } }
+    { if OPTIONS.debug_extended { log_function!(); } }
 
     let include_file = *state.execution.includeFiles.last().unwrap();
 
@@ -1307,14 +1308,14 @@ pub unsafe fn v_endm(_str: *mut i8, mut _dummy: *mut _MNE) {
 
 pub unsafe fn v_mexit(_str: *mut i8, mut _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function!(); } }
+    { if OPTIONS.debug_extended { log_function!(); } }
 
     v_endm(0 as *mut i8, 0 as *mut _MNE);
 }
 
 pub unsafe fn v_ifconst(str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     programlabel();
@@ -1325,7 +1326,7 @@ pub unsafe fn v_ifconst(str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_ifnconst(str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     programlabel();
@@ -1336,7 +1337,7 @@ pub unsafe fn v_ifnconst(str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_if(str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let current_if = &mut state.execution.ifs.last_mut().unwrap();
@@ -1358,7 +1359,7 @@ pub unsafe fn v_if(str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_else(_str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function!(); } }
+    { if OPTIONS.debug_extended { log_function!(); } }
 
     let current_if = &mut state.execution.ifs.last_mut().unwrap();
     if current_if.result_acc && (current_if.flags & IfFlags::Base == 0) {
@@ -1369,7 +1370,7 @@ pub unsafe fn v_else(_str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_endif(_str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function!(); } }
+    { if OPTIONS.debug_extended { log_function!(); } }
 
     let include_file = *state.execution.includeFiles.last().unwrap();
 
@@ -1388,7 +1389,7 @@ pub unsafe fn v_endif(_str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_repeat(str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let current_if = &state.execution.ifs.last().unwrap();
@@ -1439,7 +1440,7 @@ pub unsafe fn v_repeat(str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_repend(_str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function!(); } }
+    { if OPTIONS.debug_extended { log_function!(); } }
 
     let include_file = *state.execution.includeFiles.last().unwrap();
 
@@ -1474,7 +1475,7 @@ pub unsafe fn v_repend(_str: *mut i8, _dummy: *mut _MNE) {
 
 pub unsafe fn v_incdir(str: *mut i8, _dummy: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let filename = get_filename(transient::str_pointer_to_string(str).as_str()).to_owned();
     if state.execution.includeDirList.iter().find(|dir| dir.cmp(&&filename) == Ordering::Equal).is_none() {

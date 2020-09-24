@@ -1,6 +1,7 @@
 // FIXME: remove these unsafe calls coming from main.rs
 use crate::{
     asmerr,
+    OPTIONS,
 };
 use crate::globals::state;
 use crate::mnemonics;
@@ -305,7 +306,7 @@ unsafe fn parse_special_register(str: *const i8) -> i32 {
 }
 unsafe fn v_ins_outs(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut operand: u64 = 0;
     programlabel();
@@ -317,7 +318,7 @@ unsafe fn v_ins_outs(str: *mut i8, mne: *mut _MNE) {
 }
 unsafe fn v_sl_sr(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut operand: u64 = 0;
     programlabel();
@@ -342,7 +343,7 @@ unsafe fn v_sl_sr(str: *mut i8, mne: *mut _MNE) {
 }
 unsafe fn v_lis(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut operand: u64 = 0;
     programlabel();
@@ -354,7 +355,7 @@ unsafe fn v_lis(str: *mut i8, mne: *mut _MNE) {
 }
 unsafe fn v_lisu_lisl(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut operand: u64 = 0;
     programlabel();
@@ -370,7 +371,7 @@ unsafe fn v_lisu_lisl(str: *mut i8, mne: *mut _MNE) {
  */
 unsafe fn v_sreg_op(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut reg: u8 = 0;
     programlabel();
@@ -379,7 +380,7 @@ unsafe fn v_sreg_op(str: *mut i8, mne: *mut _MNE) {
 }
 unsafe fn v_lr(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut i: i32 = 0;
     let mut ncommas: i32 = 0;
@@ -569,13 +570,13 @@ unsafe fn generate_branch(opcode: u8, str: *const i8) {
  */
 unsafe fn v_branch(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     generate_branch((*mne).opcode[0] as u8, str);
 }
 unsafe fn v_bf_bt(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut ncommas: i32 = 0;
     let mut cindex: i32 = 0;
@@ -630,7 +631,7 @@ unsafe fn v_bf_bt(str: *mut i8, mne: *mut _MNE) {
  */
 unsafe fn v_wordop(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut value: u64 = 0;
     programlabel();
@@ -648,7 +649,7 @@ unsafe fn v_wordop(str: *mut i8, mne: *mut _MNE) {
  */
 unsafe fn v_byteop(str: *mut i8, mne: *mut _MNE) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut value: u64 = 0;
     programlabel();

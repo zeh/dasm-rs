@@ -2,12 +2,8 @@ use crate::constants;
 use crate::types::enums::{
 	AddressModes,
 	BitOrder,
-	ErrorFormat,
-	Format,
 	ListMode,
 	Processors,
-	SortMode,
-	Verbosity,
 };
 use crate::types::legacy::{
 	_INCFILE,
@@ -15,7 +11,6 @@ use crate::types::legacy::{
 	_MNE,
 };
 use crate::types::structs::{
-	CommandLineOptions,
 	ExecutionState,
 	ExpressionsState,
 	ExpressionStackArgument,
@@ -33,28 +28,6 @@ pub mod legacy;
 
 // Enums use explicit options since we can't use ::default()
 pub static mut state: GlobalState = GlobalState {
-	// FIXME: this is a duplicate of CommandLineOptions::new()
-	parameters: CommandLineOptions {
-		debug_extended: false,
-		debug: false,
-		do_all_passes: false,
-		error_format: ErrorFormat::Woe,
-		format: Format::Default,
-		include_dirs: Vec::<String>::new(),
-		input: String::new(),
-		list_all_passes: false,
-		list_file: String::new(),
-		max_passes: 10,
-		out_file: String::new(),
-		parsing_failed: false,
-		sort_mode: SortMode::Alpha,
-		strict_mode: false,
-		symbols_eqm: Vec::<(String, String)>::new(),
-		symbols_file: String::new(),
-		symbols_set: Vec::<(String, String)>::new(),
-		verbosity: Verbosity::None,
-	},
-
 	other: OtherMainState {
 		currentSegment: 0,
 		incLevel: 0,

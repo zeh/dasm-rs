@@ -13,6 +13,9 @@
 #![register_tool(c2rust)]
 
 #[macro_use]
+extern crate lazy_static;
+
+#[macro_use]
 extern crate smart_default;
 
 use libc;
@@ -134,6 +137,14 @@ extern "C" {
     #[no_mangle]
     fn closegenerate();
 }
+
+lazy_static! {
+    // Gather arguments so we can treat them C-like.
+    // Normally, a Rust application would use StructOpt for this,
+    // but we keep the custom parser for consistency.
+    pub static ref OPTIONS: CommandLineOptions = parse_command_line(env::args().skip(1).collect());
+}
+
 /*
     the DASM macro assembler (aka small systems cross assembler)
 
@@ -344,9 +355,9 @@ unsafe fn generate_resolved_symbols_list(sorted: bool) -> String {
  * In original C code, part of DumpSymbolTable()" in main.c
  */
 unsafe fn dump_symbol_table(sorted: bool) {
-    if !state.parameters.symbols_file.is_empty() {
-        let mut file = filesystem::create_new_file(state.parameters.symbols_file.as_str()).expect(
-            format!("Warning: Unable to open Symbol Dump file '{}'", state.parameters.symbols_file).as_str()
+    if !OPTIONS.symbols_file.is_empty() {
+        let mut file = filesystem::create_new_file(OPTIONS.symbols_file.as_str()).expect(
+            format!("Warning: Unable to open Symbol Dump file '{}'", OPTIONS.symbols_file).as_str()
         );
         write_symbols_to_file(&mut file, sorted);
         filesystem::close_file(&mut file);
@@ -497,6 +508,10 @@ unsafe fn ShowSegments() {
  */
 fn parse_command_line(args: Vec<String>) -> CommandLineOptions {
     let mut options = CommandLineOptions::new();
+
+    // Other default
+    options.out_file = String::from("a.out");
+
     if args.len() > 0 {
         options.input = args[0].clone();
         let mut i: usize = 1;
@@ -636,9 +651,9 @@ fn print_command_line_help() {
     println!("Report bugs on https://github.com/dasm-assembler/dasm please!");
 }
 
-unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
+unsafe fn assemble() -> AsmErrorEquates {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function!(); } }
+    { if OPTIONS.debug_extended { log_function!(); } }
 
     let mut nError: AsmErrorEquates = AsmErrorEquates::None;
     let mut buf: [i8; MAX_LINES] = [0; MAX_LINES];
@@ -649,20 +664,17 @@ unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
     state.execution.pass = 1;
 
     // Perform side effects based on command line options
-    // FIXME: change this to options.* once we don't have options in the state anymore
-    for (name, expression) in options.symbols_eqm.clone() {
+    for (name, expression) in OPTIONS.symbols_eqm.clone() {
         set_argument(0, name);
         mnemonics::operations::v_eqm(transient::string_to_str_pointer(expression), 0 as *mut _MNE);
     }
 
-    // FIXME: change this to options.* once we don't have options in the state anymore
-    for (name, expression) in options.symbols_set.clone() {
+    for (name, expression) in OPTIONS.symbols_set.clone() {
         set_argument(0, name);
         mnemonics::operations::v_set(transient::string_to_str_pointer(expression), 0 as *mut _MNE);
     }
 
-    // FIXME: change this to options.* once we don't have options in the state anymore
-    for dir in options.include_dirs.clone() {
+    for dir in OPTIONS.include_dirs.clone() {
         mnemonics::operations::v_incdir(transient::string_to_str_pointer(dir), 0 as *mut _MNE);
     }
 
@@ -696,7 +708,7 @@ unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
     operations::clear_passbuffer(&mut state.output.passBufferErrors);
     operations::clear_passbuffer(&mut state.output.passBufferMessages);
     loop {
-        if state.parameters.verbosity != Verbosity::None {
+        if OPTIONS.verbosity != Verbosity::None {
             println!();
             println!("START OF PASS: {}", state.execution.pass);
         }
@@ -708,41 +720,38 @@ unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
         state.output.checksum = 0;
 
         // Create basic output file
-        if state.parameters.out_file.is_empty() {
-            state.parameters.out_file = String::from("a.out");
-        }
-        let fileOutOption = filesystem::create_new_file(state.parameters.out_file.as_str());
+        let fileOutOption = filesystem::create_new_file(OPTIONS.out_file.as_str());
         match fileOutOption {
             Ok(file) => {
                 state.output.outFile = Some(file);
             },
             _ => {
-                println!("Warning: Unable to [re]open '{}'", state.parameters.out_file);
+                println!("Warning: Unable to [re]open '{}'", OPTIONS.out_file);
                 return AsmErrorEquates::FileError;
             },
         }
 
         // Create list output file
-        if !state.parameters.list_file.is_empty() {
-            let fileOption = filesystem::create_new_file(state.parameters.list_file.as_str());
+        if !OPTIONS.list_file.is_empty() {
+            let fileOption = filesystem::create_new_file(OPTIONS.list_file.as_str());
             match fileOption {
                 Ok(file) => {
                     state.output.listFile = Some(file);
                 },
                 _ => {
-                    println!("Warning: Unable to [re]open '{}'", state.parameters.list_file);
+                    println!("Warning: Unable to [re]open '{}'", OPTIONS.list_file);
                     return AsmErrorEquates::FileError;
                 },
             }
         }
 
-        pushinclude(transient::string_to_str_pointer(options.input.clone()));
+        pushinclude(transient::string_to_str_pointer(OPTIONS.input.clone()));
         while state.execution.includeFiles.len() > 0 {
             loop {
                 let include_file = *state.execution.includeFiles.last().unwrap();
 
                 #[cfg(debug_assertions)]
-                { if state.parameters.debug_extended { log_function_with!("loop start for incfile '{}' @ {} with flags {}", transient::str_pointer_to_string((*include_file).name), (*include_file).lineno, (*include_file).flags); } }
+                { if OPTIONS.debug_extended { log_function_with!("loop start for incfile '{}' @ {} with flags {}", transient::str_pointer_to_string((*include_file).name), (*include_file).lineno, (*include_file).flags); } }
 
                 let mut comment: *const i8 = 0 as *const i8;
                 if (*include_file).flags & FileFlags::Macro != 0 {
@@ -757,7 +766,7 @@ unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
                 } else if fgets(buf.as_mut_ptr(), MAX_LINES as i32, (*include_file).fi).is_null() {
                     break;
                 }
-                if state.parameters.debug {
+                if OPTIONS.debug {
                     println!("{:08x} {}", include_file as u64, transient::str_pointer_to_string(buf.as_mut_ptr()));
                 }
                 comment = cleanup(buf.as_mut_ptr(), false);
@@ -766,7 +775,7 @@ unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
                 let current_if = &state.execution.ifs.last().unwrap();
 
                 #[cfg(debug_assertions)]
-                { if state.parameters.debug_extended { log_function_with!("current_if = {} {}", current_if.result, current_if.result_acc); } }
+                { if OPTIONS.debug_extended { log_function_with!("current_if = {} {}", current_if.result, current_if.result_acc); } }
 
                 if !get_argument(1).is_empty() {
                     match mne_or_macro {
@@ -774,7 +783,7 @@ unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
                             if (*mac).flags & MnemonicsFlags::If != 0 || current_if.result && current_if.result_acc {
                                 #[cfg(debug_assertions)]
                                 {
-                                    if state.parameters.debug_extended {
+                                    if OPTIONS.debug_extended {
                                         log_function_with!("calling vect on [[{}]] [[{}]]", transient::str_pointer_to_string((*mac).name), get_argument(2));
                                     }
                                 }
@@ -785,7 +794,7 @@ unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
                             if (*mne).flags & MnemonicsFlags::If != 0 || current_if.result && current_if.result_acc {
                                 #[cfg(debug_assertions)]
                                 {
-                                    if state.parameters.debug_extended {
+                                    if OPTIONS.debug_extended {
                                         log_function_with!("calling vect on [[{}]] [[{}]]", transient::str_pointer_to_string((*mne).name), get_argument(2));
                                     }
                                 }
@@ -801,7 +810,7 @@ unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
                 } else if current_if.result && current_if.result_acc {
                     programlabel();
                 }
-                if !state.parameters.list_file.is_empty() && state.execution.listMode != ListMode::None {
+                if !OPTIONS.list_file.is_empty() && state.execution.listMode != ListMode::None {
                     outlistfile(comment);
                 }
             }
@@ -809,7 +818,7 @@ unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
             let include_file = *state.execution.includeFiles.last().unwrap();
 
             #[cfg(debug_assertions)]
-            { if state.parameters.debug_extended { log_function_with!("loop continue :: incfile '{}' @ {} with flags {}", transient::str_pointer_to_string((*include_file).name), (*include_file).lineno, (*include_file).flags); } }
+            { if OPTIONS.debug_extended { log_function_with!("loop continue :: incfile '{}' @ {} with flags {}", transient::str_pointer_to_string((*include_file).name), (*include_file).lineno, (*include_file).flags); } }
 
             while state.execution.repeats.len() > 0 && state.execution.repeats.last().unwrap().file == include_file {
                 state.execution.repeats.pop();
@@ -836,12 +845,12 @@ unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
             }
         }
 
-        if state.parameters.verbosity as u8 >= Verbosity::One as u8 {
+        if OPTIONS.verbosity as u8 >= Verbosity::One as u8 {
             ShowSegments();
         }
-        if state.parameters.verbosity as u8  >= Verbosity::Three as u8  {
-            if state.execution.redoIndex == 0 || state.parameters.verbosity as u8  >= Verbosity::Four as u8 {
-                write_symbols_to_stdout(state.parameters.sort_mode == SortMode::Address);
+        if OPTIONS.verbosity as u8  >= Verbosity::Three as u8  {
+            if state.execution.redoIndex == 0 || OPTIONS.verbosity as u8  >= Verbosity::Four as u8 {
+                write_symbols_to_stdout(OPTIONS.sort_mode == SortMode::Address);
             }
             ShowUnresolvedSymbols();
         }
@@ -849,7 +858,7 @@ unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
         filesystem::close_file_maybe(&mut state.output.outFile);
         filesystem::close_file_maybe(&mut state.output.listFile);
         if state.execution.redoIndex != 0 {
-            if !state.parameters.do_all_passes {
+            if !OPTIONS.do_all_passes {
                 if state.execution.redoIndex == oldRedoIndex && state.execution.redoWhy == oldRedoWhy && state.execution.redoEval == oldRedoEval {
                     ShowUnresolvedSymbols();
                     return AsmErrorEquates::NotResolvable;
@@ -863,7 +872,7 @@ unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
             state.execution.redoEval = 0;
             state.execution.redoIf <<= 1;
             state.execution.pass += 1;
-            if state.execution.pass > state.parameters.max_passes {
+            if state.execution.pass > OPTIONS.max_passes {
                 let buffer = format!("{}", state.execution.pass);
                 return asmerr(AsmErrorEquates::TooManyPasses, false, transient::string_to_str_pointer(buffer));
             } else {
@@ -890,17 +899,10 @@ unsafe fn assemble(options: &CommandLineOptions) -> AsmErrorEquates {
     }
 }
 
-unsafe fn main_shadow(args: Vec<String>) -> AsmErrorEquates {
-    // First command line options first
-    let options = parse_command_line(args);
-
-    // Add options to the state
-    // FIXME: this should probably just be an instance, not a static member of the state...
-    state.parameters = options;
-
+unsafe fn main_shadow() -> AsmErrorEquates {
     // FIXME: change this to options.* once we don't have options in the state anymore
-    if !state.parameters.parsing_failed {
-        return assemble(&state.parameters);
+    if !OPTIONS.parsing_failed {
+        return assemble();
     }
 
     // If nothing done, just show help
@@ -912,7 +914,7 @@ unsafe fn main_shadow(args: Vec<String>) -> AsmErrorEquates {
 
 pub unsafe fn outlistfile(comment: *const i8) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(comment)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(comment)); } }
 
     let current_if = &state.execution.ifs.last().unwrap();
     let mut xtrue: char = 0 as char;
@@ -1064,7 +1066,7 @@ pub unsafe fn cleanup(buf: *mut i8, bDisable: bool) -> *const i8 {
             }
             '{' => {
                 if !bDisable {
-                    if state.parameters.debug {
+                    if OPTIONS.debug {
                         println!("macro tail: '{}'", transient::str_pointer_to_string(str));
                     }
                     // FIXME: this should be:
@@ -1083,7 +1085,7 @@ pub unsafe fn cleanup(buf: *mut i8, bDisable: bool) -> *const i8 {
                     } else {
                         add -= 1;
                         str = str.offset(1);
-                        if state.parameters.debug {
+                        if OPTIONS.debug {
                             println!("add/str: {} '{}'", add, transient::str_pointer_to_string(str));
                         }
                         strlist = (*include_file).args;
@@ -1093,7 +1095,7 @@ pub unsafe fn cleanup(buf: *mut i8, bDisable: bool) -> *const i8 {
                         }
                         if !strlist.is_null() {
                             add = (add as u64).wrapping_add(strlen((*strlist).buf.as_mut_ptr())) as i32;
-                            if state.parameters.debug {
+                            if OPTIONS.debug {
                                 println!(
                                     "strlist: '{}' {}",
                                     transient::str_pointer_to_string((*strlist).buf.as_mut_ptr()),
@@ -1101,7 +1103,7 @@ pub unsafe fn cleanup(buf: *mut i8, bDisable: bool) -> *const i8 {
                                 );
                             }
                             if str.offset(add as isize).offset(strlen(str) as isize).offset(1) > buf.offset(MAX_LINES as isize) {
-                                if state.parameters.debug {
+                                if OPTIONS.debug {
                                     println!(
                                         "str {:8} buf {:8} (add/strlen(str)): {} {}",
                                         str as u64,
@@ -1148,7 +1150,7 @@ pub unsafe fn cleanup(buf: *mut i8, bDisable: bool) -> *const i8 {
 */
 pub unsafe fn parse(buf: *mut i8) -> MacroOrMnemonicPointer {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(buf)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(buf)); } }
 
     let mut labelundefined: i32 = 0;
     let mut buffer = transient::str_pointer_to_string(buf);
@@ -1280,7 +1282,7 @@ pub unsafe fn parse(buf: *mut i8) -> MacroOrMnemonicPointer {
     let (mnemonic_name, mnemonic_extension) = parse_mnemonic_name(full_mnemonic_or_macro_name.as_str());
 
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("find_mnemonic_extension_address_mode :: [[{}]]", mnemonic_extension); } }
+    { if OPTIONS.debug_extended { log_function_with!("find_mnemonic_extension_address_mode :: [[{}]]", mnemonic_extension); } }
 
     let new_address_mode = mnemonics::find_mnemonic_extension_address_mode(mnemonic_extension);
     state.execution.modeNext = new_address_mode;
@@ -1312,7 +1314,7 @@ pub unsafe fn parse(buf: *mut i8) -> MacroOrMnemonicPointer {
     set_argument(2, av_2);
 
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("Ended with mne is_some :: [[{}]]", if mnemonic_maybe.is_some() { "true" } else { "false" }); } }
+    { if OPTIONS.debug_extended { log_function_with!("Ended with mne is_some :: [[{}]]", if mnemonic_maybe.is_some() { "true" } else { "false" }); } }
 
     if mnemonic_maybe.is_some() {
         MacroOrMnemonicPointer::Mnemonic(mnemonic_maybe.unwrap())
@@ -1352,13 +1354,13 @@ pub unsafe fn addhashtable(first_mne: *mut _MNE, len: usize) {
 
 pub unsafe fn pushinclude(str: *const i8) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut inf: *mut _INCFILE = 0 as *mut _INCFILE;
     let mut fi: *mut FILE = 0 as *mut FILE;
     fi = pfopen(str, b"rb\x00" as *const u8 as *const i8);
     if !fi.is_null() {
-        if state.parameters.verbosity as u8 > Verbosity::Two as u8 {
+        if OPTIONS.verbosity as u8 > Verbosity::Two as u8 {
             // Originally this had a strange formatting using
             // "state.other.incLevel * 4" as padding ("%.*s"),
             // but with no discernible effect since an empty
@@ -1396,7 +1398,7 @@ pub unsafe fn pushinclude(str: *const i8) {
  */
 pub unsafe fn set_argument(position: usize, new_value: String) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("{} => [[{}]]", position, new_value); } }
+    { if OPTIONS.debug_extended { log_function_with!("{} => [[{}]]", position, new_value); } }
 
     while state.execution.argumentStack.len() <= position {
         state.execution.argumentStack.push(String::new());
@@ -1414,7 +1416,7 @@ pub unsafe fn get_argument(position: usize) -> String {
 pub unsafe fn asmerr(err: AsmErrorEquates, abort: bool, sText: *const i8) -> AsmErrorEquates {
     let mut errorOutput: String = String::new();
     /* file pointer we print error messages to */
-    let errorToFile = !state.parameters.list_file.is_empty();
+    let errorToFile = !OPTIONS.list_file.is_empty();
     let errorFile = &mut state.output.listFile;
 
     if find_error_definition(err).fatal {
@@ -1441,7 +1443,7 @@ pub unsafe fn asmerr(err: AsmErrorEquates, abort: bool, sText: *const i8) -> Asm
         eventually I hope... [phf]
     */
     /* print first part of message, different formats offered */
-    match state.parameters.error_format {
+    match OPTIONS.error_format {
         ErrorFormat::Woe => {
             /*
                 Error format for MS VisualStudio and relatives:
@@ -1563,13 +1565,9 @@ pub unsafe extern "C" fn permalloc(mut bytes: i32) -> *mut i8 {
 }
 
 pub fn main() {
-    // Gather arguments so we can treat them C-like.
-    // Normally, a Rust application would use StructOpt for this,
-    // but we keep the custom parser for consistency.
-    let args = env::args().skip(1).collect();
     // FIXME: remove this unsafe when possible
     unsafe {
-        let nError: AsmErrorEquates = main_shadow(args);
+        let nError: AsmErrorEquates = main_shadow();
         if nError != AsmErrorEquates::None && nError != AsmErrorEquates::NonAbort {
             // Dump messages when aborting due to errors
             operations::output_passbuffer(&mut state.output.passBufferMessages);
@@ -1577,7 +1575,7 @@ pub fn main() {
             operations::output_passbuffer(&mut state.output.passBufferErrors);
             println!("Fatal assembly error: {}", find_error_definition(nError).description);
         }
-        dump_symbol_table(state.parameters.sort_mode == SortMode::Address);
+        dump_symbol_table(OPTIONS.sort_mode == SortMode::Address);
         operations::clear_passbuffer(&mut state.output.passBufferErrors);
         operations::clear_passbuffer(&mut state.output.passBufferMessages);
         process::exit(nError as u8 as i32);

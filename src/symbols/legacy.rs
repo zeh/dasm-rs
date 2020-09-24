@@ -3,6 +3,7 @@ use libc;
 use crate::{
     asmerr,
     get_argument,
+    OPTIONS,
 };
 use crate::constants::{
     MAX_SYMBOLS,
@@ -214,7 +215,7 @@ pub unsafe extern "C" fn programlabel() {
         if (*sym).flags & (SymbolTypes::Unknown | SymbolTypes::Referenced) == SymbolTypes::Unknown | SymbolTypes::Referenced {
             state.execution.redoIndex += 1;
             state.execution.redoWhy |= ReasonCodes::ForwardReference;
-            if state.parameters.debug {
+            if OPTIONS.debug {
                 println!(
                     "redo 13: '{}' {:04x} {:04x}",
                     transient::str_pointer_to_string((*sym).name).as_str(),

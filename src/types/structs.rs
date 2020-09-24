@@ -32,9 +32,6 @@ pub struct ErrorDefinition {
 }
 
 pub struct GlobalState {
-	// Set by main, coming from command line switches
-	pub parameters: CommandLineOptions,
-
 	// Set by main, misc stuff
 	pub other: OtherMainState,
 

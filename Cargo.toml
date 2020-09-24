@@ -9,6 +9,7 @@ name = "ftohex"
 path = "src/ftohex.rs"
 
 [dependencies]
+lazy_static = "1.4.0"
 libc = "0.2"
 num_enum = "0.5.0"
 smart-default = "0.6.0"

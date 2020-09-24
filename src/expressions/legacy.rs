@@ -3,6 +3,7 @@ use libc;
 // FIXME: remove these unsafe calls coming from main.rs
 use crate::{
     asmerr,
+    OPTIONS,
 };
 use crate::expressions::{
     is_alpha_num,
@@ -66,7 +67,7 @@ extern "C" {
 #[no_mangle]
 pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SYMBOL {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
     let mut base: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut cur: *mut _SYMBOL = 0 as *mut _SYMBOL;
@@ -80,7 +81,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
     cur = allocsymbol();
     base = cur;
     while *str != 0 {
-        if state.parameters.debug {
+        if OPTIONS.debug {
             println!("char '{}'", transient::str_pointer_and_len_to_string(str, 1));
         }
         let current_block_184: u64;
@@ -334,7 +335,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                     };
                     if !(*cur).string.is_null() {
                         (*cur).flags |= SymbolTypes::StringResult;
-                        if state.parameters.debug {
+                        if OPTIONS.debug {
                             println!("STRING: {}", transient::str_pointer_to_string((*cur).string));
                         }
                     }
@@ -424,7 +425,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
         };
         if !(*cur).string.is_null() {
             (*cur).flags |= SymbolTypes::StringResult;
-            if state.parameters.debug {
+            if OPTIONS.debug {
                 println!("STRING: {}", transient::str_pointer_to_string((*cur).string));
             }
         }
@@ -444,7 +445,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
 
 pub unsafe fn execute_op_func(op_func: ExpressionOperationFunc, v1: i64, v2: i64, f1: u8, f2: u8) {
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("{} {} {} {}", v1, v2, f1, f2); } }
+    { if OPTIONS.debug_extended { log_function_with!("{} {} {} {}", v1, v2, f1, f2); } }
 
     match op_func(v1, v2, f1, f2) {
         Ok(value) => {
@@ -462,11 +463,11 @@ pub unsafe fn execute_op_func(op_func: ExpressionOperationFunc, v1: i64, v2: i64
     }
 
     #[cfg(debug_assertions)]
-    { if state.parameters.debug_extended { log_function_with!("state.expressions.last_was_operation = {}", state.expressions.last_was_operation); } }
+    { if OPTIONS.debug_extended { log_function_with!("state.expressions.last_was_operation = {}", state.expressions.last_was_operation); } }
 }
 
 pub unsafe fn evaltop() {
-    if state.parameters.debug {
+    if OPTIONS.debug {
         println!("evaltop @(A,O) {} {}", state.expressions.arguments.len(), state.expressions.operations.len());
     }
     if state.expressions.operations.len() <= state.expressions.operation_len_base {
@@ -512,10 +513,10 @@ pub unsafe fn evaltop() {
 }
 unsafe fn stackarg(mut val: i64, mut flags: u8, ptr1: *const i8) {
     let mut str: *mut i8 = 0 as *mut i8;
-    if state.parameters.debug {
+    if OPTIONS.debug {
         println!("stackarg {} (@{})", val, state.expressions.arguments.len());
         #[cfg(debug_assertions)]
-        { if state.parameters.debug_extended { log_function_with!("{} {} [[{}]]", val, flags, if ptr1.is_null() { String::from("null") } else { transient::str_pointer_to_string(ptr1) }); } }
+        { if OPTIONS.debug_extended { log_function_with!("{} {} [[{}]]", val, flags, if ptr1.is_null() { String::from("null") } else { transient::str_pointer_to_string(ptr1) }); } }
     }
     state.expressions.last_was_operation = false;
     if flags & SymbolTypes::StringResult != 0 {
@@ -559,12 +560,12 @@ unsafe fn stackarg(mut val: i64, mut flags: u8, ptr1: *const i8) {
     };
 }
 pub unsafe fn doop(func: ExpressionOperationFunc, pri: usize) {
-    if state.parameters.debug {
+    if OPTIONS.debug {
         println!("doop");
     }
     state.expressions.last_was_operation = true;
     if state.expressions.operations.len() == state.expressions.operation_len_base || pri == 128 {
-        if state.parameters.debug {
+        if OPTIONS.debug {
             println!("doop @ {} unary", state.expressions.operations.len());
         }
         state.expressions.operations.push(
@@ -578,7 +579,7 @@ pub unsafe fn doop(func: ExpressionOperationFunc, pri: usize) {
     while state.expressions.operations.len() != state.expressions.operation_len_base && state.expressions.operations.last().unwrap().pri != 0 && pri <= state.expressions.operations.last().unwrap().pri {
         evaltop();
     }
-    if state.parameters.debug {
+    if OPTIONS.debug {
         println!("doop @ {}", state.expressions.operations.len());
     }
     state.expressions.operations.push(
