@@ -2,9 +2,6 @@ use libc;
 
 // FIXME: remove all unsafe() used in this module
 
-use crate::{
-    OPTIONS,
-};
 use crate::constants::{
     MAX_MACRO_LEVEL,
 };
@@ -14,16 +11,20 @@ use crate::types::legacy::{
     _MACRO,
     _STRLIST,
 };
+use crate::utils::{
+    transient,
+};
+
+#[cfg(debug_assertions)]
+use crate::{
+    OPTIONS,
+};
 
 #[cfg(debug_assertions)]
 use crate::{
     log_function_with,
 };
 
-#[cfg(debug_assertions)]
-use crate::utils::{
-    transient,
-};
 
 extern "C" {
     #[no_mangle]
@@ -32,10 +33,6 @@ extern "C" {
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn zmalloc(bytes: i32) -> *mut i8;
-    #[no_mangle]
-    fn ckmalloc(bytes: i32) -> *mut i8;
 
     // From others
     #[no_mangle]
@@ -57,7 +54,7 @@ pub unsafe fn v_execmac(mut str: *mut i8, mac: *mut _MACRO) {
         return;
     }
     state.execution.macroLevel += 1;
-    base = ckmalloc((std::mem::size_of::<*mut _STRLIST>() as u64).wrapping_add(strlen(str)).wrapping_add(1) as i32) as *mut _STRLIST;
+    base = transient::ckmalloc((std::mem::size_of::<*mut _STRLIST>() as u64).wrapping_add(strlen(str)).wrapping_add(1) as i32) as *mut _STRLIST;
     (*base).next = 0 as *mut _STRLIST;
     strcpy((*base).buf.as_mut_ptr(), str);
     psl = &mut (*base).next;
@@ -67,7 +64,7 @@ pub unsafe fn v_execmac(mut str: *mut i8, mac: *mut _MACRO) {
                   && *str as i32 != ',' as i32 {
             str = str.offset(1)
         }
-        sl = ckmalloc((::std::mem::size_of::<*mut _STRLIST>() as u64).wrapping_add(1) as i32) as *mut _STRLIST;
+        sl = transient::ckmalloc((::std::mem::size_of::<*mut _STRLIST>() as u64).wrapping_add(1) as i32) as *mut _STRLIST;
         // Conversion note: in the above line, removed additional wrapping data...
         //     .wrapping_add(str.wrapping_offset_from(s1) as i64 as u64)
         // ...because it was relying on allocating more memory than the buffer needed, THEN
@@ -85,7 +82,7 @@ pub unsafe fn v_execmac(mut str: *mut i8, mac: *mut _MACRO) {
         if *str as i32 == ',' as i32 { str = str.offset(1) }
         while *str as i32 == ' ' as i32 { str = str.offset(1) }
     }
-    inc = zmalloc(::std::mem::size_of::<_INCFILE>() as u64 as i32) as *mut _INCFILE;
+    inc = transient::zmalloc(::std::mem::size_of::<_INCFILE>() as u64 as i32) as *mut _INCFILE;
     let last_include_file = *state.execution.includeFiles.last().unwrap();
     (*inc).name = (*mac).name;
     (*inc).fi = (*last_include_file).fi;

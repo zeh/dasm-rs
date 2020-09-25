@@ -45,8 +45,6 @@ extern "C" {
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn ckmalloc(bytes: i32) -> *mut i8;
-    #[no_mangle]
     fn allocsymbol() -> *mut _SYMBOL;
     #[no_mangle]
     fn findsymbol(str: *const i8, len: i32) -> *mut _SYMBOL;
@@ -534,7 +532,7 @@ unsafe fn stackarg(mut val: i64, mut flags: u8, ptr1: *const i8) {
             ptr = ptr.offset(1);
             len += 1
         }
-        new = ckmalloc(len + 1);
+        new = transient::ckmalloc(len + 1);
         memcpy(new as *mut libc::c_void, ptr1 as *const libc::c_void, len as u64);
         *new.offset(len as isize) = 0;
         flags &= !(SymbolTypes::StringResult);

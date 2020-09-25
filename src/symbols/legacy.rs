@@ -37,8 +37,6 @@ extern "C" {
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     static mut SHash: [*mut _SYMBOL; 0];
-    #[no_mangle]
-    fn permalloc(bytes: i32) -> *mut i8;
 }
 static mut org: _SYMBOL = _SYMBOL{next: 0 as *const _SYMBOL as *mut _SYMBOL,
             name: 0 as *const i8 as *mut i8,
@@ -149,7 +147,7 @@ pub unsafe extern "C" fn CreateSymbol(mut str: *const i8, mut len: i32) -> *mut 
         str = transient::string_to_str_pointer(buffer);
     }
     sym = allocsymbol();
-    (*sym).name = permalloc(len + 1);
+    (*sym).name = transient::permalloc(len + 1);
     memcpy((*sym).name as *mut libc::c_void, str as *const libc::c_void, len as u64);
     (*sym).namelen = len as u32;
     h1 = hash1(str, len);
@@ -267,7 +265,7 @@ pub unsafe extern "C" fn allocsymbol() -> *mut _SYMBOL {
         memset(sym as *mut libc::c_void, 0,
                ::std::mem::size_of::<_SYMBOL>() as u64);
     } else {
-        sym = permalloc(::std::mem::size_of::<_SYMBOL>() as u64 as i32) as *mut _SYMBOL
+        sym = transient::permalloc(::std::mem::size_of::<_SYMBOL>() as u64 as i32) as *mut _SYMBOL
     }
     return sym;
 }

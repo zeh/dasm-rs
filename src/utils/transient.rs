@@ -2,9 +2,24 @@
 use std::ffi::CString;
 use std::os::raw::c_char;
 
+use crate::constants::{
+    ALLOC_SIZE,
+};
 use crate::types::legacy::{
 	_STRLIST,
+	align,
 };
+use crate::utils::{
+	panic,
+};
+
+// FIXME: remove when possible
+extern "C" {
+	#[no_mangle]
+	fn malloc(_: u64) -> *mut libc::c_void;
+	#[no_mangle]
+	fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
+}
 
 /**
  * Converts a *str until it finds a char 0 to a proper Rust String.
@@ -88,6 +103,47 @@ pub fn strlist_to_string(strlist: *mut _STRLIST) -> String {
 		}
 	}
 	return sstr_all;
+}
+
+pub unsafe fn zmalloc(bytes: i32) -> *mut i8 {
+	let ptr: *mut i8 = ckmalloc(bytes);
+	if !ptr.is_null() {
+		memset(ptr as *mut libc::c_void, 0, bytes as u64);
+	}
+	return ptr;
+}
+
+pub unsafe fn ckmalloc(bytes: i32) -> *mut i8 {
+	let ptr: *mut i8 = malloc(bytes as u64) as *mut i8;
+	if !ptr.is_null() {
+		return ptr;
+	}
+	panic("unable to malloc");
+	return 0 as *mut i8;
+}
+
+pub unsafe fn permalloc(mut bytes: i32) -> *mut i8 {
+	static mut buf: *mut i8 = 0 as *const i8 as *mut i8;
+	static mut left: i32 = 0;
+	let mut ptr: *mut i8 = 0 as *mut i8;
+	/* Assume sizeof(union align) is a power of 2 */
+	bytes = ((bytes as u64).wrapping_add(::std::mem::size_of::<align>() as u64).wrapping_sub(1)
+		& !(::std::mem::size_of::<align>() as u64).wrapping_sub(1)) as i32;
+	if bytes > left {
+		buf = malloc(ALLOC_SIZE as i32 as u64) as *mut i8;
+		if buf.is_null() {
+			panic("unable to malloc");
+		}
+		memset(buf as *mut libc::c_void, 0, ALLOC_SIZE as i32 as u64);
+		left = ALLOC_SIZE as i32;
+		if bytes > left {
+			panic("software error");
+		}
+	}
+	ptr = buf;
+	buf = buf.offset(bytes as isize);
+	left -= bytes;
+	return ptr;
 }
 
 #[cfg(test)]

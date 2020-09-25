@@ -116,8 +116,6 @@ extern "C" {
 
     // From others, but that had to be added
     #[no_mangle]
-    fn permalloc(bytes: i32) -> *mut i8;
-    #[no_mangle]
     fn fgets(__s: *mut i8, __n: i32, __stream: *mut FILE) -> *mut i8;
 }
 
@@ -226,9 +224,9 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
     if !defined {
         base = 0 as *mut _STRLIST;
         slp = &mut base;
-        let mac = permalloc(::std::mem::size_of::<_MACRO>() as u64 as i32) as *mut _MACRO;
+        let mac = transient::permalloc(::std::mem::size_of::<_MACRO>() as u64 as i32) as *mut _MACRO;
         (*mac).vect = macros::operations::v_execmac;
-        (*mac).name = strcpy(permalloc(strlen(str).wrapping_add(1) as i32), str);
+        (*mac).name = strcpy(transient::permalloc(strlen(str).wrapping_add(1) as i32), str);
         (*mac).flags = 0x8;
         (*mac).defpass = state.execution.pass as i32;
         state.execution.macros.push(mac);
@@ -286,7 +284,7 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
             outlistfile(comment);
         }
         if !defined {
-            sl = permalloc((::std::mem::size_of::<*mut _STRLIST>() as u64).wrapping_add(1).wrapping_add(strlen(buf.as_mut_ptr())) as i32) as *mut _STRLIST;
+            sl = transient::permalloc((::std::mem::size_of::<*mut _STRLIST>() as u64).wrapping_add(1).wrapping_add(strlen(buf.as_mut_ptr())) as i32) as *mut _STRLIST;
             strcpy((*sl).buf.as_mut_ptr(), buf.as_mut_ptr());
             *slp = sl;
             slp = &mut (*sl).next

@@ -1,7 +1,6 @@
 // FIXME: remove these unsafe calls coming from main.rs
 use crate::{
     asmerr,
-    OPTIONS,
 };
 use crate::globals::state;
 use crate::mnemonics;
@@ -20,6 +19,11 @@ use crate::types::legacy::{
 };
 use crate::utils::{
     transient,
+};
+
+#[cfg(debug_assertions)]
+use crate::{
+    OPTIONS,
 };
 
 #[cfg(debug_assertions)]

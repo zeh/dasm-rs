@@ -36,7 +36,6 @@ pub mod types;
 pub mod utils;
 
 use constants::{
-    ALLOC_SIZE,
     DASM_ID,
     MAX_LINES,
     S_HASH_SIZE,
@@ -76,7 +75,6 @@ use types::legacy::{
     _MNE,
     _STRLIST,
     _SYMBOL,
-    align,
     FILE,
     MacroOrMnemonicPointer,
 };
@@ -119,8 +117,6 @@ extern "C" {
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn strtol(__nptr: *const i8, __endptr: *mut *mut i8, __base: i32) -> i64;
-    #[no_mangle]
-    fn malloc(_: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
@@ -265,7 +261,7 @@ unsafe fn generate_resolved_symbols_list(sorted: bool) -> String {
         i += 1
     }
     /* Malloc an array of pointers to data */
-    symArray = ckmalloc((::std::mem::size_of::<*mut _SYMBOL>() as u64).wrapping_mul(nSymbols as u64) as i32) as *mut *mut _SYMBOL;
+    symArray = transient::ckmalloc((::std::mem::size_of::<*mut _SYMBOL>() as u64).wrapping_mul(nSymbols as u64) as i32) as *mut *mut _SYMBOL;
     if symArray.is_null() {
         result.push_str(" (unsorted - not enough memory to sort!)\n");
         /* Display complete symbol table */
@@ -1381,8 +1377,8 @@ pub unsafe fn pushinclude(str: *const i8) {
                 state.execution.pass,
             ).as_str(),
         );
-        inf = zmalloc(::std::mem::size_of::<_INCFILE>() as u64 as i32) as *mut _INCFILE;
-        (*inf).name = strcpy(ckmalloc(strlen(str).wrapping_add(1) as i32), str);
+        inf = transient::zmalloc(::std::mem::size_of::<_INCFILE>() as u64 as i32) as *mut _INCFILE;
+        (*inf).name = strcpy(transient::ckmalloc(strlen(str).wrapping_add(1) as i32), str);
         (*inf).fi = fi;
         (*inf).lineno = 0;
         state.execution.includeFiles.push(inf);
@@ -1522,46 +1518,6 @@ pub unsafe fn asmerr(err: AsmErrorEquates, abort: bool, sText: *const i8) -> Asm
         std::process::exit(ExitCode::Failure as u8 as i32);
     }
     return err;
-}
-#[no_mangle]
-pub unsafe extern "C" fn zmalloc(bytes: i32) -> *mut i8 {
-    let ptr: *mut i8 = ckmalloc(bytes);
-    if !ptr.is_null() {
-        memset(ptr as *mut libc::c_void, 0, bytes as u64);
-    }
-    return ptr;
-}
-#[no_mangle]
-pub unsafe extern "C" fn ckmalloc(bytes: i32) -> *mut i8 {
-    let ptr: *mut i8 = malloc(bytes as u64) as *mut i8;
-    if !ptr.is_null() { return ptr }
-    panic("unable to malloc");
-    return 0 as *mut i8;
-}
-#[no_mangle]
-pub unsafe extern "C" fn permalloc(mut bytes: i32) -> *mut i8 {
-    static mut buf: *mut i8 = 0 as *const i8 as *mut i8;
-    static mut left: i32 = 0;
-    let mut ptr: *mut i8 = 0 as *mut i8;
-    /* Assume sizeof(union align) is a power of 2 */
-    bytes = ((bytes as u64).wrapping_add(::std::mem::size_of::<align>() as u64).wrapping_sub(1)
-             & !(::std::mem::size_of::<align>() as u64).wrapping_sub(1)) as i32;
-    if bytes > left {
-        buf = malloc(ALLOC_SIZE as i32 as u64) as *mut i8;
-        if buf.is_null() {
-            panic("unable to malloc");
-        }
-        memset(buf as *mut libc::c_void, 0,
-            ALLOC_SIZE as i32 as u64);
-        left = ALLOC_SIZE as i32;
-        if bytes > left {
-            panic("software error");
-        }
-    }
-    ptr = buf;
-    buf = buf.offset(bytes as isize);
-    left -= bytes;
-    return ptr;
 }
 
 pub fn main() {
