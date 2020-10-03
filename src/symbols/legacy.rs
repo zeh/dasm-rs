@@ -7,7 +7,6 @@ use crate::{
 };
 use crate::constants::{
     MAX_SYMBOLS,
-    S_HASH_AND,
 };
 use crate::globals::state;
 use crate::types::flags::{
@@ -35,30 +34,31 @@ extern "C" {
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
-    #[no_mangle]
-    static mut SHash: [*mut _SYMBOL; 0];
 }
-static mut org: _SYMBOL = _SYMBOL{next: 0 as *const _SYMBOL as *mut _SYMBOL,
-            name: 0 as *const i8 as *mut i8,
-            string: 0 as *const i8 as *mut i8,
-            flags: 0,
-            addrmode: 0,
-            value: 0,
-            namelen: 0,};
-static mut special: _SYMBOL = _SYMBOL{next: 0 as *const _SYMBOL as *mut _SYMBOL,
-            name: 0 as *const i8 as *mut i8,
-            string: 0 as *const i8 as *mut i8,
-            flags: 0,
-            addrmode: 0,
-            value: 0,
-            namelen: 0,};
-static mut specchk: _SYMBOL = _SYMBOL{next: 0 as *const _SYMBOL as *mut _SYMBOL,
-            name: 0 as *const i8 as *mut i8,
-            string: 0 as *const i8 as *mut i8,
-            flags: 0,
-            addrmode: 0,
-            value: 0,
-            namelen: 0,};
+static mut org: _SYMBOL = _SYMBOL {
+    name: 0 as *const i8 as *mut i8,
+    string: 0 as *const i8 as *mut i8,
+    flags: 0,
+    addrmode: 0,
+    value: 0,
+    namelen: 0,
+};
+static mut special: _SYMBOL = _SYMBOL {
+    name: 0 as *const i8 as *mut i8,
+    string: 0 as *const i8 as *mut i8,
+    flags: 0,
+    addrmode: 0,
+    value: 0,
+    namelen: 0,
+};
+static mut specchk: _SYMBOL = _SYMBOL{
+    name: 0 as *const i8 as *mut i8,
+    string: 0 as *const i8 as *mut i8,
+    flags: 0,
+    addrmode: 0,
+    value: 0,
+    namelen: 0,
+};
 #[no_mangle]
 pub unsafe extern "C" fn setspecial(value: i32, flags: u8) {
     special.value = value as i64; /* historical */
@@ -67,7 +67,6 @@ pub unsafe extern "C" fn setspecial(value: i32, flags: u8) {
 #[no_mangle]
 pub unsafe extern "C" fn findsymbol(mut str: *const i8, mut len: i32) -> *mut _SYMBOL {
     let mut h1: u32 = 0; /*	permalloc zeros the array for us */
-    let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
     if len > MAX_SYMBOLS as i32 {
         len = MAX_SYMBOLS as i32;
     }
@@ -110,16 +109,14 @@ pub unsafe extern "C" fn findsymbol(mut str: *const i8, mut len: i32) -> *mut _S
         len = buffer.len() as i32;
         str = transient::string_to_str_pointer(buffer);
     }
-    h1 = hash1(str, len);
-    sym = *SHash.as_mut_ptr().offset(h1 as isize);
-    while !sym.is_null() {
-        if (*sym).namelen == len as u32 && memcmp((*sym).name as *const libc::c_void,
-                      str as *const libc::c_void, len as u64) == 0 {
-            break;
+
+    for &symbol in &state.execution.symbols {
+        if (*symbol).namelen == len as u32 && memcmp((*symbol).name as *const libc::c_void, str as *const libc::c_void, len as u64) == 0 {
+            return symbol;
         }
-        sym = (*sym).next
     }
-    return sym;
+
+    0 as *mut _SYMBOL
 }
 #[no_mangle]
 pub unsafe extern "C" fn CreateSymbol(mut str: *const i8, mut len: i32) -> *mut _SYMBOL {
@@ -150,28 +147,16 @@ pub unsafe extern "C" fn CreateSymbol(mut str: *const i8, mut len: i32) -> *mut 
     (*sym).name = transient::permalloc(len + 1);
     memcpy((*sym).name as *mut libc::c_void, str as *const libc::c_void, len as u64);
     (*sym).namelen = len as u32;
-    h1 = hash1(str, len);
-    (*sym).next = *SHash.as_mut_ptr().offset(h1 as isize);
-    (*sym).flags = 0x1;
-    let ref mut fresh0 = *SHash.as_mut_ptr().offset(h1 as isize);
-    *fresh0 = sym;
+    (*sym).flags = SymbolTypes::Unknown;
+
+    state.execution.symbols.insert(0, sym);
+
     return sym;
 }
 /*
  *  SYMBOLS.C
  */
-unsafe extern "C" fn hash1(mut str: *const i8, mut len: i32) -> u32 {
-    let mut result: u32 = 0;
-    loop  {
-        let fresh1 = len;
-        len = len - 1;
-        if !(fresh1 != 0) { break ; }
-        let fresh2 = str;
-        str = str.offset(1);
-        result = result << 2 ^ *fresh2 as u32
-    }
-    return result & S_HASH_AND as i32 as u32;
-}
+
 /*
 *  Label Support Routines
 */

@@ -9,6 +9,7 @@ use crate::types::legacy::{
 	_INCFILE,
 	_MACRO,
 	_MNE,
+	_SYMBOL,
 };
 use crate::types::structs::{
 	ExecutionState,
@@ -63,6 +64,8 @@ pub static mut state: GlobalState = GlobalState {
 		redoIndex: 0,
 		redoWhy: 0,
 		repeats: Vec::<StackRepeat>::new(),
+		// FIXME: temporary, move to a new Mnemonic struct when possible
+		symbols: Vec::<*mut _SYMBOL>::new(),
 		trace: false,
 	},
 

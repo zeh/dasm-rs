@@ -1,23 +1,12 @@
-use crate::constants::{
-    S_HASH_SIZE,
-};
 use crate::types::flags::{
 	MnemonicsFlags,
 };
 use crate::types::legacy::{
     _MNE,
-    _SYMBOL,
 };
 use crate::mnemonics::{
     operations,
 };
-
-/*
- *  GLOBALS.C
- */
-#[no_mangle]
-pub static mut SHash: [*mut _SYMBOL; S_HASH_SIZE] = [0 as *const _SYMBOL as *mut _SYMBOL; S_HASH_SIZE];
-/*	symbol hash table   */
 
 pub static mut mnemonics_operations: [_MNE; 38] = [
 	_MNE {

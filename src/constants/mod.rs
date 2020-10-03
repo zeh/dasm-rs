@@ -14,8 +14,6 @@ pub const DEF_ORG_FILL: u8 = 255;    // In original C code, "DEFORGFILL"
 pub const MAX_LINES: usize = 1024;   // In original C code, "MAXLINE"
 pub const MAX_MACRO_LEVEL: u8 = 32;  // In original C code, "MAXMACLEVEL"
 pub const MAX_SYMBOLS: usize = 1024; // In original C code, "MAX_SYM_LEN"
-pub const S_HASH_AND: u16 = 0x03ff;  // In original C code, "SHASHAND"
-pub const S_HASH_SIZE: usize = 1024; // In original C code, "SHASHSIZE"
 
 // FIXME: a bit of a hack since we can't concatenate consts, and I wanted to still keep DASM_RELEASE separate
 macro_rules! DASM_RELEASE {() => {"2.20.14-SNAPSHOT"}}

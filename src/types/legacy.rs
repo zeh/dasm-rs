@@ -70,7 +70,6 @@ pub struct _INCFILE {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _SYMBOL {
-	pub next: *mut _SYMBOL,
 	pub name: *mut i8,
 	pub string: *mut i8,
 	pub flags: u8,

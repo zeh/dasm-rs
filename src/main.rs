@@ -38,7 +38,6 @@ pub mod utils;
 use constants::{
     DASM_ID,
     MAX_LINES,
-    S_HASH_SIZE,
 };
 use globals::state;
 use macros::{
@@ -121,8 +120,6 @@ extern "C" {
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn qsort(__base: *mut libc::c_void, __nmemb: u64, __size: u64, __compar: __compar_fn_t);
-    #[no_mangle]
-    static mut SHash: [*mut _SYMBOL; 0];
     /* exp.c */
     #[no_mangle]
     fn eval(str: *const i8, wantmode: i32) -> *mut _SYMBOL;
@@ -169,55 +166,39 @@ lazy_static! {
  *  NOTE: must handle mnemonic extensions and expression decode/compare.
  */
 /*unsigned char     Listing = 1;*/
-unsafe fn CountUnresolvedSymbols() -> i32 {
-    let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut nUnresolved: i32 = 0;
-    let mut i: i32 = 0;
-    /* Pre-count unresolved symbols */
-    i = 0;
-    while i < S_HASH_SIZE as i32 {
-        sym = *SHash.as_mut_ptr().offset(i as isize);
-        while !sym.is_null() {
-            if (*sym).flags & SymbolTypes::Unknown != 0 {
-                nUnresolved += 1;
-            }
-            sym = (*sym).next;
+unsafe fn CountUnresolvedSymbols() -> usize {
+    let mut num_unresolved: usize = 0;
+    for &symbol in &state.execution.symbols {
+        if (*symbol).flags & SymbolTypes::Unknown != 0 {
+            num_unresolved += 1;
         }
-        i += 1;
     }
-    return nUnresolved;
+    num_unresolved
 }
-unsafe fn ShowUnresolvedSymbols() -> i32 {
-    let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut i: i32 = 0;
-    let nUnresolved: i32 = CountUnresolvedSymbols();
-    if nUnresolved != 0 {
+
+unsafe fn ShowUnresolvedSymbols() -> usize {
+    let num_unresolved = CountUnresolvedSymbols();
+    if num_unresolved != 0 {
         println!("--- Unresolved Symbol List");
         /* Display unresolved symbols */
-        i = 0;
-        while i < S_HASH_SIZE as i32 {
-            sym = *SHash.as_mut_ptr().offset(i as isize);
-            while !sym.is_null() {
-                if (*sym).flags & SymbolTypes::Unknown != 0 {
-                    println!("{:24} {}",
-                        transient::str_pointer_to_string((*sym).name),
-                        formatting::segment_address_to_string((*sym).value as u64, (*sym).flags),
-                    );
-                }
-                sym = (*sym).next
+        for &symbol in &state.execution.symbols {
+            if (*symbol).flags & SymbolTypes::Unknown != 0 {
+                println!("{:24} {}",
+                    transient::str_pointer_to_string((*symbol).name),
+                    formatting::segment_address_to_string((*symbol).value as u64, (*symbol).flags),
+                );
             }
-            i += 1
         }
         println!("--- {} Unresolved Symbol{}\n",
-            nUnresolved,
-            if nUnresolved == 1 {
+            num_unresolved,
+            if num_unresolved == 1 {
                 " "
             } else {
                 "s"
             }
         );
     }
-    return nUnresolved;
+    num_unresolved
 }
 unsafe extern "C" fn CompareAlpha(arg1: *const libc::c_void, arg2: *const libc::c_void) -> i32 {
     /* Simple alphabetic ordering comparison function for quicksort */
@@ -248,57 +229,35 @@ unsafe fn generate_resolved_symbols_list(sorted: bool) -> String {
     let mut result = String::new();
     /* Display sorted (!) symbol table - if it runs out of memory, table will be displayed unsorted */
     let mut symArray: *mut *mut _SYMBOL = 0 as *mut *mut _SYMBOL;
-    let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut i: i32 = 0;
-    let mut nSymbols: i32 = 0;
+    let num_symbols = state.execution.symbols.len();
     result.push_str("--- Symbol List");
     /* Sort the symbol list either via name, or by value */
-    /* First count the number of symbols */
-    i = 0;
-    while i < S_HASH_SIZE as i32 {
-        sym = *SHash.as_mut_ptr().offset(i as isize);
-        while !sym.is_null() { nSymbols += 1; sym = (*sym).next }
-        i += 1
-    }
     /* Malloc an array of pointers to data */
-    symArray = transient::ckmalloc((::std::mem::size_of::<*mut _SYMBOL>() as u64).wrapping_mul(nSymbols as u64) as i32) as *mut *mut _SYMBOL;
+    symArray = transient::ckmalloc((::std::mem::size_of::<*mut _SYMBOL>() as u64).wrapping_mul(num_symbols as u64) as i32) as *mut *mut _SYMBOL;
     if symArray.is_null() {
         result.push_str(" (unsorted - not enough memory to sort!)\n");
         /* Display complete symbol table */
-        i = 0;
-        while i < S_HASH_SIZE as i32 {
-            sym = *SHash.as_mut_ptr().offset(i as isize);
-            while !sym.is_null() {
-                result.push_str(format!(
-                    "{:24} {}\n",
-                    transient::str_pointer_to_string((*sym).name),
-                    formatting::segment_address_to_string((*sym).value as u64, (*sym).flags)
-                ).as_str());
-                sym = (*sym).next
-            }
-            i += 1
+        for &symbol in &state.execution.symbols {
+            result.push_str(format!(
+                "{:24} {}\n",
+                transient::str_pointer_to_string((*symbol).name),
+                formatting::segment_address_to_string((*symbol).value as u64, (*symbol).flags)
+            ).as_str());
         }
     } else {
         /* Copy the element pointers into the symbol array */
-        let mut nPtr: i32 = 0;
-        i = 0;
-        while i < S_HASH_SIZE as i32 {
-            sym = *SHash.as_mut_ptr().offset(i as isize);
-            while !sym.is_null() {
-                let fresh0 = nPtr;
-                nPtr = nPtr + 1;
-                let ref mut fresh1 = *symArray.offset(fresh0 as isize);
-                *fresh1 = sym;
-                sym = (*sym).next
-            }
-            i += 1
+        let mut new_pointer: usize = 0;
+        for &symbol in &state.execution.symbols {
+            let ref mut fresh1 = *symArray.offset(new_pointer as isize);
+            new_pointer += 1;
+            *fresh1 = symbol;
         }
         if sorted {
             // Sort via address
             result.push_str(" (sorted by address)\n");
             qsort(
                 symArray as *mut libc::c_void,
-                nPtr as u64,
+                new_pointer as u64,
                 ::std::mem::size_of::<*mut _SYMBOL>() as u64,
                 Some(
                     CompareAddress as unsafe extern "C" fn(
@@ -312,7 +271,7 @@ unsafe fn generate_resolved_symbols_list(sorted: bool) -> String {
             result.push_str(" (sorted by symbol)\n");
             qsort(
                 symArray as *mut libc::c_void,
-                nPtr as u64,
+                new_pointer as u64,
                 ::std::mem::size_of::<*mut _SYMBOL>() as u64,
                 Some(
                     CompareAlpha as unsafe extern "C" fn(
@@ -323,8 +282,8 @@ unsafe fn generate_resolved_symbols_list(sorted: bool) -> String {
             );
         }
         /* now display sorted list */
-        i = 0; /* If a string, display actual string */
-        while i < nPtr {
+        let mut i: usize = 0; /* If a string, display actual string */
+        while i < new_pointer {
             result.push_str(format!(
                 "{:24} {:12}",
                 transient::str_pointer_to_string((**symArray.offset(i as isize)).name),
@@ -997,17 +956,9 @@ pub unsafe fn outlistfile(comment: *const i8) {
 }
 
 unsafe fn clearrefs() {
-    let mut sym: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let mut i: i16 = 0;
-    i = 0;
-    while (i as i32) < S_HASH_SIZE as i32 {
-        sym = *SHash.as_mut_ptr().offset(i as isize);
-        while !sym.is_null() {
-            (*sym).flags &= !SymbolTypes::Referenced;
-            sym = (*sym).next;
-        }
-        i += 1;
-    };
+    for &symbol in &state.execution.symbols {
+        (*symbol).flags &= !SymbolTypes::Referenced;
+    }
 }
 /*
    replace old atoi() calls; I wanted to protect this using

@@ -21,6 +21,7 @@ use crate::types::legacy::{
 	_INCFILE,
 	_MACRO,
 	_MNE,
+	_SYMBOL,
 };
 
 // In original C code, both "ERRORSTRUCT" and "ERROR_DEFINITION"
@@ -129,6 +130,8 @@ pub struct ExecutionState {
 	pub redoIndex: i32,
 	pub redoWhy: u64,
 	pub repeats: Vec<StackRepeat>, // Repeat loop stack
+	// FIXME: temporary, move to a new Symbol struct when possible
+	pub symbols: Vec<*mut _SYMBOL>,
 	pub trace: bool,
 }
 
