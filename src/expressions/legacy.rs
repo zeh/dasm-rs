@@ -18,6 +18,9 @@ use crate::expressions::{
 use crate::expressions::operations::{
     ExpressionOperationFunc,
 };
+use crate::utils::extensions::{
+    StringExtensions,
+};
 use crate::globals::state;
 use crate::types::flags::{
     ReasonCodes,
@@ -41,6 +44,7 @@ use crate::utils::{
 
 #[cfg(debug_assertions)]
 use crate::{
+    log_function,
     log_function_with,
 };
 
@@ -69,14 +73,17 @@ extern "C" {
  *  FreeSymbolList()!
  */
 #[no_mangle]
-pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SYMBOL {
+pub unsafe extern "C" fn eval(str: *const i8, wantmode: i32) -> *mut _SYMBOL {
     #[cfg(debug_assertions)]
     { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(str)); } }
 
+    let value = transient::str_pointer_to_string(str);
+    let pos = 0;
+
     let mut base: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut cur: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let oldArgIndexBase = state.expressions.argument_len_base;
-    let oldOpIndexBase = state.expressions.operation_len_base;
+    let old_argument_len_base = state.expressions.argument_len_base;
+    let old_operation_len_base = state.expressions.operation_len_base;
     let mut scr: i32 = 0;
     let pLine: *const i8 = str;
     state.expressions.argument_len_base = state.expressions.arguments.len();
@@ -84,47 +91,52 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
     state.expressions.last_was_operation = true;
     cur = allocsymbol();
     base = cur;
-    while *str != 0 {
+
+    while pos < value.len() {
+        let vc = value.at(pos);
+
         if OPTIONS.debug {
-            println!("char '{}'", transient::str_pointer_and_len_to_string(str, 1));
+            println!("char '{}'", vc);
         }
+
         let current_block_184: u64;
-        match *str as u8 as char {
-            ' ' | '\n' => {
-                str = str.offset(1);
+        //match extension.at(0).to_ascii_lowercase().as_str() {
+        match vc {
+            " " | "\n" => {
+                pos += 1;
                 current_block_184 = 3166194604430448652;
             }
-            '~' => {
+            "~" => {
                 if state.expressions.last_was_operation {
                     doop(operations::invert, 128);
                 } else {
                     asmerr(AsmErrorEquates::SyntaxError, false, pLine);
                 }
-                str = str.offset(1);
+                pos += 1;
                 current_block_184 = 3166194604430448652;
             }
-            '*' => {
+            "*" => {
                 if state.expressions.last_was_operation {
                     pushsymbol(b".\x00" as *const u8 as *const i8);
                 } else {
                     doop(operations::multiply, 20);
                 }
-                str = str.offset(1);
+                pos += 1;
                 current_block_184 = 3166194604430448652;
             }
-            '/' => {
+            "/" => {
                 doop(operations::divide, 20);
-                str = str.offset(1);
+                pos += 1;
                 current_block_184 = 3166194604430448652;
             }
-            '%' => {
+            "%" => {
                 if state.expressions.last_was_operation {
                     let parsed_value = parse_binary(transient::str_pointer_to_string(str.offset(1)).as_str());
                     stackarg(parsed_value.value, 0, 0 as *const i8);
                     str = str.offset(parsed_value.original_size as isize + 1);
                 } else {
                     doop(operations::modulo, 20);
-                    str = str.offset(1);
+                    pos += 1;
                 }
                 current_block_184 = 3166194604430448652;
             }
@@ -324,8 +336,8 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                         state.execution.modeNext = AddressModes::ZeroY
                     }
                 } else {
-                    let pNewSymbol: *mut _SYMBOL = allocsymbol();
-                    (*cur).next = pNewSymbol;
+                    let new_symbol: *mut _SYMBOL = allocsymbol();
+                    (*cur).next = new_symbol;
                     let last_argument = state.expressions.arguments.pop().unwrap();
                     if state.expressions.arguments.len() < state.expressions.argument_len_base {
                         asmerr(AsmErrorEquates::SyntaxError, false, pLine);
@@ -345,7 +357,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                             println!("STRING: {}", transient::str_pointer_to_string((*cur).string));
                         }
                     }
-                    cur = pNewSymbol;
+                    cur = new_symbol;
                 }
                 str = str.offset(1);
                 current_block_184 = 3166194604430448652;
@@ -454,8 +466,8 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
     }
     state.expressions.arguments.truncate(state.expressions.argument_len_base);
     state.expressions.operations.truncate(state.expressions.operation_len_base);
-    state.expressions.argument_len_base = oldArgIndexBase;
-    state.expressions.operation_len_base = oldOpIndexBase;
+    state.expressions.argument_len_base = old_argument_len_base;
+    state.expressions.operation_len_base = old_operation_len_base;
     return base;
 }
 
@@ -483,6 +495,9 @@ pub unsafe fn execute_op_func(op_func: ExpressionOperationFunc, v1: i64, v2: i64
 }
 
 pub unsafe fn evaltop() {
+    #[cfg(debug_assertions)]
+    { if OPTIONS.debug_extended { log_function!(); } }
+
     if OPTIONS.debug {
         println!("evaltop @(A,O) {} {}", state.expressions.arguments.len(), state.expressions.operations.len());
     }
