@@ -12,7 +12,7 @@ impl StringExtensions for str {
         self.substring(pos, 1)
 	}
 	fn from(&self, pos: usize) -> &str {
-        self.substring(pos, self.len() - pos)
+        self.substring(pos, if self.len() > pos { self.len() - pos } else { 0 })
     }
 	fn substring(&self, start: usize, len: usize) -> &str {
 		let mut char_pos = 0;
@@ -78,5 +78,6 @@ mod tests {
 		assert_eq!(s.substring(0, 50), "abcdèfghij");
 		assert_eq!(s.substring(3, 5), "dèfgh");
 		assert_eq!(s.substring(3, 50), "dèfghij");
+		assert_eq!(s.substring(40, 50), "");
 	}
 }
