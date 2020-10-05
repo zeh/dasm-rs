@@ -196,3 +196,9 @@ pub struct ExpressionStackArgument {
 	pub value: i64,
 	pub string: Option<String>,
 }
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct ParsedValue<T> {
+	pub value: T,
+	pub original_size: usize,
+}

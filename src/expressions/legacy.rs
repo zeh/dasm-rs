@@ -6,8 +6,14 @@ use crate::{
     OPTIONS,
 };
 use crate::expressions::{
-    is_alpha_num,
     operations,
+    parsing::{
+        is_alpha_num,
+        parse_binary,
+        parse_decimal,
+        parse_hexa,
+        parse_octal,
+    },
 };
 use crate::expressions::operations::{
     ExpressionOperationFunc,
@@ -113,7 +119,9 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
             }
             '%' => {
                 if state.expressions.last_was_operation {
-                    str = pushbin(str.offset(1));
+                    let parsed_value = parse_binary(transient::str_pointer_to_string(str.offset(1)).as_str());
+                    stackarg(parsed_value.value, 0, 0 as *const i8);
+                    str = str.offset(parsed_value.original_size as isize + 1);
                 } else {
                     doop(operations::modulo, 20);
                     str = str.offset(1);
@@ -343,11 +351,15 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                 current_block_184 = 3166194604430448652;
             }
             '$' => {
-                str = pushhex(str.offset(1));
+                let parsed_value = parse_hexa(transient::str_pointer_to_string(str.offset(1)).as_str());
+                stackarg(parsed_value.value as i64, 0, 0 as *const i8);
+                str = str.offset(parsed_value.original_size as isize + 1);
                 current_block_184 = 3166194604430448652;
             }
             '\'' => {
-                str = pushchar(str.offset(1));
+                let parsed_value = parse_binary(transient::str_pointer_to_string(str.offset(1)).as_str());
+                stackarg(parsed_value.value as i64, 0, 0 as *const i8);
+                str = str.offset(parsed_value.original_size as isize + 1);
                 current_block_184 = 3166194604430448652;
             }
             '\"' => {
@@ -362,10 +374,16 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                 if *dol as i32 == '$' as i32 {
                     str = pushsymbol(str)
                 } else if *str as i32 == '0' as i32 {
-                    str = pushoct(str)
+                    let parsed_value = parse_octal(transient::str_pointer_to_string(str).as_str());
+                    stackarg(parsed_value.value as i64, 0, 0 as *const i8);
+                    str = str.offset(parsed_value.original_size as isize );
                 } else if *str as i32 > '0' as i32 && *str as i32 <= '9' as i32 {
-                    str = pushdec(str)
-                } else { str = pushsymbol(str) }
+                    let parsed_value = parse_decimal(transient::str_pointer_to_string(str).as_str());
+                    stackarg(parsed_value.value as i64, 0, 0 as *const i8);
+                    str = str.offset(parsed_value.original_size as isize );
+                } else {
+                    str = pushsymbol(str);
+                }
                 current_block_184 = 3166194604430448652;
             }
         }
@@ -590,58 +608,6 @@ pub unsafe fn doop(func: ExpressionOperationFunc, pri: usize) {
         println!("doop: too many operators");
         state.expressions.operations.truncate(state.expressions.operation_len_base);
     };
-}
-pub unsafe fn pushchar(mut str: *const i8) -> *const i8 {
-    if *str != 0 {
-        stackarg(*str as i64, 0, 0 as *const i8);
-        str = str.offset(1);
-    } else {
-        stackarg(' ' as i32 as i64, 0, 0 as *const i8);
-    }
-    return str;
-}
-pub unsafe fn pushhex(mut str: *const i8) -> *const i8 {
-    let mut val: i64 = 0;
-    loop  {
-        if *str as i32 >= '0' as i32 && *str as i32 <= '9' as i32 {
-            val = (val << 4) + (*str as i32 - '0' as i32) as i64
-        } else {
-            if !(*str as i32 >= 'a' as i32 && *str as i32 <= 'f' as i32 || *str as i32 >= 'A' as i32 && *str as i32 <= 'F' as i32) {
-                break;
-            }
-            val = (val << 4) + ((*str as i32 & 0x1f as i32) + 9) as i64
-        }
-        str = str.offset(1);
-    }
-    stackarg(val, 0, 0 as *const i8);
-    return str;
-}
-pub unsafe fn pushoct(mut str: *const i8) -> *const i8 {
-    let mut val: i64 = 0;
-    while *str as i32 >= '0' as i32 && *str as i32 <= '7' as i32 {
-        val = (val << 3) + (*str as i32 - '0' as i32) as i64;
-        str = str.offset(1);
-    }
-    stackarg(val, 0, 0 as *const i8);
-    return str;
-}
-pub unsafe fn pushdec(mut str: *const i8) -> *const i8 {
-    let mut val: i64 = 0;
-    while *str as i32 >= '0' as i32 && *str as i32 <= '9' as i32 {
-        val = val * 10 + (*str as i32 - '0' as i32) as i64;
-        str = str.offset(1);
-    }
-    stackarg(val, 0, 0 as *const i8);
-    return str;
-}
-pub unsafe fn pushbin(mut str: *const i8) -> *const i8 {
-    let mut val: i64 = 0;
-    while *str as i32 == '0' as i32 || *str as i32 == '1' as i32 {
-        val = val << 1 | (*str as i32 - '0' as i32) as i64;
-        str = str.offset(1);
-    }
-    stackarg(val, 0, 0 as *const i8);
-    return str;
 }
 pub unsafe fn pushstr(mut str: *const i8) -> *const i8 {
     stackarg(0, SymbolTypes::StringResult, str);
