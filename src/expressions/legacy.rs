@@ -30,6 +30,7 @@ use crate::types::enums::{
     AsmErrorEquates,
 };
 use crate::types::structs::{
+    ExpressionsState,
     ExpressionStackArgument,
     ExpressionStackOperation,
 };
@@ -118,7 +119,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
             '%' => {
                 if state.expressions.last_was_operation {
                     let parsed_value = parse_binary(transient::str_pointer_to_string(str.offset(1)).as_str());
-                    stackarg(parsed_value.value, 0, 0 as *const i8);
+                    stackarg(parsed_value.value, 0, None);
                     str = str.offset(parsed_value.original_size as isize + 1);
                 } else {
                     doop(operations::modulo, 20);
@@ -366,17 +367,17 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
             }
             '$' => {
                 let parsed_value = parse_hexa(transient::str_pointer_to_string(str.offset(1)).as_str());
-                stackarg(parsed_value.value, 0, 0 as *const i8);
+                stackarg(parsed_value.value, 0, None);
                 str = str.offset(parsed_value.original_size as isize + 1);
             }
             '\'' => {
                 let parsed_value = parse_char(transient::str_pointer_to_string(str.offset(1)).as_str());
-                stackarg(parsed_value.value as i64, 0, 0 as *const i8);
+                stackarg(parsed_value.value as i64, 0, None);
                 str = str.offset(parsed_value.original_size as isize + 1);
             }
             '\"' => {
                 let parsed_value = parse_string(transient::str_pointer_to_string(str.offset(1)).as_str());
-                stackarg(0, SymbolTypes::StringResult, transient::string_to_str_pointer(parsed_value.value));
+                stackarg(0, SymbolTypes::StringResult, Some(parsed_value.value));
                 str = str.offset(parsed_value.original_size as isize + 1);
             }
             _ => {
@@ -388,11 +389,11 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                     str = pushsymbol(str)
                 } else if *str as i32 == '0' as i32 {
                     let parsed_value = parse_octal(transient::str_pointer_to_string(str).as_str());
-                    stackarg(parsed_value.value, 0, 0 as *const i8);
+                    stackarg(parsed_value.value, 0, None);
                     str = str.offset(parsed_value.original_size as isize );
                 } else if *str as i32 > '0' as i32 && *str as i32 <= '9' as i32 {
                     let parsed_value = parse_decimal(transient::str_pointer_to_string(str).as_str());
-                    stackarg(parsed_value.value, 0, 0 as *const i8);
+                    stackarg(parsed_value.value, 0, None);
                     str = str.offset(parsed_value.original_size as isize );
                 } else {
                     str = pushsymbol(str);
@@ -438,7 +439,7 @@ pub unsafe fn execute_op_func(op_func: ExpressionOperationFunc, v1: i64, v2: i64
     match op_func(v1, v2, f1, f2) {
         Ok(value) => {
             let (val, flags, wasOp) = value;
-            stackarg(val, flags, 0 as *const i8);
+            stackarg(val, flags, None);
             if wasOp {
                 state.expressions.last_was_operation = true;
             }
@@ -446,7 +447,7 @@ pub unsafe fn execute_op_func(op_func: ExpressionOperationFunc, v1: i64, v2: i64
         Err(error) => {
             asmerr(error, true, 0 as *const i8);
             // Conversion note: still executes something, as the original code does that
-            stackarg(0, 0, 0 as *const i8);
+            stackarg(0, 0, None);
         }
     }
 
@@ -499,54 +500,48 @@ pub unsafe fn evaltop() {
         }
     };
 }
-unsafe fn stackarg(mut val: i64, mut flags: u8, ptr1: *const i8) {
-    let mut str: *mut i8 = 0 as *mut i8;
+
+/// Add an argument to the argument stack.
+/// This replaces "stackarg" in the original C code.
+fn push_argument(expressions_state: &mut ExpressionsState, value: i64, mut flags: u8, string: Option<String>) {
     if OPTIONS.debug {
-        println!("stackarg {} (@{})", val, state.expressions.arguments.len());
+        println!("stackarg {} (@{})", value, expressions_state.arguments.len());
         #[cfg(debug_assertions)]
-        { if OPTIONS.debug_extended { log_function_with!("{} {} [[{}]]", val, flags, if ptr1.is_null() { String::from("null") } else { transient::str_pointer_to_string(ptr1) }); } }
+        { if OPTIONS.debug_extended { log_function_with!("{} {} [[{}]]", value, flags, string.clone().unwrap_or(String::from("null")) ) } }
     }
-    state.expressions.last_was_operation = false;
+
+    expressions_state.last_was_operation = false;
+
+    // Conversion note: originally, this was used to denote a string pointer,
+    // in which case a copy was made and the flag removed. We should probably
+    // verify if this flag type is used for anything else, and if not, remove
+    // it entirely.
     if flags & SymbolTypes::StringResult != 0 {
-        /*
-           Why unsigned char? Looks like we're converting to
-           long in a very strange way... [phf]
-        */
-        let mut ptr: *const u8 = ptr1 as *const u8;
-        let mut new: *mut i8 = 0 as *mut i8;
-        let mut len: i32 = 0;
-        len = 0;
-        val = len as i64;
-        while *ptr as i32 != 0 && *ptr as i32 != '\"' as i32 {
-            val = val << 8 | *ptr as i64;
-            ptr = ptr.offset(1);
-            len += 1
-        }
-        new = transient::ckmalloc(len + 1);
-        memcpy(new as *mut libc::c_void, ptr1 as *const libc::c_void, len as u64);
-        *new.offset(len as isize) = 0;
         flags &= !(SymbolTypes::StringResult);
-        str = new
     }
-    state.expressions.arguments.push(
+
+    expressions_state.arguments.push(
         ExpressionStackArgument {
-            value: val,
+            value,
             flags,
-            string: if str.is_null() {
-                None
-            } else {
-                Some(transient::str_pointer_to_string(str))
-            }
+            string,
         }
     );
-    if state.expressions.arguments.len() == MAX_ARGS {
+    if expressions_state.arguments.len() == MAX_ARGS {
         println!("stackarg: maxargs stacked");
-        state.expressions.arguments.truncate(state.expressions.argument_len_base);
+        expressions_state.arguments.truncate(expressions_state.argument_len_base);
     }
+}
+
+/// Add an argument to the argument stack and performs side effects.
+/// This *temporarily* replaces "stackarg" in the original C code.
+unsafe fn stackarg(value: i64, mut flags: u8, string: Option<String>) {
+    push_argument(&mut state.expressions, value, flags, string);
     while state.expressions.operations.len() != state.expressions.operation_len_base && state.expressions.operations.last().unwrap().pri == 128 {
         evaltop();
     };
 }
+
 pub unsafe fn doop(func: ExpressionOperationFunc, pri: usize) {
     if OPTIONS.debug {
         println!("doop");
@@ -618,16 +613,16 @@ pub unsafe fn pushsymbol(str: *const i8) -> *const i8 {
             sym = eval((*sym).string, 0);
         }
         if (*sym).flags & SymbolTypes::StringResult != 0 {
-            stackarg(0, SymbolTypes::StringResult, (*sym).string);
+            stackarg(0, SymbolTypes::StringResult, Some(transient::str_pointer_to_string((*sym).string)));
         } else {
-            stackarg((*sym).value, (*sym).flags & SymbolTypes::Unknown, 0 as *const i8);
+            stackarg((*sym).value, (*sym).flags & SymbolTypes::Unknown, None);
         }
         (*sym).flags |= SymbolTypes::Referenced | SymbolTypes::MasterReference;
         if macro_0 != 0 {
             FreeSymbolList(sym);
         }
     } else {
-        stackarg(0, SymbolTypes::Unknown, 0 as *const i8);
+        stackarg(0, SymbolTypes::Unknown, None);
         sym = CreateSymbol(str, ptr.wrapping_offset_from(str) as i64 as i32);
         (*sym).flags |= SymbolTypes::Referenced | SymbolTypes::MasterReference | SymbolTypes::Unknown;
         state.execution.redoEval += 1;
