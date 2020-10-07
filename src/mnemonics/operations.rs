@@ -12,7 +12,7 @@ use crate::{
     get_argument,
     OPTIONS,
     outlistfile,
-    parse,
+    parse_source_line,
     pushinclude,
     set_argument,
 };
@@ -54,7 +54,6 @@ use crate::types::legacy::{
     _STRLIST,
     _SYMBOL,
     FILE,
-    MacroOrMnemonicPointer,
 };
 use crate::types::structs::{
     Segment,
@@ -250,34 +249,38 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
         }
         (*include_file).lineno = (*include_file).lineno.wrapping_add(1);
         comment = cleanup(buf.as_mut_ptr(), true);
-        let mne_or_macro = parse(buf.as_ptr());
-        if !get_argument(1).is_empty() {
-            match mne_or_macro {
-                MacroOrMnemonicPointer::Mnemonic(mne) => {
-                    if (*mne).flags & MnemonicsFlags::EndMnemonic != 0 {
-                        if !defined {
-                            if macro_to_use.is_null() {
-                                println!("Error: attempted to use macro reference before initialization")
-                            } else {
-                                (*macro_to_use).strlist = base;
-                            }
+        let parsed_line = parse_source_line(transient::str_pointer_to_string(buf.as_ptr()).as_str());
+
+        // FIXME: this is temporary, until we can drop get_argument() and set_argument().
+        set_argument(0, parsed_line.arg_label.clone());
+        set_argument(1, parsed_line.arg_name.clone());
+        set_argument(2, parsed_line.arg_value.clone());
+
+        if !parsed_line.arg_name.is_empty() {
+            if parsed_line.macro_ref.is_some() {
+                let mac = parsed_line.macro_ref.unwrap();
+                if (*mac).flags & MnemonicsFlags::EndMnemonic != 0 {
+                    if !defined {
+                        if macro_to_use.is_null() {
+                            println!("Error: attempted to use macro reference before initialization")
+                        } else {
+                            (*macro_to_use).strlist = base;
                         }
-                        return;
                     }
+                    return;
                 }
-                MacroOrMnemonicPointer::Macro(mac) => {
-                    if (*mac).flags & MnemonicsFlags::EndMnemonic != 0 {
-                        if !defined {
-                            if macro_to_use.is_null() {
-                                println!("Error: attempted to use macro reference before initialization")
-                            } else {
-                                (*macro_to_use).strlist = base;
-                            }
+            } else if parsed_line.mnemonic_ref.is_some() {
+                let mne = parsed_line.mnemonic_ref.unwrap();
+                if (*mne).flags & MnemonicsFlags::EndMnemonic != 0 {
+                    if !defined {
+                        if macro_to_use.is_null() {
+                            println!("Error: attempted to use macro reference before initialization")
+                        } else {
+                            (*macro_to_use).strlist = base;
                         }
-                        return;
                     }
+                    return;
                 }
-                MacroOrMnemonicPointer::None => {}
             }
         }
         if !skipit && !OPTIONS.list_file.is_empty() && state.execution.listMode != ListMode::None {

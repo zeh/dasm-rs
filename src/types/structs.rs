@@ -202,3 +202,11 @@ pub struct ParsedValue<T> {
 	pub value: T,
 	pub original_size: usize,
 }
+
+pub struct ParsedLine {
+	pub arg_label: String,
+	pub arg_name: String,
+	pub arg_value: String,
+	pub macro_ref: Option<*mut _MACRO>,
+	pub mnemonic_ref: Option<*mut _MNE>,
+}

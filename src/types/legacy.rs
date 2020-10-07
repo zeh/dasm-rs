@@ -40,13 +40,6 @@ pub struct _MNE {
 }
 
 #[repr(C)]
-pub enum MacroOrMnemonicPointer {
-	Macro(*mut _MACRO),
-	Mnemonic(*mut _MNE),
-	None,
-}
-
-#[repr(C)]
 pub struct _MACRO {
 	pub vect: MacroFunc,
 	pub name: *mut i8,

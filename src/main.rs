@@ -76,10 +76,10 @@ use types::legacy::{
     _STRLIST,
     _SYMBOL,
     FILE,
-    MacroOrMnemonicPointer,
 };
 use types::structs::{
     CommandLineOptions,
+    ParsedLine,
     Segment,
     StackIf,
 };
@@ -767,40 +767,43 @@ unsafe fn assemble() -> AsmErrorEquates {
                 }
                 comment = cleanup(buf.as_mut_ptr(), false);
                 (*include_file).lineno = (*include_file).lineno.wrapping_add(1);
-                let mne_or_macro = parse(buf.as_ptr());
+                let parsed_line = parse_source_line(transient::str_pointer_to_string(buf.as_ptr()).as_str());
                 let current_if = &state.execution.ifs.last().unwrap();
+
+                // FIXME: this is temporary, until we can drop get_argument() and set_argument().
+                set_argument(0, parsed_line.arg_label.clone());
+                set_argument(1, parsed_line.arg_name.clone());
+                set_argument(2, parsed_line.arg_value.clone());
 
                 #[cfg(debug_assertions)]
                 { if OPTIONS.debug_extended { log_function_with!("current_if = {} {}", current_if.result, current_if.result_acc); } }
 
-                if !get_argument(1).is_empty() {
-                    match mne_or_macro {
-                        MacroOrMnemonicPointer::Macro(mac) => {
-                            if (*mac).flags & MnemonicsFlags::If != 0 || current_if.result && current_if.result_acc {
-                                #[cfg(debug_assertions)]
-                                {
-                                    if OPTIONS.debug_extended {
-                                        log_function_with!("calling vect on [[{}]] [[{}]]", transient::str_pointer_to_string((*mac).name), get_argument(2));
-                                    }
+                if !parsed_line.arg_name.is_empty() {
+                    if parsed_line.macro_ref.is_some() {
+                        let mac = parsed_line.macro_ref.unwrap();
+                        if (*mac).flags & MnemonicsFlags::If != 0 || current_if.result && current_if.result_acc {
+                            #[cfg(debug_assertions)]
+                            {
+                                if OPTIONS.debug_extended {
+                                    log_function_with!("calling vect on [[{}]] [[{}]]", transient::str_pointer_to_string((*mac).name), parsed_line.arg_value);
                                 }
-                                ((*mac).vect)(transient::string_to_str_pointer(get_argument(2)), mac);
                             }
+                            ((*mac).vect)(transient::string_to_str_pointer(parsed_line.arg_value), mac);
                         }
-                        MacroOrMnemonicPointer::Mnemonic(mne) => {
-                            if (*mne).flags & MnemonicsFlags::If != 0 || current_if.result && current_if.result_acc {
-                                #[cfg(debug_assertions)]
-                                {
-                                    if OPTIONS.debug_extended {
-                                        log_function_with!("calling vect on [[{}]] [[{}]]", transient::str_pointer_to_string((*mne).name), get_argument(2));
-                                    }
+                    } else if parsed_line.mnemonic_ref.is_some() {
+                        let mne = parsed_line.mnemonic_ref.unwrap();
+                        if (*mne).flags & MnemonicsFlags::If != 0 || current_if.result && current_if.result_acc {
+                            #[cfg(debug_assertions)]
+                            {
+                                if OPTIONS.debug_extended {
+                                    log_function_with!("calling vect on [[{}]] [[{}]]", transient::str_pointer_to_string((*mne).name), parsed_line.arg_value);
                                 }
-                                ((*mne).vect)(transient::string_to_str_pointer(get_argument(2)), mne);
                             }
+                            ((*mne).vect)(transient::string_to_str_pointer(parsed_line.arg_value), mne);
                         }
-                        MacroOrMnemonicPointer::None => {
-                            if current_if.result && current_if.result_acc {
-                                asmerr(AsmErrorEquates::UnknownMnemonic, false, transient::string_to_str_pointer(get_argument(1)));
-                            }
+                    } else {
+                        if current_if.result && current_if.result_acc {
+                            asmerr(AsmErrorEquates::UnknownMnemonic, false, transient::string_to_str_pointer(parsed_line.arg_name));
                         }
                     }
                 } else if current_if.result && current_if.result_acc {
@@ -1141,19 +1144,19 @@ pub unsafe fn cleanup(buf: *mut i8, bDisable: bool) -> *const i8 {
     return comment;
 }
 
-/*
-* Parse into three arguments: Av[0], Av[1], Av[2]
-*/
-pub unsafe fn parse(buf: *const i8) -> MacroOrMnemonicPointer {
+/// Parses a line into arguments which are then returned.
+/// This replaces "parse" in the original C code.
+// FIXME: make this safe by removing asmerr?
+pub unsafe fn parse_source_line(line: &str) -> ParsedLine {
     #[cfg(debug_assertions)]
-    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(buf)); } }
+    { if OPTIONS.debug_extended { log_function_with!("[[{}]]", line); } }
 
     let mut labelundefined: i32 = 0;
-    let mut buffer = transient::str_pointer_to_string(buf);
+    let mut buffer: String = String::from(line);
     let mut buffer_pos: usize = 0;
-    let mut av_0 = String::new();
-    let mut av_1 = String::new();
-    let mut av_2 = String::new();
+    let mut arg_label = String::new();
+    let mut arg_name = String::new();
+    let mut arg_value = String::new();
 
     // Skip all spaces
     while buffer.at(buffer_pos) == " " {
@@ -1175,6 +1178,8 @@ pub unsafe fn parse(buf: *const i8) -> MacroOrMnemonicPointer {
         buffer_pos = 0;
     }
 
+    // Parse the first word: label
+
     while buffer_pos < buffer.len() && buffer.at(buffer_pos) != " " && buffer.at(buffer_pos) != "=" {
         if buffer.at(buffer_pos) == ":" {
             buffer_pos += 1;
@@ -1189,7 +1194,7 @@ pub unsafe fn parse(buf: *const i8) -> MacroOrMnemonicPointer {
 
                 let mut bc = buffer.at(buffer_pos);
                 while buffer_pos < buffer.len() && bc != "\"" && bc != " " && bc != "," && bc != ":" {
-                    av_0.push_str(bc);
+                    arg_label.push_str(bc);
                     buffer_pos += 1;
                     bc = buffer.at(buffer_pos);
                 }
@@ -1222,7 +1227,7 @@ pub unsafe fn parse(buf: *const i8) -> MacroOrMnemonicPointer {
                         labelundefined += 1
                     } else {
                         let mut temp_value = format!("{}", (*symarg).value);
-                        av_0.push_str(temp_value.as_str());
+                        arg_label.push_str(temp_value.as_str());
                     }
                 }
 
@@ -1237,7 +1242,7 @@ pub unsafe fn parse(buf: *const i8) -> MacroOrMnemonicPointer {
             if buffer_pos < buffer.len() && buffer.at(buffer_pos).as_bytes()[0] as u8 == 0x80 {
                 buffer.replace_range(buffer_pos..buffer_pos + 1, " ");
             }
-            av_0.push_str(buffer.at(buffer_pos));
+            arg_label.push_str(buffer.at(buffer_pos));
             buffer_pos += 1;
         }
     }
@@ -1245,37 +1250,33 @@ pub unsafe fn parse(buf: *const i8) -> MacroOrMnemonicPointer {
     // If the label has arguments that aren't defined, we need to scuttle it
     // to avoid a partial label being used.
     if labelundefined != 0 {
-        av_0.clear();
+        arg_label.clear();
     }
 
-    // Set label
-    set_argument(0, av_0);
+    // Parse the second word: name
 
-    /* Parse the second word of the line */
     while buffer_pos < buffer.len() && buffer.at(buffer_pos) == " " {
         buffer_pos += 1;
     }
 
     if buffer_pos < buffer.len() && buffer.at(buffer_pos) == "=" {
         /* '=' directly seperates Av[0] and Av[2] */
-        av_1.push_str(buffer.at(buffer_pos));
+        arg_name.push_str(buffer.at(buffer_pos));
         buffer_pos += 1;
     } else {
         while buffer_pos < buffer.len() && buffer.at(buffer_pos) != " " {
             if buffer.at(buffer_pos).as_bytes()[0] as u8 == 0x80 {
                 buffer.replace_range(buffer_pos..buffer_pos + 1, " ");
             }
-            av_1.push_str(buffer.at(buffer_pos));
+            arg_name.push_str(buffer.at(buffer_pos));
             buffer_pos += 1;
         }
     }
 
-    // Set full mnemonic name
-    set_argument(1, av_1);
+    // Parse the third word: value
 
     // Analyse it as an opcode
-    let full_mnemonic_or_macro_name = get_argument(1);
-    let (mnemonic_name, mnemonic_extension) = parse_mnemonic_name(full_mnemonic_or_macro_name.as_str());
+    let (mnemonic_name, mnemonic_extension) = parse_mnemonic_name(arg_name.as_str());
 
     #[cfg(debug_assertions)]
     { if OPTIONS.debug_extended { log_function_with!("find_mnemonic_extension_address_mode :: [[{}]]", mnemonic_extension); } }
@@ -1284,7 +1285,7 @@ pub unsafe fn parse(buf: *const i8) -> MacroOrMnemonicPointer {
     state.execution.modeNext = new_address_mode;
     state.execution.extraString = String::from(mnemonic_extension);
     let mnemonic_maybe = find_mnemonic(&state.execution.mnemonics, mnemonic_name);
-    let macro_maybe = find_macro(&state.execution.macros, full_mnemonic_or_macro_name.as_str());
+    let macro_maybe = find_macro(&state.execution.macros, arg_name.as_str());
 
     /* Parse the rest of the line */
     while buffer_pos < buffer.len() && buffer.at(buffer_pos) == " " {
@@ -1302,22 +1303,21 @@ pub unsafe fn parse(buf: *const i8) -> MacroOrMnemonicPointer {
             buffer.replace_range(buffer_pos..buffer_pos + 1, " ");
         }
 
-        av_2.push_str(buffer.at(buffer_pos));
+        arg_value.push_str(buffer.at(buffer_pos));
         buffer_pos += 1;
     }
 
-    // Set value
-    set_argument(2, av_2);
+    // End, return everything
 
     #[cfg(debug_assertions)]
     { if OPTIONS.debug_extended { log_function_with!("Ended with mne is_some :: [[{}]]", if mnemonic_maybe.is_some() { "true" } else { "false" }); } }
 
-    if mnemonic_maybe.is_some() {
-        MacroOrMnemonicPointer::Mnemonic(mnemonic_maybe.unwrap())
-    } else if macro_maybe.is_some() {
-        MacroOrMnemonicPointer::Macro(macro_maybe.unwrap())
-    } else {
-        MacroOrMnemonicPointer::None
+    ParsedLine {
+        arg_label,
+        arg_name,
+        arg_value,
+        macro_ref: macro_maybe,
+        mnemonic_ref: mnemonic_maybe,
     }
 }
 
