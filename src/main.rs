@@ -767,7 +767,7 @@ unsafe fn assemble() -> AsmErrorEquates {
                 }
                 comment = cleanup(buf.as_mut_ptr(), false);
                 (*include_file).lineno = (*include_file).lineno.wrapping_add(1);
-                let mne_or_macro = parse(buf.as_mut_ptr());
+                let mne_or_macro = parse(buf.as_ptr());
                 let current_if = &state.execution.ifs.last().unwrap();
 
                 #[cfg(debug_assertions)]
@@ -1144,7 +1144,7 @@ pub unsafe fn cleanup(buf: *mut i8, bDisable: bool) -> *const i8 {
 /*
 * Parse into three arguments: Av[0], Av[1], Av[2]
 */
-pub unsafe fn parse(buf: *mut i8) -> MacroOrMnemonicPointer {
+pub unsafe fn parse(buf: *const i8) -> MacroOrMnemonicPointer {
     #[cfg(debug_assertions)]
     { if OPTIONS.debug_extended { log_function_with!("[[{}]]", transient::str_pointer_to_string(buf)); } }
 

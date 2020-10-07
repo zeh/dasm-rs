@@ -250,7 +250,7 @@ pub unsafe fn v_macro(str: *mut i8, _dummy: *mut _MNE) {
         }
         (*include_file).lineno = (*include_file).lineno.wrapping_add(1);
         comment = cleanup(buf.as_mut_ptr(), true);
-        let mne_or_macro = parse(buf.as_mut_ptr());
+        let mne_or_macro = parse(buf.as_ptr());
         if !get_argument(1).is_empty() {
             match mne_or_macro {
                 MacroOrMnemonicPointer::Mnemonic(mne) => {
