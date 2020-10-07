@@ -1,6 +1,9 @@
 use crate::types::structs::{
 	ParsedValue,
 };
+use crate::utils::extensions::{
+    StringExtensions,
+};
 
 /// Returns true if an alphanumeric (A-Z, a-z, 0-9) char is passed
 pub fn is_alpha_num(c: char) -> bool {
@@ -105,6 +108,26 @@ pub fn parse_decimal(source: &str) -> ParsedValue<i64> {
 	ParsedValue::<i64> {
 		value: val,
 		original_size: size,
+	}
+}
+
+/// Given a string, returns a struct with the parsed quote-delimited string,
+/// and the size of the original string used.
+/// This replaces "pushstr" in the original C code.
+pub fn parse_string(source: &str) -> ParsedValue<String> {
+	let mut size: usize = 0;
+	let mut extra_size: usize = 0;
+	for ch in source.chars() {
+		if ch != '\"' {
+			size += 1;
+		} else {
+			extra_size += 1;
+			break;
+		}
+	}
+	ParsedValue::<String> {
+		value: String::from(source.substring(0, size)),
+		original_size: size + extra_size,
 	}
 }
 
@@ -387,6 +410,46 @@ mod tests {
 			ParsedValue::<i64> {
 				value: 9632,
 				original_size: 4
+			}
+		);
+	}
+
+
+	#[test]
+	fn test_parse_string() {
+		assert_eq!(
+			parse_string(""),
+			ParsedValue::<String> {
+				value: String::from(""),
+				original_size: 0
+			}
+		);
+		assert_eq!(
+			parse_string("a"),
+			ParsedValue::<String> {
+				value: String::from("a"),
+				original_size: 1
+			}
+		);
+		assert_eq!(
+			parse_string("abcd "),
+			ParsedValue::<String> {
+				value: String::from("abcd "),
+				original_size: 5
+			}
+		);
+		assert_eq!(
+			parse_string("abcd\" "),
+			ParsedValue::<String> {
+				value: String::from("abcd"),
+				original_size: 5
+			}
+		);
+		assert_eq!(
+			parse_string("abcd!áó\""),
+			ParsedValue::<String> {
+				value: String::from("abcd!áó"),
+				original_size: 8
 			}
 		);
 	}
