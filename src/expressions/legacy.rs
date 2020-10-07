@@ -90,11 +90,10 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
         if OPTIONS.debug {
             println!("char '{}'", transient::str_pointer_and_len_to_string(str, 1));
         }
-        let current_block_184: u64;
+
         match *str as u8 as char {
             ' ' | '\n' => {
                 str = str.offset(1);
-                current_block_184 = 3166194604430448652;
             }
             '~' => {
                 if state.expressions.last_was_operation {
@@ -103,7 +102,6 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                     asmerr(AsmErrorEquates::SyntaxError, false, pLine);
                 }
                 str = str.offset(1);
-                current_block_184 = 3166194604430448652;
             }
             '*' => {
                 if state.expressions.last_was_operation {
@@ -112,12 +110,10 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                     doop(operations::multiply, 20);
                 }
                 str = str.offset(1);
-                current_block_184 = 3166194604430448652;
             }
             '/' => {
                 doop(operations::divide, 20);
                 str = str.offset(1);
-                current_block_184 = 3166194604430448652;
             }
             '%' => {
                 if state.expressions.last_was_operation {
@@ -128,19 +124,16 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                     doop(operations::modulo, 20);
                     str = str.offset(1);
                 }
-                current_block_184 = 3166194604430448652;
             }
             '?' => {
                 // 10
                 doop(operations::question, 10);
                 str = str.offset(1);
-                current_block_184 = 3166194604430448652;
             }
             '+' => {
                 // 19
                 doop(operations::add, 19);
                 str = str.offset(1);
-                current_block_184 = 3166194604430448652;
             }
             '-' => {
                 // 19: - (or - unary)
@@ -150,7 +143,6 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                     doop(operations::subtract, 19);
                 }
                 str = str.offset(1);
-                current_block_184 = 3166194604430448652;
             }
             '>' => {
                 //  18: >> <<
@@ -170,7 +162,6 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                     }
                     str = str.offset(1);
                 }
-                current_block_184 = 3166194604430448652;
             }
             '<' => {
                 if state.expressions.last_was_operation {
@@ -188,7 +179,6 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                     }
                     str = str.offset(1);
                 }
-                current_block_184 = 3166194604430448652;
             }
             '=' => {
                 //  16: == (= same as ==)
@@ -197,7 +187,6 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                 }
                 doop(operations::equal, 16);
                 str = str.offset(1);
-                current_block_184 = 3166194604430448652;
             }
             '!' => {
                 // 16: !=
@@ -208,7 +197,6 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                     str = str.offset(1);
                 }
                 str = str.offset(1);
-                current_block_184 = 3166194604430448652;
             }
             '&' => {
                 // 15: &
@@ -220,13 +208,11 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                     doop(operations::and, 15);
                 }
                 str = str.offset(1);
-                current_block_184 = 3166194604430448652;
             }
             '^' => {
                 // 14: ^
                 doop(operations::xor, 14);
                 str = str.offset(1);
-                current_block_184 = 3166194604430448652;
             }
             '|' => {
                 // 13: |
@@ -238,45 +224,72 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                     doop(operations::or, 13);
                 }
                 str = str.offset(1);
-                current_block_184 = 3166194604430448652;
             }
-            '(' => {
-                if wantmode != 0 {
-                    (*cur).addrmode = AddressModes::IndWord as u8;
-                    str = str.offset(1);
-                    current_block_184 = 3166194604430448652;
-                } else { current_block_184 = 18384894229789369419; }
+            '(' if wantmode != 0 => {
+                (*cur).addrmode = AddressModes::IndWord as u8;
+                str = str.offset(1);
             }
-            '[' => { current_block_184 = 18384894229789369419; }
-            ')' => {
-                if wantmode != 0 {
-                    if (*cur).addrmode == AddressModes::IndWord as u8 && *str.offset(1) as u8 == ',' as u8 && *str.offset(2) as u8 | 0x20 == 'y' as u8 {
-                        (*cur).addrmode = AddressModes::IndByteY as u8;
-                        str = str.offset(2)
+            '[' | '(' => {
+                // Eventually an argument
+                if state.expressions.operations.len() == MAX_OPS {
+                    println!("too many ops");
+                } else {
+                    state.expressions.operations.push(
+                        ExpressionStackOperation {
+                            func: None,
+			                pri: 0,
+                        }
+                    );
+                }
+                str = str.offset(1);
+            }
+            ')' if wantmode != 0 => {
+                if (*cur).addrmode == AddressModes::IndWord as u8 && *str.offset(1) as u8 == ',' as u8 && *str.offset(2) as u8 | 0x20 == 'y' as u8 {
+                    (*cur).addrmode = AddressModes::IndByteY as u8;
+                    str = str.offset(2)
+                }
+                // FIX: detect illegal opc (zp),x syntax...
+                if (*cur).addrmode == AddressModes::IndByteY as u8 && *str.offset(1) as u8 == ',' as u8 && *str.offset(2) as u8 | 0x20 == 'x' as u8 {
+                    // FIXME: strangely, this is never used, so we have it here but commented out
+                    // let buffer: String = transient::str_pointer_to_string(str);
+                    asmerr(AsmErrorEquates::IllegalAddressingMode, false, pLine);
+                    state.execution.redoIndex += 1;
+                    state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved
+                    // We treat the opcode as valid to allow passes to continue, which should
+                    // allow other errors (like phase errros) to resolve before our "++Redo"
+                    // ultimately forces a failure.
+                }
+                str = str.offset(1);
+            }
+            ']' | ')' => {
+                while state.expressions.operations.len() != state.expressions.operation_len_base && state.expressions.operations.last().unwrap().pri != 0 {
+                    evaltop();
+                }
+                if state.expressions.operations.len() != state.expressions.operation_len_base {
+                    state.expressions.operations.pop();
+                }
+                str = str.offset(1);
+                if state.expressions.arguments.len() == state.expressions.argument_len_base {
+                    println!("\']\' error, no arg on stack");
+                } else {
+                    if *str as i32 == 'd' as i32 {
+                        /*  STRING CONVERSION   */
+                        str = str.offset(1);
+                        let last_argument = state.expressions.arguments.last_mut().unwrap();
+                        if last_argument.flags == 0 {
+                            let buffer = format!("{}", last_argument.value);
+                            last_argument.string = Some(buffer);
+                        }
                     }
-                    // FIX: detect illegal opc (zp),x syntax...
-                    if (*cur).addrmode == AddressModes::IndByteY as u8 && *str.offset(1) as u8 == ',' as u8 && *str.offset(2) as u8 | 0x20 == 'x' as u8 {
-                        // FIXME: strangely, this is never used, so we have it here but commented out
-                        // let buffer: String = transient::str_pointer_to_string(str);
-                        asmerr(AsmErrorEquates::IllegalAddressingMode, false, pLine);
-                        state.execution.redoIndex += 1;
-                        state.execution.redoWhy |= ReasonCodes::MnemonicNotResolved
-                        // We treat the opcode as valid to allow passes to continue, which should
-                        // allow other errors (like phase errros) to resolve before our "++Redo"
-                        // ultimately forces a failure.
-                    }
-                    str = str.offset(1);
-                    current_block_184 = 3166194604430448652;
-                } else { current_block_184 = 8741107198128373303; }
+                    state.expressions.last_was_operation = false;
+                }
             }
-            ']' => { current_block_184 = 8741107198128373303; }
             '#' => {
                 (*cur).addrmode = AddressModes::Imm8 as u8;
                 str = str.offset(1);
                 // No other addressing mode is possible from now on
                 // so we might as well allow () instead of [].
                 wantmode = 0; /* to lower case */
-                current_block_184 = 3166194604430448652;
             }
             ',' => {
                 while state.expressions.operations.len() != state.expressions.operation_len_base {
@@ -350,25 +363,21 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                     cur = pNewSymbol;
                 }
                 str = str.offset(1);
-                current_block_184 = 3166194604430448652;
             }
             '$' => {
                 let parsed_value = parse_hexa(transient::str_pointer_to_string(str.offset(1)).as_str());
                 stackarg(parsed_value.value, 0, 0 as *const i8);
                 str = str.offset(parsed_value.original_size as isize + 1);
-                current_block_184 = 3166194604430448652;
             }
             '\'' => {
                 let parsed_value = parse_char(transient::str_pointer_to_string(str.offset(1)).as_str());
                 stackarg(parsed_value.value as i64, 0, 0 as *const i8);
                 str = str.offset(parsed_value.original_size as isize + 1);
-                current_block_184 = 3166194604430448652;
             }
             '\"' => {
                 let parsed_value = parse_string(transient::str_pointer_to_string(str.offset(1)).as_str());
                 stackarg(0, SymbolTypes::StringResult, transient::string_to_str_pointer(parsed_value.value));
                 str = str.offset(parsed_value.original_size as isize + 1);
-                current_block_184 = 3166194604430448652;
             }
             _ => {
                 let mut dol: *const i8 = str;
@@ -388,48 +397,7 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
                 } else {
                     str = pushsymbol(str);
                 }
-                current_block_184 = 3166194604430448652;
             }
-        }
-        match current_block_184 {
-            8741107198128373303 => {
-                while state.expressions.operations.len() != state.expressions.operation_len_base && state.expressions.operations.last().unwrap().pri != 0 {
-                    evaltop();
-                }
-                if state.expressions.operations.len() != state.expressions.operation_len_base {
-                    state.expressions.operations.pop();
-                }
-                str = str.offset(1);
-                if state.expressions.arguments.len() == state.expressions.argument_len_base {
-                    println!("\']\' error, no arg on stack");
-                } else {
-                    if *str as i32 == 'd' as i32 {
-                        /*  STRING CONVERSION   */
-                        str = str.offset(1);
-                        let last_argument = state.expressions.arguments.last_mut().unwrap();
-                        if last_argument.flags == 0 {
-                            let buffer = format!("{}", last_argument.value);
-                            last_argument.string = Some(buffer);
-                        }
-                    }
-                    state.expressions.last_was_operation = false;
-                }
-            }
-            18384894229789369419 => {
-                /*  eventually an argument      */
-                if state.expressions.operations.len() == MAX_OPS {
-                    println!("too many ops");
-                } else {
-                    state.expressions.operations.push(
-                        ExpressionStackOperation {
-                            func: None,
-			                pri: 0,
-                        }
-                    );
-                }
-                str = str.offset(1);
-            }
-            _ => { }
         }
     }
     while state.expressions.operations.len() != state.expressions.operation_len_base {
