@@ -414,7 +414,6 @@ mod tests {
 		);
 	}
 
-
 	#[test]
 	fn test_parse_string() {
 		assert_eq!(
