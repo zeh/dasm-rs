@@ -77,8 +77,8 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
 
     let mut base: *mut _SYMBOL = 0 as *mut _SYMBOL;
     let mut cur: *mut _SYMBOL = 0 as *mut _SYMBOL;
-    let oldArgIndexBase = state.expressions.argument_len_base;
-    let oldOpIndexBase = state.expressions.operation_len_base;
+    let old_argument_len_base = state.expressions.argument_len_base;
+    let old_operation_len_base = state.expressions.operation_len_base;
     let mut scr: i32 = 0;
     let pLine: *const i8 = str;
     state.expressions.argument_len_base = state.expressions.arguments.len();
@@ -426,8 +426,8 @@ pub unsafe extern "C" fn eval(mut str: *const i8, mut wantmode: i32) -> *mut _SY
     }
     state.expressions.arguments.truncate(state.expressions.argument_len_base);
     state.expressions.operations.truncate(state.expressions.operation_len_base);
-    state.expressions.argument_len_base = oldArgIndexBase;
-    state.expressions.operation_len_base = oldOpIndexBase;
+    state.expressions.argument_len_base = old_argument_len_base;
+    state.expressions.operation_len_base = old_operation_len_base;
     return base;
 }
 
